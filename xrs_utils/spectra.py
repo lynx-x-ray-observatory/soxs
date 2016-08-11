@@ -10,8 +10,13 @@ class Spectrum(object):
 
     @classmethod
     def from_file(cls, filename):
-        emid, flux = np.loadtxt(filename, unpack=True)
-        de = np.diff(emid)[0]
+        data = np.loadtxt(filename)
+        emid = data[:,0]
+        if data.shape[-1] == 3:
+            de = data[:,1]
+        else:
+            de = np.diff(emid)[0]
+        flux = data[:,-1]
         ebins = np.concatenate([emid-0.5*de, emid[-1]+0.5*de])
         return cls(ebins, flux)
 
