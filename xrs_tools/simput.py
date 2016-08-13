@@ -1,7 +1,7 @@
 import astropy.io.fits as pyfits
 import numpy as np
 
-from xrs_utils.constants import erg_per_keV
+from xrs_tools.constants import erg_per_keV
 
 def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clobber=False, emin=None, emax=None):
     r"""

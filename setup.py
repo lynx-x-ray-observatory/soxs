@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-setup(name='xrs_utils',
-      packages=['xrs_utils'],
+setup(name='xrs_tools',
+      packages=['xrs_tools'],
       version='0.1',
-      description='Utilities for X-Ray Surveyor simulations',
+      description='Tools for X-Ray Surveyor simulations',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
-      url='http://github.com/XRStools/xrs_utils',
+      url='http://github.com/XRStools/xrs_tools',
       setup_requires=["numpy"],
       install_requires=["six","numpy","astropy"],
       classifiers=[
