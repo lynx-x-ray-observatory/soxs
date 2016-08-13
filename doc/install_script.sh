@@ -98,11 +98,11 @@ then
     log_cmd ${GETFILE} ${MINICONDA_URLBASE}/${MINICONDA_PKG} || do_exit
 fi
 
-if [ ! -f $DEST_DIR/anaconda/done ]
+if [ ! -f $DEST_DIR/anaconda_done ]
 then
     echo "Installing the Miniconda python environment."
-    log_cmd bash ./${MINICONDA_PKG} -b -p $DEST_DIR/anaconda -f
-    touch $DEST_DIR/anaconda/done
+    log_cmd bash ./${MINICONDA_PKG} -b -p $DEST_DIR -f
+    touch $DEST_DIR/anaconda_done
 fi
 
 export PATH=${DEST_DIR}/anaconda/bin:$PATH
@@ -147,7 +147,7 @@ then
     rm $ACTIVATE_SH
 fi
 echo '#!/bin/sh' >> $ACTIVATE_SH
-echo 'PATH='$DEST_DIR'/anaconda/bin:'$DEST_DIR'/bin:$PATH' >> $ACTIVATE_SH
+echo 'PATH='$DEST_DIR'/bin:$PATH' >> $ACTIVATE_SH
 if [ $INST_SIMX -eq 1 ]
 then
     echo '. '$DEST_DIR/$SIMX'/bin/simx-setup.sh' >> $ACTIVATE_SH
@@ -160,7 +160,7 @@ then
     rm $ACTIVATE_CSH
 fi
 echo '#!/bin/csh' >> $ACTIVATE_CSH
-echo 'set path = ('$DEST_DIR'/anaconda/bin '$DEST_DIR'bin $path)' >> $ACTIVATE_CSH
+echo 'set path = ('$DEST_DIR'/bin $path)' >> $ACTIVATE_CSH
 if [ $INST_SIMX -eq 1 ]
 then
     echo 'source '$DEST_DIR/$SIMX'/bin/simx-setup.csh' >> $ACTIVATE_CSH
