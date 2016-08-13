@@ -6,7 +6,7 @@ class Spectrum(object):
         self.emid = 0.5*(ebins[1:]+ebins[:-1])
         self.flux = flux
         self.nbins = len(self.emid)
-        self.tot_flux = self.flux.sum()
+        self.tot_flux = self.flux.sum()*np.diff(self.ebins)[0]
 
     @classmethod
     def from_file(cls, filename):
@@ -30,3 +30,13 @@ class Spectrum(object):
         cumspec /= cumspec[-1]
         energies = np.interp(randvec, cumspec, self.ebins)
         return energies
+
+class PowerLawSpectrum(Spectrum):
+    def __init__(self, emin, emax, alpha, tot_flux, nbins=10000):
+        self.ebins = np.linspace(emin, emax, nbins+1)
+        self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
+        self.tot_flux = tot_flux
+        flux = self.emid**alpha
+        flux /= flux.sum()
+        self.flux = flux*self.tot_flux/np.diff(self.ebins)[0]
+        self.nbins = nbins
