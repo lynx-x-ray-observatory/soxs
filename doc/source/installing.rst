@@ -38,7 +38,7 @@ installation you choose. For Anaconda Python, use the standard ``conda install``
 
 .. code-block:: bash
 
-    conda install -c xrs_tools mksrcs
+    conda install -c jzuhone mksrcs
 
 or if you are using any other Python stack, use pip:
 
