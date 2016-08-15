@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 from setuptools import setup
 
+VERSION = '0.1.dev0'
+
 setup(name='xrs_tools',
       packages=['xrs_tools'],
-      version='0.1',
+      version=VERSION,
       description='Tools for X-Ray Surveyor simulations',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
