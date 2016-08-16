@@ -30,7 +30,6 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clob
     e_max : float, optional
         The maximum energy of the photons to save in keV.
     """
-
     if emin is None:
         emin = energy.min()
     if emax is None:

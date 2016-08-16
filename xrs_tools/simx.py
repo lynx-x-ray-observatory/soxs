@@ -3,6 +3,32 @@ import os
 
 def run_simx(simput_file, output_prefix, exposure_time, sky_center,
              instrument='hdxi', bkgnd_scale=1.0, random_seed=None):
+    """
+    Run SIMX assuming X-ray Surveyor mission parameters.
+
+    Parameters
+    ----------
+    simput_file : string
+        The path to the SIMPUT file used for the input. 
+    output_prefix : string
+        The prefix of the events file which will be written. The
+        events file will be called *output_prefix*_evt.fits.
+    exposure_time : float
+        The exposure time in seconds. 
+    sky_center : array-like
+        The RA and Dec of the center pointing in degrees. Can be
+        a tuple, list, or NumPy array.
+    instrument : string, optional
+        The X-ray Surveyor detector to use. Can be one of: "hdxi",
+        "xcal", "cat". Case-insensitive. Default: "hdxi".
+    bkgnd_scale : float, optional
+        The scale factor to multiply the instrumental background by.
+        Default: 1.0
+    random_seed : integer, optional
+        Set this to specify a random seed to use when drawing the 
+        photons. Default None, which means that the random seed
+        will depend on the system time. 
+    """
     if instrument.lower() not in ["hdxi", "xcal", "cat"]:
         raise RuntimeError("Instrument %s not valid!" % instrument)
     os.system('punlearn simx')
