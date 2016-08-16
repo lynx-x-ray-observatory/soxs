@@ -20,29 +20,6 @@ MYOS=`uname -s`
 MINICONDA_URLBASE="http://repo.continuum.io/miniconda"
 MINICONDA_VERSION="latest"
 
-LOG_FILE="${DEST_DIR}/xrs_install.log"
-
-function log_cmd
-{
-    echo "EXECUTING:" >> ${LOG_FILE}
-    echo "  $*" >> ${LOG_FILE}
-    ( $* 2>&1 ) 1>> ${LOG_FILE} || do_exit
-}
-
-function do_exit
-{
-    echo "********************************************"
-    echo "        FAILURE REPORT:"
-    echo "********************************************"
-    echo
-    tail -n 10 ${LOG_FILE}
-    echo
-    echo "********************************************"
-    echo "********************************************"
-    echo "Failure.  Check ${LOG_FILE}.  The last 10 lines are above."
-    exit 1
-}
-
 if [ ! -e ${DEST_DIR} ]
 then
     mkdir $DEST_DIR
@@ -55,10 +32,10 @@ cd $DEST_DIR
 if type -P curl &>/dev/null
 then
     echo "Using curl to download files."
-    export GETFILE="curl -sSOL"
+    export GETFILE="curl -OL"
 else
     echo "Using wget to download files."
-    export GETFILE="wget -nv"
+    export GETFILE="wget"
 fi
 
 if [ $MYOS = "Darwin" ]
@@ -95,26 +72,26 @@ then
         rm ${MINICONDA_PKG}
     fi
     echo "Downloading ${MINICONDA_URLBASE}/${MINICONDA_PKG}"
-    log_cmd ${GETFILE} ${MINICONDA_URLBASE}/${MINICONDA_PKG} || do_exit
+    ${GETFILE} ${MINICONDA_URLBASE}/${MINICONDA_PKG}
 fi
 
 if [ ! -f $DEST_DIR/anaconda_done ]
 then
     echo "Installing the Miniconda python environment."
-    log_cmd bash ./${MINICONDA_PKG} -b -p $DEST_DIR -f
+    bash ./${MINICONDA_PKG} -b -p $DEST_DIR -f
     touch $DEST_DIR/anaconda_done
 fi
 
-export PATH=${DEST_DIR}/anaconda/bin:$PATH
+export PATH=${DEST_DIR}/bin:$PATH
 
 if [ $INST_GIT -eq 1 ]
 then
-    log_cmd conda install --yes git || do_exit
+    conda install --yes git
 fi
 
 if [ $INST_PYXSIM -eq 1 ]
 then
-    log_cmd conda install --yes -c jzuhone pyxsim || do_exit
+    conda install --yes -c jzuhone pyxsim
 fi
 
 # Install SIMX
@@ -133,8 +110,8 @@ then
     then
         echo "Installing SIMX..."
         cd $SIMX
-        ( ./configure --prefix=`pwd` 2>&1 ) 1>> ${LOG_FILE} || do_exit
-        ( make install 2>&1 ) 1>> ${LOG_FILE} || do_exit
+        ( ./configure --prefix=`pwd` 2>&1 ) 
+        ( make install 2>&1 )
         touch done
         cd ..
     fi
