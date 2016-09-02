@@ -1,5 +1,8 @@
 import numpy as np
 import subprocess
+import tempfile
+import shutil
+import os
 
 class Spectrum(object):
     def __init__(self, ebins, flux):
@@ -12,6 +15,9 @@ class Spectrum(object):
     @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
                    nbins=10000):
+        tmpdir = tempfile.mkdtemp()
+        curdir = os.getcwd()
+        os.chdir(tmpdir)
         xspec_in = []
         model_str = "%s &" % model_string
         for param in params:
@@ -32,7 +38,32 @@ class Spectrum(object):
         f_s.close()
         ebins = np.array(lines[0].split()).astype("float64")
         flux = np.array(lines[1].split()).astype("float64")
+        os.chdir(curdir)
+        shutil.rmtree(tmpdir)
         return cls(ebins, flux)
+
+    @classmethod
+    def from_apec(cls, absorb_model, nH, kT, 
+                  abund, redshift, norm, broadening=False, 
+                  velocity=0.0, emin=0.01, emax=50.0,
+                  nbins=10000):
+        if broadening:
+            model_str = "%s*bapec" % absorb_model
+            params = [nH, kT, abund, redshift, velocity, norm]
+        else:
+            model_str = "%s*apec" % absorb_model
+            params = [nH, kT, abund, redshift, norm]
+        return cls.from_xspec(model_str, params, emin=emin, emax=emax,
+                              nbins=nbins)
+
+    @classmethod
+    def from_powerlaw(cls, absorb_model, nH, photon_index,
+                      redshift, norm, emin=0.01, emax=50.0,
+                      nbins=10000):
+        model_str = "%s*powerlaw" % absorb_model
+        params = [nH, photon_index, redshift, norm]
+        return cls.from_xspec(model_str, params, emin=emin, emax=emax,
+                              nbins=nbins)
 
     @classmethod
     def from_file(cls, filename):
