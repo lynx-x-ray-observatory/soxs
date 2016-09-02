@@ -1,4 +1,5 @@
 import numpy as np
+import subprocess
 
 class Spectrum(object):
     def __init__(self, ebins, flux):
@@ -7,6 +8,31 @@ class Spectrum(object):
         self.flux = flux
         self.nbins = len(self.emid)
         self.tot_flux = self.flux.sum()*np.diff(self.ebins)[0]
+
+    @classmethod
+    def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
+                   nbins=10000):
+        xspec_in = []
+        model_str = "%s &" % model_string
+        for param in params:
+            model_str += " %g &" % param
+        model_str += " /*"
+        xspec_in.append("model %s\n" % model_str)
+        xspec_in.append("dummyrsp %g %g %d lin\n" % (emin, emax, nbins))
+        xspec_in += ["set fp [open spec_therm.xspec w+]\n",
+                     "tclout energies\n", "puts $fp $xspec_tclout\n",
+                     "tclout modval\n", "puts $fp $xspec_tclout\n",
+                     "close $fp\n", "quit\n"]
+        f_xin = open("xspec.in", "w")
+        f_xin.writelines(xspec_in)
+        f_xin.close()
+        subprocess.call(["xspec", "-", "xspec.in"])
+        f_s = open("spec_therm.xspec", "r")
+        lines = f_s.readlines()
+        f_s.close()
+        ebins = np.array(lines[0].split()).astype("float64")
+        flux = np.array(lines[1].split()).astype("float64")
+        return cls(ebins, flux)
 
     @classmethod
     def from_file(cls, filename):
