@@ -10,7 +10,7 @@ class Spectrum(object):
         self.emid = 0.5*(ebins[1:]+ebins[:-1])
         self.flux = flux
         self.nbins = len(self.emid)
-        self.tot_flux = self.flux.sum()*np.diff(self.ebins)[0]
+        self.tot_flux = self.flux.sum()
 
     @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
@@ -77,13 +77,25 @@ class Spectrum(object):
         ebins = np.concatenate([emid-0.5*de, emid[-1]+0.5*de])
         return cls(ebins, flux)
 
-    def generate_photons(self, n_photons, prng=None):
+    def rescale_flux(self, new_flux, emin=None, emax=None):
+        if emin is None:
+            emin = self.ebins[0]
+        if emax is None:
+            emax = self.ebins[-1]
+        idxs = np.logical_and(self.emid >= emin, self.emid <= emax)
+        f = self.flux[idxs].sum()
+        self.flux *= new_flux/f
+        self.tot_flux = self.flux.sum()
+
+    def generate_photons(self, t_exp, area, prng=None):
         if prng is None:
             prng = np.random
-        randvec = prng.uniform(size=n_photons)
-        randvec.sort()
         cumspec = np.cumsum(self.flux)
+        n_ph = t_exp*area*cumspec[-1]
+        n_ph = np.uint64(n_ph) + np.uint64(n_ph >= prng.uniform())
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
+        randvec = prng.uniform(size=n_ph)
+        randvec.sort()
         energies = np.interp(randvec, cumspec, self.ebins)
         return energies
