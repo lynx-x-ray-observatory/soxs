@@ -15,6 +15,24 @@ class Spectrum(object):
     @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
                    nbins=10000):
+        """
+        Create a model spectrum using XSPEC.
+
+        Parameters
+        ----------
+        model_string : string
+            The model to create the spectrum from. Use standard XSPEC
+            model syntax. Example: "wabs*mekal"
+        params : list
+            The list of parameters for the model. Must be in the order
+            that XSPEC expects. 
+        emin : float, optional
+            The minimum energy of the spectrum in keV. Default: 0.01
+        emax : float, optional
+            The maximum energy of the spectrum in keV. Default: 50.0
+        nbins : integer, optional
+            The number of bins in the spectrum. Default: 10000
+        """
         tmpdir = tempfile.mkdtemp()
         curdir = os.getcwd()
         os.chdir(tmpdir)
@@ -47,6 +65,39 @@ class Spectrum(object):
                   broadening=False, absorb_model='tbabs',
                   nH=0.02, velocity=0.0, emin=0.01, 
                   emax=50.0, nbins=10000):
+        """
+        Create a spectrum from an APEC model using XSPEC. 
+
+        Parameters
+        ----------
+        kT : float
+            The temperature of the plasma in keV.
+        abund : float
+            The abundance of the plasma in solar units.
+        redshift : float
+            The redshift of the source. 
+        norm : float
+            The normalization of the APEC model, in the standard
+            units (see XSPEC manual). 
+        broadening : boolean, optional
+            Whether or not to include broadening of the spectral
+            lines. Default: False
+        absorb_model : string or None
+            The foreground absorption model. Can be a string or 
+            None for no absorption. Default: "tbabs"
+        nH : float, optional
+            Column density for foreground galactic absoprtion. In
+            units of 10^{22} cm**{-2}. Default: 0.02
+        velocity : float, optional
+            Velocity broadening parameter in units of km/s. Only used
+            if ``broadening=True``. Default: 0.0
+        emin : float, optional
+            The minimum energy of the spectrum in keV. Default: 0.01
+        emax : float, optional
+            The maximum energy of the spectrum in keV. Default: 50.0
+        nbins : integer, optional
+            The number of bins in the spectrum. Default: 10000
+        """
         if broadening:
             model_str = "bapec"
             params = [kT, abund, redshift, velocity, norm]
@@ -63,6 +114,31 @@ class Spectrum(object):
     def from_powerlaw(cls, photon_index, redshift, norm,
                       absorb_model='tbabs', nH=0.02,
                       emin=0.01, emax=50.0, nbins=10000):
+        """
+        Create a spectrum from a power-law model using XSPEC. 
+
+        Parameters
+        ----------
+        photon_index : float
+            The photon index of the source.
+        redshift : float
+            The redshift of the source. 
+        norm : float
+            The normalization of the source in units of
+            photons/s/keV/cm at 1 keV. 
+        absorb_model : string or None
+            The foreground absorption model. Can be a string or 
+            None for no absorption. Default: "tbabs"
+        nH : float, optional
+            Column density for foreground galactic absoprtion. In
+            units of 10^{22} cm**{-2}. Default: 0.02
+        emin : float, optional
+            The minimum energy of the spectrum in keV. Default: 0.01
+        emax : float, optional
+            The maximum energy of the spectrum in keV. Default: 50.0
+        nbins : integer, optional
+            The number of bins in the spectrum. Default: 10000
+        """
         model_str = "zpowerlw"
         params = [photon_index, redshift, norm]
         if absorb_model is not None:
@@ -73,6 +149,22 @@ class Spectrum(object):
 
     @classmethod
     def from_file(cls, filename):
+        """
+        Read a spectrum from an ASCII text file. Accepts two 
+        formats of files, assuming a linear binning with constant
+        bin widths:
+
+        1. Two columns, the first being the bin center and the
+           second being the flux in photons/s/cm**2.
+        2. Three columns, the first being the bin center, the 
+           second being the bin width, and the third the flux
+           in photons/s/cm**2. This format is written by XSPEC.
+
+        Parameters
+        ----------
+        filename : string
+            The path to the file containing the spectrum.
+        """
         data = np.loadtxt(filename)
         emid = data[:,0]
         if data.shape[-1] == 3:
