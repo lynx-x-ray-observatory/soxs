@@ -84,6 +84,21 @@ class Spectrum(object):
         return cls(ebins, flux)
 
     def rescale_flux(self, new_flux, emin=None, emax=None):
+        """
+        Rescale the flux of the spectrum, optionally using a 
+        specific energy band.
+
+        Parameters
+        ----------
+        new_flux : float
+            The new flux in units of photons/s/cm**2.
+        emin : float, optional
+            The minimum energy of the band to consider, in keV. 
+            Default: Use the minimum energy of the entire spectrum.
+        emax : float, optional
+            The maximum energy of the band to consider, in keV.
+            Default: Use the maximum energy of the entire spectrum.
+        """
         if emin is None:
             emin = self.ebins[0]
         if emax is None:
@@ -93,7 +108,22 @@ class Spectrum(object):
         self.flux *= new_flux/f
         self.tot_flux = self.flux.sum()
 
-    def generate_photons(self, t_exp, area, prng=None):
+    def generate_energies(self, t_exp, area, prng=None):
+        """
+        Generate photon energies from this spectrum given an 
+        exposure time and effective area. 
+
+        Parameters
+        ----------
+        t_exp : float
+            The exposure time in seconds. 
+        area : float
+            The effective area (constant) in cm**2.
+        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+            A pseudo-random number generator. Typically will only be specified
+            if you have a reason to generate the same set of random numbers, such as for a
+            test. Default is the :mod:`numpy.random` module.
+        """
         if prng is None:
             prng = np.random
         cumspec = np.cumsum(self.flux)
@@ -105,3 +135,59 @@ class Spectrum(object):
         randvec.sort()
         energies = np.interp(randvec, cumspec, self.ebins)
         return energies
+
+def determine_apec_norm(kT, abund, redshift, emin, emax,
+                        flux, nbins=10000):
+    """
+    Determine the normalization of an unabsorbed APEC 
+    model given a total flux within some band.
+
+    Parameters
+    ----------
+    kT : float
+        The temperature of the model in keV.
+    abund : float
+        The abundance in solar units.
+    redshift : float
+        The redshift.
+    emin : float
+        The lower energy of the energy band to consider, in keV.
+    emax : float
+        The upper energy of the energy band to consider, in keV.
+    flux : float
+        The total flux in the band in photons/s/cm**2. 
+    nbins : integer, optional
+        The number of bins to sum the spectrum over. 
+        Default: 10000
+    """
+    spec = Spectrum.from_apec(kT, abund, redshift, 1.0, 
+                              emin=emin, emax=emax, nbins=nbins,
+                              absorb_model=None)
+    return flux/spec.tot_flux
+
+def determine_powerlaw_norm(photon_index, redshift, emin, emax,
+                            flux, nbins=10000):
+    """
+    Determine the normalization of an unabsorbed APEC 
+    model given a total flux within some band.
+
+    Parameters
+    ----------
+    photon_index : float
+        The temperature of the model in keV.
+    redshift : float
+        The redshift.
+    emin : float
+        The lower energy of the energy band to consider, in keV.
+    emax : float
+        The upper energy of the energy band to consider, in keV.
+    flux : float
+        The total flux in the band in photons/s/cm**2. 
+    nbins : integer, optional
+        The number of bins to sum the spectrum over. 
+        Default: 10000
+    """
+    spec = Spectrum.from_apec(photon_index, redshift, 1.0,
+                              emin=emin, emax=emax, nbins=nbins,
+                              absorb_model=None)
+    return flux/spec.tot_flux
