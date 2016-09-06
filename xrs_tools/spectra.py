@@ -43,25 +43,31 @@ class Spectrum(object):
         return cls(ebins, flux)
 
     @classmethod
-    def from_apec(cls, absorb_model, nH, kT, 
-                  abund, redshift, norm, broadening=False, 
-                  velocity=0.0, emin=0.01, emax=50.0,
-                  nbins=10000):
+    def from_apec(cls, kT, abund, redshift, norm, 
+                  broadening=False, absorb_model='tbabs',
+                  nH=0.02, velocity=0.0, emin=0.01, 
+                  emax=50.0, nbins=10000):
         if broadening:
-            model_str = "%s*bapec" % absorb_model
-            params = [nH, kT, abund, redshift, velocity, norm]
+            model_str = "bapec"
+            params = [kT, abund, redshift, velocity, norm]
         else:
-            model_str = "%s*apec" % absorb_model
-            params = [nH, kT, abund, redshift, norm]
+            model_str = "apec"
+            params = [kT, abund, redshift, norm]
+        if absorb_model is not None:
+            model_str = '*'.join([absorb_model, model_str])
+            params = [nH] + params
         return cls.from_xspec(model_str, params, emin=emin, emax=emax,
                               nbins=nbins)
 
     @classmethod
-    def from_powerlaw(cls, absorb_model, nH, photon_index,
-                      redshift, norm, emin=0.01, emax=50.0,
-                      nbins=10000):
-        model_str = "%s*powerlaw" % absorb_model
-        params = [nH, photon_index, redshift, norm]
+    def from_powerlaw(cls, photon_index, redshift, norm,
+                      absorb_model='tbabs', nH=0.02,
+                      emin=0.01, emax=50.0, nbins=10000):
+        model_str = "zpowerlw"
+        params = [photon_index, redshift, norm]
+        if absorb_model is not None:
+            model_str = '*'.join([absorb_model, model_str])
+            params = [nH] + params
         return cls.from_xspec(model_str, params, emin=emin, emax=emax,
                               nbins=nbins)
 
