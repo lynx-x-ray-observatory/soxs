@@ -12,6 +12,13 @@ class Spectrum(object):
         self.nbins = len(self.emid)
         self.tot_flux = self.flux.sum()
 
+    def __add__(self, other):
+        if self.nbins != other.nbins or \
+            not np.isclose(self.ebins, other.ebins).all():
+            raise RuntimeError("Energy binning for these two "
+                               "spectra is not the same!!")
+        return Spectrum(self.ebins, self.flux+other.flux)
+
     @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
                    nbins=10000):
@@ -279,7 +286,7 @@ def determine_powerlaw_norm(photon_index, redshift, emin, emax,
         The number of bins to sum the spectrum over. 
         Default: 10000
     """
-    spec = Spectrum.from_apec(photon_index, redshift, 1.0,
-                              emin=emin, emax=emax, nbins=nbins,
-                              absorb_model=None)
+    spec = Spectrum.from_powerlaw(photon_index, redshift, 1.0,
+                                  emin=emin, emax=emax, nbins=nbins,
+                                  absorb_model=None)
     return flux/spec.tot_flux
