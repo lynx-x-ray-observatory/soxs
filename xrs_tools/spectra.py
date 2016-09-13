@@ -34,7 +34,7 @@ class Spectrum(object):
             model syntax. Example: "wabs*mekal"
         params : list
             The list of parameters for the model. Must be in the order
-            that XSPEC expects. 
+            that XSPEC expects.
         emin : float, optional
             The minimum energy of the spectrum in keV. Default: 0.01
         emax : float, optional
@@ -70,12 +70,12 @@ class Spectrum(object):
         return cls(ebins, flux)
 
     @classmethod
-    def from_apec(cls, kT, abund, redshift, norm, 
+    def from_apec(cls, kT, abund, redshift, norm,
                   broadening=False, absorb_model='tbabs',
-                  nH=0.02, velocity=0.0, emin=0.01, 
+                  nH=0.02, velocity=0.0, emin=0.01,
                   emax=50.0, nbins=10000):
         """
-        Create a spectrum from an APEC model using XSPEC. 
+        Create a spectrum from an APEC model using XSPEC.
 
         Parameters
         ----------
@@ -84,15 +84,15 @@ class Spectrum(object):
         abund : float
             The abundance of the plasma in solar units.
         redshift : float
-            The redshift of the source. 
+            The redshift of the source.
         norm : float
             The normalization of the APEC model, in the standard
-            units (see XSPEC manual). 
+            units (see XSPEC manual).
         broadening : boolean, optional
             Whether or not to include broadening of the spectral
             lines. Default: False
         absorb_model : string or None
-            The foreground absorption model. Can be a string or 
+            The foreground absorption model. Can be a string or
             None for no absorption. Default: "tbabs"
         nH : float, optional
             Column density for foreground galactic absoprtion. In
@@ -124,19 +124,19 @@ class Spectrum(object):
                       absorb_model='tbabs', nH=0.02,
                       emin=0.01, emax=50.0, nbins=10000):
         """
-        Create a spectrum from a power-law model using XSPEC. 
+        Create a spectrum from a power-law model using XSPEC.
 
         Parameters
         ----------
         photon_index : float
             The photon index of the source.
         redshift : float
-            The redshift of the source. 
+            The redshift of the source.
         norm : float
             The normalization of the source in units of
-            photons/s/keV/cm at 1 keV. 
+            photons/s/keV/cm at 1 keV.
         absorb_model : string or None
-            The foreground absorption model. Can be a string or 
+            The foreground absorption model. Can be a string or
             None for no absorption. Default: "tbabs"
         nH : float, optional
             Column density for foreground galactic absoprtion. In
@@ -159,13 +159,13 @@ class Spectrum(object):
     @classmethod
     def from_file(cls, filename):
         """
-        Read a spectrum from an ASCII text file. Accepts two 
+        Read a spectrum from an ASCII text file. Accepts two
         formats of files, assuming a linear binning with constant
         bin widths:
 
         1. Two columns, the first being the bin center and the
            second being the flux in photons/s/cm**2.
-        2. Three columns, the first being the bin center, the 
+        2. Three columns, the first being the bin center, the
            second being the bin width, and the third the flux
            in photons/s/cm**2. This format is written by XSPEC.
 
@@ -186,7 +186,7 @@ class Spectrum(object):
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
         """
-        Rescale the flux of the spectrum, optionally using a 
+        Rescale the flux of the spectrum, optionally using a
         specific energy band.
 
         Parameters
@@ -194,7 +194,7 @@ class Spectrum(object):
         new_flux : float
             The new flux in units of photons/s/cm**2.
         emin : float, optional
-            The minimum energy of the band to consider, in keV. 
+            The minimum energy of the band to consider, in keV.
             Default: Use the minimum energy of the entire spectrum.
         emax : float, optional
             The maximum energy of the band to consider, in keV.
@@ -219,13 +219,13 @@ class Spectrum(object):
 
     def generate_energies(self, t_exp, area, prng=None):
         """
-        Generate photon energies from this spectrum given an 
-        exposure time and effective area. 
+        Generate photon energies from this spectrum given an
+        exposure time and effective area.
 
         Parameters
         ----------
         t_exp : float
-            The exposure time in seconds. 
+            The exposure time in seconds.
         area : float
             The effective area (constant) in cm**2.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
@@ -236,8 +236,8 @@ class Spectrum(object):
         if prng is None:
             prng = np.random
         cumspec = np.cumsum(self.flux)
-        n_ph = t_exp*area*cumspec[-1]
-        n_ph = np.uint64(n_ph) + np.uint64(n_ph >= prng.uniform())
+        n_ph = np.modf(t_exp*area*cumspec[-1])
+        n_ph = np.uint64(n_ph[1]) + np.uint64(n_ph[0] >= prng.uniform())
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         randvec = prng.uniform(size=n_ph)
@@ -248,7 +248,7 @@ class Spectrum(object):
 def determine_apec_norm(kT, abund, redshift, emin, emax,
                         flux, nbins=10000, flux_type="photons"):
     """
-    Determine the normalization of an unabsorbed APEC 
+    Determine the normalization of an unabsorbed APEC
     model given a total flux within some band.
 
     Parameters
@@ -264,16 +264,16 @@ def determine_apec_norm(kT, abund, redshift, emin, emax,
     emax : float
         The upper energy of the energy band to consider, in keV.
     flux : float
-        The total flux in the band in photons/s/cm**2. 
+        The total flux in the band in photons/s/cm**2.
     nbins : integer, optional
-        The number of bins to sum the spectrum over. 
+        The number of bins to sum the spectrum over.
         Default: 10000
-    flux_type : string, optional                                                                                                                                                                         
-        The units of the flux to use in the scaling:                                                                                                                                                   
-            "photons": photons/s/cm**2                                                                                                                                                                   
-            "energy": erg/s/cm**2                                                                                                                                                        
+    flux_type : string, optional
+        The units of the flux to use in the scaling:
+            "photons": photons/s/cm**2
+            "energy": erg/s/cm**2
     """
-    spec = Spectrum.from_apec(kT, abund, redshift, 1.0, 
+    spec = Spectrum.from_apec(kT, abund, redshift, 1.0,
                               emin=emin, emax=emax, nbins=nbins,
                               absorb_model=None)
     if flux_type == "photons":
@@ -284,7 +284,7 @@ def determine_apec_norm(kT, abund, redshift, emin, emax,
 def determine_powerlaw_norm(photon_index, redshift, emin, emax,
                             flux, nbins=10000, flux_type="photons"):
     """
-    Determine the normalization of an unabsorbed APEC 
+    Determine the normalization of an unabsorbed APEC
     model given a total flux within some band.
 
     Parameters
@@ -298,14 +298,14 @@ def determine_powerlaw_norm(photon_index, redshift, emin, emax,
     emax : float
         The upper energy of the energy band to consider, in keV.
     flux : float
-        The total flux in the band in photons/s/cm**2. 
+        The total flux in the band in photons/s/cm**2.
     nbins : integer, optional
-        The number of bins to sum the spectrum over. 
+        The number of bins to sum the spectrum over.
         Default: 10000
-    flux_type : string, optional                                                                                                                                                                       
-        The units of the flux to use in the scaling:                                                                                                                                            
-            "photons": photons/s/cm**2                                                                                                                                                              
-            "energy": erg/s/cm**2                                                                                                                                                                           
+    flux_type : string, optional
+        The units of the flux to use in the scaling:
+            "photons": photons/s/cm**2
+            "energy": erg/s/cm**2
     """
     spec = Spectrum.from_powerlaw(photon_index, redshift, 1.0,
                                   emin=emin, emax=emax, nbins=nbins,
@@ -314,4 +314,3 @@ def determine_powerlaw_norm(photon_index, redshift, emin, emax,
         return flux/spec.tot_flux
     elif flux_type == "energy":
         return flux/spec.tot_energy_flux
-
