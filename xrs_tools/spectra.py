@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 import shutil
 import os
+from xrs_tools.constants import erg_per_keV
 
 class Spectrum(object):
     def __init__(self, ebins, flux):
@@ -11,6 +12,7 @@ class Spectrum(object):
         self.flux = flux
         self.nbins = len(self.emid)
         self.tot_flux = self.flux.sum()
+        self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV
 
     def __add__(self, other):
         if self.nbins != other.nbins or \
@@ -182,7 +184,7 @@ class Spectrum(object):
         ebins = np.concatenate([emid-0.5*de, emid[-1]+0.5*de])
         return cls(ebins, flux)
 
-    def rescale_flux(self, new_flux, emin=None, emax=None):
+    def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
         """
         Rescale the flux of the spectrum, optionally using a 
         specific energy band.
@@ -197,15 +199,23 @@ class Spectrum(object):
         emax : float, optional
             The maximum energy of the band to consider, in keV.
             Default: Use the maximum energy of the entire spectrum.
+        flux_type : string, optional
+            The units of the flux to use in the rescaling:
+                "photons": photons/s/cm**2
+                "energy": erg/s/cm**2
         """
         if emin is None:
             emin = self.ebins[0]
         if emax is None:
             emax = self.ebins[-1]
         idxs = np.logical_and(self.emid >= emin, self.emid <= emax)
-        f = self.flux[idxs].sum()
+        if flux_type == "photons":
+            f = self.flux[idxs].sum()
+        elif flux_type == "energy":
+            f = (self.flux*self.emid)[idxs].sum()*erg_per_keV
         self.flux *= new_flux/f
         self.tot_flux = self.flux.sum()
+        self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV
 
     def generate_energies(self, t_exp, area, prng=None):
         """
@@ -236,7 +246,7 @@ class Spectrum(object):
         return energies
 
 def determine_apec_norm(kT, abund, redshift, emin, emax,
-                        flux, nbins=10000):
+                        flux, nbins=10000, flux_type="photons"):
     """
     Determine the normalization of an unabsorbed APEC 
     model given a total flux within some band.
@@ -258,14 +268,21 @@ def determine_apec_norm(kT, abund, redshift, emin, emax,
     nbins : integer, optional
         The number of bins to sum the spectrum over. 
         Default: 10000
+    flux_type : string, optional                                                                                                                                                                         
+        The units of the flux to use in the scaling:                                                                                                                                                   
+            "photons": photons/s/cm**2                                                                                                                                                                   
+            "energy": erg/s/cm**2                                                                                                                                                        
     """
     spec = Spectrum.from_apec(kT, abund, redshift, 1.0, 
                               emin=emin, emax=emax, nbins=nbins,
                               absorb_model=None)
-    return flux/spec.tot_flux
+    if flux_type == "photons":
+        return flux/spec.tot_flux
+    elif flux_type == "energy":
+        return flux/spec.tot_energy_flux
 
 def determine_powerlaw_norm(photon_index, redshift, emin, emax,
-                            flux, nbins=10000):
+                            flux, nbins=10000, flux_type="photons"):
     """
     Determine the normalization of an unabsorbed APEC 
     model given a total flux within some band.
@@ -285,8 +302,16 @@ def determine_powerlaw_norm(photon_index, redshift, emin, emax,
     nbins : integer, optional
         The number of bins to sum the spectrum over. 
         Default: 10000
+    flux_type : string, optional                                                                                                                                                                       
+        The units of the flux to use in the scaling:                                                                                                                                            
+            "photons": photons/s/cm**2                                                                                                                                                              
+            "energy": erg/s/cm**2                                                                                                                                                                           
     """
     spec = Spectrum.from_powerlaw(photon_index, redshift, 1.0,
                                   emin=emin, emax=emax, nbins=nbins,
                                   absorb_model=None)
-    return flux/spec.tot_flux
+    if flux_type == "photons":
+        return flux/spec.tot_flux
+    elif flux_type == "energy":
+        return flux/spec.tot_energy_flux
+
