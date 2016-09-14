@@ -59,7 +59,9 @@ class Spectrum(object):
         f_xin = open("xspec.in", "w")
         f_xin.writelines(xspec_in)
         f_xin.close()
-        subprocess.call(["xspec", "-", "xspec.in"])
+        with open("/tmp/xspec.log", "ab") as xsout:
+            subprocess.call(["xspec", "-", "xspec.in"], 
+                            stdout=xsout, stderr=xsout)
         f_s = open("spec_therm.xspec", "r")
         lines = f_s.readlines()
         f_s.close()
