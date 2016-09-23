@@ -265,7 +265,9 @@ class ApecGenerator(object):
         E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
         amp = line_fields['epsilon'][i].astype("float64")
         if self.thermal_broad:
-            sigma = E0*np.sqrt(2.*kT*erg_per_keV/(atomic_weights[element]*m_u))/clight
+            sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
+            sigma += 2.0*velocity*velocity
+            sigma = E0*np.sqrt(sigma)/clight
             vec = broaden_lines(E0, sigma, amp, self.ebins)
         else:
             vec = np.histogram(E0, self.ebins, weights=amp)[0]
@@ -306,6 +308,7 @@ class ApecGenerator(object):
         """
         Get the thermal emission spectrum given a temperature *kT* in keV. 
         """
+        v = velocity*1.0e5
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nchan)
@@ -317,11 +320,11 @@ class ApecGenerator(object):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
             for elem in cosmic_elem:
-                cspec[i,:] += self._make_spectrum(kT, elem, velocity, line_fields, 
+                cspec[i,:] += self._make_spectrum(kT, elem, v, line_fields, 
                                                   coco_fields, scale_factor)
             # Next do the metals
             for elem in metal_elem:
-                mspec[i,:] += self._make_spectrum(kT, elem, velocity, line_fields, 
+                mspec[i,:] += self._make_spectrum(kT, elem, v, line_fields, 
                                                   coco_fields, scale_factor)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
