@@ -3,7 +3,11 @@ import subprocess
 import tempfile
 import shutil
 import os
-from xrs_tools.constants import erg_per_keV
+from xrs_tools.cutils import broaden_lines
+from xrs_tools.constants import erg_per_keV, hc, \
+    cosmic_elem, metal_elem, atomic_weights, clight, \
+    m_u
+import astropy.io.fits as pyfits
 
 class Spectrum(object):
     def __init__(self, ebins, flux):
@@ -73,58 +77,7 @@ class Spectrum(object):
         return cls(ebins, flux)
 
     @classmethod
-    def from_apec(cls, kT, abund, redshift, norm,
-                  broadening=False, absorb_model='tbabs',
-                  nH=0.02, velocity=0.0, emin=0.01,
-                  emax=50.0, nbins=10000):
-        """
-        Create a spectrum from an APEC model using XSPEC.
-
-        Parameters
-        ----------
-        kT : float
-            The temperature of the plasma in keV.
-        abund : float
-            The abundance of the plasma in solar units.
-        redshift : float
-            The redshift of the source.
-        norm : float
-            The normalization of the APEC model, in the standard
-            units (see XSPEC manual).
-        broadening : boolean, optional
-            Whether or not to include broadening of the spectral
-            lines. Default: False
-        absorb_model : string or None
-            The foreground absorption model. Can be a string or
-            None for no absorption. Default: "tbabs"
-        nH : float, optional
-            Column density for foreground galactic absoprtion. In
-            units of 10^{22} cm**{-2}. Default: 0.02
-        velocity : float, optional
-            Velocity broadening parameter in units of km/s. Only used
-            if ``broadening=True``. Default: 0.0
-        emin : float, optional
-            The minimum energy of the spectrum in keV. Default: 0.01
-        emax : float, optional
-            The maximum energy of the spectrum in keV. Default: 50.0
-        nbins : integer, optional
-            The number of bins in the spectrum. Default: 10000
-        """
-        if broadening:
-            model_str = "bapec"
-            params = [kT, abund, redshift, velocity, norm]
-        else:
-            model_str = "apec"
-            params = [kT, abund, redshift, norm]
-        if absorb_model is not None:
-            model_str = '*'.join([absorb_model, model_str])
-            params = [nH] + params
-        return cls.from_xspec(model_str, params, emin=emin, emax=emax,
-                              nbins=nbins)
-
-    @classmethod
     def from_powerlaw(cls, photon_index, redshift, norm,
-                      absorb_model='tbabs', nH=0.02,
                       emin=0.01, emax=50.0, nbins=10000):
         """
         Create a spectrum from a power-law model using XSPEC.
@@ -138,12 +91,6 @@ class Spectrum(object):
         norm : float
             The normalization of the source in units of
             photons/s/keV/cm at 1 keV.
-        absorb_model : string or None
-            The foreground absorption model. Can be a string or
-            None for no absorption. Default: "tbabs"
-        nH : float, optional
-            Column density for foreground galactic absoprtion. In
-            units of 10^{22} cm**{-2}. Default: 0.02
         emin : float, optional
             The minimum energy of the spectrum in keV. Default: 0.01
         emax : float, optional
@@ -151,13 +98,10 @@ class Spectrum(object):
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
         """
-        model_str = "zpowerlw"
-        params = [photon_index, redshift, norm]
-        if absorb_model is not None:
-            model_str = '*'.join([absorb_model, model_str])
-            params = [nH] + params
-        return cls.from_xspec(model_str, params, emin=emin, emax=emax,
-                              nbins=nbins)
+        ebins = np.linspace(emin, emax, nbins+1)
+        emid = 0.5*(ebins[1:]+ebins[:-1])
+        flux = norm*(emid*(1.0+redshift))**(-photon_index)
+        return cls(ebins, flux)
 
     @classmethod
     def from_file(cls, filename):
@@ -248,72 +192,160 @@ class Spectrum(object):
         energies = np.interp(randvec, cumspec, self.ebins)
         return energies
 
-def determine_apec_norm(kT, abund, redshift, emin, emax,
-                        flux, nbins=10000, flux_type="photons"):
-    """
-    Determine the normalization of an unabsorbed APEC
-    model given a total flux within some band.
+class ApecGenerator(object):
+    r"""
+    Initialize a thermal gas emission model from the AtomDB APEC tables
+    available at http://www.atomdb.org. This code borrows heavily from Python
+    routines used to read the APEC tables developed by Adam Foster at the
+    CfA (afoster@cfa.harvard.edu).
 
     Parameters
     ----------
-    kT : float
-        The temperature of the model in keV.
-    abund : float
-        The abundance in solar units.
-    redshift : float
-        The redshift.
     emin : float
-        The lower energy of the energy band to consider, in keV.
+        The minimum energy for the spectral model.
     emax : float
-        The upper energy of the energy band to consider, in keV.
-    flux : float
-        The total flux in the band in photons/s/cm**2.
-    nbins : integer, optional
-        The number of bins to sum the spectrum over.
-        Default: 10000
-    flux_type : string, optional
-        The units of the flux to use in the scaling:
-            "photons": photons/s/cm**2
-            "energy": erg/s/cm**2
-    """
-    spec = Spectrum.from_apec(kT, abund, redshift, 1.0,
-                              emin=emin, emax=emax, nbins=nbins,
-                              absorb_model=None)
-    if flux_type == "photons":
-        return flux/spec.tot_flux
-    elif flux_type == "energy":
-        return flux/spec.tot_energy_flux
+        The maximum energy for the spectral model.
+    nchan : integer
+        The number of channels in the spectral model.
+    apec_root : string
+        The directory root where the APEC model files are stored. If 
+        not provided, the default is to look for them in the current
+        working directory.
+    apec_vers : string, optional
+        The version identifier string for the APEC files, e.g.
+        "2.0.2"
+    thermal_broad : boolean, optional
+        Whether or not the spectral lines should be thermally
+        broadened.
 
-def determine_powerlaw_norm(photon_index, redshift, emin, emax,
-                            flux, nbins=10000, flux_type="photons"):
+    Examples
+    --------
+    >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0",
+    ...                            thermal_broad=True)
     """
-    Determine the normalization of an unabsorbed APEC
-    model given a total flux within some band.
+    def __init__(self, emin, emax, nchan, apec_root=".",
+                 apec_vers="2.0.2", thermal_broad=False):
+        self.emin = emin
+        self.emax = emax
+        self.nchan = nchan
+        self.ebins = np.linspace(self.emin, self.emax, nchan+1)
+        self.de = np.diff(self.ebins)
+        self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
+        self.cocofile = os.path.join(apec_root, "apec_v_%s_coco.fits" % apec_vers)
+        self.linefile = os.path.join(apec_root, "apec_v_%s_line.fits" % apec_vers)
+        if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
+            raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
+                                                                      self.linefile))
+        self.wvbins = hc/self.ebins[::-1]
+        self.thermal_broad = thermal_broad
+        try:
+            self.line_handle = pyfits.open(self.linefile)
+        except IOError:
+            raise IOError("LINE file %s does not exist" % self.linefile)
+        try:
+            self.coco_handle = pyfits.open(self.cocofile)
+        except IOError:
+            raise IOError("COCO file %s does not exist" % self.cocofile)
 
-    Parameters
-    ----------
-    photon_index : float
-        The temperature of the model in keV.
-    redshift : float
-        The redshift.
-    emin : float
-        The lower energy of the energy band to consider, in keV.
-    emax : float
-        The upper energy of the energy band to consider, in keV.
-    flux : float
-        The total flux in the band in photons/s/cm**2.
-    nbins : integer, optional
-        The number of bins to sum the spectrum over.
-        Default: 10000
-    flux_type : string, optional
-        The units of the flux to use in the scaling:
-            "photons": photons/s/cm**2
-            "energy": erg/s/cm**2
-    """
-    spec = Spectrum.from_powerlaw(photon_index, redshift, 1.0,
-                                  emin=emin, emax=emax, nbins=nbins,
-                                  absorb_model=None)
-    if flux_type == "photons":
-        return flux/spec.tot_flux
-    elif flux_type == "energy":
-        return flux/spec.tot_energy_flux
+        self.Tvals = self.line_handle[1].data.field("kT")
+        self.nT = len(self.Tvals)
+        self.dTvals = np.diff(self.Tvals)
+        self.minlam = self.wvbins.min()
+        self.maxlam = self.wvbins.max()
+
+        cosmic_spec = np.zeros((self.nT, self.nchan))
+        metal_spec = np.zeros((self.nT, self.nchan))
+
+        for ikT, kT in enumerate(self.Tvals):
+            line_fields, coco_fields = self._preload_data(ikT)
+            # First do H,He, and trace elements
+            for elem in cosmic_elem:
+                cosmic_spec[ikT,:] += self._make_spectrum(kT, elem, line_fields, coco_fields)
+            # Next do the metals
+            for elem in metal_elem:
+                metal_spec[ikT,:] += self._make_spectrum(kT, elem, line_fields, coco_fields)
+
+        self.cosmic_spec = cosmic_spec
+        self.metal_spec = metal_spec
+
+    def _make_spectrum(self, kT, element, velocity, line_fields, 
+                       coco_fields, scale_factor):
+
+        tmpspec = np.zeros(self.nchan)
+
+        i = np.where((line_fields['element'] == element) &
+                     (line_fields['lambda'] > self.minlam) &
+                     (line_fields['lambda'] < self.maxlam))[0]
+
+        E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
+        amp = line_fields['epsilon'][i].astype("float64")
+        if self.thermal_broad:
+            sigma = np.sqrt(2.*kT*erg_per_keV/(atomic_weights[element]*m_u))
+            sigma *= E0/clight
+            vec = broaden_lines(E0, sigma, amp, self.ebins)
+        else:
+            vec = np.histogram(E0, self.ebins, weights=amp)[0]
+        tmpspec += vec
+
+        ind = np.where((coco_fields['Z'] == element) &
+                       (coco_fields['rmJ'] == 0))[0]
+        if len(ind) == 0:
+            return tmpspec
+        else:
+            ind = ind[0]
+
+        de = self.de*scale_factor
+        n_cont = coco_fields['N_Cont'][ind]
+        e_cont = coco_fields['E_Cont'][ind][:n_cont]*scale_factor
+        continuum = coco_fields['Continuum'][ind][:n_cont]
+
+        tmpspec += np.interp(self.emid, e_cont, continuum)*de
+
+        n_pseudo = coco_fields['N_Pseudo'][ind]
+        e_pseudo = coco_fields['E_Pseudo'][ind][:n_pseudo]*scale_factor
+        pseudo = coco_fields['Pseudo'][ind][:n_pseudo]
+
+        tmpspec += np.interp(self.emid, e_pseudo, pseudo)*de
+
+        return tmpspec/scale_factor
+
+    def _preload_data(self, index):
+        line_data = self.line_handle[index+2].data
+        coco_data = self.coco_handle[index+2].data
+        line_fields = ('element', 'lambda', 'epsilon')
+        coco_fields = ('Z', 'rmJ', 'N_Cont', 'E_Cont', 'Continuum', 'N_Pseudo',
+                       'E_Pseudo', 'Pseudo')
+        line_fields = {el: line_data.field(el) for el in line_fields}
+        coco_fields = {el: coco_data.field(el) for el in coco_fields}
+        return line_fields, coco_fields
+
+    def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0):
+        """
+        Get the thermal emission spectrum given a temperature *kT* in keV. 
+        """
+        tindex = np.searchsorted(self.Tvals, kT)-1
+        if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
+            return np.zeros(self.nchan)
+        cspec = np.zeros((2,self.nchan))
+        mspec = np.zeros((2,self.nchan))
+        scale_factor = 1./(1.+redshift)
+        dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
+        for i, ikT in enumerate([tindex, tindex+1]):
+            line_fields, coco_fields = self._preload_data(tindex)
+            # First do H,He, and trace elements
+            for elem in cosmic_elem:
+                cspec[i,:] += self._make_spectrum(kT, elem, velocity, line_fields, 
+                                                  coco_fields, scale_factor)
+            # Next do the metals
+            for elem in metal_elem:
+                mspec[i,:] += self._make_spectrum(kT, elem, velocity, line_fields, 
+                                                  coco_fields, scale_factor)
+
+        cspec_l = self.cosmic_spec[tindex,:]
+        mspec_l = self.metal_spec[tindex,:]
+        cspec_r = self.cosmic_spec[tindex+1,:]
+        mspec_r = self.metal_spec[tindex+1,:]
+        cosmic_spec = cspec_l*(1.-dT)+cspec_r*dT
+        metal_spec = mspec_l*(1.-dT)+mspec_r*dT
+        spec = norm*1.0e-14*(cosmic_spec + abund*metal_spec)
+        return Spectrum(self.ebins, spec)
