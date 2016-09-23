@@ -1,8 +1,8 @@
-import astropy.units as u
+import astropy.units as apu
 from astropy.constants import h, c, u
 import numpy as np
 
-erg_per_eV = u.eV.to("erg").value
+erg_per_eV = apu.eV.to("erg")
 erg_per_keV = erg_per_eV * 1.0e3
 keV_per_erg = 1.0 / erg_per_keV
 eV_per_erg = 1.0 / erg_per_eV

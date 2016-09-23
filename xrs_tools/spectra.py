@@ -231,8 +231,8 @@ class ApecGenerator(object):
         self.ebins = np.linspace(self.emin, self.emax, nchan+1)
         self.de = np.diff(self.ebins)
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
-        self.cocofile = os.path.join(apec_root, "apec_v_%s_coco.fits" % apec_vers)
-        self.linefile = os.path.join(apec_root, "apec_v_%s_line.fits" % apec_vers)
+        self.cocofile = os.path.join(apec_root, "apec_v%s_coco.fits" % apec_vers)
+        self.linefile = os.path.join(apec_root, "apec_v%s_line.fits" % apec_vers)
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
                                                                       self.linefile))
@@ -253,21 +253,6 @@ class ApecGenerator(object):
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
 
-        cosmic_spec = np.zeros((self.nT, self.nchan))
-        metal_spec = np.zeros((self.nT, self.nchan))
-
-        for ikT, kT in enumerate(self.Tvals):
-            line_fields, coco_fields = self._preload_data(ikT)
-            # First do H,He, and trace elements
-            for elem in cosmic_elem:
-                cosmic_spec[ikT,:] += self._make_spectrum(kT, elem, line_fields, coco_fields)
-            # Next do the metals
-            for elem in metal_elem:
-                metal_spec[ikT,:] += self._make_spectrum(kT, elem, line_fields, coco_fields)
-
-        self.cosmic_spec = cosmic_spec
-        self.metal_spec = metal_spec
-
     def _make_spectrum(self, kT, element, velocity, line_fields, 
                        coco_fields, scale_factor):
 
@@ -280,8 +265,7 @@ class ApecGenerator(object):
         E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
         amp = line_fields['epsilon'][i].astype("float64")
         if self.thermal_broad:
-            sigma = np.sqrt(2.*kT*erg_per_keV/(atomic_weights[element]*m_u))
-            sigma *= E0/clight
+            sigma = E0*np.sqrt(2.*kT*erg_per_keV/(atomic_weights[element]*m_u))/clight
             vec = broaden_lines(E0, sigma, amp, self.ebins)
         else:
             vec = np.histogram(E0, self.ebins, weights=amp)[0]
@@ -294,20 +278,19 @@ class ApecGenerator(object):
         else:
             ind = ind[0]
 
-        de = self.de*scale_factor
         n_cont = coco_fields['N_Cont'][ind]
         e_cont = coco_fields['E_Cont'][ind][:n_cont]*scale_factor
         continuum = coco_fields['Continuum'][ind][:n_cont]
 
-        tmpspec += np.interp(self.emid, e_cont, continuum)*de
+        tmpspec += np.interp(self.emid, e_cont, continuum)*self.de/scale_factor
 
         n_pseudo = coco_fields['N_Pseudo'][ind]
         e_pseudo = coco_fields['E_Pseudo'][ind][:n_pseudo]*scale_factor
         pseudo = coco_fields['Pseudo'][ind][:n_pseudo]
 
-        tmpspec += np.interp(self.emid, e_pseudo, pseudo)*de
+        tmpspec += np.interp(self.emid, e_pseudo, pseudo)*self.de/scale_factor
 
-        return tmpspec/scale_factor
+        return tmpspec*scale_factor
 
     def _preload_data(self, index):
         line_data = self.line_handle[index+2].data
@@ -331,7 +314,7 @@ class ApecGenerator(object):
         scale_factor = 1./(1.+redshift)
         dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
         for i, ikT in enumerate([tindex, tindex+1]):
-            line_fields, coco_fields = self._preload_data(tindex)
+            line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
             for elem in cosmic_elem:
                 cspec[i,:] += self._make_spectrum(kT, elem, velocity, line_fields, 
@@ -340,12 +323,7 @@ class ApecGenerator(object):
             for elem in metal_elem:
                 mspec[i,:] += self._make_spectrum(kT, elem, velocity, line_fields, 
                                                   coco_fields, scale_factor)
-
-        cspec_l = self.cosmic_spec[tindex,:]
-        mspec_l = self.metal_spec[tindex,:]
-        cspec_r = self.cosmic_spec[tindex+1,:]
-        mspec_r = self.metal_spec[tindex+1,:]
-        cosmic_spec = cspec_l*(1.-dT)+cspec_r*dT
-        metal_spec = mspec_l*(1.-dT)+mspec_r*dT
-        spec = norm*1.0e-14*(cosmic_spec + abund*metal_spec)
+        cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
+        metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
+        spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)
         return Spectrum(self.ebins, spec)

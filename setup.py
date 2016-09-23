@@ -6,8 +6,8 @@ import numpy as np
 VERSION = '0.1.dev0'
 
 cython_extensions = [
-    Extension("pyxsim.cutils",
-              sources=["pyxsim/cutils.pyx"],
+    Extension("xrs_tools.cutils",
+              sources=["xrs_tools/cutils.pyx"],
               language="c", libraries=["m"],
               include_dirs=[np.get_include()])]
 
