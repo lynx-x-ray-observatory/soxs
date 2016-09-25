@@ -7,3 +7,6 @@ doc/build/doctrees
 doc/build/html
 xrs_tools.egg-info
 *.pyc
+*.c
+*.o
+*.so
