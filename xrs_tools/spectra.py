@@ -164,6 +164,19 @@ class Spectrum(object):
         self.tot_flux = self.flux.sum()
         self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV
 
+    def apply_foreground_absorption(self, nH):
+        """
+        Given a hydrogen column density, apply
+        galactic foreground absorption to the spectrum. 
+
+        Parameters
+        ----------
+        nH : float
+            The hydrogen column in units of 10**22 atoms/cm**2
+        """
+        sigma = wabs_cross_section(self.emid)
+        self.flux *= np.exp(-nH*1.0e22*sigma)
+
     def generate_energies(self, t_exp, area, prng=None):
         """
         Generate photon energies from this spectrum given an
@@ -330,3 +343,16 @@ class ApecGenerator(object):
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
         spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)
         return Spectrum(self.ebins, spec)
+
+def wabs_cross_section(E):
+    emax = np.array([0.0, 0.1, 0.284, 0.4, 0.532, 0.707, 0.867, 1.303, 1.840, 
+                     2.471, 3.210, 4.038, 7.111, 8.331, 10.0])
+    c0 = np.array([17.3, 34.6, 78.1, 71.4, 95.5, 308.9, 120.6, 141.3,
+                   202.7,342.7,352.2,433.9,629.0,701.2])
+    c1 = np.array([608.1, 267.9, 18.8, 66.8, 145.8, -380.6, 169.3,
+                   146.8, 104.7, 18.7, 18.7, -2.4, 30.9, 25.2]) 
+    c2 = np.array([-2150., -476.1 ,4.3, -51.4, -61.1, 294.0, -47.7,
+                   -31.5, -17.0, 0.0, 0.0, 0.75, 0.0, 0.0])
+    idxs = np.minimum(np.searchsorted(emax, E)-1, 13)
+    sigma = (c0[idxs]+c1[idxs]*E+c2[idxs]*E*E)*1.0e-24/E**3
+    return sigma
