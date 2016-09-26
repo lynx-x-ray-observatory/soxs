@@ -227,17 +227,17 @@ class ApecGenerator(object):
     apec_vers : string, optional
         The version identifier string for the APEC files, e.g.
         "2.0.2"
-    thermal_broad : boolean, optional
+    broadening : boolean, optional
         Whether or not the spectral lines should be thermally
-        broadened.
+        and velocity broadened.
 
     Examples
     --------
     >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0",
-    ...                            thermal_broad=True)
+    ...                            broadening=True)
     """
     def __init__(self, emin, emax, nbins, apec_root=".",
-                 apec_vers="2.0.2", thermal_broad=False):
+                 apec_vers="2.0.2", broadening=False):
         self.emin = emin
         self.emax = emax
         self.nbins = nbins
@@ -250,7 +250,7 @@ class ApecGenerator(object):
             raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
                                                                       self.linefile))
         self.wvbins = hc/self.ebins[::-1]
-        self.thermal_broad = thermal_broad
+        self.broadening = broadening
         try:
             self.line_handle = pyfits.open(self.linefile)
         except IOError:
@@ -277,7 +277,7 @@ class ApecGenerator(object):
 
         E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
         amp = line_fields['epsilon'][i].astype("float64")
-        if self.thermal_broad:
+        if self.broadening:
             sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
             sigma += 2.0*velocity*velocity
             sigma = E0*np.sqrt(sigma)/clight
@@ -319,7 +319,21 @@ class ApecGenerator(object):
 
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0):
         """
-        Get the thermal emission spectrum given a temperature *kT* in keV. 
+        Get a thermal emission spectrum.
+        
+        Parameters
+        ----------
+        kT : float
+            The temperature in keV.
+        abund : float
+            The metal abundance in solar units. 
+        redshift : float
+            The redshift.
+        norm : float
+            The normalization of the model, with the standard Xspec units 
+            of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
+        velocity : float, optional
+            The velocity broadening parameter, in units of km/s. Default: 0.0
         """
         v = velocity*1.0e5
         tindex = np.searchsorted(self.Tvals, kT)-1
