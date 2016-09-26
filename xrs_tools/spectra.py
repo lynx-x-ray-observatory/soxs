@@ -218,8 +218,8 @@ class ApecGenerator(object):
         The minimum energy for the spectral model.
     emax : float
         The maximum energy for the spectral model.
-    nchan : integer
-        The number of channels in the spectral model.
+    nbins : integer
+        The number of bins in the spectral model.
     apec_root : string
         The directory root where the APEC model files are stored. If 
         not provided, the default is to look for them in the current
@@ -236,12 +236,12 @@ class ApecGenerator(object):
     >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0",
     ...                            thermal_broad=True)
     """
-    def __init__(self, emin, emax, nchan, apec_root=".",
+    def __init__(self, emin, emax, nbins, apec_root=".",
                  apec_vers="2.0.2", thermal_broad=False):
         self.emin = emin
         self.emax = emax
-        self.nchan = nchan
-        self.ebins = np.linspace(self.emin, self.emax, nchan+1)
+        self.nbins = nbins
+        self.ebins = np.linspace(self.emin, self.emax, nbins+1)
         self.de = np.diff(self.ebins)
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         self.cocofile = os.path.join(apec_root, "apec_v%s_coco.fits" % apec_vers)
@@ -269,7 +269,7 @@ class ApecGenerator(object):
     def _make_spectrum(self, kT, element, velocity, line_fields, 
                        coco_fields, scale_factor):
 
-        tmpspec = np.zeros(self.nchan)
+        tmpspec = np.zeros(self.nbins)
 
         i = np.where((line_fields['element'] == element) &
                      (line_fields['lambda'] > self.minlam) &
@@ -324,9 +324,9 @@ class ApecGenerator(object):
         v = velocity*1.0e5
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
-            return np.zeros(self.nchan)
-        cspec = np.zeros((2,self.nchan))
-        mspec = np.zeros((2,self.nchan))
+            return np.zeros(self.nbins)
+        cspec = np.zeros((2, self.nbins))
+        mspec = np.zeros((2, self.nbins))
         scale_factor = 1./(1.+redshift)
         dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
         for i, ikT in enumerate([tindex, tindex+1]):
