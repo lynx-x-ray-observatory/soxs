@@ -17,6 +17,10 @@ class Spectrum(object):
         self.nbins = len(self.emid)
         self.tot_flux = self.flux.sum()
         self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV
+        cumspec = np.cumsum(self.flux)
+        cumspec = np.insert(cumspec, 0, 0.0)
+        cumspec /= cumspec[-1]
+        self.cumspec = cumspec
 
     def __add__(self, other):
         if self.nbins != other.nbins or \
@@ -195,14 +199,11 @@ class Spectrum(object):
         """
         if prng is None:
             prng = np.random
-        cumspec = np.cumsum(self.flux)
-        n_ph = np.modf(t_exp*area*cumspec[-1])
+        n_ph = np.modf(t_exp*area*self.tot_flux)
         n_ph = np.uint64(n_ph[1]) + np.uint64(n_ph[0] >= prng.uniform())
-        cumspec = np.insert(cumspec, 0, 0.0)
-        cumspec /= cumspec[-1]
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
-        energies = np.interp(randvec, cumspec, self.ebins)
+        energies = np.interp(randvec, self.cumspec, self.ebins)
         return energies
 
 class ApecGenerator(object):
