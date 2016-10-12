@@ -223,14 +223,15 @@ def show_instrument_registry():
         for k, v in spec.items():
             print("    %s: %s" % (k, v))
 
-def make_event_file(simput_file, out_file, instrument, sky_center,
-                    clobber=False, prng=np.random):
+def make_event_file(simput_file, out_file, exp_time, instrument, 
+                    sky_center, clobber=False, prng=np.random):
     """
     Take unconvolved events in a SIMPUT file and create an event
     file from them. This function does the following:
 
     1. Convolves the events with an ARF and RMF
     2. Pixelizes the events
+    3. Writes the events to a file
 
     PSF effects and dithering are handled separately, in 
 
@@ -240,6 +241,8 @@ def make_event_file(simput_file, out_file, instrument, sky_center,
         The SIMPUT file to be used as input.
     out_file : string
         The name of the event file to be written.
+    exp_time : float
+        The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
         specification from the instrument registry.
@@ -269,7 +272,11 @@ def make_event_file(simput_file, out_file, instrument, sky_center,
     nx = instrument_spec["num_pixels"]
     dtheta = instrument_spec["dtheta"]/3600. # deg to arcsec
 
+    if exp_time > parameters["exposure_time"]:
+        raise ValueError("Specified exposure time %g s cannot be larger " % exp_time +
+                         "than maximum exposure time %s!" % parameters["exposure_time"])
     area = parameters["exposure_time"]/parameters["flux"]
+    parameters["exposure_time"] = exp_time
 
     # Step 1: Use ARF to determine which photons are observed
 
