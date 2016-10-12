@@ -273,9 +273,20 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     nx = instrument_spec["num_pixels"]
     dtheta = instrument_spec["dtheta"]/3600. # deg to arcsec
 
-    if exp_time > parameters["exposure_time"]:
+    n_obs = events["energy"].size
+    fak = exp_time/parameters["exposure_Time"]
+    if fak > 1.0:
         raise ValueError("Specified exposure time %g s cannot be larger " % exp_time +
                          "than maximum exposure time %s!" % parameters["exposure_time"])
+
+    my_n_obs = np.uint64(n_obs*fak)
+    if my_n_obs == n_obs:
+        idxs = np.arange(my_n_obs, dtype='uint64')
+    else:
+        idxs = prng.permutation(n_obs)[:my_n_obs].astype("uint64")
+    for key in events:
+        events[key] = events[key][idxs]
+
     area = parameters["exposure_time"]/parameters["flux"]
     parameters["exposure_time"] = exp_time
 
@@ -369,7 +380,6 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     for key in events:
         events[key] = events[key][eidxs]
-
     events[rmf.header["CHANTYPE"]] = np.array(detectedChannels, dtype="int")
 
     parameters["rmf"] = rmf.filename
