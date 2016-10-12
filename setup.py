@@ -2,8 +2,11 @@
 from setuptools import setup
 from setuptools.extension import Extension
 import numpy as np
+import glob
 
-VERSION = '0.1.dev0'
+from xrs_tools import __version__
+
+scripts = glob.glob("scripts/*")
 
 cython_extensions = [
     Extension("xrs_tools.cutils",
@@ -13,13 +16,14 @@ cython_extensions = [
 
 setup(name='xrs_tools',
       packages=['xrs_tools'],
-      version=VERSION,
+      version=__version__,
       description='Tools for X-Ray Surveyor simulations',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
       url='http://github.com/XRStools/xrs_tools',
       setup_requires=["numpy","cython>=0.24"],
       install_requires=["six","numpy","astropy"],
+      scripts=scripts,
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',

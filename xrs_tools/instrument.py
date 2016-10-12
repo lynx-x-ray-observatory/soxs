@@ -211,8 +211,9 @@ def add_instrument_to_registry(filename):
     f = open(filename)
     inst = json.load(f)
     f.close()
-    name = inst.pop("name").upper()
+    name = inst.pop("name")
     instrument_registry[name] = inst
+    return name
 
 def show_instrument_registry():
     """

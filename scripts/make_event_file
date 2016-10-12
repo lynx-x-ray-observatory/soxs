@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import numpy as np
+from xrs_tools import make_event_file, add_instrument_to_registry
+from xrs_tools.instrument import instrument_registry
+
+parser = argparse.ArgumentParser(description='Create a simulated event file.')
+parser.add_argument("simput_file", type=str, help='The SIMPUT file to be used as input.')
+parser.add_argument("out_file", type=str, help='The name of the event file to be written.')
+parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("instrument", type=str, help='The name of the instrument to use, '+
+                    'or alternatively the name of a JSON file which contains an instrument '+
+                    'specification.')
+parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the '+
+                    'observation, in degrees, comma-separated')
+parser.add_argument("--clobber", action='store_true', 
+                    help='Whether or not to clobber an existing file with the same name.')
+
+args = parser.parse_args()
+
+sky_center = np.array([args.sky_center.split(',')]).astype("float64")
+
+if args.instrument not in instrument_registry and os.path.exists(args.instrument):
+    instrument = add_instrument_to_registry(args.instrument)
+else:
+    instrument = args.instrument
+
+make_event_file(args.simput_file, args.out_file, args.exp_time,
+                instrument, sky_center, clobber=args.clobber)
