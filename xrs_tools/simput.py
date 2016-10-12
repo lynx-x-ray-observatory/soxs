@@ -3,6 +3,30 @@ import numpy as np
 
 from xrs_tools.constants import erg_per_keV
 
+def read_simput_phlist(simput_file):
+    r"""
+    Read events from a SIMPUT photon list.
+
+    Parameters
+    ----------
+    simput_file : string
+        The SIMPUT file to read from.
+    """
+    events = {}
+    parameters = {}
+    f_simput = pyfits.open(simput_file)
+    parameters["exposure_time"] = f_simput["src_cat"].header.get("exposure", 0.0)
+    parameters["flux"] = f_simput["src_cat"].data["flux"][0]
+    parameters["emin"] = f_simput["src_cat"].data["e_min"][0]
+    parameters["emax"] = f_simput["src_cat"].data["e_max"][0]
+    phlist_file = f_simput["src_cat"].data["spectrum"][0]
+    f_simput.close()
+    f_phlist = pyfits.open(phlist_file)
+    for key in ["ra", "dec", "energy"]:
+        events[key] = f_phlist["phlist"].data[key]
+    f_phlist.close()
+    return events, parameters
+
 def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clobber=False, emin=None, emax=None):
     r"""
     Write events to a SIMPUT photon list.
@@ -74,7 +98,7 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clob
     col6 = pyfits.Column(name='FLUX', format='D', array=np.array([flux]))
     col7 = pyfits.Column(name='SPECTRUM', format='80A', array=np.array([phfile+"[PHLIST,1]"]))
     col8 = pyfits.Column(name='IMAGE', format='80A', array=np.array([phfile+"[PHLIST,1]"]))
-    col9 = pyfits.Column(name='SRC_NAME', format='80A', array=np.array(["yt_src"]))
+    col9 = pyfits.Column(name='SRC_NAME', format='80A', array=np.array(["xrs_tools"]))
 
     coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9])
 
@@ -92,6 +116,7 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clob
     wrhdu.header["TUNIT4"] = "keV"
     wrhdu.header["TUNIT5"] = "keV"
     wrhdu.header["TUNIT6"] = "erg/s/cm**2"
+    wrhdu.header["EXPOSURE"] = exp_time
 
     simputfile = prefix+"_simput.fits"
 
