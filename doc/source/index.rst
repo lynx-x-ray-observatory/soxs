@@ -12,7 +12,7 @@ Contents:
    :maxdepth: 2
 
    installing
-   tools
+   external_packages
 
 
 Indices and tables

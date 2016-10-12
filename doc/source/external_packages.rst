@@ -1,20 +1,15 @@
-.. _tools:
-
-The Tools
-=========
-
-``mksrcs``
-----------
+.. _external-packages:
 
 External Packages
 =================
 
-The following are external packages that may be used with ``xrs_tools``. They may
-be optionally installed using the all-in-one installation script, or they may be
-installed separately. 
+The following are external packages that may be used with XRStools or in place of some of its
+features.
 
 SIMX
 ----
+
+Website: http://hea-www.cfa.harvard.edu/simx
 
 simx simulates a photon-counting detector's response to an input source, including 
 a simplified model of any telescope. The code is not a full ray-trace, but a convolution 
@@ -24,13 +19,15 @@ the detector response (using the OGIP response function) to model how sources wi
 
 simx is NOT a full ray-trace code, but rather uses a predefined set of PSFs, vignetting 
 information, and instrumental responses and outputs to make the simulation. It is designed
-to be a 'approximation' tool to estimate issues such as source confusion, background effects, 
+to be a "approximation" tool to estimate issues such as source confusion, background effects,
 pileup, and other similar issues.
 
-Website: http://hea-www.cfa.harvard.edu/simx
+The SIMPUT files produced by XRStools can be used as inputs to SIMX.
 
 pyXSIM
 ------
+
+Website: http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim
 
 pyXSIM is a Python package for simulating X-ray observations from 3-D models of
 astrophysical sources. pyXSIM makes it possible to generate synthetic X-ray 
@@ -41,4 +38,4 @@ NumPy arrays. pyXSIM also provides facilities for manipulating the synthetic obs
 it produces in various ways, as well as ways to export the simulated X-ray events to other
 software packages to simulate the end products of specific X-ray observatories.
 
-Website: http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim
+pyXSIM can be used to produce SIMPUT files which can be ingested by XRStools.
