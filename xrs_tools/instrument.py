@@ -201,11 +201,13 @@ def make_event_file(simput_file, out_file, instrument, sky_center,
     nx = instrument_spec["num_pixels"]
     dtheta = instrument_spec["dtheta"]/3600. # deg to arcsec
 
+    area = parameters["exposure_time"]/parameters["flux"]
+
     # Step 1: Use ARF to determine which photons are observed
 
     mylog.info("Applying energy-dependent effective area from %s." % arf_file)
     arf = AuxiliaryResponseFile(arf_file)
-    detected = arf.detect_events(events["energy"], parameters["area"], prng=prng)
+    detected = arf.detect_events(events["energy"], area, prng=prng)
     mylog.info("%s events detected." % detected.sum())
     for key in events:
         events[key] = events[key][detected]
