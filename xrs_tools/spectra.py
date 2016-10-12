@@ -321,7 +321,7 @@ class ApecGenerator(object):
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0):
         """
         Get a thermal emission spectrum.
-        
+
         Parameters
         ----------
         kT : float

@@ -181,24 +181,43 @@ def write_event_file(events, parameters, filename, clobber=False):
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
 instrument_registry = {}
-instrument_registry["XCAL"] = {"arf": "xrs_calorimeter.arf",
+instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
                                "rmf": "xrs_calorimeter.rmf",
                                "num_pixel": 300,
                                "dtheta": 1.0}
-instrument_registry["HDXI"] = {"arf": "xrs_hdxi.arf",
+instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "num_pixel": 4096,
                                "dtheta": 1./3.}
 
 def add_instrument_to_registry(filename):
+    """
+    Add an instrument specification to the registry contained
+    in a JSON file. The JSON file must have this structure (the
+    order is not important):
+
+    {'name': 'hdxi', # The short name of the instrument
+     'arf': 'xrs_hdxi.arf', # The file containing the ARF
+     'rmf': 'xrs_hdxi.rmf' # The file containing the RMF
+     'dtheta': 0.33333333333, # The central pixel scale in arcsec
+     'num_pixel': 4096} # The number of pixels on a side in the FOV
+
+    Parameters
+    ----------
+    filename : string
+        The JSON file containing the instrument specification.
+    """
     import json
     f = open(filename)
     inst = json.load(f)
     f.close()
-    name = inst.pop("name")
+    name = inst.pop("name").upper()
     instrument_registry[name] = inst
 
 def show_instrument_registry():
+    """
+    Print the contents of the instrument registry.
+    """
     for name, spec in instrument_registry.items():
         print("Instrument: %s" % name.upper())
         for k, v in spec.items():
@@ -207,7 +226,37 @@ def show_instrument_registry():
 def make_event_file(simput_file, out_file, instrument, sky_center,
                     clobber=False, prng=np.random):
     """
-    Convolve the events with an ARF and RMF.
+    Take unconvolved events in a SIMPUT file and create an event
+    file from them. This function does the following:
+
+    1. Convolves the events with an ARF and RMF
+    2. Pixelizes the events
+
+    PSF effects and dithering are handled separately, in 
+
+    Parameters
+    ----------
+    simput_file : string
+        The SIMPUT file to be used as input.
+    out_file : string
+        The name of the event file to be written.
+    instrument : string
+        The name of the instrument to use, which picks an instrument
+        specification from the instrument registry.
+    sky_center : array, tuple, or list
+        The center RA, Dec coordinates of the observation, in degrees.
+    clobber : boolean, optional
+        Whether or not to clobber an existing file with the same name.
+        Default: False
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only be specified
+        if you have a reason to generate the same set of random numbers, such as for a
+        test. Default is the :mod:`numpy.random` module.
+
+    Examples
+    --------
+    >>> make_event_file("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
+    ...                 [30., 45.], clobber=True)
     """
     events, parameters = read_simput_phlist(simput_file)
 
