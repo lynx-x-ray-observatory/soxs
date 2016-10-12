@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy as np
 import astropy.wcs as pywcs
 import astropy.io.fits as pyfits
@@ -178,15 +180,29 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
-instrument_defs = {}
-instrument_defs["XCAL"] = {"arf": "xrs_calorimeter.arf",
-                           "rmf": "xrs_calorimeter.rmf",
-                           "num_pixel": 300,
-                           "dtheta": 1.0}
-instrument_defs["HDXI"] = {"arf": "xrs_hdxi.arf",
-                           "rmf": "xrs_hdxi.rmf",
-                           "num_pixel": 4096,
-                           "dtheta": 1./3.}
+instrument_registry = {}
+instrument_registry["XCAL"] = {"arf": "xrs_calorimeter.arf",
+                               "rmf": "xrs_calorimeter.rmf",
+                               "num_pixel": 300,
+                               "dtheta": 1.0}
+instrument_registry["HDXI"] = {"arf": "xrs_hdxi.arf",
+                               "rmf": "xrs_hdxi.rmf",
+                               "num_pixel": 4096,
+                               "dtheta": 1./3.}
+
+def add_instrument_to_registry(filename):
+    import json
+    f = open(filename)
+    inst = json.load(f)
+    f.close()
+    name = inst.pop("name")
+    instrument_registry[name] = inst
+
+def show_instrument_registry():
+    for name, spec in instrument_registry.items():
+        print("Instrument: %s" % name.upper())
+        for k, v in spec.items():
+            print("    %s: %s" % (k, v))
 
 def make_event_file(simput_file, out_file, instrument, sky_center,
                     clobber=False, prng=np.random):
@@ -195,7 +211,10 @@ def make_event_file(simput_file, out_file, instrument, sky_center,
     """
     events, parameters = read_simput_phlist(simput_file)
 
-    instrument_spec = instrument_defs[instrument]
+    try:
+        instrument_spec = instrument_registry[instrument]
+    except KeyError:
+        raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     arf_file = instrument_spec["arf"]
     rmf_file = instrument_spec["rmf"]
     nx = instrument_spec["num_pixels"]
