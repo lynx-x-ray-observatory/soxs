@@ -4,7 +4,7 @@ import numpy as np
 import astropy.io.fits as pyfits
 from astropy.utils.console import ProgressBar
 from xrs_tools.constants import erg_per_keV
-from xrs_tools.utils import mylog, iterable, ensure_numpy_array
+from xrs_tools.utils import mylog, ensure_numpy_array
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -150,27 +150,27 @@ class RedistributionMatrixFile(object):
                 trueChannel = []
                 f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
                 n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-                if not iterable(f_chan):
-                    f_chan = [f_chan]
-                    n_chan = [n_chan]
                 for start, nchan in zip(f_chan, n_chan):
                     if nchan == 0:
                         trueChannel.append(start)
                     else:
                         trueChannel += list(range(start, start+nchan))
+                trueChannel = np.array(trueChannel)
                 if len(trueChannel) > 0:
+                    nn = 0
                     for q in range(fcurr, last):
                         if low <= sorted_e[q] < high:
-                            channelInd = prng.choice(len(weights), p=weights)
-                            fcurr += 1
-                            pbar.update(fcurr)
-                            detectedChannels.append(trueChannel[channelInd])
+                            nn += 1
                         else:
                             break
+                    channelInd = prng.choice(len(weights), size=nn, p=weights)
+                    detectedChannels.append(trueChannel[channelInd])
+                    fcurr += nn
+                    pbar.update(fcurr)
 
         for key in events:
             events[key] = events[key][eidxs]
-        events[self.header["CHANTYPE"]] = np.array(detectedChannels, dtype="int")
+        events[self.header["CHANTYPE"]] = np.concatenate(detectedChannels)
 
         return events
 
