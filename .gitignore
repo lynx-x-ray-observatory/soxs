@@ -6,6 +6,7 @@ xrs_utils.egg-info/top_level.txt
 doc/build/doctrees
 doc/build/html
 xrs_tools.egg-info
+.eggs
 *.pyc
 *.c
 *.o
