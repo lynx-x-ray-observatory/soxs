@@ -14,7 +14,8 @@ cython_extensions = [
 
 setup(name='xrs_tools',
       packages=['xrs_tools'],
-      use_scm_version=True,
+      use_scm_version=False,
+      version="0.1",
       description='Tools for X-Ray Surveyor simulations',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
