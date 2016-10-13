@@ -150,7 +150,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     mylog.info("Applying energy-dependent effective area from %s." % arf_file)
     arf = AuxiliaryResponseFile(arf_file)
-    events = arf.detect_events(events["energy"], exp_time, parameters["flux"], prng=prng)
+    events = arf.detect_events(events, exp_time, parameters["flux"], prng=prng)
     parameters["arf"] = arf.filename
 
     # Step 2: Assign pixel coordinates to events and clip events that don't fall

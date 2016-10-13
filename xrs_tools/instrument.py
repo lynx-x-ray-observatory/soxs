@@ -27,7 +27,7 @@ class AuxiliaryResponseFile(object):
         self.elo = f["SPECRESP"].data.field("ENERG_LO")
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
         self.emid = 0.5*(self.elo+self.ehi)
-        self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP"))
+        self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP")).astype("float64")
         self.max_area = self.eff_area.max()
         f.close()
 
@@ -65,7 +65,7 @@ class AuxiliaryResponseFile(object):
             raise ValueError("This combination of exposure time and effective area "
                              "will result in more photons being drawn than are available "
                              "in the sample!!!")
-        w = earea/self.max_area
+        w = earea / earea.sum()
         eidxs = prng.choice(energy.size, size=n_ph, replace=False, p=w)
         mylog.info("%s events detected." % eidxs.size)
         for key in events:
