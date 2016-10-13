@@ -19,7 +19,7 @@ def read_simput_phlist(simput_file):
     parameters["flux"] = f_simput["src_cat"].data["flux"][0]
     parameters["emin"] = f_simput["src_cat"].data["e_min"][0]
     parameters["emax"] = f_simput["src_cat"].data["e_max"][0]
-    phlist_file = f_simput["src_cat"].data["spectrum"][0]
+    phlist_file = f_simput["src_cat"].data["spectrum"][0].split("[")[0]
     f_simput.close()
     f_phlist = pyfits.open(phlist_file)
     for key in ["ra", "dec", "energy"]:
