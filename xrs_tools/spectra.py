@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 import shutil
 import os
+from xrs_tools.utils import xrs_files_path
 from xrs_tools.cutils import broaden_lines
 from xrs_tools.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -221,10 +222,10 @@ class ApecGenerator(object):
         The maximum energy for the spectral model.
     nbins : integer
         The number of bins in the spectral model.
-    apec_root : string
+    apec_root : string, optional
         The directory root where the APEC model files are stored. If 
-        not provided, the default is to look for them in the current
-        working directory.
+        not provided, the default is to grab them from the tables stored
+        with XRStools.
     apec_vers : string, optional
         The version identifier string for the APEC files, e.g.
         "2.0.2"
@@ -234,10 +235,10 @@ class ApecGenerator(object):
 
     Examples
     --------
-    >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0",
+    >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
     ...                            broadening=True)
     """
-    def __init__(self, emin, emax, nbins, apec_root=".",
+    def __init__(self, emin, emax, nbins, apec_root=None,
                  apec_vers="2.0.2", broadening=False):
         self.emin = emin
         self.emax = emax
@@ -245,6 +246,8 @@ class ApecGenerator(object):
         self.ebins = np.linspace(self.emin, self.emax, nbins+1)
         self.de = np.diff(self.ebins)
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
+        if apec_root is None:
+            apec_root = xrs_files_path
         self.cocofile = os.path.join(apec_root, "apec_v%s_coco.fits" % apec_vers)
         self.linefile = os.path.join(apec_root, "apec_v%s_line.fits" % apec_vers)
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
