@@ -7,6 +7,7 @@ from astropy.utils.console import ProgressBar
 
 from xrs_tools.simput import read_simput_phlist
 from xrs_tools.utils import mylog, iterable, ensure_numpy_array
+from xrs_tools.constants import erg_per_keV
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -26,7 +27,7 @@ class AuxiliaryResponseFile(object):
     def __init__(self, filename):
         self.filename = filename
         f = pyfits.open(self.filename)
-        self.elo = f["SPECRESP"].data.field("ENERG_LO"), "keV"
+        self.elo = f["SPECRESP"].data.field("ENERG_LO")
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
         self.emid = 0.5*(self.elo+self.ehi)
         self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP"))
@@ -183,11 +184,11 @@ def write_event_file(events, parameters, filename, clobber=False):
 instrument_registry = {}
 instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
                                "rmf": "xrs_calorimeter.rmf",
-                               "num_pixel": 300,
+                               "num_pixels": 300,
                                "dtheta": 1.0}
 instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
                                "rmf": "xrs_hdxi.rmf",
-                               "num_pixel": 4096,
+                               "num_pixels": 4096,
                                "dtheta": 1./3.}
 
 def add_instrument_to_registry(filename):
@@ -200,7 +201,7 @@ def add_instrument_to_registry(filename):
      'arf': 'xrs_hdxi.arf', # The file containing the ARF
      'rmf': 'xrs_hdxi.rmf' # The file containing the RMF
      'dtheta': 0.33333333333, # The central pixel scale in arcsec
-     'num_pixel': 4096} # The number of pixels on a side in the FOV
+     'num_pixels': 4096} # The number of pixels on a side in the FOV
 
     Parameters
     ----------
@@ -274,10 +275,13 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     dtheta = instrument_spec["dtheta"]/3600. # deg to arcsec
 
     n_obs = events["energy"].size
-    fak = exp_time/parameters["exposure_Time"]
+    fak = exp_time/parameters["exposure_time"]
     if fak > 1.0:
         raise ValueError("Specified exposure time %g s cannot be larger " % exp_time +
                          "than maximum exposure time %s!" % parameters["exposure_time"])
+
+    tot_e = events["energy"].sum()*erg_per_keV
+    area = tot_e/(parameters["flux"]*parameters["exposure_time"])
 
     my_n_obs = np.uint64(n_obs*fak)
     if my_n_obs == n_obs:
@@ -287,7 +291,6 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     for key in events:
         events[key] = events[key][idxs]
 
-    area = parameters["exposure_time"]/parameters["flux"]
     parameters["exposure_time"] = exp_time
 
     # Step 1: Use ARF to determine which photons are observed
@@ -317,10 +320,13 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     w.wcs.ctype = ["RA---TAN","DEC--TAN"]
     w.wcs.cunit = ["deg"]*2
 
-    events["xpix"], events["ypix"] = w.wcs_world2pix(events["xsky"], events["ysky"], 1)
+    xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
 
-    keepx = np.logical_and(events["xpix"] < 0.5, events["xpix"] > nx+0.5)
-    keepy = np.logical_and(events["ypix"] < 0.5, events["ypix"] > nx+0.5)
+    events["xpix"] = xpix
+    events["ypix"] = ypix
+
+    keepx = np.logical_and(events["xpix"] >= 0.5, events["xpix"] <= nx+0.5)
+    keepy = np.logical_and(events["ypix"] >= 0.5, events["ypix"] <= nx+0.5)
     keep = np.logical_and(keepx, keepy)
     for key in events:
         events[key] = events[key][keep]
@@ -386,7 +392,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     parameters["channel_type"] = rmf.header["CHANTYPE"]
     parameters["telescope"] = rmf.header["TELESCOP"]
     parameters["instrument"] = rmf.header["INSTRUME"]
-    parameters["mission"] = rmf.header["MISSION"]
+    parameters["mission"] = rmf.header.get("MISSION", "")
     parameters["nchan"] = rmf.ebounds_header["DETCHANS"]
     num = 0
     for i in range(1, rmf.num_mat_columns+1):
