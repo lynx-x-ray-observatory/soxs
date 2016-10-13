@@ -11,6 +11,8 @@ from xrs_tools.spectra import \
     ApecGenerator
 
 from xrs_tools.instrument import \
-    make_event_file, \
     add_instrument_to_registry, \
     show_instrument_registry
+
+from xrs_tools.events import \
+    make_event_file
