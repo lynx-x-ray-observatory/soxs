@@ -66,7 +66,7 @@ class AuxiliaryResponseFile(object):
                              "will result in more photons being drawn than are available "
                              "in the sample!!!")
         w = earea / earea.sum()
-        eidxs = prng.choice(energy.size, size=n_ph, replace=False, p=w)
+        eidxs = prng.choice(energy.size, size=n_ph, p=w)
         mylog.info("%s events detected." % eidxs.size)
         for key in events:
             events[key] = events[key][eidxs]
