@@ -148,9 +148,11 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     # Step 1: Use ARF to determine which photons are observed
 
-    mylog.info("Applying energy-dependent effective area from %s." % arf_file)
+    mylog.info("Applying energy-dependent effective area from %s. This may take a minute." % arf_file)
     arf = AuxiliaryResponseFile(arf_file)
     events = arf.detect_events(events, exp_time, parameters["flux"], prng=prng)
+    if events["energy"].size == 0:
+        raise RuntimeError("No events were observed!!!")
     parameters["arf"] = arf.filename
 
     # Step 2: Assign pixel coordinates to events and clip events that don't fall
@@ -178,6 +180,9 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     keepx = np.logical_and(events["xpix"] >= 0.5, events["xpix"] <= nx+0.5)
     keepy = np.logical_and(events["ypix"] >= 0.5, events["ypix"] <= nx+0.5)
     keep = np.logical_and(keepx, keepy)
+    if keep.sum() == 0:
+        raise RuntimeError("No events are within the field of view!!!")
+
     for key in events:
         events[key] = events[key][keep]
 
