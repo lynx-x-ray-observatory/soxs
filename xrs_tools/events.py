@@ -1,10 +1,9 @@
 import astropy.io.fits as pyfits
 import numpy as np
 import astropy.wcs as pywcs
-from astropy.utils.console import ProgressBar
 
 from xrs_tools.simput import read_simput_phlist
-from xrs_tools.utils import mylog, iterable, ensure_numpy_array
+from xrs_tools.utils import mylog
 from xrs_tools.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile
 
@@ -150,10 +149,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     mylog.info("Applying energy-dependent effective area from %s." % arf_file)
     arf = AuxiliaryResponseFile(arf_file)
-    detected = arf.detect_events(events["energy"], exp_time, parameters["flux"], prng=prng)
-    mylog.info("%s events detected." % detected.size)
-    for key in events:
-        events[key] = events[key][detected]
+    events = arf.detect_events(events["energy"], exp_time, parameters["flux"], prng=prng)
     parameters["arf"] = arf.filename
 
     # Step 2: Assign pixel coordinates to events and clip events that don't fall
@@ -186,60 +182,10 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     # Step 3: Scatter energies with RMF
 
-    mylog.info("Reading response matrix file (RMF): %s" % rmf_file)
+    mylog.info("Scattering energies with RMF.")
     rmf = RedistributionMatrixFile(rmf_file)
 
-    elo = rmf.data["ENERG_LO"]
-    ehi = rmf.data["ENERG_HI"]
-    n_de = elo.shape[0]
-    mylog.info("Number of energy bins in RMF: %d" % n_de)
-    mylog.info("Energy limits: %g %g" % (min(elo), max(ehi)))
-
-    n_ch = len(rmf.ebounds["CHANNEL"])
-    mylog.info("Number of channels in RMF: %d" % n_ch)
-
-    eidxs = np.argsort(events["energy"])
-    sorted_e = events["energy"][eidxs]
-
-    detectedChannels = []
-
-    # run through all photon energies and find which bin they go in
-    fcurr = 0
-    last = sorted_e.shape[0]
-
-    mylog.info("Scattering energies with RMF.")
-
-    with ProgressBar(last) as pbar:
-        for (k, low), high in zip(enumerate(elo), ehi):
-            # weight function for probabilities from RMF
-            weights = np.nan_to_num(np.float64(rmf.data["MATRIX"][k]))
-            weights /= weights.sum()
-            # build channel number list associated to array value,
-            # there are groups of channels in rmfs with nonzero probabilities
-            trueChannel = []
-            f_chan = ensure_numpy_array(np.nan_to_num(rmf.data["F_CHAN"][k]))
-            n_chan = ensure_numpy_array(np.nan_to_num(rmf.data["N_CHAN"][k]))
-            if not iterable(f_chan):
-                f_chan = [f_chan]
-                n_chan = [n_chan]
-            for start, nchan in zip(f_chan, n_chan):
-                if nchan == 0:
-                    trueChannel.append(start)
-                else:
-                    trueChannel += list(range(start, start+nchan))
-            if len(trueChannel) > 0:
-                for q in range(fcurr, last):
-                    if low <= sorted_e[q] < high:
-                        channelInd = prng.choice(len(weights), p=weights)
-                        fcurr += 1
-                        pbar.update(fcurr)
-                        detectedChannels.append(trueChannel[channelInd])
-                    else:
-                        break
-
-    for key in events:
-        events[key] = events[key][eidxs]
-    events[rmf.header["CHANTYPE"]] = np.array(detectedChannels, dtype="int")
+    events = rmf.scatter_energies(events, prng=prng)
 
     parameters["rmf"] = rmf.filename
     parameters["channel_type"] = rmf.header["CHANTYPE"]

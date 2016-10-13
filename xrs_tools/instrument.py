@@ -2,7 +2,9 @@ from __future__ import print_function
 
 import numpy as np
 import astropy.io.fits as pyfits
+from astropy.utils.console import ProgressBar
 from xrs_tools.constants import erg_per_keV
+from xrs_tools.utils import mylog, iterable, ensure_numpy_array
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -32,7 +34,7 @@ class AuxiliaryResponseFile(object):
     def __str__(self):
         return self.filename
 
-    def detect_events(self, energy, exp_time, flux, prng=None):
+    def detect_events(self, events, exp_time, flux, prng=None):
         """
         Use the ARF to determine a subset of photons which will be
         detected. Returns a boolean NumPy array which is the same
@@ -41,8 +43,8 @@ class AuxiliaryResponseFile(object):
 
         Parameters
         ----------
-        energy : np.ndarray
-            The energies of the photons to attempt to detect, in keV.
+        events : dict of np.ndarrays
+            The energies and positions of the photons. 
         exp_time : float
             The exposure time in seconds.
         flux : float
@@ -54,6 +56,7 @@ class AuxiliaryResponseFile(object):
         """
         if prng is None:
             prng = np.random
+        energy = events["energy"]
         earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
         rate = flux/(energy.sum()*erg_per_keV)*earea.sum()
         n_ph = np.uint64(rate*exp_time)
@@ -64,7 +67,10 @@ class AuxiliaryResponseFile(object):
                              "in the sample!!!")
         w = earea/self.max_area
         eidxs = prng.choice(energy.size, size=n_ph, replace=False, p=w)
-        return eidxs
+        mylog.info("%s events detected." % eidxs.size)
+        for key in events:
+            events[key] = events[key][eidxs]
+        return events
 
 class RedistributionMatrixFile(object):
     r"""
@@ -100,6 +106,73 @@ class RedistributionMatrixFile(object):
     def __str__(self):
         return self.filename
 
+    def scatter_energies(self, events, prng=np.random):
+        """
+        Scatter photon energies with the RMF and produce the 
+        corresponding channel values.
+        
+        Parameters
+        ----------
+        events : dict of np.ndarrays
+            The energies and positions of the photons. 
+        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+            A pseudo-random number generator. Typically will only be specified
+            if you have a reason to generate the same set of random numbers, such as for a
+            test. Default is the :mod:`~numpy.random` module.
+        """
+        elo = self.data["ENERG_LO"]
+        ehi = self.data["ENERG_HI"]
+        n_de = elo.shape[0]
+        mylog.info("Number of energy bins in RMF: %d" % n_de)
+        mylog.info("Energy limits: %g %g" % (min(elo), max(ehi)))
+    
+        n_ch = len(self.ebounds["CHANNEL"])
+        mylog.info("Number of channels in RMF: %d" % n_ch)
+    
+        eidxs = np.argsort(events["energy"])
+        sorted_e = events["energy"][eidxs]
+    
+        detectedChannels = []
+    
+        # run through all photon energies and find which bin they go in
+        fcurr = 0
+        last = sorted_e.shape[0]
+    
+        mylog.info("Scattering energies with RMF.")
+    
+        with ProgressBar(last) as pbar:
+            for (k, low), high in zip(enumerate(elo), ehi):
+                # weight function for probabilities from RMF
+                weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+                weights /= weights.sum()
+                # build channel number list associated to array value,
+                # there are groups of channels in rmfs with nonzero probabilities
+                trueChannel = []
+                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+                n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+                if not iterable(f_chan):
+                    f_chan = [f_chan]
+                    n_chan = [n_chan]
+                for start, nchan in zip(f_chan, n_chan):
+                    if nchan == 0:
+                        trueChannel.append(start)
+                    else:
+                        trueChannel += list(range(start, start+nchan))
+                if len(trueChannel) > 0:
+                    for q in range(fcurr, last):
+                        if low <= sorted_e[q] < high:
+                            channelInd = prng.choice(len(weights), p=weights)
+                            fcurr += 1
+                            pbar.update(fcurr)
+                            detectedChannels.append(trueChannel[channelInd])
+                        else:
+                            break
+
+        for key in events:
+            events[key] = events[key][eidxs]
+        events[self.header["CHANTYPE"]] = np.array(detectedChannels, dtype="int")
+
+        return events
 
 instrument_registry = {}
 instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
