@@ -17,9 +17,9 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     num_events = len(events["energy"])
 
-    col_e = pyfits.Column(name='ENERGY', format='E', unit='eV', array=events["energy"]*1000.)
     col_x = pyfits.Column(name='X', format='D', unit='pixel', array=events["xpix"])
     col_y = pyfits.Column(name='Y', format='D', unit='pixel', array=events["ypix"])
+    col_e = pyfits.Column(name='ENERGY', format='E', unit='eV', array=events["energy"]*1000.)
 
     chantype = parameters["channel_type"]
     if chantype == "PHA":
@@ -31,7 +31,7 @@ def write_event_file(events, parameters, filename, clobber=False):
     time = np.random.uniform(size=num_events, low=0.0, high=parameters["exposure_time"])
     col_t = pyfits.Column(name="TIME", format='1D', unit='s', array=time)
 
-    cols = [col_x, col_y, col_e, col_ch, col_t]
+    cols = [col_e, col_x, col_y, col_ch, col_t]
 
     coldefs = pyfits.ColDefs(cols)
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
