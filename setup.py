@@ -4,8 +4,6 @@ from setuptools.extension import Extension
 import numpy as np
 import glob
 
-from xrs_tools import __version__
-
 scripts = glob.glob("scripts/*")
 
 cython_extensions = [
@@ -16,12 +14,12 @@ cython_extensions = [
 
 setup(name='xrs_tools',
       packages=['xrs_tools'],
-      version=__version__,
+      use_scm_version=True,
       description='Tools for X-Ray Surveyor simulations',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
       url='http://github.com/XRStools/xrs_tools',
-      setup_requires=["numpy","cython>=0.24"],
+      setup_requires=["numpy","cython>=0.24","setuptools_scm"],
       install_requires=["six","numpy","astropy"],
       scripts=scripts,
       classifiers=[

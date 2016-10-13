@@ -1,4 +1,6 @@
-__version__ = "0.1.dev0"
+from setuptools_scm import get_version
+
+__version__ = get_version()
 
 from xrs_tools.simput import \
     write_simput_phlist, \
