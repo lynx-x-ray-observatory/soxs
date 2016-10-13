@@ -14,13 +14,12 @@ cython_extensions = [
 
 setup(name='xrs_tools',
       packages=['xrs_tools'],
-      use_scm_version=False,
       version="0.1",
       description='Tools for X-Ray Surveyor simulations',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
       url='http://github.com/XRStools/xrs_tools',
-      setup_requires=["numpy","cython>=0.24","setuptools_scm"],
+      setup_requires=["numpy","cython>=0.24"],
       install_requires=["six","numpy","astropy"],
       scripts=scripts,
       classifiers=[
