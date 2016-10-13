@@ -26,3 +26,18 @@ CIAO, HEATOOLS, XSPEC, etc.
     optional arguments:
       -h, --help   show this help message and exit
       --clobber    Whether or not to clobber an existing file with the same name.
+      
+Examples
+--------
+
+This example uses the pre-built HDXI specification. 
+
+.. code-block:: bash
+
+    [~]$ make_event_file sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --clobber
+
+This example uses a JSON file created by the user. 
+
+.. code-block:: bash
+
+    [~]$ make_event_file sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --clobber
