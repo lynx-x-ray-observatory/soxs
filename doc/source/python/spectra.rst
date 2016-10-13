@@ -24,9 +24,30 @@ can be comprised of either two or three columns; the former
 Creating a Power-Law Spectrum
 +++++++++++++++++++++++++++++
 
+A simple power-law spectrum can be created using the 
+:meth:`~xrs_tools.spectra.Spectrum.from_powerlaw` method. This takes as input 
 
 Generating Thermal Spectra
 ++++++++++++++++++++++++++
+
+Generating a Spectrum from XSPEC
+++++++++++++++++++++++++++++++++
+
+Adding Spectra Together
+-----------------------
+
+Two :class:`~xrs_tools.spectra.Spectrum` objects can be co-added, provided that
+they have the same energy binning:
+
+.. code-block:: python
+
+    total_spectrum = plaw_spectrum + thermal_spectrum
+    
+If they do not, an error will be thrown. 
+
+Rescaling the Normalization of a Spectrum
+-----------------------------------------
+
 
 Applying Galactic Foreground Absorption to a Spectrum
 -----------------------------------------------------
