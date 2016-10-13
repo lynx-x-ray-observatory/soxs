@@ -20,7 +20,7 @@ parser.add_argument("--clobber", action='store_true',
 
 args = parser.parse_args()
 
-sky_center = np.array([args.sky_center.split(',')]).astype("float64")
+sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
 if args.instrument not in instrument_registry and os.path.exists(args.instrument):
     instrument = add_instrument_to_registry(args.instrument)
