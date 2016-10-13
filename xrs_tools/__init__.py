@@ -15,4 +15,5 @@ from xrs_tools.instrument import \
     show_instrument_registry
 
 from xrs_tools.events import \
-    make_event_file
+    make_event_file, \
+    add_background_events
