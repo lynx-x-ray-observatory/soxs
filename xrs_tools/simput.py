@@ -116,7 +116,6 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clob
     wrhdu.header["TUNIT4"] = "keV"
     wrhdu.header["TUNIT5"] = "keV"
     wrhdu.header["TUNIT6"] = "erg/s/cm**2"
-    wrhdu.header["EXPOSURE"] = exp_time
 
     simputfile = prefix+"_simput.fits"
 
