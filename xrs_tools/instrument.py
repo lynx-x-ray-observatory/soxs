@@ -31,12 +31,13 @@ class AuxiliaryResponseFile(object):
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
         self.emid = 0.5*(self.elo+self.ehi)
         self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP"))
+        self.max_area = self.eff_area.max()
         f.close()
 
     def __str__(self):
         return self.filename
 
-    def detect_events(self, energy, area, prng=None):
+    def detect_events(self, energy, exp_time, flux, prng=None):
         """
         Use the ARF to determine a subset of photons which will be
         detected. Returns a boolean NumPy array which is the same
@@ -47,8 +48,10 @@ class AuxiliaryResponseFile(object):
         ----------
         energy : np.ndarray
             The energies of the photons to attempt to detect, in keV.
-        area : float
-            The collecting area in cm^2 associated with the event energies.
+        exp_time : float
+            The exposure time in seconds.
+        flux : float
+            The total flux of the photons in erg/s/cm^2. 
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
@@ -57,8 +60,16 @@ class AuxiliaryResponseFile(object):
         if prng is None:
             prng = np.random
         earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
-        randvec = area*prng.uniform(size=energy.shape)
-        return randvec < earea
+        rate = flux/energy.sum()*earea.sum()
+        n_ph = np.uint64(rate*exp_time)
+        fak = float(n_ph)/energy.size
+        if fak > 1.0:
+            raise ValueError("This combination of exposure time and effective area "
+                             "will result in more photons being drawn than are available "
+                             "in the sample!!!")
+        w = earea/self.max_area
+        eidxs = prng.choice(energy.size, size=n_ph, replace=False, p=w)
+        return eidxs
 
 class RedistributionMatrixFile(object):
     r"""
@@ -274,31 +285,14 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     nx = instrument_spec["num_pixels"]
     dtheta = instrument_spec["dtheta"]/3600. # deg to arcsec
 
-    n_obs = events["energy"].size
-    fak = exp_time/parameters["exposure_time"]
-    if fak > 1.0:
-        raise ValueError("Specified exposure time %g s cannot be larger " % exp_time +
-                         "than maximum exposure time %s!" % parameters["exposure_time"])
-
-    tot_e = events["energy"].sum()*erg_per_keV
-    area = tot_e/(parameters["flux"]*parameters["exposure_time"])
-
-    my_n_obs = np.uint64(n_obs*fak)
-    if my_n_obs == n_obs:
-        idxs = np.arange(my_n_obs, dtype='uint64')
-    else:
-        idxs = prng.permutation(n_obs)[:my_n_obs].astype("uint64")
-    for key in events:
-        events[key] = events[key][idxs]
-
     parameters["exposure_time"] = exp_time
 
     # Step 1: Use ARF to determine which photons are observed
 
     mylog.info("Applying energy-dependent effective area from %s." % arf_file)
     arf = AuxiliaryResponseFile(arf_file)
-    detected = arf.detect_events(events["energy"], area, prng=prng)
-    mylog.info("%s events detected." % detected.sum())
+    detected = arf.detect_events(events["energy"], exp_time, parameters["flux"], prng=prng)
+    mylog.info("%s events detected." % detected.size)
     for key in events:
         events[key] = events[key][detected]
     parameters["arf"] = arf.filename
