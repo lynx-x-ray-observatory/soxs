@@ -7,3 +7,4 @@ XRStools API
     spectra     
     simput
     instrument
+    events
