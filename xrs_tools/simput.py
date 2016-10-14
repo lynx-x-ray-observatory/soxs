@@ -39,8 +39,7 @@ def read_simput_catalog(simput_file):
 
 def write_simput_catalog(simput_prefix, phlist_prefix, 
                          exp_time, area, ra, dec, energy, 
-                         time=None, append=False, clobber=False, 
-                         emin=None, emax=None):
+                         append=False, clobber=False):
     r"""
     Write events to a SIMPUT photon list.
 
@@ -60,33 +59,20 @@ def write_simput_catalog(simput_prefix, phlist_prefix,
         The declination of the photons, in degrees.
     energy : NumPy array
         The energy of the photons, in keV.
-    time : NumPy array, optional
-        The arrival times of the photons, in seconds. Not included if None.
     append : boolean, optional
         If True, append a new source an existing SIMPUT catalog. 
     clobber : boolean, optional
         Set to True to overwrite previous files.
-    emin : float, optional
-        The minimum energy of the photons to save in keV.
-    emax : float, optional
-        The maximum energy of the photons to save in keV.
     """
-    if emin is None:
-        emin = energy.min()
-    if emax is None:
-        emax = energy.max()
+    emin = energy.min()
+    emax = energy.max()
 
-    idxs = np.logical_and(energy >= emin, energy <= emax)
-    flux = np.sum(energy[idxs])*erg_per_keV / exp_time / area
+    flux = np.sum(energy)*erg_per_keV / exp_time / area
 
-    col1 = pyfits.Column(name='ENERGY', format='E', array=energy[idxs])
-    col2 = pyfits.Column(name='RA', format='D', array=ra[idxs])
-    col3 = pyfits.Column(name='DEC', format='D', array=dec[idxs])
+    col1 = pyfits.Column(name='ENERGY', format='E', array=energy)
+    col2 = pyfits.Column(name='RA', format='D', array=ra)
+    col3 = pyfits.Column(name='DEC', format='D', array=dec)
     cols = [col1, col2, col3]
-
-    if time is not None:
-        col4 = pyfits.Column(name='TIME', format='D', array=dec[idxs])
-        cols.append(col4)
 
     coldefs = pyfits.ColDefs(cols)
 
