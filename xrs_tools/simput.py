@@ -2,7 +2,6 @@ import astropy.io.fits as pyfits
 import numpy as np
 
 from xrs_tools.constants import erg_per_keV
-from collections import defaultdict
 
 def read_simput_catalog(simput_file):
     r"""
