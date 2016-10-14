@@ -1,9 +1,10 @@
 import astropy.io.fits as pyfits
 import numpy as np
 import astropy.wcs as pywcs
+import os
 
 from xrs_tools.simput import read_simput_catalog
-from xrs_tools.utils import mylog
+from xrs_tools.utils import mylog, check_file_location
 from xrs_tools.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile
 from xrs_tools.constants import erg_per_keV
@@ -139,8 +140,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
-    arf_file = instrument_spec["arf"]
-    rmf_file = instrument_spec["rmf"]
+    arf_file = check_file_location(instrument_spec["arf"], "files")
+    rmf_file = check_file_location(instrument_spec["rmf"], "files")
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
@@ -149,12 +150,12 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     event_params = {}
     event_params["exposure_time"] = exp_time
-    event_params["arf"] = arf.filename
+    event_params["arf"] = os.path.split(arf.filename)[-1]
     event_params["sky_center"] = sky_center
     event_params["pix_center"] = np.array([0.5*(nx+1)]*2)
     event_params["num_pixels"] = nx
     event_params["dtheta"] = dtheta
-    event_params["rmf"] = rmf.filename
+    event_params["rmf"] = os.path.split(rmf.filename)[-1]
     event_params["channel_type"] = rmf.header["CHANTYPE"]
     event_params["telescope"] = rmf.header["TELESCOP"]
     event_params["instrument"] = rmf.header["INSTRUME"]
@@ -183,7 +184,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
         # Step 1: Use ARF to determine which photons are observed
 
-        mylog.info("Applying energy-dependent effective area from %s. This may take a minute." % arf_file)
+        mylog.info("Applying energy-dependent effective area from %s. " % event_params["arf"] +
+                   "This may take a minute.")
         refband = [parameters["emin"][i], parameters["emax"][i]]
         events = arf.detect_events(events, exp_time, parameters["flux"][i],
                                    refband, prng=prng)
@@ -213,7 +215,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         # Step 3: Scatter energies with RMF
 
         if events["energy"].size > 0:
-            mylog.info("Scattering energies with RMF.")
+            mylog.info("Scattering energies with RMF %s." % event_params['rmf'])
             events = rmf.scatter_energies(events, prng=prng)
 
         for key in events:

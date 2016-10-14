@@ -12,10 +12,9 @@ def check_file_location(fn, subdir):
         return os.path.abspath(fn)
     else:
         sto_fn = os.path.join(xrs_path, subdir, fn)
-        if not os.path.exists(sto_fn):
-            raise IOError("File %s does not exist." % sto_fn)
-        else:
+        if os.path.exists(sto_fn):
             return sto_fn
+    raise IOError("Could not find file %s!" % fn)
 
 def iterable(obj):
     """
