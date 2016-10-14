@@ -114,15 +114,10 @@ class Spectrum(object):
     @classmethod
     def from_file(cls, filename):
         """
-        Read a spectrum from an ASCII text file. Accepts two
-        formats of files, assuming a linear binning with constant
-        bin widths:
-
-        1. Two columns, the first being the bin center and the
-           second being the flux in photons/s/cm**2.
-        2. Three columns, the first being the bin center, the
-           second being the bin width, and the third the flux
-           in photons/s/cm**2. This format is written by XSPEC.
+        Read a spectrum from an ASCII text file. Accepts a file
+        with two columns, the first being the bin center and the
+        second being the flux in photons/s/cm**2, assuming a 
+        linear binning with constant bin widths:
 
         Parameters
         ----------
@@ -131,10 +126,7 @@ class Spectrum(object):
         """
         data = np.loadtxt(filename)
         emid = data[:,0]
-        if data.shape[-1] == 3:
-            de = data[:,1]
-        else:
-            de = np.diff(emid)[0]
+        de = np.diff(emid)[0]
         flux = data[:,-1]
         ebins = np.concatenate([emid-0.5*de, emid[-1]+0.5*de])
         return cls(ebins, flux)
