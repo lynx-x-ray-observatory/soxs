@@ -2,10 +2,12 @@ import astropy.io.fits as pyfits
 import numpy as np
 
 from xrs_tools.constants import erg_per_keV
+from collections import defaultdict
 
-def read_simput_phlist(simput_file):
+def read_simput_catalog(simput_file):
     r"""
-    Read events from a SIMPUT photon list.
+    Read events from a SIMPUT catalog. This will read all of the sources
+    in the catalog.
 
     Parameters
     ----------
@@ -14,34 +16,41 @@ def read_simput_phlist(simput_file):
 
     Returns
     -------
-    Two Python dictionaries:
-
-      1. NumPy arrays of the positions and energies of the events.
-      2. A set of parameters.
+    1. Lists of dicts of NumPy arrays of the positions 
+       and energies of the events from the sources.
+    2. NumPy arrays of the parameters of the sources.
     """
-    events = {}
+    events = []
     parameters = {}
     f_simput = pyfits.open(simput_file)
-    parameters["flux"] = f_simput["src_cat"].data["flux"][0]
-    parameters["emin"] = f_simput["src_cat"].data["e_min"][0]
-    parameters["emax"] = f_simput["src_cat"].data["e_max"][0]
-    phlist_file = f_simput["src_cat"].data["spectrum"][0].split("[")[0]
+    parameters["flux"] = f_simput["src_cat"].data["flux"]
+    parameters["emin"] = f_simput["src_cat"].data["e_min"]
+    parameters["emax"] = f_simput["src_cat"].data["e_max"]
+    phlist_files = [file.split("[")[0] for file in 
+                    f_simput["src_cat"].data["spectrum"]]
     f_simput.close()
-    f_phlist = pyfits.open(phlist_file)
-    for key in ["ra", "dec", "energy"]:
-        events[key] = f_phlist["phlist"].data[key]
-    f_phlist.close()
+    for phlist_file in phlist_files:
+        f_phlist = pyfits.open(phlist_file)
+        evt = {}
+        for key in ["ra", "dec", "energy"]:
+            evt[key] = f_phlist["phlist"].data[key]
+        f_phlist.close()
+        events.append(evt)
     return events, parameters
 
-def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, 
-                        time=None, clobber=False, emin=None, emax=None):
+def write_simput_catalog(simput_prefix, phlist_prefix, 
+                         exp_time, area, ra, dec, energy, 
+                         time=None, append=False, clobber=False, 
+                         emin=None, emax=None):
     r"""
     Write events to a SIMPUT photon list.
 
     Parameters
     ----------
-    prefix : string
-        The filename prefix.
+    simput_prefix : string
+        The filename prefix for the SIMPUT file.
+    phlist_prefix : string
+        The filename prefix for the photon list file.
     exp_time : float
         The exposure time in seconds.
     area : float
@@ -53,7 +62,9 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy,
     energy : NumPy array
         The energy of the photons, in keV.
     time : NumPy array, optional
-        The arrival times of the photons, in seconds. Not included if None. 
+        The arrival times of the photons, in seconds. Not included if None.
+    append : boolean, optional
+        If True, append a new source an existing SIMPUT catalog. 
     clobber : boolean, optional
         Set to True to overwrite previous files.
     emin : float, optional
@@ -75,7 +86,7 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy,
     cols = [col1, col2, col3]
 
     if time is not None:
-        col4 = pyfits.Column(name='DEC', format='D', array=dec[idxs])
+        col4 = pyfits.Column(name='TIME', format='D', array=dec[idxs])
         cols.append(col4)
 
     coldefs = pyfits.ColDefs(cols)
@@ -93,37 +104,59 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy,
     tbhdu.header["TUNIT2"] = "deg"
     tbhdu.header["TUNIT3"] = "deg"
 
-    phfile = prefix+"_phlist.fits"
+    phfile = phlist_prefix+"_phlist.fits"
 
     tbhdu.writeto(phfile, clobber=clobber)
 
-    col1 = pyfits.Column(name='SRC_ID', format='J', array=np.array([1]).astype("int32"))
-    col2 = pyfits.Column(name='RA', format='D', array=np.array([0.0]))
-    col3 = pyfits.Column(name='DEC', format='D', array=np.array([0.0]))
-    col4 = pyfits.Column(name='E_MIN', format='D', array=np.array([float(emin)]))
-    col5 = pyfits.Column(name='E_MAX', format='D', array=np.array([float(emax)]))
-    col6 = pyfits.Column(name='FLUX', format='D', array=np.array([flux]))
-    col7 = pyfits.Column(name='SPECTRUM', format='80A', array=np.array([phfile+"[PHLIST,1]"]))
-    col8 = pyfits.Column(name='IMAGE', format='80A', array=np.array([phfile+"[PHLIST,1]"]))
-    col9 = pyfits.Column(name='SRC_NAME', format='80A', array=np.array(["xrs_tools"]))
+    simputfile = simput_prefix+"_simput.fits"
 
-    coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9])
-
-    wrhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    wrhdu.update_ext_name("SRC_CAT")
-
-    wrhdu.header["HDUCLASS"] = "HEASARC"
-    wrhdu.header["HDUCLAS1"] = "SIMPUT"
-    wrhdu.header["HDUCLAS2"] = "SRC_CAT"
-    wrhdu.header["HDUVERS"] = "1.1.0"
-    wrhdu.header["RADECSYS"] = "FK5"
-    wrhdu.header["EQUINOX"] = 2000.0
-    wrhdu.header["TUNIT2"] = "deg"
-    wrhdu.header["TUNIT3"] = "deg"
-    wrhdu.header["TUNIT4"] = "keV"
-    wrhdu.header["TUNIT5"] = "keV"
-    wrhdu.header["TUNIT6"] = "erg/s/cm**2"
-
-    simputfile = prefix+"_simput.fits"
-
-    wrhdu.writeto(simputfile, clobber=clobber)
+    if append:
+        f = pyfits.open(simputfile, mode='update')
+        num_sources = f["SRC_CAT"].data["SRC_ID"].size
+        id = num_sources + 1
+        f["SRC_CAT"].data["SRC_ID"] = np.append(f["SRC_CAT"].data["SRC_ID"][:], id)
+        f["SRC_CAT"].data["RA"] = np.append(f["SRC_CAT"].data["RA"][:], 0.0)
+        f["SRC_CAT"].data["DEC"] = np.append(f["SRC_CAT"].data["DEC"][:], 0.0)
+        f["SRC_CAT"].data["E_MIN"] = np.append(f["SRC_CAT"].data["E_MIN"][:], emin)
+        f["SRC_CAT"].data["E_MAX"] = np.append(f["SRC_CAT"].data["E_MAX"][:], emax)
+        f["SRC_CAT"].data["FLUX"] = np.append(f["SRC_CAT"].data["FLUX"][:], flux)
+        f["SRC_CAT"].data["SPECTRUM"] = np.append(f["SRC_CAT"].data["SPECTRUM"][:],
+                                                  phfile+"[PHLIST,1]")
+        f["SRC_CAT"].data["IMAGE"] = np.append(f["SRC_CAT"].data["IMAGE"][:],
+                                               phfile+"[PHLIST,1]")
+        f["SRC_CAT"].data["SRC_NAME"] = np.append(f["SRC_CAT"].data["SRC_NAME"][:],
+                                                  "xrs_tools_src_%d" % id)
+        f.flush()
+        f.close()
+    else:
+        col1 = pyfits.Column(name='SRC_ID', format='J', array=np.array([1]).astype("int32"))
+        col2 = pyfits.Column(name='RA', format='D', array=np.array([0.0]))
+        col3 = pyfits.Column(name='DEC', format='D', array=np.array([0.0]))
+        col4 = pyfits.Column(name='E_MIN', format='D', array=np.array([emin]))
+        col5 = pyfits.Column(name='E_MAX', format='D', array=np.array([emax]))
+        col6 = pyfits.Column(name='FLUX', format='D', array=np.array([flux]))
+        col7 = pyfits.Column(name='SPECTRUM', format='80A', 
+                             array=np.array([phfile+"[PHLIST,1]"]))
+        col8 = pyfits.Column(name='IMAGE', format='80A', 
+                             array=np.array([phfile+"[PHLIST,1]"]))
+        col9 = pyfits.Column(name='SRC_NAME', format='80A', 
+                             array=np.array(["xrs_tools_src_1"]))
+    
+        coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9])
+    
+        wrhdu = pyfits.BinTableHDU.from_columns(coldefs)
+        wrhdu.update_ext_name("SRC_CAT")
+    
+        wrhdu.header["HDUCLASS"] = "HEASARC"
+        wrhdu.header["HDUCLAS1"] = "SIMPUT"
+        wrhdu.header["HDUCLAS2"] = "SRC_CAT"
+        wrhdu.header["HDUVERS"] = "1.1.0"
+        wrhdu.header["RADECSYS"] = "FK5"
+        wrhdu.header["EQUINOX"] = 2000.0
+        wrhdu.header["TUNIT2"] = "deg"
+        wrhdu.header["TUNIT3"] = "deg"
+        wrhdu.header["TUNIT4"] = "keV"
+        wrhdu.header["TUNIT5"] = "keV"
+        wrhdu.header["TUNIT6"] = "erg/s/cm**2"
+    
+        wrhdu.writeto(simputfile, clobber=clobber)

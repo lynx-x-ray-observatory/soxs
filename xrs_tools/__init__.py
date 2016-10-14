@@ -1,8 +1,8 @@
 __version__ = "0.1"
 
 from xrs_tools.simput import \
-    write_simput_phlist, \
-    read_simput_phlist
+    write_simput_catalog, \
+    read_simput_catalog
 
 from xrs_tools.spectra import \
     Spectrum, \

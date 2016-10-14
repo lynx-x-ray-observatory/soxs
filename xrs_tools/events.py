@@ -2,7 +2,7 @@ import astropy.io.fits as pyfits
 import numpy as np
 import astropy.wcs as pywcs
 
-from xrs_tools.simput import read_simput_phlist
+from xrs_tools.simput import read_simput_catalog
 from xrs_tools.utils import mylog
 from xrs_tools.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile
@@ -98,7 +98,7 @@ def write_event_file(events, parameters, filename, clobber=False):
 def make_event_file(simput_file, out_file, exp_time, instrument,
                     sky_center, clobber=False, prng=np.random):
     """
-    Take unconvolved events in a SIMPUT file and create an event
+    Take unconvolved events in a SIMPUT catalog and create an event
     file from them. This function does the following:
 
     1. Convolves the events with an ARF and RMF
@@ -110,7 +110,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     Parameters
     ----------
     simput_file : string
-        The SIMPUT file to be used as input.
+        The SIMPUT catalog file to be used as input.
     out_file : string
         The name of the event file to be written.
     exp_time : float
@@ -133,7 +133,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     >>> make_event_file("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
     ...                 [30., 45.], clobber=True)
     """
-    events, parameters = read_simput_phlist(simput_file)
+    event_list, parameters = read_simput_catalog(simput_file)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -141,72 +141,89 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     arf_file = instrument_spec["arf"]
     rmf_file = instrument_spec["rmf"]
+    arf = AuxiliaryResponseFile(arf_file)
+    rmf = RedistributionMatrixFile(rmf_file)
+
     nx = instrument_spec["num_pixels"]
     dtheta = instrument_spec["dtheta"]/3600. # deg to arcsec
 
-    parameters["exposure_time"] = exp_time
-
-    # Step 1: Use ARF to determine which photons are observed
-
-    mylog.info("Applying energy-dependent effective area from %s. This may take a minute." % arf_file)
-    arf = AuxiliaryResponseFile(arf_file)
-    events = arf.detect_events(events, exp_time, parameters["flux"], prng=prng)
-    if events["energy"].size == 0:
-        raise RuntimeError("No events were observed!!!")
-    parameters["arf"] = arf.filename
-
-    # Step 2: Assign pixel coordinates to events and clip events that don't fall
-    # within the detection region
-
-    mylog.info("Pixeling image.")
-
-    parameters["sky_center"] = sky_center
-    parameters["pix_center"] = np.array([0.5*(nx+1)]*2)
-    parameters["num_pixels"] = nx
-    parameters["dtheta"] = dtheta
-
-    w = pywcs.WCS(naxis=2)
-    w.wcs.crval = parameters["sky_center"]
-    w.wcs.crpix = parameters["pix_center"]
-    w.wcs.cdelt = [-dtheta, dtheta]
-    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
-    w.wcs.cunit = ["deg"]*2
-
-    xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
-
-    events["xpix"] = xpix
-    events["ypix"] = ypix
-
-    keepx = np.logical_and(events["xpix"] >= 0.5, events["xpix"] <= nx+0.5)
-    keepy = np.logical_and(events["ypix"] >= 0.5, events["ypix"] <= nx+0.5)
-    keep = np.logical_and(keepx, keepy)
-    if keep.sum() == 0:
-        raise RuntimeError("No events are within the field of view!!!")
-
-    for key in events:
-        events[key] = events[key][keep]
-
-    # Step 3: Scatter energies with RMF
-
-    mylog.info("Scattering energies with RMF.")
-    rmf = RedistributionMatrixFile(rmf_file)
-
-    events = rmf.scatter_energies(events, prng=prng)
-
-    parameters["rmf"] = rmf.filename
-    parameters["channel_type"] = rmf.header["CHANTYPE"]
-    parameters["telescope"] = rmf.header["TELESCOP"]
-    parameters["instrument"] = rmf.header["INSTRUME"]
-    parameters["mission"] = rmf.header.get("MISSION", "")
-    parameters["nchan"] = rmf.ebounds_header["DETCHANS"]
+    event_params = {}
+    event_params["exposure_time"] = exp_time
+    event_params["arf"] = arf.filename
+    event_params["sky_center"] = sky_center
+    event_params["pix_center"] = np.array([0.5*(nx+1)]*2)
+    event_params["num_pixels"] = nx
+    event_params["dtheta"] = dtheta
+    event_params["rmf"] = rmf.filename
+    event_params["channel_type"] = rmf.header["CHANTYPE"]
+    event_params["telescope"] = rmf.header["TELESCOP"]
+    event_params["instrument"] = rmf.header["INSTRUME"]
+    event_params["mission"] = rmf.header.get("MISSION", "")
+    event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
     num = 0
     for i in range(1, rmf.num_mat_columns+1):
         if rmf.header["TTYPE%d" % i] == "F_CHAN":
             num = i
             break
-    parameters["chan_lim"] = [rmf.header["TLMIN%d" % num], rmf.header["TLMAX%d" % num]]
+    event_params["chan_lim"] = [rmf.header["TLMIN%d" % num], 
+                                rmf.header["TLMAX%d" % num]]
 
-    write_event_file(events, parameters, out_file, clobber=clobber)
+    w = pywcs.WCS(naxis=2)
+    w.wcs.crval = event_params["sky_center"]
+    w.wcs.crpix = event_params["pix_center"]
+    w.wcs.cdelt = [-dtheta, dtheta]
+    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
+    w.wcs.cunit = ["deg"]*2
+
+    all_events = {}
+
+    for i, events in enumerate(event_list):
+
+        mylog.info("Creating events for source %d" % (i+1))
+
+        # Step 1: Use ARF to determine which photons are observed
+
+        mylog.info("Applying energy-dependent effective area from %s. This may take a minute." % arf_file)
+        events = arf.detect_events(events, exp_time, parameters["flux"][i], prng=prng)
+        if events["energy"].size == 0:
+            mylog.warning("No events were observed for this source!!!")
+
+        # Step 2: Assign pixel coordinates to events and clip events that don't fall
+        # within the detection region
+
+        if events["energy"].size > 0:
+            mylog.info("Pixeling events.")
+
+            xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
+
+            events["xpix"] = xpix
+            events["ypix"] = ypix
+
+            keepx = np.logical_and(events["xpix"] >= 0.5, events["xpix"] <= nx+0.5)
+            keepy = np.logical_and(events["ypix"] >= 0.5, events["ypix"] <= nx+0.5)
+            keep = np.logical_and(keepx, keepy)
+            if keep.sum() == 0:
+                mylog.warning("No events are within the field of view for this source!!!")
+
+            for key in events:
+                events[key] = events[key][keep]
+
+        # Step 3: Scatter energies with RMF
+
+        if events["energy"].size > 0:
+            mylog.info("Scattering energies with RMF.")
+            events = rmf.scatter_energies(events, prng=prng)
+
+        for key in events:
+            if i == 0:
+                all_events[key] = events[key]
+            else:
+                all_events[key] = np.append(all_events[key], events[key])
+
+    if all_events["energy"].size == 0:
+        raise RuntimeError("No events were detected!!!")
+
+    write_event_file(all_events, event_params, out_file, clobber=clobber)
 
 def add_background_events(bkgnd_spectrum, event_file, flat_response=False, 
                           prng=np.random):
