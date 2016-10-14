@@ -115,9 +115,9 @@ class Spectrum(object):
     def from_file(cls, filename):
         """
         Read a spectrum from an ASCII text file. Accepts a file
-        with two columns, the first being the bin center and the
-        second being the flux in photons/s/cm**2, assuming a 
-        linear binning with constant bin widths:
+        with two columns, the first being the center energy of the
+        bin in keV and the second being the flux in photons/s/cm**2, 
+        assuming a linear binning with constant bin widths:
 
         Parameters
         ----------
