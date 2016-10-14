@@ -190,11 +190,11 @@ def add_instrument_to_registry(filename):
     in a JSON file. The JSON file must have this structure (the
     order is not important):
 
-    {'name': 'hdxi', # The short name of the instrument
-     'arf': 'xrs_hdxi.arf', # The file containing the ARF
-     'rmf': 'xrs_hdxi.rmf' # The file containing the RMF
-     'dtheta': 0.33333333333, # The central pixel scale in arcsec
-     'num_pixels': 4096} # The number of pixels on a side in the FOV
+    >>> {'name': 'hdxi', # The short name of the instrument
+    ...  'arf': 'xrs_hdxi.arf', # The file containing the ARF
+    ...  'rmf': 'xrs_hdxi.rmf' # The file containing the RMF
+    ...  'dtheta': 0.33333333333, # The central pixel scale in arcsec
+    ...  'num_pixels': 4096} # The number of pixels on a side in the FOV
 
     Parameters
     ----------

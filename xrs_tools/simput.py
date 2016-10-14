@@ -27,7 +27,8 @@ def read_simput_phlist(simput_file):
     f_phlist.close()
     return events, parameters
 
-def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clobber=False, emin=None, emax=None):
+def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, 
+                        time=None, clobber=False, emin=None, emax=None):
     r"""
     Write events to a SIMPUT photon list.
 
@@ -49,9 +50,9 @@ def write_simput_phlist(prefix, exp_time, area, ra, dec, energy, time=None, clob
         The arrival times of the photons, in seconds. Not included if None. 
     clobber : boolean, optional
         Set to True to overwrite previous files.
-    e_min : float, optional
+    emin : float, optional
         The minimum energy of the photons to save in keV.
-    e_max : float, optional
+    emax : float, optional
         The maximum energy of the photons to save in keV.
     """
     if emin is None:
