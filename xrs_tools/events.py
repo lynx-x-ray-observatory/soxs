@@ -184,7 +184,9 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         # Step 1: Use ARF to determine which photons are observed
 
         mylog.info("Applying energy-dependent effective area from %s. This may take a minute." % arf_file)
-        events = arf.detect_events(events, exp_time, parameters["flux"][i], prng=prng)
+        refband = [parameters["emin"][i], parameters["emax"][i]]
+        events = arf.detect_events(events, exp_time, parameters["flux"][i],
+                                   refband, prng=prng)
         if events["energy"].size == 0:
             mylog.warning("No events were observed for this source!!!")
 
@@ -261,7 +263,8 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
                                                             area, prng=prng)
     flux = bkg_events["energy"].sum()*erg_per_keV/exp_time/area
     if not flat_response:
-        arf.detect_events(bkg_events, exp_time, flux, prng=prng)
+        refband = [bkg_events["energy"].min(), bkg_events["energy"].max()]
+        arf.detect_events(bkg_events, exp_time, flux, refband, prng=prng)
     n_events = bkg_events["energy"].size
     bkg_events['x'] = prng.uniform(low=0.5, high=xmax, size=n_events)
     bkg_events['y'] = prng.uniform(low=0.5, high=ymax, size=n_events)

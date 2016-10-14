@@ -34,7 +34,7 @@ class AuxiliaryResponseFile(object):
     def __str__(self):
         return self.filename
 
-    def detect_events(self, events, exp_time, flux, prng=None):
+    def detect_events(self, events, exp_time, flux, refband, prng=None):
         """
         Use the ARF to determine a subset of photons which will be
         detected. Returns a boolean NumPy array which is the same
@@ -49,6 +49,9 @@ class AuxiliaryResponseFile(object):
             The exposure time in seconds.
         flux : float
             The total flux of the photons in erg/s/cm^2. 
+        refband : array_like
+            A two-element array or list containing the limits of the energy band
+            which the flux was computed in. 
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
@@ -58,7 +61,8 @@ class AuxiliaryResponseFile(object):
             prng = np.random
         energy = events["energy"]
         earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
-        rate = flux/(energy.sum()*erg_per_keV)*earea.sum()
+        idxs = np.logical_and(energy >= refband[0], energy <= refband[1])
+        rate = flux/(energy[idxs].sum()*erg_per_keV)*earea[idxs].sum()
         n_ph = np.uint64(rate*exp_time)
         fak = float(n_ph)/energy.size
         if fak > 1.0:
@@ -137,8 +141,6 @@ class RedistributionMatrixFile(object):
         # run through all photon energies and find which bin they go in
         fcurr = 0
         last = sorted_e.shape[0]
-
-        mylog.info("Scattering energies with RMF.")
 
         with ProgressBar(last) as pbar:
             for (k, low), high in zip(enumerate(elo), ehi):
