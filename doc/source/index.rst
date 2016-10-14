@@ -19,6 +19,7 @@ Contents:
    command_line/index
    python/index
    external_packages
+   api/modules
 
 
 Indices and tables

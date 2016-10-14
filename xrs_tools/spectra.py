@@ -98,7 +98,7 @@ class Spectrum(object):
             The redshift of the source.
         norm : float
             The normalization of the source in units of
-            photons/s/keV/cm at 1 keV.
+            photons/s/cm**2 at 1 keV in the source frame.
         emin : float, optional
             The minimum energy of the spectrum in keV. Default: 0.01
         emax : float, optional
@@ -126,8 +126,8 @@ class Spectrum(object):
         """
         data = np.loadtxt(filename)
         emid = data[:,0]
+        flux = data[:,1]
         de = np.diff(emid)[0]
-        flux = data[:,-1]
         ebins = np.concatenate([emid-0.5*de, emid[-1]+0.5*de])
         return cls(ebins, flux)
 

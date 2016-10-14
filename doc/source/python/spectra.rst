@@ -32,7 +32,28 @@ Creating a Power-Law Spectrum
 +++++++++++++++++++++++++++++
 
 A simple power-law spectrum can be created using the 
-:meth:`~xrs_tools.spectra.Spectrum.from_powerlaw` method. This takes as input 
+:meth:`~xrs_tools.spectra.Spectrum.from_powerlaw` method. This takes as input
+a spectral index ``photon_index``, a redshift ``redshift``, and a normalization
+of the source ``norm`` at 1 keV in the source frame, in units of 
+:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}`. Mathematically, this is equivalent
+to:
+
+.. math::
+
+    F_E = K\left[\frac{E(1+z)}{{\rm 1~keV}}\right]^{-\alpha}
+    
+where :math:`\alpha` is the ``photon_index`` (note the sign convention). You can set
+up a power-law spectrum like this:
+
+.. code-block:: python
+
+    alpha = 1.2
+    zobs = 0.05
+    norm = 1.0e-7
+    spec = Spectrum.from_powerlaw(alpha, zobs, norm, emin=0.1, emax=10.0, nbins=20000)
+
+The optional parameters ``emin``, ``emax``, and ``nbins`` can be used to control the
+binning. 
 
 Generating Thermal Spectra
 ++++++++++++++++++++++++++

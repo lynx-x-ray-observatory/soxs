@@ -68,7 +68,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'xrs_tools'
+project = 'XRStools'
 copyright = '2016, John ZuHone'
 author = 'John ZuHone'
 
