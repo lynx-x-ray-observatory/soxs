@@ -1,5 +1,5 @@
-XRStools API
-============
+XRStools Python API
+===================
 
 .. toctree::
     :maxdepth: 1

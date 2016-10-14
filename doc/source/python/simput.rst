@@ -3,6 +3,10 @@
 Working with SIMPUT Files
 =========================
 
+The default storage format for unconvolved events in XRStools is SIMPUT, which is fast becoming
+a standard for making mock X-ray observations. There are two functions to read and write SIMPUT
+files in XRStools. 
+
 Writing SIMPUT Files
 --------------------
 
@@ -45,3 +49,40 @@ add another source to the same SIMPUT catalog. You can accomplish this by making
 
 Reading SIMPUT Files
 --------------------
+
+A SIMPUT catalog can be read using :func:`~xrs_tools.simput.read_simput_catalog`:
+
+.. code-block:: python
+
+    from xrs_tools import read_simput_catalog
+    events, parameters = read_simput_catalog("point_source_simput.fits")
+    
+It returns two arguments, ``events`` and ``parameters``. ``events`` is a list of 
+Python dictionaries, one for each source in the file. Each dictionary contains NumPy
+arrays for the positions and energies of the events. For example, for a catalog which 
+only has one source they would look like this:
+
+.. code-block:: python
+
+    print(events)
+    
+.. code-block:: pycon
+
+    {'dec': array([ 44.98377818,  44.99404092,  44.99444754, ...,  45.00548515,
+             45.0052105 ,  45.00658426]),
+     'energy': array([ 5.11127663,  0.58575863,  2.00386882, ...,  1.09081411,
+             1.31414783,  2.21034932], dtype=float32),
+     'ra': array([ 30.2032835 ,  29.95447951,  29.95380409, ...,  30.04756871,
+             30.04568841,  30.04643141])}
+
+.. code-block:: python
+
+    print(parameters)
+    
+.. code-block:: pycon
+
+    {'emax': array([ 10.99995703]), 'flux': array([  1.12239243e-11]), 'emin': array([ 0.12598762])}
+
+Energies are in keV, flux is in :math:`{\rm erg~s^{-1}~cm^{-2}}`, and sky coordinates
+are in degrees. :func:`~xrs_tools.simput.read_simput_catalog` is used by the instrument 
+simulator to read sources from a SIMPUT catalog. 

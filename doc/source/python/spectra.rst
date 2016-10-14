@@ -26,6 +26,7 @@ and the bins must be equally spaced. For example:
 
 .. code-block:: python
 
+    from xrs_tools import Spectrum
     my_spec = Spectrum.from_file("my_spec.dat")
 
 Creating a Power-Law Spectrum
@@ -69,6 +70,7 @@ they have the same energy binning:
 
 .. code-block:: python
 
+    from xrs_tools import ApecGenerator
     apec_model = ApecGenerator(0.05, 50.0, 10000)
     
     spec1 = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9)
