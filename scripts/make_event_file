@@ -28,4 +28,4 @@ else:
     instrument = args.instrument
 
 make_event_file(args.simput_file, args.out_file, args.exp_time,
-                instrument, sky_center, clobber=args.clobber)
+                args.instrument, sky_center, clobber=args.clobber)

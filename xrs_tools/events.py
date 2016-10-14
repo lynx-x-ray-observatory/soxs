@@ -6,7 +6,8 @@ import os
 from xrs_tools.simput import read_simput_catalog
 from xrs_tools.utils import mylog, check_file_location
 from xrs_tools.instrument import instrument_registry, \
-    AuxiliaryResponseFile, RedistributionMatrixFile
+    AuxiliaryResponseFile, RedistributionMatrixFile, \
+    add_instrument_to_registry
 from xrs_tools.constants import erg_per_keV
 
 def write_event_file(events, parameters, filename, clobber=False):
@@ -118,7 +119,9 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry.
+        specification from the instrument registry. Can also be a JSON
+        file with a new instrument specification. If this is the case,
+        it will be loaded into the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     clobber : boolean, optional
@@ -136,6 +139,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     """
     event_list, parameters = read_simput_catalog(simput_file)
 
+    if instrument not in instrument_registry and os.path.exists(instrument):
+        instrument = add_instrument_to_registry(instrument)
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -249,7 +254,6 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
-
     """
     f = pyfits.open(event_file, mode='update')
     xmax = f["EVENTS"].header["TLMAX2"]
