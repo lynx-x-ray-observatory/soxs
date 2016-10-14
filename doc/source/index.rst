@@ -16,6 +16,7 @@ Contents:
    :maxdepth: 2
 
    installing
+   overview
    command_line/index
    python/index
    external_packages

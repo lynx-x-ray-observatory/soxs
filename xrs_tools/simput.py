@@ -11,11 +11,17 @@ def read_simput_phlist(simput_file):
     ----------
     simput_file : string
         The SIMPUT file to read from.
+
+    Returns
+    -------
+    Two Python dictionaries:
+
+      1. NumPy arrays of the positions and energies of the events.
+      2. A set of parameters.
     """
     events = {}
     parameters = {}
     f_simput = pyfits.open(simput_file)
-    parameters["exposure_time"] = f_simput["src_cat"].header.get("exposure", 0.0)
     parameters["flux"] = f_simput["src_cat"].data["flux"][0]
     parameters["emin"] = f_simput["src_cat"].data["e_min"][0]
     parameters["emax"] = f_simput["src_cat"].data["e_max"][0]

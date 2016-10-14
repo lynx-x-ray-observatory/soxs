@@ -1,6 +1,6 @@
-.. _events:
+.. _instrument_simulator:
 
-Creating Event Files
-====================
+The Instrument Simulator
+========================
 
-Using the SIMPUT file 
+The instrument simulator in XRStools takes 
