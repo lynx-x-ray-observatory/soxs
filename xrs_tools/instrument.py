@@ -110,7 +110,7 @@ class RedistributionMatrixFile(object):
         """
         Scatter photon energies with the RMF and produce the 
         corresponding channel values.
-        
+
         Parameters
         ----------
         events : dict of np.ndarrays
@@ -125,21 +125,21 @@ class RedistributionMatrixFile(object):
         n_de = elo.shape[0]
         mylog.info("Number of energy bins in RMF: %d" % n_de)
         mylog.info("Energy limits: %g %g" % (min(elo), max(ehi)))
-    
+
         n_ch = len(self.ebounds["CHANNEL"])
         mylog.info("Number of channels in RMF: %d" % n_ch)
-    
+
         eidxs = np.argsort(events["energy"])
         sorted_e = events["energy"][eidxs]
-    
+
         detectedChannels = []
-    
+
         # run through all photon energies and find which bin they go in
         fcurr = 0
         last = sorted_e.shape[0]
-    
+
         mylog.info("Scattering energies with RMF.")
-    
+
         with ProgressBar(last) as pbar:
             for (k, low), high in zip(enumerate(elo), ehi):
                 # weight function for probabilities from RMF
