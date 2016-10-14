@@ -16,6 +16,9 @@ class Spectrum(object):
         self.emid = 0.5*(ebins[1:]+ebins[:-1])
         self.flux = flux
         self.nbins = len(self.emid)
+        self._compute_tot_flux()
+
+    def _compute_tot_flux(self):
         self.tot_flux = self.flux.sum()
         self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV
         cumspec = np.cumsum(self.flux)
@@ -166,8 +169,7 @@ class Spectrum(object):
         elif flux_type == "energy":
             f = (self.flux*self.emid)[idxs].sum()*erg_per_keV
         self.flux *= new_flux/f
-        self.tot_flux = self.flux.sum()
-        self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV
+        self._compute_tot_flux()
 
     def apply_foreground_absorption(self, nH):
         """
@@ -181,6 +183,7 @@ class Spectrum(object):
         """
         sigma = wabs_cross_section(self.emid)
         self.flux *= np.exp(-nH*1.0e22*sigma)
+        self._compute_tot_flux()
 
     def generate_energies(self, t_exp, area, prng=None):
         """
