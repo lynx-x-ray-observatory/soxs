@@ -1,5 +1,6 @@
 import astropy.io.fits as pyfits
 import numpy as np
+import os
 
 from xrs_tools.constants import erg_per_keV
 
@@ -21,6 +22,7 @@ def read_simput_catalog(simput_file):
     """
     events = []
     parameters = {}
+    simput_dir = os.path.split(os.path.abspath(simput_file))[0]
     f_simput = pyfits.open(simput_file)
     parameters["flux"] = f_simput["src_cat"].data["flux"]
     parameters["emin"] = f_simput["src_cat"].data["e_min"]
@@ -29,7 +31,7 @@ def read_simput_catalog(simput_file):
                     f_simput["src_cat"].data["spectrum"]]
     f_simput.close()
     for phlist_file in phlist_files:
-        f_phlist = pyfits.open(phlist_file)
+        f_phlist = pyfits.open(os.path.join(simput_dir, phlist_file))
         evt = {}
         for key in ["ra", "dec", "energy"]:
             evt[key] = f_phlist["phlist"].data[key]
