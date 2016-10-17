@@ -17,6 +17,14 @@ parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates
                     'observation, in degrees, comma-separated')
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
+parser.add_argument("--dither_shape", type=str, default='square',
+                    help='The shape of the dither pattern: "square", "circle", or "None". '+
+                    'Default: "square"')
+parser.add_argument("--dither_size", type=float, default=16.0,
+                    help='The size of the dither pattern in arcseconds. For a circle, the'+
+                         'size is the radius; for a square, the size is the width. Default: 16.0')
+parser.add_argument("--roll_angle", type=float, default=0.0,
+                    help='The roll angle in degrees. Default: 0.0')
 
 args = parser.parse_args()
 
@@ -27,5 +35,12 @@ if args.instrument not in instrument_registry and os.path.exists(args.instrument
 else:
     instrument = args.instrument
 
+if args.dither_shape == "None":
+    dither_shape = None
+else:
+    dither_shape = args.dither_shape
+
 make_event_file(args.simput_file, args.out_file, args.exp_time,
-                args.instrument, sky_center, clobber=args.clobber)
+                args.instrument, sky_center, dither_size=args.dither_size,
+                dither_shape=dither_shape, clobber=args.clobber,
+                roll_angle=args.roll_angle)
