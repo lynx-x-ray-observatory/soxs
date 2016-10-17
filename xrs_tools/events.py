@@ -241,8 +241,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
             # Rotate physical coordinates to detector coordinates
 
-            rot_mat = np.matrix([[np.sin(roll_angle), -np.cos(roll_angle)],
-                                 [-np.cos(roll_angle), -np.sin(roll_angle)]])
+            rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
+                                [-np.cos(roll_angle), -np.sin(roll_angle)]])
 
             det = np.dot(rot_mat, np.array([xpix, ypix]))
             detx = det[0,:]
@@ -270,6 +270,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
             for key in events:
                 events[key] = events[key][keep]
+
+            n_evt = events["energy"].shape
 
             # Convert chip coordinates back to detector coordinates
 
@@ -343,8 +345,8 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
     bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=xmax-0.5, size=n_events))
     bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=ymax-0.5, size=n_events))
     roll_angle = np.deg2rad(f["EVENTS"].header["ROLL_PNT"])
-    rot_mat = np.matrix([[np.sin(roll_angle), -np.cos(roll_angle)],
-                         [-np.cos(roll_angle), -np.sin(roll_angle)]])
+    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
+                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
     bkg_events["detx"] = np.round(bkg_events["chipx"] - 0.5*nx +
                                   prng.uniform(low=-0.5, high=0.5, size=n_evt))
     bkg_events["dety"] = np.round(bkg_events["chipy"] - 0.5*nx +
