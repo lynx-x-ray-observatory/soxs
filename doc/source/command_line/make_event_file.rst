@@ -30,7 +30,7 @@ CIAO, HEATOOLS, XSPEC, etc.
 Examples
 --------
 
-This example uses the pre-built HDXI specification. 
+This example uses the pre-built HDXI instrument specification. 
 
 .. code-block:: bash
 

@@ -3,6 +3,9 @@
 Creating Event Files
 ====================
 
+Creating Events from SIMPUT Sources
+-----------------------------------
+
 The end product of a mock observation is a "standard" event file which has been 
 convolved with a model for the telescope. In XRStools, this is handled by the 
 instrument simulator. 
@@ -15,8 +18,31 @@ performs the following actions:
 2. Projects these events onto the detector plane and perform dithering of their positions.
 3. Convolves the event energies with the response matrix to produce channels.
 
-Typical invocations of :func:`~xrs_tools.events.make_event_file` look like this:
+A typical invocation of :func:`~xrs_tools.events.make_event_file` looks like the following:
 
 .. code-block:: python
 
-    make_event_file()
+    simput_file = "snr_simput.fits" # SIMPUT file to be read
+    out_file = "evt_xcal.fits" # event file to be written
+    exp_time = 30000. # The exposure time in seconds
+    instrument = "xcal" # short name for instrument to be used
+    sky_center = [30., 45.] # RA, Dec of pointing in degrees
+    make_event_file(simput_file, out_file, exp_time, instrument, sky_center, clobber=True)
+    
+If you have your own JSON-based instrument specification, you can supply it to the instrument
+argument instead:
+
+.. code-block:: python
+
+    instrument = "my_imager.json"
+    make_event_file(simput_file, out_file, instrument, sky_center, clobber=True)
+
+Available instruments are:
+
+* ``"hdxi"``: 
+* ``"xcal"``:
+
+Adding Background Events
+------------------------
+
+
