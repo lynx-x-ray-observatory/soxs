@@ -24,6 +24,10 @@ def write_event_file(events, parameters, filename, clobber=False):
     col_x = pyfits.Column(name='X', format='D', unit='pixel', array=events["xpix"])
     col_y = pyfits.Column(name='Y', format='D', unit='pixel', array=events["ypix"])
     col_e = pyfits.Column(name='ENERGY', format='E', unit='eV', array=events["energy"]*1000.)
+    col_cx = pyfits.Column(name='CHIPX', format='D', unit='pixel', array=events["chipx"])
+    col_cy = pyfits.Column(name='CHIPY', format='D', unit='pixel', array=events["chipy"])
+    col_dx = pyfits.Column(name='DETX', format='D', unit='pixel', array=events["detx"])
+    col_dy = pyfits.Column(name='DETY', format='D', unit='pixel', array=events["dety"])
 
     chantype = parameters["channel_type"]
     if chantype == "PHA":
@@ -35,7 +39,7 @@ def write_event_file(events, parameters, filename, clobber=False):
     time = np.random.uniform(size=num_events, low=0.0, high=parameters["exposure_time"])
     col_t = pyfits.Column(name="TIME", format='1D', unit='s', array=time)
 
-    cols = [col_e, col_x, col_y, col_ch, col_t]
+    cols = [col_e, col_x, col_y, col_ch, col_t, col_cx, col_cy, col_dx, col_dy]
 
     coldefs = pyfits.ColDefs(cols)
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
@@ -59,6 +63,14 @@ def write_event_file(events, parameters, filename, clobber=False):
     tbhdu.header["TLMAX3"] = parameters["num_pixels"]+0.5
     tbhdu.header["TLMIN4"] = parameters["chan_lim"][0]
     tbhdu.header["TLMAX4"] = parameters["chan_lim"][1]
+    tbhdu.header["TLMIN6"] = 1.0
+    tbhdu.header["TLMAX6"] = parameters["num_pixels"]
+    tbhdu.header["TLMIN7"] = 1.0
+    tbhdu.header["TLMAX7"] = parameters["num_pixels"]
+    tbhdu.header["TLMIN8"] = 1.0-parameters["pix_center"][0]
+    tbhdu.header["TLMAX8"] = parameters["num_pixels"]-parameters["pix_center"][0]
+    tbhdu.header["TLMIN9"] = 1.0-parameters["pix_center"][1]
+    tbhdu.header["TLMAX9"] = parameters["num_pixels"]-parameters["pix_center"][1]
     tbhdu.header["EXPOSURE"] = parameters["exposure_time"]
     tbhdu.header["TSTART"] = 0.0
     tbhdu.header["TSTOP"] = parameters["exposure_time"]
@@ -326,8 +338,10 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
         test. Default is the :mod:`numpy.random` module.
     """
     f = pyfits.open(event_file, mode='update')
-    xmax = f["EVENTS"].header["TLMAX2"]
-    ymax = f["EVENTS"].header["TLMAX3"]
+    cxmax = f["EVENTS"].header["TLMAX2"]-0.5
+    cymax = f["EVENTS"].header["TLMAX3"]-0.5
+    xc = f["EVENTS"].header["TCRPX2"]
+    yc = f["EVENTS"].header["TCRPX3"]
     exp_time = f["EVENTS"].header["EXPOSURE"]
     if flat_response:
         area = 0.0
@@ -342,15 +356,15 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
         refband = [bkg_events["energy"].min(), bkg_events["energy"].max()]
         arf.detect_events(bkg_events, exp_time, flux, refband, prng=prng)
     n_events = bkg_events["energy"].size
-    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=xmax-0.5, size=n_events))
-    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=ymax-0.5, size=n_events))
+    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=cxmax, size=n_events))
+    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=cymax, size=n_events))
     roll_angle = np.deg2rad(f["EVENTS"].header["ROLL_PNT"])
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
                         [-np.cos(roll_angle), -np.sin(roll_angle)]])
-    bkg_events["detx"] = np.round(bkg_events["chipx"] - 0.5*nx +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_evt))
-    bkg_events["dety"] = np.round(bkg_events["chipy"] - 0.5*nx +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_evt))
+    bkg_events["detx"] = np.round(bkg_events["chipx"] - xc +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    bkg_events["dety"] = np.round(bkg_events["chipy"] - yc +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
     pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
     bkg_events["xpix"] = pix[0,:]
     bkg_events["ypix"] = pix[1,:]
