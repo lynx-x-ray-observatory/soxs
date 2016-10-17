@@ -10,6 +10,8 @@ from xrs_tools.instrument import instrument_registry, \
     add_instrument_to_registry
 from xrs_tools.constants import erg_per_keV
 
+sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
+
 def write_event_file(events, parameters, filename, clobber=False):
     from astropy.time import Time, TimeDelta
 
@@ -76,6 +78,9 @@ def write_event_file(events, parameters, filename, clobber=False):
     tbhdu.header["MISSION"] = parameters["mission"]
     tbhdu.header["TELESCOP"] = parameters["telescope"]
     tbhdu.header["INSTRUME"] = parameters["instrument"]
+    tbhdu.header["RA_PNT"] = parameters["sky_center"][0]
+    tbhdu.header["DEC_PNT"] = parameters["sky_center"][1]
+    tbhdu.header["ROLL_PNT"] = parameters["roll_angle"]
 
     start = pyfits.Column(name='START', format='1D', unit='s', array=np.array([0.0]))
     stop = pyfits.Column(name='STOP', format='1D', unit='s', array=np.array([parameters["exposure_time"]]))
@@ -98,7 +103,8 @@ def write_event_file(events, parameters, filename, clobber=False):
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
 def make_event_file(simput_file, out_file, exp_time, instrument,
-                    sky_center, clobber=False, prng=np.random):
+                    sky_center, clobber=False, dither_shape="square",
+                    dither_size=16.0, roll_angle=0.0, prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
     file from them. This function does the following:
@@ -166,6 +172,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     event_params["instrument"] = rmf.header["INSTRUME"]
     event_params["mission"] = rmf.header.get("MISSION", "")
     event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
+    event_params["roll_angle"] = roll_angle
     num = 0
     for i in range(1, rmf.num_mat_columns+1):
         if rmf.header["TTYPE%d" % i] == "F_CHAN":
@@ -197,19 +204,60 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         if events["energy"].size == 0:
             mylog.warning("No events were observed for this source!!!")
 
-        # Step 2: Assign pixel coordinates to events and clip events that don't fall
-        # within the detection region
+        # Step 2: Assign pixel coordinates to events. Apply dithering and
+        # PSF. Clip events that don't fall within the detection region.
 
         if events["energy"].size > 0:
             mylog.info("Pixeling events.")
 
+            # Convert RA, Dec to pixel coordinates
             xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
 
-            events["xpix"] = xpix
-            events["ypix"] = ypix
+            n_evt = xpix.size
 
-            keepx = np.logical_and(events["xpix"] >= 0.5, events["xpix"] <= nx+0.5)
-            keepy = np.logical_and(events["ypix"] >= 0.5, events["ypix"] <= nx+0.5)
+            # Dither pixel coordinates
+
+            x_offset = 0.0
+            y_offset = 0.0
+            if dither_shape == "circle":
+                r = dither_size*prng.uniform(size=n_evt)
+                theta = 2.*np.pi*prng.uniform(size=n_evt)
+                x_offset = r*np.cos(theta)
+                y_offset = r*np.sin(theta)
+            elif dither_shape == "square":
+                x_offset = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                y_offset = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+
+            xpix -= x_offset
+            ypix -= y_offset
+
+            roll_angle = np.deg2rad(roll_angle)
+
+            # Rotate physical coordinates to detector coordinates
+
+            rot_mat = np.matrix([[np.sin(roll_angle), -np.cos(roll_angle)],
+                                 [-np.cos(roll_angle), -np.sin(roll_angle)]])
+
+            det = np.dot(rot_mat, np.array([xpix, ypix]))
+            detx = det[0,:]
+            dety = det[1,:]
+
+            # PSF scattering of detector coordinates
+
+            sigma = instrument_spec["psf_fwhm"]/sigma_to_fwhm/instrument_spec["dtheta"]
+
+            detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+            dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+
+            # Convert detector coordinates to chip coordinates
+
+            events["chipx"] = np.round(detx + 0.5*nx)
+            events["chipy"] = np.round(dety + 0.5*nx)
+
+            # Throw out events that don't fall on the chip
+
+            keepx = np.logical_and(events["chipx"] >= 1.0, events["chipx"] <= nx)
+            keepy = np.logical_and(events["chipy"] >= 1.0, events["chipy"] <= nx)
             keep = np.logical_and(keepx, keepy)
             if keep.sum() == 0:
                 mylog.warning("No events are within the field of view for this source!!!")
@@ -217,7 +265,21 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
             for key in events:
                 events[key] = events[key][keep]
 
-        # Step 3: Scatter energies with RMF
+            # Convert chip coordinates back to detector coordinates
+
+            events["detx"] = np.round(events["chipx"] - 0.5*nx +
+                                      prng.uniform(low=-0.5, high=0.5, size=n_evt))
+            events["dety"] = np.round(events["chipy"] - 0.5*nx +
+                                      prng.uniform(low=-0.5, high=0.5, size=n_evt))
+
+            # Convert detector coordinates back to pixel coordinates
+
+            pix = np.dot(rot_mat, np.array([events["detx"], events["dety"]]))
+
+            events["xpix"] = pix[0,:]
+            events["ypix"] = pix[1,:]
+
+    # Step 3: Scatter energies with RMF
 
         if events["energy"].size > 0:
             mylog.info("Scattering energies with RMF %s." % event_params['rmf'])
@@ -272,21 +334,31 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
         refband = [bkg_events["energy"].min(), bkg_events["energy"].max()]
         arf.detect_events(bkg_events, exp_time, flux, refband, prng=prng)
     n_events = bkg_events["energy"].size
-    bkg_events['x'] = prng.uniform(low=0.5, high=xmax, size=n_events)
-    bkg_events['y'] = prng.uniform(low=0.5, high=ymax, size=n_events)
+    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=xmax-0.5, size=n_events))
+    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=ymax-0.5, size=n_events))
+    roll_angle = np.deg2rad(f["EVENTS"].header["ROLL_PNT"])
+    rot_mat = np.matrix([[np.sin(roll_angle), -np.cos(roll_angle)],
+                         [-np.cos(roll_angle), -np.sin(roll_angle)]])
+    bkg_events["detx"] = np.round(bkg_events["chipx"] - 0.5*nx +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_evt))
+    bkg_events["dety"] = np.round(bkg_events["chipy"] - 0.5*nx +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_evt))
+    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
+    bkg_events["xpix"] = pix[0,:]
+    bkg_events["ypix"] = pix[1,:]
     rmf = RedistributionMatrixFile(f["EVENTS"].header["RESPFILE"])
     bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
     chantype = rmf.header["CHANTYPE"].upper()
     f["EVENTS"].data[chantype] = np.concatenate(f["EVENTS"].data[chantype][:],
                                                 bkg_events[rmf.header["CHANTYPE"]])
     f["EVENTS"].data["X"] = np.concatenate(f["EVENTS"].data["X"][:], 
-                                           bkg_events["x"])
+                                           bkg_events["xpix"])
     f["EVENTS"].data["Y"] = np.concatenate(f["EVENTS"].data["Y"][:],
-                                           bkg_events["y"])
+                                           bkg_events["ypix"])
     f["EVENTS"].data["ENERGY"] = np.concatenate(f["EVENTS"].data["ENERGY"][:], 
                                                 bkg_events["energy"])
-    f["EVENTS"].data["Y"] = np.concatenate(f["EVENTS"].data["Y"][:],
-                                           bkg_events["y"])
+    f["EVENTS"].data[chantype] = np.concatenate(f["EVENTS"].data[chantype][:],
+                                                bkg_events[chantype])
     t = np.random.uniform(size=n_events, low=0.0, high=exp_time)
     f["EVENTS"].data["TIME"] = np.concatenate(f["EVENTS"].data["TIME"][:], t)
     f.flush()
