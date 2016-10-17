@@ -213,6 +213,12 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
             # Convert RA, Dec to pixel coordinates
             xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
 
+            xpix -= event_params["pix_center"][0]
+            ypix -= event_params["pix_center"][1]
+
+            events.pop("ra")
+            events.pop("dec")
+
             n_evt = xpix.size
 
             # Dither pixel coordinates
@@ -251,8 +257,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
             # Convert detector coordinates to chip coordinates
 
-            events["chipx"] = np.round(detx + 0.5*nx)
-            events["chipy"] = np.round(dety + 0.5*nx)
+            events["chipx"] = np.round(detx + event_params['pix_center'][0])
+            events["chipy"] = np.round(dety + event_params['pix_center'][1])
 
             # Throw out events that don't fall on the chip
 
@@ -267,17 +273,17 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
             # Convert chip coordinates back to detector coordinates
 
-            events["detx"] = np.round(events["chipx"] - 0.5*nx +
+            events["detx"] = np.round(events["chipx"] - event_params['pix_center'][0] +
                                       prng.uniform(low=-0.5, high=0.5, size=n_evt))
-            events["dety"] = np.round(events["chipy"] - 0.5*nx +
+            events["dety"] = np.round(events["chipy"] - event_params['pix_center'][1] +
                                       prng.uniform(low=-0.5, high=0.5, size=n_evt))
 
             # Convert detector coordinates back to pixel coordinates
 
             pix = np.dot(rot_mat, np.array([events["detx"], events["dety"]]))
 
-            events["xpix"] = pix[0,:]
-            events["ypix"] = pix[1,:]
+            events["xpix"] = pix[0,:] + event_params['pix_center'][0]
+            events["ypix"] = pix[1,:] + event_params['pix_center'][1]
 
     # Step 3: Scatter energies with RMF
 
