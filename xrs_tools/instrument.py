@@ -6,8 +6,6 @@ from astropy.utils.console import ProgressBar
 from xrs_tools.constants import erg_per_keV
 from xrs_tools.utils import mylog, ensure_numpy_array
 
-sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
-
 class AuxiliaryResponseFile(object):
     r"""
     A class for auxiliary response files (ARFs).
@@ -180,11 +178,13 @@ instrument_registry = {}
 instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
                                "rmf": "xrs_calorimeter.rmf",
                                "num_pixels": 300,
-                               "dtheta": 1.0}
+                               "dtheta": 1.0,
+                               "psf_fwhm": 0.5}
 instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "num_pixels": 4096,
-                               "dtheta": 1./3.}
+                               "dtheta": 1./3.,
+                               "psf_fwhm": 0.5}
 
 def add_instrument_to_registry(filename):
     """
@@ -196,7 +196,8 @@ def add_instrument_to_registry(filename):
     ...  'arf': 'xrs_hdxi.arf', # The file containing the ARF
     ...  'rmf': 'xrs_hdxi.rmf' # The file containing the RMF
     ...  'dtheta': 0.33333333333, # The central pixel scale in arcsec
-    ...  'num_pixels': 4096} # The number of pixels on a side in the FOV
+    ...  'num_pixels': 4096, # The number of pixels on a side in the FOV
+    ...  'psf_fwhm': 0.5} # The FWHM of the PSF, in arcseconds
 
     Parameters
     ----------
