@@ -296,8 +296,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
             pix = np.dot(rot_mat, np.array([events["detx"], events["dety"]]))
 
-            events["xpix"] = pix[0,:] + event_params['pix_center'][0]
-            events["ypix"] = pix[1,:] + event_params['pix_center'][1]
+            events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset
+            events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset
 
     # Step 3: Scatter energies with RMF
 
