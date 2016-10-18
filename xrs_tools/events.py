@@ -122,10 +122,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     file from them. This function does the following:
 
     1. Convolves the events with an ARF and RMF
-    2. Pixelizes the events
+    2. Pixelizes the events, applying PSF effects and dithering
     3. Writes the events to a file
-
-    PSF effects and dithering are handled separately, in 
 
     Parameters
     ----------
