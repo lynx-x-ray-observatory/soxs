@@ -21,7 +21,7 @@ If you have a spectrum tabulated in an ASCII text file, this can be read
 in using the :meth:`~xrs_tools.spectra.Spectrum.from_file` method. The file
 must be comprised of two columns, the first being the energies of the bins
 in keV and the second being the photon flux in units of 
-:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}`. The binning must be linear
+:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. The binning must be linear
 and the bins must be equally spaced. For example:
 
 .. code-block:: python
@@ -36,8 +36,8 @@ A simple power-law spectrum can be created using the
 :meth:`~xrs_tools.spectra.Spectrum.from_powerlaw` method. This takes as input
 a spectral index ``photon_index``, a redshift ``redshift``, and a normalization
 of the source ``norm`` at 1 keV in the source frame, in units of 
-:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}`. Mathematically, this is equivalent
-to:
+:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. Mathematically, 
+this is equivalent to:
 
 .. math::
 

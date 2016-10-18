@@ -16,12 +16,13 @@ class Spectrum(object):
         self.emid = 0.5*(ebins[1:]+ebins[:-1])
         self.flux = flux
         self.nbins = len(self.emid)
+        self.de = ebins[1]-ebins[0]
         self._compute_tot_flux()
 
     def _compute_tot_flux(self):
-        self.tot_flux = self.flux.sum()
-        self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV
-        cumspec = np.cumsum(self.flux)
+        self.tot_flux = self.flux.sum()*self.de
+        self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV*self.de
+        cumspec = np.cumsum(self.flux*self.de)
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
@@ -98,7 +99,7 @@ class Spectrum(object):
             The redshift of the source.
         norm : float
             The normalization of the source in units of
-            photons/s/cm**2 at 1 keV in the source frame.
+            photons/s/cm**2/keV at 1 keV in the source frame.
         emin : float, optional
             The minimum energy of the spectrum in keV. Default: 0.01
         emax : float, optional
@@ -116,7 +117,7 @@ class Spectrum(object):
         """
         Read a spectrum from an ASCII text file. Accepts a file
         with two columns, the first being the center energy of the
-        bin in keV and the second being the flux in photons/s/cm**2, 
+        bin in keV and the second being the flux in photons/s/cm**2/keV, 
         assuming a linear binning with constant bin widths:
 
         Parameters
@@ -157,9 +158,9 @@ class Spectrum(object):
             emax = self.ebins[-1]
         idxs = np.logical_and(self.emid >= emin, self.emid <= emax)
         if flux_type == "photons":
-            f = self.flux[idxs].sum()
+            f = self.flux[idxs].sum()*self.de
         elif flux_type == "energy":
-            f = (self.flux*self.emid)[idxs].sum()*erg_per_keV
+            f = (self.flux*self.emid)[idxs].sum()*erg_per_keV*self.de
         self.flux *= new_flux/f
         self._compute_tot_flux()
 
@@ -354,7 +355,7 @@ class ApecGenerator(object):
                                                   coco_fields, scale_factor)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
-        spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)
+        spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)/self.de
         return Spectrum(self.ebins, spec)
 
 def wabs_cross_section(E):
