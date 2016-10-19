@@ -15,3 +15,6 @@ from xrs_tools.instrument import \
 from xrs_tools.events import \
     make_event_file, \
     add_background_events
+
+from xrs_tools.spatial import \
+    PointSourceModel
