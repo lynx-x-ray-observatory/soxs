@@ -64,6 +64,7 @@ class AuxiliaryResponseFile(object):
         n_ph = np.uint64(rate*exp_time)
         fak = float(n_ph)/energy.size
         if fak > 1.0:
+            mylog.error("Number of events in sample: %d, Number of events wanted: %d" % (energy.size, n_ph))
             raise ValueError("This combination of exposure time and effective area "
                              "will result in more photons being drawn than are available "
                              "in the sample!!!")
