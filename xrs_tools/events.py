@@ -113,8 +113,8 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
-def add_background_events(bkgnd_file, parameters, flat_response=False,
-                          prng=np.random):
+def add_background_events(bkgnd_file, parameters, bkg_scale,
+                          flat_response=False, prng=np.random):
     """
     Add background events to events. This is for astrophysical
     backgrounds as well as instrumental backgrounds. For the latter, 
@@ -126,6 +126,8 @@ def add_background_events(bkgnd_file, parameters, flat_response=False,
         The file containing the background spectrum.
     parameters : dictionary
         The dictionary of parameters for the observation.
+    bkg_scale : float
+        The scale of the background.
     flat_response : boolean, optional
         If True, a flat ARF is assumed, which may be appropriate
         for instrumental backgrounds. Default: False
@@ -136,7 +138,7 @@ def add_background_events(bkgnd_file, parameters, flat_response=False,
     """
     fov = parameters["num_pixels"]*parameters["dtheta"]*60.0
     fov *= fov
-    bkgnd_spectrum = fov*Spectrum.from_file(bkgnd_file)
+    bkgnd_spectrum = bkg_scale*fov*Spectrum.from_file(bkgnd_file)
     exp_time = parameters["exposure_time"]
     arf = AuxiliaryResponseFile(parameters["arf"])
     if flat_response:
@@ -172,7 +174,7 @@ def add_background_events(bkgnd_file, parameters, flat_response=False,
 
 def make_event_file(simput_file, out_file, exp_time, instrument,
                     sky_center, clobber=False, dither_shape="square",
-                    dither_size=16.0, roll_angle=0.0, add_background=True,
+                    dither_size=16.0, roll_angle=0.0, bkg_scale=1.0,
                     prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
@@ -373,12 +375,11 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     # Step 4: Add background events
 
-    if add_background:
-        instr_bkg = add_background_events(instr_background, event_params, 
+    if bkg_scale > 0.0:
+        instr_bkg = add_background_events(instr_background, event_params, bkg_scale,
                                           flat_response=True, prng=prng)
-        astro_bkg = add_background_events(astro_background, 
-                                          event_params, flat_response=False, 
-                                          prng=prng)
+        astro_bkg = add_background_events(astro_background, event_params, bkg_scale,
+                                          flat_response=False, prng=prng)
         for key in events:
             all_events[key] = np.concatenate([all_events[key],
                                               astro_bkg[key],
