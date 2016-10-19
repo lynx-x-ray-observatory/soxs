@@ -8,7 +8,7 @@ xrs_path = os.path.abspath(os.path.dirname(__file__))
 xrs_files_path = os.path.join(xrs_path, "files")
 
 astro_background = os.path.join(xrs_files_path, "astro_background.dat")
-instr_background = os.path.join(xrs_files_path, "particle_background.dat")
+instr_background = os.path.join(xrs_files_path, "instr_background.dat")
 
 def check_file_location(fn, subdir):
     if os.path.exists(fn):
