@@ -85,7 +85,8 @@ class Spectrum(object):
         lines = f_s.readlines()
         f_s.close()
         ebins = np.array(lines[0].split()).astype("float64")
-        flux = np.array(lines[1].split()).astype("float64")
+        de = np.diff(ebins)[0]
+        flux = np.array(lines[1].split()).astype("float64")/de
         os.chdir(curdir)
         shutil.rmtree(tmpdir)
         return cls(ebins, flux)
