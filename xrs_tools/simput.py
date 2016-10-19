@@ -98,52 +98,55 @@ def write_simput_catalog(simput_prefix, phlist_prefix,
     simputfile = simput_prefix+"_simput.fits"
 
     if append:
-        f = pyfits.open(simputfile, mode='update')
+        f = pyfits.open(simputfile)
         num_sources = f["SRC_CAT"].data["SRC_ID"].size
         id = num_sources + 1
-        f["SRC_CAT"].data["SRC_ID"] = np.append(f["SRC_CAT"].data["SRC_ID"][:], id)
-        f["SRC_CAT"].data["RA"] = np.append(f["SRC_CAT"].data["RA"][:], 0.0)
-        f["SRC_CAT"].data["DEC"] = np.append(f["SRC_CAT"].data["DEC"][:], 0.0)
-        f["SRC_CAT"].data["E_MIN"] = np.append(f["SRC_CAT"].data["E_MIN"][:], emin)
-        f["SRC_CAT"].data["E_MAX"] = np.append(f["SRC_CAT"].data["E_MAX"][:], emax)
-        f["SRC_CAT"].data["FLUX"] = np.append(f["SRC_CAT"].data["FLUX"][:], flux)
-        f["SRC_CAT"].data["SPECTRUM"] = np.append(f["SRC_CAT"].data["SPECTRUM"][:],
-                                                  phfile+"[PHLIST,1]")
-        f["SRC_CAT"].data["IMAGE"] = np.append(f["SRC_CAT"].data["IMAGE"][:],
-                                               phfile+"[PHLIST,1]")
-        f["SRC_CAT"].data["SRC_NAME"] = np.append(f["SRC_CAT"].data["SRC_NAME"][:],
-                                                  "xrs_tools_src_%d" % id)
-        f.flush()
+        src_id = np.append(f["SRC_CAT"].data["SRC_ID"][:], id)
+        ra = np.append(f["SRC_CAT"].data["RA"][:], 0.0)
+        dec = np.append(f["SRC_CAT"].data["DEC"][:], 0.0)
+        e_min = np.append(f["SRC_CAT"].data["E_MIN"][:], emin)
+        e_max = np.append(f["SRC_CAT"].data["E_MAX"][:], emax)
+        flx = np.append(f["SRC_CAT"].data["FLUX"][:], flux)
+        spectrum = np.append(f["SRC_CAT"].data["SPECTRUM"][:], phfile+"[PHLIST,1]")
+        image = np.append(f["SRC_CAT"].data["IMAGE"][:], phfile+"[PHLIST,1]")
+        src_name = np.append(f["SRC_CAT"].data["SRC_NAME"][:], "xrs_tools_src_%d" % id)
         f.close()
     else:
-        col1 = pyfits.Column(name='SRC_ID', format='J', array=np.array([1]).astype("int32"))
-        col2 = pyfits.Column(name='RA', format='D', array=np.array([0.0]))
-        col3 = pyfits.Column(name='DEC', format='D', array=np.array([0.0]))
-        col4 = pyfits.Column(name='E_MIN', format='D', array=np.array([emin]))
-        col5 = pyfits.Column(name='E_MAX', format='D', array=np.array([emax]))
-        col6 = pyfits.Column(name='FLUX', format='D', array=np.array([flux]))
-        col7 = pyfits.Column(name='SPECTRUM', format='80A', 
-                             array=np.array([phfile+"[PHLIST,1]"]))
-        col8 = pyfits.Column(name='IMAGE', format='80A', 
-                             array=np.array([phfile+"[PHLIST,1]"]))
-        col9 = pyfits.Column(name='SRC_NAME', format='80A', 
-                             array=np.array(["xrs_tools_src_1"]))
-    
-        coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9])
-    
-        wrhdu = pyfits.BinTableHDU.from_columns(coldefs)
-        wrhdu.update_ext_name("SRC_CAT")
-    
-        wrhdu.header["HDUCLASS"] = "HEASARC"
-        wrhdu.header["HDUCLAS1"] = "SIMPUT"
-        wrhdu.header["HDUCLAS2"] = "SRC_CAT"
-        wrhdu.header["HDUVERS"] = "1.1.0"
-        wrhdu.header["RADECSYS"] = "FK5"
-        wrhdu.header["EQUINOX"] = 2000.0
-        wrhdu.header["TUNIT2"] = "deg"
-        wrhdu.header["TUNIT3"] = "deg"
-        wrhdu.header["TUNIT4"] = "keV"
-        wrhdu.header["TUNIT5"] = "keV"
-        wrhdu.header["TUNIT6"] = "erg/s/cm**2"
-    
-        wrhdu.writeto(simputfile, clobber=clobber)
+        src_id = np.array([1]).astype("int32")
+        ra = np.array([0.0])
+        dec = np.array([0.0])
+        e_min = np.array([emin])
+        e_max = np.array([emax])
+        flx = np.array([flux])
+        spectrum = np.array([phfile+"[PHLIST,1]"])
+        image = spectrum
+        src_name = np.array(["xrs_tools_src_1"])
+
+    col1 = pyfits.Column(name='SRC_ID', format='J', array=src_id)
+    col2 = pyfits.Column(name='RA', format='D', array=ra)
+    col3 = pyfits.Column(name='DEC', format='D', array=dec)
+    col4 = pyfits.Column(name='E_MIN', format='D', array=e_min)
+    col5 = pyfits.Column(name='E_MAX', format='D', array=e_max)
+    col6 = pyfits.Column(name='FLUX', format='D', array=flx)
+    col7 = pyfits.Column(name='SPECTRUM', format='80A', array=spectrum)
+    col8 = pyfits.Column(name='IMAGE', format='80A', array=image)
+    col9 = pyfits.Column(name='SRC_NAME', format='80A', array=src_name)
+
+    coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9])
+
+    wrhdu = pyfits.BinTableHDU.from_columns(coldefs)
+    wrhdu.update_ext_name("SRC_CAT")
+
+    wrhdu.header["HDUCLASS"] = "HEASARC"
+    wrhdu.header["HDUCLAS1"] = "SIMPUT"
+    wrhdu.header["HDUCLAS2"] = "SRC_CAT"
+    wrhdu.header["HDUVERS"] = "1.1.0"
+    wrhdu.header["RADECSYS"] = "FK5"
+    wrhdu.header["EQUINOX"] = 2000.0
+    wrhdu.header["TUNIT2"] = "deg"
+    wrhdu.header["TUNIT3"] = "deg"
+    wrhdu.header["TUNIT4"] = "keV"
+    wrhdu.header["TUNIT5"] = "keV"
+    wrhdu.header["TUNIT6"] = "erg/s/cm**2"
+
+    wrhdu.writeto(simputfile, clobber=clobber)
