@@ -336,15 +336,16 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
         test. Default is the :mod:`numpy.random` module.
     """
     f = pyfits.open(event_file, mode='update')
-    cxmax = f["EVENTS"].header["TLMAX2"]-0.5
-    cymax = f["EVENTS"].header["TLMAX3"]-0.5
-    xc = f["EVENTS"].header["TCRPX2"]
-    yc = f["EVENTS"].header["TCRPX3"]
-    exp_time = f["EVENTS"].header["EXPOSURE"]
+    hdu = f["EVENTS"]
+    cxmax = hdu.header["TLMAX2"]-0.5
+    cymax = hdu.header["TLMAX3"]-0.5
+    xc = hdu.header["TCRPX2"]
+    yc = hdu.header["TCRPX3"]
+    exp_time = hdu.header["EXPOSURE"]
+    arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
     if flat_response:
         area = 0.0
     else:
-        arf = AuxiliaryResponseFile(f["EVENTS"].header["ANCRFILE"])
         area = arf.max_area
     bkg_events = {}
     bkg_events["energy"] = bkgnd_spectrum.generate_energies(exp_time, 
@@ -356,7 +357,7 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
     n_events = bkg_events["energy"].size
     bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=cxmax, size=n_events))
     bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=cymax, size=n_events))
-    roll_angle = np.deg2rad(f["EVENTS"].header["ROLL_PNT"])
+    roll_angle = np.deg2rad(hdu.header["ROLL_PNT"])
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
                         [-np.cos(roll_angle), -np.sin(roll_angle)]])
     bkg_events["detx"] = np.round(bkg_events["chipx"] - xc +
@@ -366,20 +367,31 @@ def add_background_events(bkgnd_spectrum, event_file, flat_response=False,
     pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
     bkg_events["xpix"] = pix[0,:]
     bkg_events["ypix"] = pix[1,:]
-    rmf = RedistributionMatrixFile(f["EVENTS"].header["RESPFILE"])
+    rmf = RedistributionMatrixFile(hdu.header["RESPFILE"])
     bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
     chantype = rmf.header["CHANTYPE"].upper()
-    f["EVENTS"].data[chantype] = np.concatenate(f["EVENTS"].data[chantype][:],
-                                                bkg_events[rmf.header["CHANTYPE"]])
-    f["EVENTS"].data["X"] = np.concatenate(f["EVENTS"].data["X"][:], 
-                                           bkg_events["xpix"])
-    f["EVENTS"].data["Y"] = np.concatenate(f["EVENTS"].data["Y"][:],
-                                           bkg_events["ypix"])
-    f["EVENTS"].data["ENERGY"] = np.concatenate(f["EVENTS"].data["ENERGY"][:], 
-                                                bkg_events["energy"])
-    f["EVENTS"].data[chantype] = np.concatenate(f["EVENTS"].data[chantype][:],
-                                                bkg_events[chantype])
+    bkg_events["xpix"] = np.concatenate([hdu.data["X"], bkg_events["xpix"]])
+    bkg_events["ypix"] = np.concatenate([hdu.data["Y"], bkg_events["ypix"]])
+    bkg_events["energy"] = np.concatenate([hdu.data["ENERGY"], bkg_events["energy"]])
+    bkg_events[chantype] = np.concatenate([hdu.data[chantype], bkg_events[chantype]])
     t = np.random.uniform(size=n_events, low=0.0, high=exp_time)
-    f["EVENTS"].data["TIME"] = np.concatenate(f["EVENTS"].data["TIME"][:], t)
-    f.flush()
+    bkg_events['time'] = np.concatenate(hdu.data["TIME"], t)
+    event_params = {}
+    event_params["exposure_time"] = exp_time
+    event_params["pix_center"] = [xc, yc]
+    event_params["dtheta"] = hdu.header["TCDLT3"]
+    event_params["num_pixels"] = int(cxmax)
+    event_params["chan_lim"] = [hdu.header["TLMIN4"], hdu.header["TLMAX4"]]
+    event_params["rmf"] = rmf.filename
+    event_params["arf"] = arf.filename
+    event_params["nchan"] = hdu.header["PHA_BINS"]
+    event_params["channel_type"] = chantype
+    event_params["channel_type"] = rmf.header["CHANTYPE"]
+    event_params["telescope"] = rmf.header["TELESCOP"]
+    event_params["instrument"] = rmf.header["INSTRUME"]
+    event_params["mission"] = rmf.header.get("MISSION", "")
+    event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
+    event_params["roll_angle"] = hdu.header["ROLL_PNT"]
+    event_params["sky_center"] = [hdu.header["RA_PNT"], hdu.header["DEC_PNT"]]
     f.close()
+    write_event_file(bkg_events, event_params, event_file, clobber=True)
