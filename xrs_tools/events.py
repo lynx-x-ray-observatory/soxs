@@ -310,7 +310,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         raise RuntimeError("No events were detected!!!")
 
     all_events['time'] = np.random.uniform(size=all_events["energy"].size, low=0.0, 
-                                           high=parameters["exposure_time"])
+                                           high=event_params["exposure_time"])
 
     write_event_file(all_events, event_params, out_file, clobber=clobber)
 
