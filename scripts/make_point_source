@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import numpy as np
+from xrs_tools import Spectrum, write_simput_catalog
+
+parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a point source from'+
+                                             'a spectrum supplied in a file.')
+parser.add_argument("simput_prefix", type=str, 
+                    help='The prefix of the SIMPUT file to be used as the root of the '+
+                         'catalog. If it does not exist, it will be created.')
+parser.add_argument("phlist_prefix", type=str, 
+                    help='The prefix of the photon list file to be written.')
+parser.add_argument("ra", type=float, help="The right ascension of the source in degrees.")
+parser.add_argument("dec", type=float, help="The declination of the source in degrees.")
+parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
+parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("area", type=float, default=30000.0, help='The collecting area to use, in cm^2.')
+parser.add_argument("--clobber", action='store_true', 
+                    help='Whether or not to clobber an existing file with the same name.')
+
+args = parser.parse_args()
+
+append = os.path.exists(args.simput_prefix+"_simput.fits")
+
+spec = Spectrum.from_file(args.specfile)
+energy = spec.generate_energies(args.exp_time, args.area)
+n_evt = energy.size
+ra = args.ra*np.ones(n_evt)
+dec = args.dec*np.ones(n_evt)
+
+write_simput_catalog(args.simput_prefix, args.phlist_prefix,
+                     args.exp_time, args.area, ra, dec, energy,
+                     append=append, clobber=args.clobber)
