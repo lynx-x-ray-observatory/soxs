@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import argparse
+from xrs_tools import Spectrum
+
+parser = argparse.ArgumentParser(description='Create a power-law spectrum and write it to a file.')
+parser.add_argument("photon_index", type=float, 
+                    help='The spectral index of the power law.')
+parser.add_argument("norm", type=float, 
+                    help='The normalization of the source in units of '+
+                         'photons/s/cm**2/keV at 1 keV in the source frame.')
+parser.add_argument("specfile", type=str, help="The filename to write the spectrum to.")
+parser.add_argument("redshift", type=float, default=0.0, help="The redshift of the source.")
+parser.add_argument("--emin", type=float, default=0.01, help='The minimum energy in keV.')
+parser.add_argument("--emax", type=float, default=50.0, help='The maximum energy in keV.')
+parser.add_argument("--nbins", type=int, default=10000, help='The number of bins in the spectrum.')
+parser.add_argument("--absorb", action='store_true', 
+                    help='Whether or not to apply foreground galactic absorption.')
+parser.add_argument("--nh", type=float, default=0.02, 
+                    help='The hydrogen column in units of 10**22 atoms/cm**2')
+parser.add_argument("--clobber", action='store_true', 
+                    help='Whether or not to clobber an existing file with the same name.')
+
+args = parser.parse_args()
+
+spec = Spectrum.from_powerlaw(args.photon_index, args.norm, args.redshift,
+                              emin=args.emin, emax=args.emax, nbins=args.nbins)
+
+if args.absorb:
+    spec.apply_foreground_absorption(args.nh)
+
+spec.write_file(args.specfile, clobber=args.clobber)

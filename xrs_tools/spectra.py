@@ -164,6 +164,21 @@ class Spectrum(object):
         self.flux *= new_flux/f
         self._compute_tot_flux()
 
+    def write_file(self, specfile, clobber=False):
+        """
+        Write the spectrum to a file.
+
+        Parameters
+        ----------
+        specfile : string
+            The filename to write the file to.
+        clobber : boolean, optional
+            Whether or not to overwrite an existing file. Default: False
+        """
+        if os.path.exists(specfile) and not clobber:
+            raise IOError("File %s exists and clobber=False!" % specfile)
+        np.savetxt(specfile, np.transpose([self.emid, self.flux]), delimiter="\t")
+
     def apply_foreground_absorption(self, nH):
         """
         Given a hydrogen column density, apply
@@ -235,7 +250,7 @@ class ApecGenerator(object):
     ...                            broadening=True)
     """
     def __init__(self, emin, emax, nbins, apec_root=None,
-                 apec_vers="2.0.2", broadening=False):
+                 apec_vers="3.0.3", broadening=True):
         self.emin = emin
         self.emax = emax
         self.nbins = nbins
@@ -330,8 +345,8 @@ class ApecGenerator(object):
         redshift : float
             The redshift.
         norm : float
-            The normalization of the model, with the standard Xspec units 
-            of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
+            The normalization of the model, in the standard Xspec units of
+            1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
         velocity : float, optional
             The velocity broadening parameter, in units of km/s. Default: 0.0
         """

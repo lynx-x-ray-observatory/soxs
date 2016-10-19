@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import argparse
+from xrs_tools import ApecGenerator
+
+parser = argparse.ArgumentParser(description='Create a thermal spectrum and write it to a file.')
+parser.add_argument("kT", type=float, help='The temperature in keV.')
+parser.add_argument("abund", type=float, help="The metal abundance in solar units.")
+parser.add_argument("redshift", type=float, help="The redshift of the source.")
+parser.add_argument("norm", type=float, 
+                    help='The normalization of the model, in the standard Xspec units of '+
+                         '1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).')
+parser.add_argument("specfile", type=str, help="The filename to write the spectrum to.")
+parser.add_argument("--velocity", type=float, default=0.0,
+                    help='The velocity broadening parameter, in units of km/s.')
+parser.add_argument("--emin", type=float, default=0.01, help='The minimum energy in keV.')
+parser.add_argument("--emax", type=float, default=50.0, help='The maximum energy in keV.')
+parser.add_argument("--nbins", type=int, default=10000, help='The number of bins in the spectrum.')
+parser.add_argument("--absorb", action='store_true', 
+                    help='Whether or not to apply foreground galactic absorption.')
+parser.add_argument("--nh", type=float, default=0.02, 
+                    help='The hydrogen column in units of 10**22 atoms/cm**2')
+parser.add_argument("--clobber", action='store_true', 
+                    help='Whether or not to clobber an existing file with the same name.')
+
+args = parser.parse_args()
+
+agen = ApecGenerator(args.emin, args.emax, args.nbins, broadening=args.broadening)
+spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
+                         velocity=args.velocity)
+
+if args.absorb:
+    spec.apply_foreground_absorption(args.nh)
+
+spec.write_file(args.specfile, clobber=args.clobber)
