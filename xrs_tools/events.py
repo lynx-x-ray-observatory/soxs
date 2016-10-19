@@ -4,11 +4,13 @@ import astropy.wcs as pywcs
 import os
 
 from xrs_tools.simput import read_simput_catalog
-from xrs_tools.utils import mylog, check_file_location
+from xrs_tools.utils import mylog, check_file_location, \
+    astro_background, instr_background
 from xrs_tools.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile, \
     add_instrument_to_registry
 from xrs_tools.constants import erg_per_keV
+from xrs_tools.spectra import Spectrum
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -111,16 +113,76 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
+def add_background_events(bkgnd_file, parameters, flat_response=False,
+                          prng=np.random):
+    """
+    Add background events to events. This is for astrophysical
+    backgrounds as well as instrumental backgrounds. For the latter, 
+    setting ``flat_response=True`` may be appropriate.
+
+    Parameters
+    ----------
+    bkgnd_file : string
+        The file containing the background spectrum.
+    parameters : dictionary
+        The dictionary of parameters for the observation.
+    flat_response : boolean, optional
+        If True, a flat ARF is assumed, which may be appropriate
+        for instrumental backgrounds. Default: False
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only be specified
+        if you have a reason to generate the same set of random numbers, such as for a
+        test. Default is the :mod:`numpy.random` module.
+    """
+    fov = parameters["num_pixels"]*parameters["dtheta"]*60.0
+    fov *= fov
+    bkgnd_spectrum = fov*Spectrum.from_file(bkgnd_file)
+    exp_time = parameters["exposure_time"]
+    arf = AuxiliaryResponseFile(parameters["arf"])
+    if flat_response:
+        # For particle backgrounds
+        area = 1.0
+    else:
+        # For everything else
+        area = arf.max_area
+    bkg_events = {}
+    bkg_events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area, prng=prng)
+    flux = bkg_events["energy"].sum()*erg_per_keV/exp_time/area
+    if not flat_response:
+        refband = [bkg_events["energy"].min(), bkg_events["energy"].max()]
+        arf.detect_events(bkg_events, exp_time, flux, refband, prng=prng)
+    n_events = bkg_events["energy"].size
+    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],
+                                                size=n_events))
+    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],
+                                                size=n_events))
+    roll_angle = np.deg2rad(parameters['roll_angle'])
+    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
+                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
+    bkg_events["detx"] = np.round(bkg_events["chipx"] - parameters['sky_center'][0] +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    bkg_events["dety"] = np.round(bkg_events["chipy"] - parameters['sky_center'][1] +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
+    bkg_events["xpix"] = pix[0,:]
+    bkg_events["ypix"] = pix[1,:]
+    rmf = RedistributionMatrixFile(parameters['rmf'])
+    bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
+    return bkg_events
+
 def make_event_file(simput_file, out_file, exp_time, instrument,
                     sky_center, clobber=False, dither_shape="square",
-                    dither_size=16.0, roll_angle=0.0, prng=np.random):
+                    dither_size=16.0, roll_angle=0.0, add_background=True,
+                    prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
     file from them. This function does the following:
 
-    1. Convolves the events with an ARF and RMF
+    1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
-    3. Writes the events to a file
+    3. Determines energy channels using the RMF
+    4. Adds background events
+    5. Writes the events to a file
 
     Parameters
     ----------
@@ -140,6 +202,9 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     clobber : boolean, optional
         Whether or not to clobber an existing file with the same name.
         Default: False
+    add_background : boolean, optional
+        Whether or not to add astrophysical and instrumental backgrounds.
+        Default: True
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
@@ -164,7 +229,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     rmf = RedistributionMatrixFile(rmf_file)
 
     nx = instrument_spec["num_pixels"]
-    dtheta = instrument_spec["dtheta"]/3600. # deg to arcsec
+    dtheta = instrument_spec["dtheta"]/3600. # arcsec to deg
 
     event_params = {}
     event_params["exposure_time"] = exp_time
@@ -306,6 +371,19 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
             else:
                 all_events[key] = np.append(all_events[key], events[key])
 
+    # Step 4: Add background events
+
+    if add_background:
+        instr_bkg = add_background_events(instr_background, event_params, 
+                                          flat_response=True, prng=prng)
+        astro_bkg = add_background_events(astro_background, 
+                                          event_params, flat_response=False, 
+                                          prng=prng)
+        for key in events:
+            all_events[key] = np.concatenate([all_events[key],
+                                              astro_bkg[key],
+                                              instr_bkg[key]])
+
     if all_events["energy"].size == 0:
         raise RuntimeError("No events were detected!!!")
 
@@ -314,84 +392,3 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     write_event_file(all_events, event_params, out_file, clobber=clobber)
 
-def add_background_events(bkgnd_spectrum, event_file, flat_response=False, 
-                          prng=np.random):
-    """
-    Add background events to an event file. This is for astrophysical
-    backgrounds as well as instrumental backgrounds. For the latter, 
-    setting ``flat_response=True`` may be appropriate.
-
-    Parameters
-    ----------
-    bkgnd_spectrum : :class:`~xrs_tools.spectra.Spectrum`
-        A ``Spectrum`` object for the background.
-    event_file : string
-        The event file to add the new events to. 
-    flat_response : boolean, optional
-        If True, a flat ARF is assumed, which may be appropriate
-        for instrumental backgrounds. Default: False
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
-    """
-    f = pyfits.open(event_file, mode='update')
-    hdu = f["EVENTS"]
-    cxmax = hdu.header["TLMAX2"]-0.5
-    cymax = hdu.header["TLMAX3"]-0.5
-    xc = hdu.header["TCRPX2"]
-    yc = hdu.header["TCRPX3"]
-    exp_time = hdu.header["EXPOSURE"]
-    arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
-    if flat_response:
-        area = 0.0
-    else:
-        area = arf.max_area
-    bkg_events = {}
-    bkg_events["energy"] = bkgnd_spectrum.generate_energies(exp_time, 
-                                                            area, prng=prng)
-    flux = bkg_events["energy"].sum()*erg_per_keV/exp_time/area
-    if not flat_response:
-        refband = [bkg_events["energy"].min(), bkg_events["energy"].max()]
-        arf.detect_events(bkg_events, exp_time, flux, refband, prng=prng)
-    n_events = bkg_events["energy"].size
-    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=cxmax, size=n_events))
-    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=cymax, size=n_events))
-    roll_angle = np.deg2rad(hdu.header["ROLL_PNT"])
-    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
-                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
-    bkg_events["detx"] = np.round(bkg_events["chipx"] - xc +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    bkg_events["dety"] = np.round(bkg_events["chipy"] - yc +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
-    bkg_events["xpix"] = pix[0,:]
-    bkg_events["ypix"] = pix[1,:]
-    rmf = RedistributionMatrixFile(hdu.header["RESPFILE"])
-    bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
-    chantype = rmf.header["CHANTYPE"].upper()
-    bkg_events["xpix"] = np.concatenate([hdu.data["X"], bkg_events["xpix"]])
-    bkg_events["ypix"] = np.concatenate([hdu.data["Y"], bkg_events["ypix"]])
-    bkg_events["energy"] = np.concatenate([hdu.data["ENERGY"], bkg_events["energy"]])
-    bkg_events[chantype] = np.concatenate([hdu.data[chantype], bkg_events[chantype]])
-    t = np.random.uniform(size=n_events, low=0.0, high=exp_time)
-    bkg_events['time'] = np.concatenate(hdu.data["TIME"], t)
-    event_params = {}
-    event_params["exposure_time"] = exp_time
-    event_params["pix_center"] = [xc, yc]
-    event_params["dtheta"] = hdu.header["TCDLT3"]
-    event_params["num_pixels"] = int(cxmax)
-    event_params["chan_lim"] = [hdu.header["TLMIN4"], hdu.header["TLMAX4"]]
-    event_params["rmf"] = rmf.filename
-    event_params["arf"] = arf.filename
-    event_params["nchan"] = hdu.header["PHA_BINS"]
-    event_params["channel_type"] = chantype
-    event_params["channel_type"] = rmf.header["CHANTYPE"]
-    event_params["telescope"] = rmf.header["TELESCOP"]
-    event_params["instrument"] = rmf.header["INSTRUME"]
-    event_params["mission"] = rmf.header.get("MISSION", "")
-    event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
-    event_params["roll_angle"] = hdu.header["ROLL_PNT"]
-    event_params["sky_center"] = [hdu.header["RA_PNT"], hdu.header["DEC_PNT"]]
-    f.close()
-    write_event_file(bkg_events, event_params, event_file, clobber=True)
