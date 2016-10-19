@@ -9,4 +9,3 @@ This section documents the various command-line scripts included with XRStools.
    :maxdepth: 1
        
    make_event_file     
-   add_backgrounds
