@@ -18,6 +18,8 @@ parser.add_argument("--emax", type=float, default=50.0, help='The maximum energy
 parser.add_argument("--nbins", type=int, default=10000, help='The number of bins in the spectrum.')
 parser.add_argument("--absorb", action='store_true', 
                     help='Whether or not to apply foreground galactic absorption.')
+parser.add_argument("--no_broadening", action='store_true',
+                    help='Set to turn off thermal and velocity broadening.')
 parser.add_argument("--nh", type=float, default=0.02, 
                     help='The hydrogen column in units of 10**22 atoms/cm**2')
 parser.add_argument("--clobber", action='store_true', 
@@ -25,7 +27,9 @@ parser.add_argument("--clobber", action='store_true',
 
 args = parser.parse_args()
 
-agen = ApecGenerator(args.emin, args.emax, args.nbins, broadening=args.broadening)
+broadening = not args.no_broadening
+
+agen = ApecGenerator(args.emin, args.emax, args.nbins, broadening=broadening)
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
                          velocity=args.velocity)
 

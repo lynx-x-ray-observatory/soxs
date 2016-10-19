@@ -125,11 +125,9 @@ class Spectrum(object):
         filename : string
             The path to the file containing the spectrum.
         """
-        data = np.loadtxt(filename)
-        emid = data[:,0]
-        flux = data[:,1]
+        emid, flux = np.loadtxt(filename, unpack=True)
         de = np.diff(emid)[0]
-        ebins = np.concatenate([emid-0.5*de, emid[-1]+0.5*de])
+        ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
         return cls(ebins, flux)
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
