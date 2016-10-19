@@ -19,8 +19,6 @@ def write_event_file(events, parameters, filename, clobber=False):
     dt = TimeDelta(parameters["exposure_time"], format='sec')
     t_end = t_begin + dt
 
-    num_events = len(events["energy"])
-
     col_x = pyfits.Column(name='X', format='D', unit='pixel', array=events["xpix"])
     col_y = pyfits.Column(name='Y', format='D', unit='pixel', array=events["ypix"])
     col_e = pyfits.Column(name='ENERGY', format='E', unit='eV', array=events["energy"]*1000.)
@@ -36,8 +34,7 @@ def write_event_file(events, parameters, filename, clobber=False):
         cunit = "Chan"
     col_ch = pyfits.Column(name=chantype.upper(), format='1J', unit=cunit, array=events[chantype])
 
-    time = np.random.uniform(size=num_events, low=0.0, high=parameters["exposure_time"])
-    col_t = pyfits.Column(name="TIME", format='1D', unit='s', array=time)
+    col_t = pyfits.Column(name="TIME", format='1D', unit='s', array=events['time'])
 
     cols = [col_e, col_x, col_y, col_ch, col_t, col_cx, col_cy, col_dx, col_dy]
 
@@ -311,6 +308,9 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     if all_events["energy"].size == 0:
         raise RuntimeError("No events were detected!!!")
+
+    all_events['time'] = np.random.uniform(size=all_events["energy"].size, low=0.0, 
+                                           high=parameters["exposure_time"])
 
     write_event_file(all_events, event_params, out_file, clobber=clobber)
 
