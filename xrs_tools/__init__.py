@@ -17,4 +17,9 @@ from xrs_tools.events import \
     add_background_events
 
 from xrs_tools.spatial import \
-    PointSourceModel
+    PointSourceModel, \
+    RadialFunctionModel, \
+    RadialArrayModel, \
+    RadialFileModel, \
+    AnnulusModel, \
+    BetaModel

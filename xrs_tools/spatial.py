@@ -1,4 +1,29 @@
 import numpy as np
+import astropy.wcs as pywcs
+
+one_arcsec = 1.0/3600.0
+
+def construct_wcs(ra0, dec0):
+    w = pywcs.WCS(naxis=2)
+    w.wcs.crval = [ra0, dec0]
+    w.wcs.crpix = [0.0]*2
+    w.wcs.cdelt = [-one_arcsec, one_arcsec]
+    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
+    w.wcs.cunit = ["deg"]*2
+    return w
+
+def generate_radial_events(num_events, func, prng=np.random):
+    rbins = np.linspace(0.0, 100.0, 10000)
+    pdf = func(rbins)
+    cdf = np.cumsum(pdf)
+    cdf /= cdf[-1]
+    randvec = prng.uniform(size=num_events)
+    randvec.sort()
+    radius = np.interp(randvec, cdf, rbins)
+    theta = 2.*np.pi*prng.uniform(size=num_events)
+    x = radius*np.cos(theta)
+    y = radius*np.sin(theta)
+    return x, y
 
 class SpatialModel(object):
     def __init__(self, ra, dec):
@@ -16,3 +41,41 @@ class PointSourceModel(SpatialModel):
         ra = pt_ra*np.ones(num_events)
         dec = pt_dec*np.ones(num_events)
         super(PointSourceModel, self).__init__(ra, dec)
+
+class RadialFunctionModel(SpatialModel):
+    def __init__(self, ra0, dec0, func, num_events, prng=np.random):
+        x, y = generate_radial_events(num_events, func,
+                                      prng=prng)
+        w = construct_wcs(ra0, dec0)
+        ra, dec = w.wcs_world2pix(x, y, 1)
+        super(RadialFunctionModel, self).__init__(ra, dec)
+
+class RadialArrayModel(RadialFunctionModel):
+    def __init__(self, ra0, dec0, r, f_r, num_events, prng=np.random):
+        func = lambda rr: np.interp(rr, r, f_r, left=0.0, right=0.0)
+        super(RadialArrayModel, self).__init__(ra0, dec0, func,
+                                               num_events, prng=prng)
+
+class RadialFileModel(RadialArrayModel):
+    def __init__(self, ra0, dec0, radfile, num_events, prng=np.random):
+        r, f_r = np.loadtxt(radfile, unpack=True)
+        super(RadialFileModel, self).__init__(ra0, dec0, r, f_r, 
+                                              num_events, prng=prng)
+
+class BetaModel(RadialFunctionModel):
+    def __init__(self, ra0, dec0, beta, r_c, num_events,
+                 prng=np.random):
+        func = lambda r: (1.0+(r/r_c)**2)**(-3*beta+0.5)
+        super(BetaModel, self).__init__(ra0, dec0, func,
+                                        num_events, prng=prng)
+
+class AnnulusModel(RadialFunctionModel):
+    def __init__(self, ra0, dec0, r_in, r_out, num_events,
+                 prng=np.random):
+        def func(r):
+            f = np.zeros(r.size)
+            idxs = np.logical_and(r >= r_in, r < r_out)
+            f[idxs] = 1.0
+            return f
+        super(AnnulusModel, self).__init__(ra0, dec0, func,
+                                           num_events, prng=prng)
