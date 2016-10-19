@@ -34,6 +34,11 @@ class Spectrum(object):
                                "spectra is not the same!!")
         return Spectrum(self.ebins, self.flux+other.flux)
 
+    def __mul__(self, other):
+        return Spectrum(self.ebins, other*self.flux)
+
+    __rmul__ = __mul__
+
     @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
                    nbins=10000):
