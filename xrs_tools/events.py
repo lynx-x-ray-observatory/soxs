@@ -380,7 +380,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
                                           flat_response=True, prng=prng)
         astro_bkg = add_background_events(astro_background, event_params, bkg_scale,
                                           flat_response=False, prng=prng)
-        for key in events:
+        for key in all_events:
             all_events[key] = np.concatenate([all_events[key],
                                               astro_bkg[key],
                                               instr_bkg[key]])
