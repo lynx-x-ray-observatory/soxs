@@ -10,7 +10,8 @@ from xrs_tools.spectra import \
 
 from xrs_tools.instrument import \
     add_instrument_to_registry, \
-    show_instrument_registry
+    show_instrument_registry, \
+    write_instrument_json
 
 from xrs_tools.events import \
     make_event_file

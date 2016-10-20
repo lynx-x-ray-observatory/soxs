@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import json
 import numpy as np
 import astropy.io.fits as pyfits
 from astropy.utils.console import ProgressBar
@@ -191,22 +192,28 @@ instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
 def add_instrument_to_registry(filename):
     """
     Add an instrument specification to the registry contained
-    in a JSON file. The JSON file must have this structure (the
-    order is not important):
+    in a JSON file. The JSON file must have the structure as 
+    shown below. The order is not important, but do not write 
+    a JSON file with comments, the ones below are just for 
+    clarity.
 
-    >>> {'name': 'hdxi', # The short name of the instrument
-    ...  'arf': 'xrs_hdxi.arf', # The file containing the ARF
-    ...  'rmf': 'xrs_hdxi.rmf' # The file containing the RMF
-    ...  'plate_scale': 0.33333333333, # The plate scale in arcsec
-    ...  'num_pixels': 4096, # The number of pixels on a side in the FOV
-    ...  'psf': ["gaussian", 0.5]} # The type of PSF and its FWHM
+    >>> {
+    ...     "name": "hdxi", # The short name of the instrument
+    ...     "arf": "xrs_hdxi.arf", # The file containing the ARF
+    ...     "rmf": "xrs_hdxi.rmf" # The file containing the RMF
+    ...     "plate_scale": 0.33333333333, # The plate scale in arcsec
+    ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
+    ...     "psf": [
+    ...         "gaussian", 
+    ...         0.5
+    ...     ] # The type of PSF and its FWHM
+    ... }
 
     Parameters
     ----------
     filename : string
         The JSON file containing the instrument specification.
     """
-    import json
     f = open(filename)
     inst = json.load(f)
     f.close()
@@ -222,3 +229,21 @@ def show_instrument_registry():
         print("Instrument: %s" % name.upper())
         for k, v in spec.items():
             print("    %s: %s" % (k, v))
+
+def write_instrument_json(inst_name, filename):
+    """
+    Write an instrument specification to a JSON file.
+    Useful if one would like to create a new specification
+    by editing an existing one. 
+
+    Parameters
+    ----------
+    inst_name : string
+        The instrument specification to write.
+    filename : string
+        The filename to write to. 
+    """
+    inst_dict = instrument_registry[inst_name]
+    fp = open(filename, 'w')
+    json.dump(inst_dict, fp, indent=4)
+    fp.close()
