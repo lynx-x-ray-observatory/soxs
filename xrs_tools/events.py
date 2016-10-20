@@ -325,10 +325,13 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
             # PSF scattering of detector coordinates
 
-            sigma = instrument_spec["psf_fwhm"]/sigma_to_fwhm/instrument_spec["plate_scale"]
-
-            detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-            dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+            psf_type, psf_spec = instrument_spec["psf"]
+            if psf_type == "gaussian":
+                sigma = psf_spec/sigma_to_fwhm/instrument_spec["plate_scale"]
+                detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+            else:
+                raise NotImplementedError("PSF type %s not implemented!" % psf_type)
 
             # Convert detector coordinates to chip coordinates
 
