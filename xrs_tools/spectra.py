@@ -218,7 +218,7 @@ class Spectrum(object):
             prng = np.random
         n_ph = np.modf(t_exp*area*self.tot_flux)
         n_ph = np.uint64(n_ph[1]) + np.uint64(n_ph[0] >= prng.uniform())
-        mylog.info("Will create %d events from this spectrum." % n_ph)
+        mylog.info("Creating %d events from this spectrum." % n_ph)
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
         energies = np.interp(randvec, self.cumspec, self.ebins)
