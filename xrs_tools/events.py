@@ -140,7 +140,9 @@ def add_background_events(bkgnd_file, parameters, bkg_scale,
     fov *= fov
     bkgnd_spectrum = bkg_scale*fov*Spectrum.from_file(bkgnd_file)
     exp_time = parameters["exposure_time"]
-    arf = AuxiliaryResponseFile(parameters["arf"])
+    arf_file = check_file_location(parameters["arf"], "files")
+    rmf_file = check_file_location(parameters["rmf"], "files")
+    arf = AuxiliaryResponseFile(arf_file)
     if flat_response:
         # For particle backgrounds
         area = 1.0
@@ -148,9 +150,9 @@ def add_background_events(bkgnd_file, parameters, bkg_scale,
         # For everything else
         area = arf.max_area
     bkg_events = {}
-    bkg_events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area, prng=prng)
-    flux = bkg_events["energy"].sum()*erg_per_keV/exp_time/area
+    bkg_events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area=area, prng=prng)
     if not flat_response:
+        flux = bkg_events["energy"].sum()*erg_per_keV/exp_time/area
         refband = [bkg_events["energy"].min(), bkg_events["energy"].max()]
         arf.detect_events(bkg_events, exp_time, flux, refband, prng=prng)
     n_events = bkg_events["energy"].size
@@ -161,14 +163,14 @@ def add_background_events(bkgnd_file, parameters, bkg_scale,
     roll_angle = np.deg2rad(parameters['roll_angle'])
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
                         [-np.cos(roll_angle), -np.sin(roll_angle)]])
-    bkg_events["detx"] = np.round(bkg_events["chipx"] - parameters['sky_center'][0] +
+    bkg_events["detx"] = np.round(bkg_events["chipx"] - parameters['pix_center'][0] +
                                   prng.uniform(low=-0.5, high=0.5, size=n_events))
-    bkg_events["dety"] = np.round(bkg_events["chipy"] - parameters['sky_center'][1] +
+    bkg_events["dety"] = np.round(bkg_events["chipy"] - parameters['pix_center'][1] +
                                   prng.uniform(low=-0.5, high=0.5, size=n_events))
     pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
-    bkg_events["xpix"] = pix[0,:]
-    bkg_events["ypix"] = pix[1,:]
-    rmf = RedistributionMatrixFile(parameters['rmf'])
+    bkg_events["xpix"] = pix[0,:] + parameters['pix_center'][0]
+    bkg_events["ypix"] = pix[1,:] + parameters['pix_center'][1]
+    rmf = RedistributionMatrixFile(rmf_file)
     bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
     return bkg_events
 
@@ -375,8 +377,10 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     # Step 4: Add background events
 
     if bkg_scale > 0.0:
+        mylog.info("Adding in instrumental background.")
         instr_bkg = add_background_events(instr_background, event_params, bkg_scale,
                                           flat_response=True, prng=prng)
+        mylog.info("Adding in astrophysical background.")
         astro_bkg = add_background_events(astro_background, event_params, bkg_scale,
                                           flat_response=False, prng=prng)
         for key in all_events:
