@@ -70,13 +70,8 @@ class AuxiliaryResponseFile(object):
                              "in the sample!!!")
         w = earea / self.max_area
         randvec = prng.uniform(size=energy.size)
-        eidxs = randvec < w
-        #eidxs = prng.choice(energy.size, size=n_ph, p=w)
-        #n_unique = np.unique(eidxs).size
-        #fak_repeat = 100.0*(1.0-float(n_unique)/n_ph)
-        #mylog.info("%s percent of events have been drawn multiple times." % fak_repeat)
+        eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("uint64")
         mylog.info("%s events detected." % n_ph)
-        mylog.info("%s events detected." % eidxs.sum())
         for key in events:
             events[key] = events[key][eidxs]
         return events
