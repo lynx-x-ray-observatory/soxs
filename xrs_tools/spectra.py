@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 import shutil
 import os
-from xrs_tools.utils import xrs_files_path
+from xrs_tools.utils import xrs_files_path, mylog
 from xrs_tools.cutils import broaden_lines
 from xrs_tools.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -218,6 +218,7 @@ class Spectrum(object):
             prng = np.random
         n_ph = np.modf(t_exp*area*self.tot_flux)
         n_ph = np.uint64(n_ph[1]) + np.uint64(n_ph[0] >= prng.uniform())
+        mylog.info("Will create %d events from this spectrum." % n_ph)
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
         energies = np.interp(randvec, self.cumspec, self.ebins)
