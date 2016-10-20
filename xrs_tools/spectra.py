@@ -39,6 +39,12 @@ class Spectrum(object):
 
     __rmul__ = __mul__
 
+    def __repr__(self):
+        s = "Spectrum (%g - %g keV): " % (self.ebins[0], self.ebins[-1])
+        s += "Total flux %g (%g) photons (erg) / cm**2 / s" % (self.tot_flux, 
+                                                               self.tot_energy_flux)
+        return s
+
     @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
                    nbins=10000):
