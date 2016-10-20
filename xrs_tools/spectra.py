@@ -197,7 +197,7 @@ class Spectrum(object):
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_tot_flux()
 
-    def generate_energies(self, t_exp, area, prng=None):
+    def generate_energies(self, t_exp, area=30000.0, prng=None):
         """
         Generate photon energies from this spectrum given an
         exposure time and effective area.
@@ -206,8 +206,9 @@ class Spectrum(object):
         ----------
         t_exp : float
             The exposure time in seconds.
-        area : float
-            The effective area (constant) in cm**2.
+        area : float, optional
+            The effective area (constant) in cm**2. Must be large enough to draw enough
+            events from the ARF. Default: 30000.0
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
