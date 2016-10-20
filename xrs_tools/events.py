@@ -268,7 +268,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     for i, events in enumerate(event_list):
 
-        mylog.info("Creating events for source %d" % (i+1))
+        mylog.info("Detecting events from source %d" % (i+1))
 
         # Step 1: Use ARF to determine which photons are observed
 
