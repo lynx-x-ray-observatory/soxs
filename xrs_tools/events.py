@@ -113,8 +113,8 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
-def add_background_events(bkgnd_file, parameters, bkg_scale,
-                          flat_response=False, prng=np.random):
+def add_background_events(bkgnd_file, parameters, flat_response=False, 
+                          prng=np.random):
     """
     Add background events to events. This is for astrophysical
     backgrounds as well as instrumental backgrounds. For the latter, 
@@ -126,8 +126,6 @@ def add_background_events(bkgnd_file, parameters, bkg_scale,
         The file containing the background spectrum.
     parameters : dictionary
         The dictionary of parameters for the observation.
-    bkg_scale : float
-        The scale of the background.
     flat_response : boolean, optional
         If True, a flat ARF is assumed, which may be appropriate
         for instrumental backgrounds. Default: False
@@ -176,7 +174,8 @@ def add_background_events(bkgnd_file, parameters, bkg_scale,
 
 def make_event_file(simput_file, out_file, exp_time, instrument,
                     sky_center, clobber=False, dither_shape="square",
-                    dither_size=16.0, roll_angle=0.0, bkg_scale=1.0,
+                    dither_size=16.0, roll_angle=0.0,
+                    instrumental_bkg=True, astrophysical_bkg=True,
                     prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
@@ -206,9 +205,18 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     clobber : boolean, optional
         Whether or not to clobber an existing file with the same name.
         Default: False
-    add_background : boolean, optional
-        Whether or not to add astrophysical and instrumental backgrounds.
-        Default: True
+    dither_shape : string
+        The shape of the dither. Currently "circle" or "square" 
+        Default: "square"
+    dither_size : float
+        The size of the dither in arcseconds. Width of square or radius
+        of circle. Default: 16.0
+    roll_angle : float
+        The roll angle of the observation in degrees. Default: 0.0
+    instrumental_bkg : boolean, optional
+        Whether or not to add instrumental background. Default: True
+    astrophysical_bkg : boolean, optional
+        Whether or not to add astrophysical background. Default: True
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
@@ -379,17 +387,21 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     # Step 4: Add background events
 
-    if bkg_scale > 0.0:
+    if instrumental_bkg:
         mylog.info("Adding in instrumental background.")
-        instr_bkg = add_background_events(instr_background, event_params, bkg_scale,
+        instr_bkg = add_background_events(instr_background, event_params,
                                           flat_response=True, prng=prng)
+        for key in all_events:
+            all_events[key] = np.concatenate([all_events[key],
+                                              instr_bkg[key]])
+
+    if astrophysical_bkg:
         mylog.info("Adding in astrophysical background.")
-        astro_bkg = add_background_events(astro_background, event_params, bkg_scale,
+        astro_bkg = add_background_events(astro_background, event_params,
                                           flat_response=False, prng=prng)
         for key in all_events:
             all_events[key] = np.concatenate([all_events[key],
-                                              astro_bkg[key],
-                                              instr_bkg[key]])
+                                              astro_bkg[key]])
 
     if all_events["energy"].size == 0:
         raise RuntimeError("No events were detected!!!")

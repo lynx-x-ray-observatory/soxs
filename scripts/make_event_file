@@ -25,8 +25,8 @@ parser.add_argument("--dither_size", type=float, default=16.0,
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--roll_angle", type=float, default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
-parser.add_argument("--bkg_scale", type=float, default=1.0,
-                    help='The scale value of the background. Default: 1.0')
+parser.add_argument("--no_instr_bkg", action='store_true', help='Turn off instrumental background.')
+parser.add_argument("--no_astro_bkg", action='store_true', help='Turn off astrophysical background.')
 
 args = parser.parse_args()
 
@@ -42,7 +42,11 @@ if args.dither_shape == "None":
 else:
     dither_shape = args.dither_shape
 
+instrumental_bkg = not args.no_instr_bkg
+astrophysical_bkg = not args.no_astro_bkg
+
 make_event_file(args.simput_file, args.out_file, args.exp_time,
                 args.instrument, sky_center, dither_size=args.dither_size,
                 dither_shape=dither_shape, clobber=args.clobber,
-                roll_angle=args.roll_angle, bkg_scale=args.bkg_scale)
+                roll_angle=args.roll_angle, astrophysical_bkg=astrophysical_bkg,
+                instrumental_bkg=instrumental_bkg)
