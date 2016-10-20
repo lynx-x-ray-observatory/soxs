@@ -270,8 +270,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
         # Step 1: Use ARF to determine which photons are observed
 
-        mylog.info("Applying energy-dependent effective area from %s. " % event_params["arf"] +
-                   "This may take a minute.")
+        mylog.info("Applying energy-dependent effective area from %s." % event_params["arf"])
         refband = [parameters["emin"][i], parameters["emax"][i]]
         events = arf.detect_events(events, exp_time, parameters["flux"][i],
                                    refband, prng=prng)
