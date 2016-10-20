@@ -68,9 +68,15 @@ class AuxiliaryResponseFile(object):
             raise ValueError("This combination of exposure time and effective area "
                              "will result in more photons being drawn than are available "
                              "in the sample!!!")
-        w = earea / earea.sum()
-        eidxs = prng.choice(energy.size, size=n_ph, p=w)
-        mylog.info("%s events detected." % eidxs.size)
+        w = earea / self.max_area
+        randvec = prng.uniform(size=energy.size)
+        eidxs = randvec < w
+        #eidxs = prng.choice(energy.size, size=n_ph, p=w)
+        #n_unique = np.unique(eidxs).size
+        #fak_repeat = 100.0*(1.0-float(n_unique)/n_ph)
+        #mylog.info("%s percent of events have been drawn multiple times." % fak_repeat)
+        mylog.info("%s events detected." % n_ph)
+        mylog.info("%s events detected." % eidxs.sum())
         for key in events:
             events[key] = events[key][eidxs]
         return events
