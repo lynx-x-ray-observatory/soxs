@@ -180,13 +180,13 @@ instrument_registry = {}
 instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
                                "rmf": "xrs_calorimeter.rmf",
                                "num_pixels": 300,
-                               "dtheta": 1.0,
-                               "psf_fwhm": 0.5}
+                               "plate_scale": 1.0,
+                               "psf": ["gaussian", 0.5]}
 instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "num_pixels": 4096,
-                               "dtheta": 1./3.,
-                               "psf_fwhm": 0.5}
+                               "plate_scale": 1./3.,
+                               "psf": ["gaussian", 0.5]}
 
 def add_instrument_to_registry(filename):
     """
@@ -197,9 +197,9 @@ def add_instrument_to_registry(filename):
     >>> {'name': 'hdxi', # The short name of the instrument
     ...  'arf': 'xrs_hdxi.arf', # The file containing the ARF
     ...  'rmf': 'xrs_hdxi.rmf' # The file containing the RMF
-    ...  'dtheta': 0.33333333333, # The central pixel scale in arcsec
+    ...  'plate_scale': 0.33333333333, # The plate scale in arcsec
     ...  'num_pixels': 4096, # The number of pixels on a side in the FOV
-    ...  'psf_fwhm': 0.5} # The FWHM of the PSF, in arcseconds
+    ...  'psf': ["gaussian", 0.5]} # The type of PSF and its FWHM
 
     Parameters
     ----------

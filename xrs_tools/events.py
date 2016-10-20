@@ -52,8 +52,8 @@ def write_event_file(events, parameters, filename, clobber=False):
     tbhdu.header["TCTYP3"] = "DEC--TAN"
     tbhdu.header["TCRVL2"] = parameters["sky_center"][0]
     tbhdu.header["TCRVL3"] = parameters["sky_center"][1]
-    tbhdu.header["TCDLT2"] = -parameters["dtheta"]
-    tbhdu.header["TCDLT3"] = parameters["dtheta"]
+    tbhdu.header["TCDLT2"] = -parameters["plate_scale"]
+    tbhdu.header["TCDLT3"] = parameters["plate_scale"]
     tbhdu.header["TCRPX2"] = parameters["pix_center"][0]
     tbhdu.header["TCRPX3"] = parameters["pix_center"][1]
     tbhdu.header["TLMIN2"] = 0.5
@@ -136,7 +136,7 @@ def add_background_events(bkgnd_file, parameters, bkg_scale,
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
-    fov = parameters["num_pixels"]*parameters["dtheta"]*60.0
+    fov = parameters["num_pixels"]*parameters["plate_scale"]*60.0
     fov *= fov
     bkgnd_spectrum = bkg_scale*fov*Spectrum.from_file(bkgnd_file)
     exp_time = parameters["exposure_time"]
@@ -233,7 +233,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     rmf = RedistributionMatrixFile(rmf_file)
 
     nx = instrument_spec["num_pixels"]
-    dtheta = instrument_spec["dtheta"]/3600. # arcsec to deg
+    plate_scale = instrument_spec["plate_scale"]/3600. # arcsec to deg
 
     event_params = {}
     event_params["exposure_time"] = exp_time
@@ -241,7 +241,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     event_params["sky_center"] = sky_center
     event_params["pix_center"] = np.array([0.5*(nx+1)]*2)
     event_params["num_pixels"] = nx
-    event_params["dtheta"] = dtheta
+    event_params["plate_scale"] = plate_scale
     event_params["rmf"] = os.path.split(rmf.filename)[-1]
     event_params["channel_type"] = rmf.header["CHANTYPE"]
     event_params["telescope"] = rmf.header["TELESCOP"]
@@ -260,7 +260,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
     w.wcs.crpix = event_params["pix_center"]
-    w.wcs.cdelt = [-dtheta, dtheta]
+    w.wcs.cdelt = [-plate_scale, plate_scale]
     w.wcs.ctype = ["RA---TAN","DEC--TAN"]
     w.wcs.cunit = ["deg"]*2
 
@@ -325,7 +325,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
             # PSF scattering of detector coordinates
 
-            sigma = instrument_spec["psf_fwhm"]/sigma_to_fwhm/instrument_spec["dtheta"]
+            sigma = instrument_spec["psf_fwhm"]/sigma_to_fwhm/instrument_spec["plate_scale"]
 
             detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
             dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
