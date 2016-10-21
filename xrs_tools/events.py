@@ -295,6 +295,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
             keepx = np.logical_and(events["chipx"] >= 1.0, events["chipx"] <= nx)
             keepy = np.logical_and(events["chipy"] >= 1.0, events["chipy"] <= nx)
             keep = np.logical_and(keepx, keepy)
+            mylog.info("%d events were rejected because " % (n_evt-keep.sum()) +
+                       "they fall outside the field of view.")
             n_evt = keep.sum()
 
             if n_evt == 0:
