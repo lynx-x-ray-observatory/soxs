@@ -1,9 +1,9 @@
 .. _python:
 
-Python Interface
-================
+SOX Python Interface
+====================
 
-This section documents the Python interface to XRStools. 
+This section documents the Python interface to SOX.
 
 .. toctree::
    :maxdepth: 1

@@ -3,7 +3,7 @@
 External Packages
 =================
 
-The following are external packages that may be used with XRStools or in place of some of its
+The following are external packages that may be used with SOX or in place of some of its
 features.
 
 SIMX
@@ -22,7 +22,7 @@ information, and instrumental responses and outputs to make the simulation. It i
 to be a "approximation" tool to estimate issues such as source confusion, background effects,
 pileup, and other similar issues.
 
-The SIMPUT files produced by XRStools can be used as inputs to SIMX.
+The SIMPUT files produced by SOX can be used as inputs to SIMX.
 
 pyXSIM
 ------
@@ -38,4 +38,4 @@ NumPy arrays. pyXSIM also provides facilities for manipulating the synthetic obs
 it produces in various ways, as well as ways to export the simulated X-ray events to other
 software packages to simulate the end products of specific X-ray observatories.
 
-pyXSIM can be used to produce SIMPUT files which can be ingested by XRStools.
+pyXSIM can be used to produce SIMPUT files which can be ingested by SOX.

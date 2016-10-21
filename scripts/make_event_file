@@ -3,8 +3,8 @@
 import argparse
 import os
 import numpy as np
-from xrs_tools import make_event_file, add_instrument_to_registry
-from xrs_tools.instrument import instrument_registry
+from sox import make_event_file, add_instrument_to_registry
+from sox.instrument import instrument_registry
 
 parser = argparse.ArgumentParser(description='Create a simulated event file.')
 parser.add_argument("simput_file", type=str, help='The SIMPUT file to be used as input.')

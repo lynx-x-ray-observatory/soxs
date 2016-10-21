@@ -3,9 +3,9 @@ import subprocess
 import tempfile
 import shutil
 import os
-from xrs_tools.utils import xrs_files_path, mylog
-from xrs_tools.cutils import broaden_lines
-from xrs_tools.constants import erg_per_keV, hc, \
+from sox.utils import sox_files_path, mylog
+from sox.cutils import broaden_lines
+from sox.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
     m_u
 import astropy.io.fits as pyfits
@@ -248,7 +248,7 @@ class ApecGenerator(object):
     apec_root : string, optional
         The directory root where the APEC model files are stored. If 
         not provided, the default is to grab them from the tables stored
-        with XRStools.
+        with SOX.
     apec_vers : string, optional
         The version identifier string for the APEC files, e.g.
         "2.0.2"
@@ -270,7 +270,7 @@ class ApecGenerator(object):
         self.de = np.diff(self.ebins)
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         if apec_root is None:
-            apec_root = xrs_files_path
+            apec_root = sox_files_path
         self.cocofile = os.path.join(apec_root, "apec_v%s_coco.fits" % apec_vers)
         self.linefile = os.path.join(apec_root, "apec_v%s_line.fits" % apec_vers)
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):

@@ -3,22 +3,22 @@
 Creating and Using Spectra
 ==========================
 
-XRStools provides a way to create common types of spectra that can then be
+SOX provides a way to create common types of spectra that can then be
 used in your scripts to create mock observations via the 
-:class:`~xrs_tools.spectra.Spectrum` object.
+:class:`~sox.spectra.Spectrum` object.
 
 Creating Spectrum Objects
 -------------------------
 
-A :class:`~xrs_tools.spectra.Spectrum` object is simply defined by a table 
+A :class:`~sox.spectra.Spectrum` object is simply defined by a table 
 of energies and photon fluxes. There are several ways to create a 
-:class:`~xrs_tools.spectra.Spectrum`, depending on your use case. 
+:class:`~sox.spectra.Spectrum`, depending on your use case. 
 
 Reading a Spectrum from a File
 ++++++++++++++++++++++++++++++
 
 If you have a spectrum tabulated in an ASCII text file, this can be read
-in using the :meth:`~xrs_tools.spectra.Spectrum.from_file` method. The file
+in using the :meth:`~sox.spectra.Spectrum.from_file` method. The file
 must be comprised of two columns, the first being the energies of the bins
 in keV and the second being the photon flux in units of 
 :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. The binning must be linear
@@ -26,14 +26,14 @@ and the bins must be equally spaced. For example:
 
 .. code-block:: python
 
-    from xrs_tools import Spectrum
+    from sox import Spectrum
     my_spec = Spectrum.from_file("my_spec.dat")
 
 Creating a Power-Law Spectrum
 +++++++++++++++++++++++++++++
 
 A simple power-law spectrum can be created using the 
-:meth:`~xrs_tools.spectra.Spectrum.from_powerlaw` method. This takes as input
+:meth:`~sox.spectra.Spectrum.from_powerlaw` method. This takes as input
 a spectral index ``photon_index``, a redshift ``redshift``, and a normalization
 of the source ``norm`` at 1 keV in the source frame, in units of 
 :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. Mathematically, 
@@ -65,12 +65,12 @@ Generating a Spectrum from XSPEC
 Adding Spectra Together
 -----------------------
 
-Two :class:`~xrs_tools.spectra.Spectrum` objects can be co-added, provided that
+Two :class:`~sox.spectra.Spectrum` objects can be co-added, provided that
 they have the same energy binning:
 
 .. code-block:: python
 
-    from xrs_tools import ApecGenerator
+    from sox import ApecGenerator
     apec_model = ApecGenerator(0.05, 50.0, 10000)
     
     spec1 = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9)
@@ -84,7 +84,7 @@ Rescaling the Normalization of a Spectrum
 -----------------------------------------
 
 You can rescale the normalization of the entire spectrum using the
-:meth:`~xrs_tools.spectra.Spectrum.rescale_flux` method. This can be 
+:meth:`~sox.spectra.Spectrum.rescale_flux` method. This can be 
 helpful when you want to set the normalization of the spectrum by the 
 total flux within a certain energy band instead. 
 
@@ -102,7 +102,7 @@ the units must be :math:`{\rm erg}~{\rm cm}^{-2}~{\rm s}^{-1}`.
 Applying Galactic Foreground Absorption to a Spectrum
 -----------------------------------------------------
 
-The :meth:`~xrs_tools.spectra.Spectrum.apply_foreground_absorption` method
+The :meth:`~sox.spectra.Spectrum.apply_foreground_absorption` method
 can be used to apply foreground absorption using the "wabs" model. It takes 
 one parameter, the hydrogen column along the line of sight, in units of 
 :math:`10^{22}~{\rm cm}^{-2}`:
@@ -119,8 +119,8 @@ given energy.
 Generating Photon Energies From a Spectrum
 ------------------------------------------
 
-Given a :class:`~xrs_tools.spectra.Spectrum`, a set of photon energies can be 
-drawn from it using the :meth:`~xrs_tools.spectra.Spectrum.generate_energies`
+Given a :class:`~sox.spectra.Spectrum`, a set of photon energies can be 
+drawn from it using the :meth:`~sox.spectra.Spectrum.generate_energies`
 method. This will most often be used to generate discrete samples for mock 
 observations. For this method, an exposure time and a constant effective area 
 must be supplied to convert the spectrum's flux to a number of photons. These
@@ -128,7 +128,7 @@ values need not be realistic--in fact, they both should be larger than the
 values for the mock observation that you want to simulate, to create a statistically
 robust sample to draw photons from. 
 
-An example using a :class:`~xrs_tools.spectra.Spectrum` created from a file:
+An example using a :class:`~sox.spectra.Spectrum` created from a file:
 
 .. code-block:: python
 

@@ -1,9 +1,9 @@
 .. _command-line:
 
-Command Line Interface
-======================
+SOX Command Line Interface
+==========================
 
-This section documents the various command-line scripts included with XRStools. 
+This section documents the various command-line scripts included with SOX.
 
 .. toctree::
    :maxdepth: 1

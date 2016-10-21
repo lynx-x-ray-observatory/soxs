@@ -3,7 +3,7 @@
 Command Line Scripts for Spectra
 ================================
 
-These are scripts that create spectra for use by other modules in XRStools. 
+These are scripts that create spectra for use by other modules in SOX.
 
 ``make_thermal_spectrum``
 -------------------------

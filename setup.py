@@ -7,18 +7,18 @@ import glob
 scripts = glob.glob("scripts/*")
 
 cython_extensions = [
-    Extension("xrs_tools.cutils",
-              sources=["xrs_tools/cutils.pyx"],
+    Extension("sox.cutils",
+              sources=["sox/cutils.pyx"],
               language="c", libraries=["m"],
               include_dirs=[np.get_include()])]
 
-setup(name='xrs_tools',
-      packages=['xrs_tools'],
+setup(name='sox',
+      packages=['sox'],
       version="0.1",
-      description='Tools for X-Ray Surveyor simulations',
+      description='Simulated Observations with X-ray Surveyor',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
-      url='http://github.com/XRStools/xrs_tools',
+      url='http://github.com/XRStools/sox',
       setup_requires=["numpy","cython>=0.24"],
       install_requires=["six","numpy","astropy"],
       scripts=scripts,

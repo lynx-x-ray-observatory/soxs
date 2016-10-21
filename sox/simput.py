@@ -2,7 +2,7 @@ import astropy.io.fits as pyfits
 import numpy as np
 import os
 
-from xrs_tools.constants import erg_per_keV
+from sox.constants import erg_per_keV
 
 def read_simput_catalog(simput_file):
     r"""
@@ -109,7 +109,7 @@ def write_simput_catalog(simput_prefix, phlist_prefix,
         flx = np.append(f["SRC_CAT"].data["FLUX"][:], flux)
         spectrum = np.append(f["SRC_CAT"].data["SPECTRUM"][:], phfile+"[PHLIST,1]")
         image = np.append(f["SRC_CAT"].data["IMAGE"][:], phfile+"[PHLIST,1]")
-        src_name = np.append(f["SRC_CAT"].data["SRC_NAME"][:], "xrs_tools_src_%d" % id)
+        src_name = np.append(f["SRC_CAT"].data["SRC_NAME"][:], "sox_src_%d" % id)
         f.close()
     else:
         src_id = np.array([1]).astype("int32")
@@ -120,7 +120,7 @@ def write_simput_catalog(simput_prefix, phlist_prefix,
         flx = np.array([flux])
         spectrum = np.array([phfile+"[PHLIST,1]"])
         image = spectrum
-        src_name = np.array(["xrs_tools_src_1"])
+        src_name = np.array(["sox_src_1"])
 
     col1 = pyfits.Column(name='SRC_ID', format='J', array=src_id)
     col2 = pyfits.Column(name='RA', format='D', array=ra)

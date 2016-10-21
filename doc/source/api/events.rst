@@ -1,7 +1,7 @@
 Events API
 ==========
 
-.. automodule:: xrs_tools.events
+.. automodule:: sox.events
     :members:
     :undoc-members:
     :exclude-members: write_event_file

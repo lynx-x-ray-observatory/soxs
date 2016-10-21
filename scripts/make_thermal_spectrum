@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from xrs_tools import ApecGenerator
+from sox import ApecGenerator
 
 parser = argparse.ArgumentParser(description='Create a thermal spectrum and write it to a file.')
 parser.add_argument("kT", type=float, help='The temperature in keV.')

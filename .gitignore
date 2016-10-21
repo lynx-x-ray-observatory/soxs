@@ -1,11 +1,6 @@
-xrs_utils.egg-info/PKG-INFO
-xrs_utils.egg-info/SOURCES.txt
-xrs_utils.egg-info/dependency_links.txt
-xrs_utils.egg-info/requires.txt
-xrs_utils.egg-info/top_level.txt
 doc/build/doctrees
 doc/build/html
-xrs_tools.egg-info
+sox.egg-info
 .eggs
 *.pyc
 *.c

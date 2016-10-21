@@ -1,6 +1,6 @@
 SIMPUT API
 ==========
 
-.. automodule:: xrs_tools.simput
+.. automodule:: sox.simput
     :members:
     :undoc-members:

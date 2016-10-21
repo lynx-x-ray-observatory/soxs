@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from xrs_tools import Spectrum
+from sox import Spectrum
 
 parser = argparse.ArgumentParser(description='Create a power-law spectrum and write it to a file.')
 parser.add_argument("photon_index", type=float, 
