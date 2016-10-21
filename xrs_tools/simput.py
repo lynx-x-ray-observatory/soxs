@@ -149,4 +149,4 @@ def write_simput_catalog(simput_prefix, phlist_prefix,
     wrhdu.header["TUNIT5"] = "keV"
     wrhdu.header["TUNIT6"] = "erg/s/cm**2"
 
-    wrhdu.writeto(simputfile, clobber=clobber)
+    wrhdu.writeto(simputfile, clobber=(clobber or append))
