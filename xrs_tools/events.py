@@ -213,6 +213,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     all_events = {}
 
+    first = True
+
     for i, events in enumerate(event_list):
 
         mylog.info("Detecting events from source %d" % (i+1))
@@ -223,13 +225,16 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         refband = [parameters["emin"][i], parameters["emax"][i]]
         events = arf.detect_events(events, exp_time, parameters["flux"][i],
                                    refband, prng=prng)
-        if events["energy"].size == 0:
+
+        n_evt = events["energy"].size
+
+        if n_evt == 0:
             mylog.warning("No events were observed for this source!!!")
+        else:
 
-        # Step 2: Assign pixel coordinates to events. Apply dithering and
-        # PSF. Clip events that don't fall within the detection region.
+            # Step 2: Assign pixel coordinates to events. Apply dithering and
+            # PSF. Clip events that don't fall within the detection region.
 
-        if events["energy"].size > 0:
             mylog.info("Pixeling events.")
 
             # Convert RA, Dec to pixel coordinates
@@ -290,33 +295,36 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
             keepx = np.logical_and(events["chipx"] >= 1.0, events["chipx"] <= nx)
             keepy = np.logical_and(events["chipy"] >= 1.0, events["chipy"] <= nx)
             keep = np.logical_and(keepx, keepy)
-            if keep.sum() == 0:
+            n_evt = keep.sum()
+
+            if n_evt == 0:
                 mylog.warning("No events are within the field of view for this source!!!")
-
-            for key in events:
-                events[key] = events[key][keep]
-
-            n_evt = events["energy"].shape
-
-            # Convert chip coordinates back to detector coordinates
-
-            events["detx"] = np.round(events["chipx"] - event_params['pix_center'][0] +
-                                      prng.uniform(low=-0.5, high=0.5, size=n_evt))
-            events["dety"] = np.round(events["chipy"] - event_params['pix_center'][1] +
-                                      prng.uniform(low=-0.5, high=0.5, size=n_evt))
-
-            # Convert detector coordinates back to pixel coordinates
-
-            pix = np.dot(rot_mat, np.array([events["detx"], events["dety"]]))
-
-            events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset
-            events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset
-
-        for key in events:
-            if i == 0:
-                all_events[key] = events[key]
             else:
-                all_events[key] = np.append(all_events[key], events[key])
+
+                for key in events:
+                    events[key] = events[key][keep]
+
+                # Convert chip coordinates back to detector coordinates
+
+                events["detx"] = np.round(events["chipx"] - event_params['pix_center'][0] +
+                                          prng.uniform(low=-0.5, high=0.5, size=n_evt))
+                events["dety"] = np.round(events["chipy"] - event_params['pix_center'][1] +
+                                          prng.uniform(low=-0.5, high=0.5, size=n_evt))
+
+                # Convert detector coordinates back to pixel coordinates
+
+                pix = np.dot(rot_mat, np.array([events["detx"], events["dety"]]))
+
+                events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset
+                events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset
+
+        if n_evt > 0:
+            for key in events:
+                if first:
+                    all_events[key] = events[key]
+                else:
+                    all_events[key] = np.append(all_events[key], events[key])
+            first = False
 
     # Step 3: Add particle background
 
@@ -385,7 +393,7 @@ def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time,
     width = fov*60.0
     x = prng.uniform(low=-0.5*width, high=0.5*width, size=n_evt)
     y = prng.uniform(low=-0.5*width, high=0.5*width, size=n_evt)
-    ra, dec = w.wcs_world2pix(x, y, 1)
+    ra, dec = w.wcs_pix2world(x, y, 1)
 
     events["ra"] = ra
     events["dec"] = dec

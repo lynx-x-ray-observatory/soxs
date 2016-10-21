@@ -36,7 +36,7 @@ class RadialFunctionModel(SpatialModel):
         x, y = generate_radial_events(num_events, func,
                                       prng=prng)
         w = construct_wcs(ra0, dec0)
-        ra, dec = w.wcs_world2pix(x, y, 1)
+        ra, dec = w.wcs_pix2world(x, y, 1)
         super(RadialFunctionModel, self).__init__(ra, dec)
 
 class RadialArrayModel(RadialFunctionModel):
