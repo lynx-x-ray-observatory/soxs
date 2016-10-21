@@ -368,7 +368,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     write_event_file(all_events, event_params, out_file, clobber=clobber)
 
-def make_astrophysical_background(pnt_ra, pnt_dec, fov, exp_time, 
+def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time, 
                                   bkgnd_file=None, area=30000.0,
                                   prng=np.random):
     events = {}
@@ -380,7 +380,7 @@ def make_astrophysical_background(pnt_ra, pnt_dec, fov, exp_time,
     events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area=area, prng=prng)
     n_evt = events["energy"].size
 
-    w = construct_wcs(pnt_ra, pnt_dec)
+    w = construct_wcs(ra_pnt, dec_pnt)
 
     width = fov*60.0
     x = prng.uniform(low=-0.5*width, high=0.5*width, size=n_evt)

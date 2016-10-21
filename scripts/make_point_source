@@ -2,7 +2,6 @@
 
 import argparse
 import os
-import numpy as np
 from xrs_tools import Spectrum, write_simput_catalog, PointSourceModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a point source from'+
