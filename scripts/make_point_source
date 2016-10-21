@@ -24,7 +24,7 @@ args = parser.parse_args()
 append = os.path.exists(args.simput_prefix+"_simput.fits")
 
 spec = Spectrum.from_file(args.specfile)
-energy = spec.generate_energies(args.exp_time, args.area)
+energy = spec.generate_energies(args.exp_time, area=args.area)
 n_evt = energy.size
 pt_src = PointSourceModel(args.ra, args.dec, n_evt)
 
