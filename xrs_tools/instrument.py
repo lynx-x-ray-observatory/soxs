@@ -180,11 +180,13 @@ class RedistributionMatrixFile(object):
 instrument_registry = {}
 instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
                                "rmf": "xrs_calorimeter.rmf",
+                               "bkgnd": "acisi_particle_bkgnd.dat",
                                "num_pixels": 300,
                                "plate_scale": 1.0,
                                "psf": ["gaussian", 0.5]}
 instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
                                "rmf": "xrs_hdxi.rmf",
+                               "bkgnd": "acisi_particle_bkgnd.dat",
                                "num_pixels": 4096,
                                "plate_scale": 1./3.,
                                "psf": ["gaussian", 0.5]}
@@ -201,6 +203,7 @@ def add_instrument_to_registry(filename):
     ...     "name": "hdxi", # The short name of the instrument
     ...     "arf": "xrs_hdxi.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf" # The file containing the RMF
+    ...     "bkgnd": "acisi_particle_bkgnd.dat" # The file containing the particle background
     ...     "plate_scale": 0.33333333333, # The plate scale in arcsec
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
     ...     "psf": [

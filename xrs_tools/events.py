@@ -9,7 +9,6 @@ from xrs_tools.utils import mylog, check_file_location, \
 from xrs_tools.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile, \
     add_instrument_to_registry
-from xrs_tools.constants import erg_per_keV
 from xrs_tools.spectra import Spectrum
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
@@ -93,8 +92,10 @@ def write_event_file(events, parameters, filename, clobber=False):
     tbhdu.header["DEC_PNT"] = parameters["sky_center"][1]
     tbhdu.header["ROLL_PNT"] = parameters["roll_angle"]
 
-    start = pyfits.Column(name='START', format='1D', unit='s', array=np.array([0.0]))
-    stop = pyfits.Column(name='STOP', format='1D', unit='s', array=np.array([parameters["exposure_time"]]))
+    start = pyfits.Column(name='START', format='1D', unit='s', 
+                          array=np.array([0.0]))
+    stop = pyfits.Column(name='STOP', format='1D', unit='s', 
+                         array=np.array([parameters["exposure_time"]]))
 
     tbhdu_gti = pyfits.BinTableHDU.from_columns([start,stop])
     tbhdu_gti.update_ext_name("STDGTI")
@@ -113,69 +114,9 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
-def add_background_events(bkgnd_file, parameters, flat_response=False, 
-                          prng=np.random):
-    """
-    Add background events to events. This is for astrophysical
-    backgrounds as well as instrumental backgrounds. For the latter, 
-    setting ``flat_response=True`` may be appropriate.
-
-    Parameters
-    ----------
-    bkgnd_file : string
-        The file containing the background spectrum.
-    parameters : dictionary
-        The dictionary of parameters for the observation.
-    flat_response : boolean, optional
-        If True, a flat ARF is assumed, which may be appropriate
-        for instrumental backgrounds. Default: False
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
-    """
-    fov = parameters["num_pixels"]*parameters["plate_scale"]*60.0
-    fov *= fov
-    bkgnd_spectrum = bkg_scale*fov*Spectrum.from_file(bkgnd_file)
-    exp_time = parameters["exposure_time"]
-    arf_file = check_file_location(parameters["arf"], "files")
-    rmf_file = check_file_location(parameters["rmf"], "files")
-    arf = AuxiliaryResponseFile(arf_file)
-    if flat_response:
-        # For particle backgrounds
-        area = 1.0
-    else:
-        # For everything else
-        area = arf.max_area
-    bkg_events = {}
-    bkg_events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area=area, prng=prng)
-    if not flat_response:
-        flux = bkg_events["energy"].sum()*erg_per_keV/exp_time/area
-        refband = [bkg_events["energy"].min(), bkg_events["energy"].max()]
-        arf.detect_events(bkg_events, exp_time, flux, refband, prng=prng)
-    n_events = bkg_events["energy"].size
-    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],
-                                                size=n_events))
-    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],
-                                                size=n_events))
-    roll_angle = np.deg2rad(parameters['roll_angle'])
-    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
-                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
-    bkg_events["detx"] = np.round(bkg_events["chipx"] - parameters['pix_center'][0] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    bkg_events["dety"] = np.round(bkg_events["chipy"] - parameters['pix_center'][1] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
-    bkg_events["xpix"] = pix[0,:] + parameters['pix_center'][0]
-    bkg_events["ypix"] = pix[1,:] + parameters['pix_center'][1]
-    rmf = RedistributionMatrixFile(rmf_file)
-    bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
-    return bkg_events
-
 def make_event_file(simput_file, out_file, exp_time, instrument,
                     sky_center, clobber=False, dither_shape="square",
-                    dither_size=16.0, roll_angle=0.0,
-                    instrumental_bkg=True, astrophysical_bkg=True,
+                    dither_size=16.0, roll_angle=0.0, bkgnd_scale=1.0, 
                     prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
@@ -184,7 +125,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
     3. Determines energy channels using the RMF
-    4. Adds background events
+    4. Adds instrumental background events
     5. Writes the events to a file
 
     Parameters
@@ -213,10 +154,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
-    instrumental_bkg : boolean, optional
-        Whether or not to add instrumental background. Default: True
-    astrophysical_bkg : boolean, optional
-        Whether or not to add astrophysical background. Default: True
+    bkgnd_scale : float, optional
+        The scale of the instrumental background. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
@@ -373,38 +312,56 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
             events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset
             events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset
 
-    # Step 3: Scatter energies with RMF
-
-        if events["energy"].size > 0:
-            mylog.info("Scattering energies with RMF %s." % event_params['rmf'])
-            events = rmf.scatter_energies(events, prng=prng)
-
         for key in events:
             if i == 0:
                 all_events[key] = events[key]
             else:
                 all_events[key] = np.append(all_events[key], events[key])
 
-    # Step 4: Add background events
+    # Step 3: Add particle background
 
-    if instrumental_bkg:
+    if bkgnd_scale > 0.0:
         mylog.info("Adding in instrumental background.")
-        instr_bkg = add_background_events(instr_background, event_params,
-                                          flat_response=True, prng=prng)
-        for key in all_events:
-            all_events[key] = np.concatenate([all_events[key],
-                                              instr_bkg[key]])
 
-    if astrophysical_bkg:
-        mylog.info("Adding in astrophysical background.")
-        astro_bkg = add_background_events(astro_background, event_params,
-                                          flat_response=False, prng=prng)
+        bkgnd_file = check_file_location(instrument_spec["bkgnd"], "files")
+
+        fov = parameters["num_pixels"]*parameters["plate_scale"]*60.0
+        fov *= fov
+        bkgnd_spectrum = bkgnd_scale*fov*Spectrum.from_file(bkgnd_file)
+
+        bkg_events = {}
+        bkg_events["energy"] = bkgnd_spectrum.generate_energies(parameters["exposure_time"], 
+                                                                area=1.0, prng=prng)
+        n_events = bkg_events["energy"].size
+
+        bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],
+                                                    size=n_events))
+        bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],
+                                                    size=n_events))
+        roll_angle = np.deg2rad(parameters['roll_angle'])
+        rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
+                            [-np.cos(roll_angle), -np.sin(roll_angle)]])
+        bkg_events["detx"] = np.round(bkg_events["chipx"] - parameters['pix_center'][0] +
+                                      prng.uniform(low=-0.5, high=0.5, size=n_events))
+        bkg_events["dety"] = np.round(bkg_events["chipy"] - parameters['pix_center'][1] +
+                                      prng.uniform(low=-0.5, high=0.5, size=n_events))
+        pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
+        bkg_events["xpix"] = pix[0,:] + parameters['pix_center'][0]
+        bkg_events["ypix"] = pix[1,:] + parameters['pix_center'][1]
+
         for key in all_events:
-            all_events[key] = np.concatenate([all_events[key],
-                                              astro_bkg[key]])
+            all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
 
     if all_events["energy"].size == 0:
         raise RuntimeError("No events were detected!!!")
+
+    # Step 4: Scatter energies with RMF
+
+    if all_events["energy"].size > 0:
+        mylog.info("Scattering energies with RMF %s." % event_params['rmf'])
+        all_events = rmf.scatter_energies(all_events, prng=prng)
+
+    # Step 5: Add times to events
 
     all_events['time'] = np.random.uniform(size=all_events["energy"].size, low=0.0, 
                                            high=event_params["exposure_time"])
