@@ -2,7 +2,7 @@ import numpy as np
 from xrs_tools.utils import construct_wcs
 
 def generate_radial_events(num_events, func, prng=np.random):
-    rbins = np.linspace(0.0, 100.0, 10000)
+    rbins = np.linspace(0.0, 3000.0, 100000)
     pdf = func(rbins)
     cdf = np.cumsum(pdf)
     cdf /= cdf[-1]
