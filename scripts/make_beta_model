@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+from xrs_tools import ApecGenerator, write_simput_catalog, BetaModel
+
+parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an isothermal '+
+                                             'beta-model source.')
+parser.add_argument("simput_prefix", type=str, 
+                    help='The prefix of the SIMPUT file to be used as the root of the '+
+                         'catalog. If it does not exist, it will be created.')
+parser.add_argument("phlist_prefix", type=str, 
+                    help='The prefix of the photon list file to be written.')
+parser.add_argument("ra0", type=float, help="The right ascension of the source center in degrees.")
+parser.add_argument("dec0", type=float, help="The declination of the source center in degrees.")
+parser.add_argument("r_c", type=float, help="The core radius in arcseconds.")
+parser.add_argument("beta", type=float, help="The beta parameter.")
+parser.add_argument("kT", type=float, help="The temperature in keV.")
+parser.add_argument("abund", type=float, help="The metallicity in solar units.")
+parser.add_argument("redshift", type=float, help="The temperature in keV.")
+parser.add_argument("flux", type=float, help="The total flux in units of erg/cm**2/s.")
+parser.add_argument("emin", type=float, help='The lower reference energy in keV.')
+parser.add_argument("emax", type=float, help='The upper reference energy in keV.')
+parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("--velocity", type=float, default=0.0,
+                    help='The velocity broadening parameter, in units of km/s.')
+parser.add_argument("--absorb", action='store_true',
+                    help='Whether or not to apply foreground galactic absorption.')
+parser.add_argument("--nh", type=float, default=0.02,
+                    help='The hydrogen column in units of 10**22 atoms/cm**2')
+parser.add_argument("--area", type=float, default=30000.0, help='The collecting area to use, in cm^2.')
+parser.add_argument("--clobber", action='store_true', 
+                    help='Whether or not to clobber an existing file with the same name.')
+
+args = parser.parse_args()
+
+append = os.path.exists(args.simput_prefix+"_simput.fits")
+
+
+agen = ApecGenerator(0.01, 20.0, 20000)
+spec = agen.get_spectrum(args.kT, args.abund, args.redshift, 1.0,
+                         velocity=args.velocity)
+spec.rescale_flux(args.flux, emin=args.emin, emax=args.emax, flux_type="energy")
+
+if args.absorb:
+    spec.apply_foreground_absorption(args.nh)
+
+energy = spec.generate_energies(args.exp_time, area=args.area)
+n_evt = energy.size
+
+beta_src = BetaModel(args.ra0, args.dec0, args.beta, args.r_c, n_evt)
+
+write_simput_catalog(args.simput_prefix, args.phlist_prefix,
+                     args.exp_time, args.area, beta_src.ra, 
+                     beta_src.dec, energy, append=append, 
+                     clobber=args.clobber)
