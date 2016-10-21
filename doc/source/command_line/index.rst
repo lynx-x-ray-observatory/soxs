@@ -7,5 +7,7 @@ This section documents the various command-line scripts included with XRStools.
 
 .. toctree::
    :maxdepth: 1
-       
-   make_event_file     
+
+   spectra
+   sources
+   events     

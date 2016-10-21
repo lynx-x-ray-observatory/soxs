@@ -1,7 +1,10 @@
-.. _make-event-file:
+.. _cmd-events:
+
+Command Line Event File Scripts
+===============================
 
 ``make_event_file``
-===================
+-------------------
 
 The ``make_event_file`` script takes a SIMPUT file and generates a simulated observation
 in a standard event file format which can then be processed by standard tools such as 
@@ -28,7 +31,7 @@ CIAO, HEATOOLS, XSPEC, etc.
       --clobber    Whether or not to clobber an existing file with the same name.
       
 Examples
---------
+++++++++
 
 This example uses the pre-built HDXI instrument specification. 
 
