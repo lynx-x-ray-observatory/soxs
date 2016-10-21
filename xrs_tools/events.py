@@ -5,7 +5,7 @@ import os
 
 from xrs_tools.simput import read_simput_catalog
 from xrs_tools.utils import mylog, check_file_location, \
-    astro_background, instr_background
+    construct_wcs
 from xrs_tools.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile, \
     add_instrument_to_registry
@@ -368,3 +368,26 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     write_event_file(all_events, event_params, out_file, clobber=clobber)
 
+def make_astrophysical_background(pnt_ra, pnt_dec, fov, exp_time, 
+                                  bkgnd_file=None, area=30000.0,
+                                  prng=np.random):
+    events = {}
+
+    if bkgnd_file is None:
+        bkgnd_file = check_file_location("hm_cxb_bkgnd.dat", "files")
+
+    bkgnd_spectrum = fov*fov*Spectrum.from_file(bkgnd_file)
+    events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area=area, prng=prng)
+    n_evt = events["energy"].size
+
+    w = construct_wcs(pnt_ra, pnt_dec)
+
+    width = fov*60.0
+    x = prng.uniform(low=-0.5*width, high=0.5*width, size=n_evt)
+    y = prng.uniform(low=-0.5*width, high=0.5*width, size=n_evt)
+    ra, dec = w.wcs_world2pix(x, y, 1)
+
+    events["ra"] = ra
+    events["dec"] = dec
+
+    return events
