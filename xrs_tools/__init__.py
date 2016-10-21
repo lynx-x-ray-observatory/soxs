@@ -14,7 +14,8 @@ from xrs_tools.instrument import \
     write_instrument_json
 
 from xrs_tools.events import \
-    make_event_file
+    make_event_file, \
+    make_astrophysical_background
 
 from xrs_tools.spatial import \
     PointSourceModel, \
