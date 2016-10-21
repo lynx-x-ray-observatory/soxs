@@ -1,6 +1,6 @@
 Instrument API
 ==============
 
-.. automodule:: sox.instrument
+.. automodule:: soxs.instrument
     :members:
     :undoc-members:

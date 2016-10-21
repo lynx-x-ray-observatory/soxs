@@ -1,7 +1,7 @@
 Spectrum API
 ============
 
-.. automodule:: sox.spectra
+.. automodule:: soxs.spectra
     :members:
     :undoc-members:
     :exclude-members: wabs_cross_section

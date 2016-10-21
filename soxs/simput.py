@@ -2,7 +2,7 @@ import astropy.io.fits as pyfits
 import numpy as np
 import os
 
-from sox.constants import erg_per_keV
+from soxs.constants import erg_per_keV
 
 def read_simput_catalog(simput_file):
     r"""

@@ -5,14 +5,14 @@ import astropy.wcs as pywcs
 
 mylog.setLevel('INFO')
 
-sox_path = os.path.abspath(os.path.dirname(__file__))
-sox_files_path = os.path.join(sox_path, "files")
+soxs_path = os.path.abspath(os.path.dirname(__file__))
+soxs_files_path = os.path.join(soxs_path, "files")
 
 def check_file_location(fn, subdir):
     if os.path.exists(fn):
         return os.path.abspath(fn)
     else:
-        sto_fn = os.path.join(sox_path, subdir, fn)
+        sto_fn = os.path.join(soxs_path, subdir, fn)
         if os.path.exists(sto_fn):
             return sto_fn
     raise IOError("Could not find file %s!" % fn)

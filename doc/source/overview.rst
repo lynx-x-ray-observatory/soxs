@@ -1,7 +1,7 @@
 .. _overview:
 
-SOX Overview
-============
+SOXS Overview
+=============
 
 Generating Spectra and Events
 -----------------------------
@@ -12,7 +12,7 @@ SIMPUT Files
 The Instrument Simulator
 ------------------------
 
-The instrument simulator in SOX takes unconvolved events in the form of a
+The instrument simulator in SOXS takes unconvolved events in the form of a
 SIMPUT file and performs the following operations:
  
 1. 

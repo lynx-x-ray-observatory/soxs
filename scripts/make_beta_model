@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from sox import ApecGenerator, write_simput_catalog, BetaModel
+from soxs import ApecGenerator, write_simput_catalog, BetaModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an isothermal '+
                                              'beta-model source.')

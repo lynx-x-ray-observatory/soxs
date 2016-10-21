@@ -3,25 +3,25 @@
 Working with SIMPUT Files
 =========================
 
-The default storage format for unconvolved events in SOX is SIMPUT, which is fast becoming
+The default storage format for unconvolved events in SOXS is SIMPUT, which is fast becoming
 a standard for making mock X-ray observations. There are two functions to read and write SIMPUT
-files in SOX.
+files in SOXS.
 
 Writing SIMPUT Files
 --------------------
 
 If you have created a set of simulated events which you wish to convolve with the instrument
 simulator or with some other tool, you can write them to a SIMPUT file using
-:func:`~sox.simput.write_simput_catalog`. This will produce two files: the SIMPUT file
+:func:`~soxs.simput.write_simput_catalog`. This will produce two files: the SIMPUT file
 containing the parameters for the source, and a photon list file linked to the SIMPUT file which
 contains the actual event energies and positions. For example, say we have created a 
-:class:`~sox.spectra.Spectrum` object named ``spec`` which we've generated energies 
+:class:`~soxs.spectra.Spectrum` object named ``spec`` which we've generated energies 
 from, and that we're going to assign these energies to a point source. We can then create 
 the SIMPUT file and photon list file like this:
 
 .. code-block:: python
 
-    from sox import write_simput_catalog
+    from soxs import write_simput_catalog
     
     exp_time = 100000. # in seconds
     area = 30000. # in cm^2
@@ -34,12 +34,12 @@ the SIMPUT file and photon list file like this:
                          exp_time, area, ra, dec, energies, 
                          clobber=True) 
                          
-We have to give :func:`~sox.simput.write_simput_catalog` the exposure time and area because
+We have to give :func:`~soxs.simput.write_simput_catalog` the exposure time and area because
 we need to compute a flux for the source.
 
 Alternatively, you may already have a SIMPUT file associated with a photon list file, but want to 
 add another source to the same SIMPUT catalog. You can accomplish this by making the same call to
-:func:`~sox.simput.write_simput_catalog` but setting ``append=True``:
+:func:`~soxs.simput.write_simput_catalog` but setting ``append=True``:
 
 .. code-block:: python
 
@@ -50,11 +50,11 @@ add another source to the same SIMPUT catalog. You can accomplish this by making
 Reading SIMPUT Files
 --------------------
 
-A SIMPUT catalog can be read using :func:`~sox.simput.read_simput_catalog`:
+A SIMPUT catalog can be read using :func:`~soxs.simput.read_simput_catalog`:
 
 .. code-block:: python
 
-    from sox import read_simput_catalog
+    from soxs import read_simput_catalog
     events, parameters = read_simput_catalog("point_source_simput.fits")
     
 It returns two arguments, ``events`` and ``parameters``. ``events`` is a list of 
@@ -84,5 +84,5 @@ only has one source they would look like this:
     {'emax': array([ 10.99995703]), 'flux': array([  1.12239243e-11]), 'emin': array([ 0.12598762])}
 
 Energies are in keV, flux is in :math:`{\rm erg~s^{-1}~cm^{-2}}`, and sky coordinates
-are in degrees. :func:`~sox.simput.read_simput_catalog` is used by the instrument 
+are in degrees. :func:`~soxs.simput.read_simput_catalog` is used by the instrument 
 simulator to read sources from a SIMPUT catalog. 

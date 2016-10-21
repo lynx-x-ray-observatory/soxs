@@ -1,6 +1,6 @@
 doc/build/doctrees
 doc/build/html
-sox.egg-info
+soxs.egg-info
 .eggs
 *.pyc
 *.c

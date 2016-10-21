@@ -4,8 +4,8 @@ import json
 import numpy as np
 import astropy.io.fits as pyfits
 from astropy.utils.console import ProgressBar
-from sox.constants import erg_per_keV
-from sox.utils import mylog, ensure_numpy_array
+from soxs.constants import erg_per_keV
+from soxs.utils import mylog, ensure_numpy_array
 
 class AuxiliaryResponseFile(object):
     r"""

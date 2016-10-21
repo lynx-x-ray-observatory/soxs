@@ -3,13 +3,13 @@ import numpy as np
 import astropy.wcs as pywcs
 import os
 
-from sox.simput import read_simput_catalog
-from sox.utils import mylog, check_file_location, \
+from soxs.simput import read_simput_catalog
+from soxs.utils import mylog, check_file_location, \
     construct_wcs
-from sox.instrument import instrument_registry, \
+from soxs.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile, \
     add_instrument_to_registry
-from sox.spectra import Spectrum
+from soxs.spectra import Spectrum
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 

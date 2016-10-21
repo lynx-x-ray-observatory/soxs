@@ -3,9 +3,9 @@ import subprocess
 import tempfile
 import shutil
 import os
-from sox.utils import sox_files_path, mylog
-from sox.cutils import broaden_lines
-from sox.constants import erg_per_keV, hc, \
+from soxs.utils import soxs_files_path, mylog
+from soxs.cutils import broaden_lines
+from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
     m_u
 import astropy.io.fits as pyfits
@@ -270,7 +270,7 @@ class ApecGenerator(object):
         self.de = np.diff(self.ebins)
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         if apec_root is None:
-            apec_root = sox_files_path
+            apec_root = soxs_files_path
         self.cocofile = os.path.join(apec_root, "apec_v%s_coco.fits" % apec_vers)
         self.linefile = os.path.join(apec_root, "apec_v%s_line.fits" % apec_vers)
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):

@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SOX: Simulated Observations with X-ray Surveyor
-===============================================
+SOXS: Simulated Observations with X-ray Surveyor
+================================================
 
-There are two main entry points to SOX: a command-line interface, and a
+There are two main entry points to SOXS: a command-line interface, and a
 Python interface. The former is simpler to use, but the latter has more power
 and flexibility. Both of them are documented here. 
 

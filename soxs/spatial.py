@@ -1,5 +1,5 @@
 import numpy as np
-from sox.utils import construct_wcs
+from soxs.utils import construct_wcs
 
 def generate_radial_events(num_events, func, prng=np.random):
     rbins = np.linspace(0.0, 3000.0, 100000)

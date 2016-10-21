@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from sox import Spectrum, write_simput_catalog, PointSourceModel
+from soxs import Spectrum, write_simput_catalog, PointSourceModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a point source from'+
                                              'a spectrum supplied in a file.')

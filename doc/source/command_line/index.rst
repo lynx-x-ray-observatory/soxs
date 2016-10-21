@@ -1,9 +1,9 @@
 .. _command-line:
 
-SOX Command Line Interface
-==========================
+SOXS Command Line Interface
+===========================
 
-This section documents the various command-line scripts included with SOX.
+This section documents the various command-line scripts included with SOXS.
 
 .. toctree::
    :maxdepth: 1
