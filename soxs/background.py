@@ -25,11 +25,15 @@ class BackgroundSpectrum(Spectrum):
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
 acisi_particle_bkgnd = BackgroundSpectrum(acisi_bkgnd_file, 282.025, "instrumental")
 
-background_registry = {"acisi": acisi_particle_bkgnd}
+hm_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
+hm_astro_bkgnd = BackgroundSpectrum(hm_bkgnd_file, 1.0, "astrophysical")
+
+background_registry = {"acisi": acisi_particle_bkgnd,
+                       "hm_cxb": hm_astro_bkgnd}
 
 def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time,
                                   bkgnd_file=None, area=30000.0,
-                                  prng=np.random):
+                                  bkgnd_scale=1.0, prng=np.random):
     """
     Make events for an astrophysical background, usually for adding to existing
     events.
@@ -45,9 +49,10 @@ def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time,
     exp_time : float
         The exposure time to use to make the events.
     bkgnd_file : string, optional
-        The name of the file to use to make the events containing a spectrum. If
-        not supplied, a default astrophysical background supplied with SOXS will
-        be used. Default: None
+        The name of the file to use to make the events containing a spectrum. It must
+        have two columns: energy in keV, and background intensity in units of
+        photons/s/cm**2/arcmin**2/keV. If not supplied, a default astrophysical 
+        background supplied with SOXS will be used. Default: None
     area : float, optional
         The collecting area used to create the photons, in cm**2. Default: 30000.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
@@ -58,10 +63,12 @@ def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time,
     events = {}
 
     if bkgnd_file is None:
-        bkgnd_file = check_file_location("hm_cxb_bkgnd.dat", "files")
+        bkgnd_spectrum = hm_astro_bkgnd
+    else:
+        bkgnd_spectrum = BackgroundSpectrum(bkgnd_file, 1.0, "astrophysical")
 
-    bkgnd_spectrum = fov*fov*Spectrum.from_file(bkgnd_file)
-    events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area=area, prng=prng)
+    events["energy"] = bkgnd_spectrum.generate_energies(exp_time, fov, bkgnd_scale,
+                                                        area=area, prng=prng)
     n_evt = events["energy"].size
 
     w = construct_wcs(ra_pnt, dec_pnt)
