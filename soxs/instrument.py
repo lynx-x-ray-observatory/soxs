@@ -180,13 +180,13 @@ class RedistributionMatrixFile(object):
 instrument_registry = {}
 instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
                                "rmf": "xrs_calorimeter.rmf",
-                               "bkgnd": "acisi_particle_bkgnd.dat",
+                               "bkgnd": "acisi",
                                "num_pixels": 300,
                                "plate_scale": 1.0,
                                "psf": ["gaussian", 0.5]}
 instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
                                "rmf": "xrs_hdxi.rmf",
-                               "bkgnd": "acisi_particle_bkgnd.dat",
+                               "bkgnd": "acisi",
                                "num_pixels": 4096,
                                "plate_scale": 1./3.,
                                "psf": ["gaussian", 0.5]}

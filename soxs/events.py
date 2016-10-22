@@ -4,12 +4,11 @@ import astropy.wcs as pywcs
 import os
 
 from soxs.simput import read_simput_catalog
-from soxs.utils import mylog, check_file_location, \
-    construct_wcs
+from soxs.utils import mylog, check_file_location
 from soxs.instrument import instrument_registry, \
     AuxiliaryResponseFile, RedistributionMatrixFile, \
     add_instrument_to_registry
-from soxs.spectra import Spectrum
+from soxs.background import background_registry
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -333,15 +332,15 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
     if bkgnd_scale > 0.0:
         mylog.info("Adding in instrumental background.")
 
-        bkgnd_file = check_file_location(instrument_spec["bkgnd"], "files")
+        bkgnd = check_file_location(instrument_spec["bkgnd"], "files")
 
         fov = parameters["num_pixels"]*parameters["plate_scale"]*60.0
-        fov *= fov
-        bkgnd_spectrum = bkgnd_scale*fov*Spectrum.from_file(bkgnd_file)
+
+        bkgnd_spec = background_registry[bkgnd]
 
         bkg_events = {}
-        bkg_events["energy"] = bkgnd_spectrum.generate_energies(parameters["exposure_time"], 
-                                                                area=1.0, prng=prng)
+        bkg_events["energy"] = bkgnd_spec.generate_energies(parameters["exposure_time"], 
+                                                            fov, prng=prng)
         n_events = bkg_events["energy"].size
 
         bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],
@@ -377,52 +376,3 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
                                            high=event_params["exposure_time"])
 
     write_event_file(all_events, event_params, out_file, clobber=clobber)
-
-def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time, 
-                                  bkgnd_file=None, area=30000.0,
-                                  prng=np.random):
-    """
-    Make events for an astrophysical background, usually for adding to existing
-    events.
-
-    Parameters
-    ----------
-    ra_pnt : float
-        The pointing RA of the events.
-    dec_pnt : float
-        The pointing Dec of the events.
-    fov : float
-        The field of view on a side, in arcminutes.
-    exp_time : float
-        The exposure time to use to make the events.
-    bkgnd_file : string, optional
-        The name of the file to use to make the events containing a spectrum. If
-        not supplied, a default astrophysical background supplied with SOXS will
-        be used. Default: None
-    area : float, optional
-        The collecting area used to create the photons, in cm**2. Default: 30000.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
-    """
-    events = {}
-
-    if bkgnd_file is None:
-        bkgnd_file = check_file_location("hm_cxb_bkgnd.dat", "files")
-
-    bkgnd_spectrum = fov*fov*Spectrum.from_file(bkgnd_file)
-    events["energy"] = bkgnd_spectrum.generate_energies(exp_time, area=area, prng=prng)
-    n_evt = events["energy"].size
-
-    w = construct_wcs(ra_pnt, dec_pnt)
-
-    width = fov*60.0
-    x = prng.uniform(low=-0.5*width, high=0.5*width, size=n_evt)
-    y = prng.uniform(low=-0.5*width, high=0.5*width, size=n_evt)
-    ra, dec = w.wcs_pix2world(x, y, 1)
-
-    events["ra"] = ra
-    events["dec"] = dec
-
-    return events

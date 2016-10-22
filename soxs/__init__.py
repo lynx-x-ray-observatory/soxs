@@ -14,7 +14,9 @@ from soxs.instrument import \
     write_instrument_json
 
 from soxs.events import \
-    make_event_file, \
+    make_event_file
+
+from soxs.background import \
     make_astrophysical_background
 
 from soxs.spatial import \
