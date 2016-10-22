@@ -340,7 +340,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
         bkg_events = {}
         bkg_events["energy"] = bkgnd_spec.generate_energies(parameters["exposure_time"], 
-                                                            fov, prng=prng)
+                                                            fov, bkgnd_scale, prng=prng)
         n_events = bkg_events["energy"].size
 
         bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=parameters['num_pixels'],

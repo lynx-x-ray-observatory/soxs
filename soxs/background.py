@@ -13,12 +13,12 @@ class BackgroundSpectrum(Spectrum):
         super(BackgroundSpectrum, self).__init__(ebins, flux)
         self *= 1.0/fov_scale
 
-    def generate_energies(self, t_exp, fov, area=30000.0, prng=None):
+    def generate_energies(self, t_exp, fov, bkgnd_scale, area=30000.0, prng=None):
         if self.bkg_type == "instrumental":
             A = 1.0
         else:
             A = area
-        A *= fov*fov
+        A *= fov*fov*bkgnd_scale
         return super(BackgroundSpectrum, self).generate_energies(t_exp, A,
                                                                  prng=prng)
 
