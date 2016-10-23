@@ -123,8 +123,8 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
-    3. Determines energy channels using the RMF
-    4. Adds instrumental background events
+    3. Adds instrumental background events
+    4. Determines energy channels using the RMF
     5. Writes the events to a file
 
     Parameters

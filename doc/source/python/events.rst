@@ -3,22 +3,23 @@
 Creating Event Files
 ====================
 
-Creating Events from SIMPUT Sources
------------------------------------
-
 The end product of a mock observation is a "standard" event file which has been 
 convolved with a model for the telescope. In SOXS, this is handled by the
 instrument simulator. 
 
-:func:`~soxs.events.make_event_file` reads in a SIMPUT file and creates a
+:func:`~soxs.events.make_event_file` reads in a SIMPUT catalog and creates a
 standard event file using the instrument simulator. :func:`~soxs.events.make_event_file`
 performs the following actions:
 
 1. Uses the effective area curve to determine which events will actually be detected.
-2. Projects these events onto the detector plane and perform dithering of their positions.
-3. Convolves the event energies with the response matrix to produce channels.
+2. Projects these events onto the detector plane and perform PSF blurring and dithering 
+   of their positions.
+3. Add particle/instrumental background events. 
+4. Convolves the event energies with the response matrix to produce channels.
+5. Writes everything to an event file.
 
-A typical invocation of :func:`~soxs.events.make_event_file` looks like the following:
+All of the photon lists in the SIMPUT catalog will be processed. A typical invocation of 
+:func:`~soxs.events.make_event_file` looks like the following:
 
 .. code-block:: python
 
@@ -29,9 +30,10 @@ A typical invocation of :func:`~soxs.events.make_event_file` looks like the foll
     instrument = "xcal" # short name for instrument to be used
     sky_center = [30., 45.] # RA, Dec of pointing in degrees
     make_event_file(simput_file, out_file, exp_time, instrument, sky_center, clobber=True)
-    
-If you have your own JSON-based instrument specification, you can supply it to the instrument
-argument instead:
+ 
+The ``clobber`` argument allows an existing file to be overwritten. Instruments must exist
+in the instrument registry, unless you have your own JSON-based instrument specification, 
+which you can then supply as the instrument argument instead:
 
 .. code-block:: python
 
@@ -42,8 +44,4 @@ Available instruments are:
 
 * ``"hdxi"``: 
 * ``"xcal"``:
-
-Adding Background Events
-------------------------
-
 

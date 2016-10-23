@@ -1,6 +1,6 @@
 .. _python:
 
-SOX SPython Interface
+SOXS Python Interface
 =====================
 
 This section documents the Python interface to SOXS.
