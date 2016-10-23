@@ -30,10 +30,25 @@ background_registry = {"acisi": acisi_particle_bkgnd,
                        "hm_cxb": hm_astro_bkgnd}
 
 def add_background_to_registry(name, filename, bkgnd_type):
+    """
+    Add a background to the background registry.
+
+    Parameters
+    ----------
+    name : string
+        The short name of the background, which will be the key in the 
+        registry.
+    filename : string
+        The file containing the background. It must have two columns: 
+        energy in keV, and background intensity in units of
+        photons/s/cm**2/arcmin**2/keV.
+    bkgnd_type : string
+        The type of background, either "instrumental" or "astrophysical".
+    """
     background_registry[name] = BackgroundSpectrum(filename, bkgnd_type)
 
 def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time,
-                                  bkgnd_file=None, area=30000.0,
+                                  bkgnd_spec=None, area=30000.0,
                                   bkgnd_scale=1.0, prng=np.random):
     """
     Make events for an astrophysical background, usually for adding to existing
@@ -49,11 +64,10 @@ def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time,
         The field of view on a side, in arcminutes.
     exp_time : float
         The exposure time to use to make the events.
-    bkgnd_file : string, optional
-        The name of the file to use to make the events containing a spectrum. It must
-        have two columns: energy in keV, and background intensity in units of
-        photons/s/cm**2/arcmin**2/keV. If not supplied, a default astrophysical 
-        background supplied with SOXS will be used. Default: None
+    bkgnd_spec : string, optional
+        The name of the background spectrum to use to make the events. It must be a
+        background registered in the background registry. If not supplied, a default 
+        astrophysical background supplied with SOXS will be used. Default: None
     area : float, optional
         The collecting area used to create the photons, in cm**2. Default: 30000.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
@@ -63,10 +77,10 @@ def make_astrophysical_background(ra_pnt, dec_pnt, fov, exp_time,
     """
     events = {}
 
-    if bkgnd_file is None:
+    if bkgnd_spec is None:
         bkgnd_spectrum = hm_astro_bkgnd
     else:
-        bkgnd_spectrum = BackgroundSpectrum(bkgnd_file, 1.0, "astrophysical")
+        bkgnd_spectrum = background_registry[bkgnd_spec]
 
     events["energy"] = bkgnd_spectrum.generate_energies(exp_time, fov, bkgnd_scale,
                                                         area=area, prng=prng)
