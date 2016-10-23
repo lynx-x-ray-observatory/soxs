@@ -22,7 +22,6 @@ Contents:
    overview
    command_line/index
    python/index
-   external_packages
    api/modules
 
 
