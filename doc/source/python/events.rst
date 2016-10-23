@@ -45,3 +45,10 @@ Available instruments are:
 * ``"hdxi"``: 
 * ``"xcal"``:
 
+You can also change other aspects of the observation with :func:`~soxs.events.make_event_file`. 
+For example, you can change the shape and size of the dither pattern:
+
+
+You can also specify a non-zero roll angle:
+
+The particle background scale can be set using the ``bkgnd_scale`` argument:
