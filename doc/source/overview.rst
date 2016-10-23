@@ -3,13 +3,29 @@
 SOXS Overview
 =============
 
-This page provides a general overview of the capabilities of SOXS. 
+This section provides a general overview of the capabilities of SOXS. SOXS has 
+three main goals
 
-Generating Spectra and Events
------------------------------
+Generating Simplified Models of Sources
+---------------------------------------
 
 SIMPUT Files
 ------------
+
+For storage and representation of source models, SOXS uses the SIMPUT file format. SIMPUT
+stands for "SIMulated inPUT", and was developed at the University of Erlangen-Nuremberg
+for use with the `SIXTE <http://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_
+mock X-ray observation package. However, other similar packages, such as 
+`SIMX <http://hea-www.cfa.harvard.edu/simx/>`_ and `MARX <http://space.mit.edu/CXC/MARX/>`_
+use SIMPUT as a possible input format for source models, making it possible to used models
+produced in or for SOXS with these packages to compare the expected performance of X-ray
+Surveyor with other instruments. 
+
+SOXS currently provides facilities for both input and output of SIMPUT catalogs with
+photon lists. The SIMPUT outputs can be used to compare simulations made with SOXS for 
+X-ray Surveyor to simulations of other X-ray instruments past, current, and future, and 
+likewise SIMPUT files not created with SOXS can be used as inputs to SOXS's instrument
+simulator. 
 
 The Instrument Simulator
 ------------------------
@@ -37,35 +53,45 @@ in using:
 MARX
 ++++
 
-Website: 
+Website: http://space.mit.edu/CXC/MARX/
+
+MARX is a set of programs developed to provide a detailed ray-tracing simulation of the
+on-orbit performance of *Chandra*. The SIMPUT files produced by SOXS can be used as inputs
+to MARX to simulate *Chandra* observations to compare with X-ray Surveyor. 
 
 SIMX
 ++++
 
-Website: http://hea-www.cfa.harvard.edu/simx
+Website: http://hea-www.cfa.harvard.edu/simx/
 
-simx simulates a photon-counting detector's response to an input source, including 
-a simplified model of any telescope. The code is not a full ray-trace, but a convolution 
-tool that uses standard descriptions of telescope PSF (via either a simple Gaussian 
-parameter, an energy-dependent encircled-energy function, or an image of the PSF) and
-the detector response (using the OGIP response function) to model how sources will appear.
+SIMX simulates a photon-counting detector's response to an input source, including 
+a simplified model of any telescope. SIMX is a "convolution tool" that uses standard 
+descriptions of telescope PSF and the detector response to model how sources will 
+appear. The SIMPUT files produced by SOXS can be used as inputs to SIMX, and may be 
+useful for simulating observations using other instruments, such as *Athena*, *Hitomi*, 
+etc.
 
-The SIMPUT files produced by SOXS can be used as inputs to SIMX, and may be useful for 
-simulating observations using other instruments, such as Athena, Hitomi, etc.
+SIXTE
++++++
+
+Website: http://www.sternwarte.uni-erlangen.de/research/sixte/index.php
+
+SIXTE is a software package for X-ray telescope observation simulations developed 
+at the Erlangen Centre for Astroparticle Physics (ECAP) under the leadership of Christian
+Schmid. It allows to undertake instrument performance analyses and to produce simulated 
+event files for mission and analysis studies. Its primary goal is to produce simulated
+*Athena* observations, but it can produce observations of several other missions as
+well. The SIMPUT files produced by SOXS can be used as inputs to SIXTE.
 
 pyXSIM
 ++++++
 
-Website: http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim
+Website: http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim/
 
 pyXSIM is a Python package for simulating X-ray observations from 3-D models of
 astrophysical sources. pyXSIM makes it possible to generate synthetic X-ray 
 observations of these sources from a wide variety of models, whether from grid-based 
 simulation codes such as FLASH, Enzo, and Athena, to particle-based codes such as 
 Gadget and AREPO, and even from datasets that have been created “by hand”, such as from
-NumPy arrays. pyXSIM also provides facilities for manipulating the synthetic observations 
-it produces in various ways, as well as ways to export the simulated X-ray events to other
-software packages to simulate the end products of specific X-ray observatories.
-
-pyXSIM can be used to produce SIMPUT files which can be ingested by SOXS for making
-simulated X-ray Surveyor observations.
+NumPy arrays. pyXSIM can be used to produce SIMPUT files which can be ingested by 
+SOXS for making simulated X-ray Surveyor observations.
