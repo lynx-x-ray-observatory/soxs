@@ -17,7 +17,8 @@ from soxs.events import \
     make_event_file
 
 from soxs.background import \
-    make_astrophysical_background
+    make_astrophysical_background, \
+    add_background_to_registry
 
 from soxs.spatial import \
     PointSourceModel, \
