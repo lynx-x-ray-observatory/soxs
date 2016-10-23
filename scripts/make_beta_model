@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from soxs import ApecGenerator, write_simput_catalog, BetaModel
+from soxs import ApecGenerator, write_photon_list, BetaModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an isothermal '+
                                              'beta-model source.')
@@ -50,7 +50,6 @@ n_evt = energy.size
 
 beta_src = BetaModel(args.ra0, args.dec0, args.beta, args.r_c, n_evt)
 
-write_simput_catalog(args.simput_prefix, args.phlist_prefix,
-                     args.exp_time, args.area, beta_src.ra, 
-                     beta_src.dec, energy, append=append, 
-                     clobber=args.clobber)
+write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
+                  args.area, beta_src.ra, beta_src.dec, energy, append=append, 
+                  clobber=args.clobber)

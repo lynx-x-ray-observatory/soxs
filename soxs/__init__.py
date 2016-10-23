@@ -1,7 +1,7 @@
 __version__ = "0.1"
 
 from soxs.simput import \
-    write_simput_catalog, \
+    write_photon_list, \
     read_simput_catalog
 
 from soxs.spectra import \

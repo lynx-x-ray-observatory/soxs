@@ -2,7 +2,7 @@
 
 import argparse
 import os
-from soxs import Spectrum, write_simput_catalog, PointSourceModel
+from soxs import Spectrum, write_photon_list, PointSourceModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a point source from'+
                                              'a spectrum supplied in a file.')
@@ -28,7 +28,6 @@ energy = spec.generate_energies(args.exp_time, area=args.area)
 n_evt = energy.size
 pt_src = PointSourceModel(args.ra, args.dec, n_evt)
 
-write_simput_catalog(args.simput_prefix, args.phlist_prefix,
-                     args.exp_time, args.area, pt_src.ra, 
-                     pt_src.dec, energy, append=append, 
-                     clobber=args.clobber)
+write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
+                  args.area, pt_src.ra, pt_src.dec, energy, append=append, 
+                  clobber=args.clobber)

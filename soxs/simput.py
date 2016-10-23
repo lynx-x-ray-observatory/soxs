@@ -38,12 +38,12 @@ def read_simput_catalog(simput_file):
         f_phlist.close()
         events.append(evt)
     return events, parameters
-
-def write_simput_catalog(simput_prefix, phlist_prefix, 
-                         exp_time, area, ra, dec, energy, 
-                         append=False, clobber=False):
+    
+def write_photon_list(simput_prefix, phlist_prefix, exp_time, area, 
+                      ra, dec, energy, append=False, clobber=False):
     r"""
-    Write events to a SIMPUT photon list.
+    Write events to a new SIMPUT photon list. It can be associated
+    with a new or existing SIMPUT catalog. 
 
     Parameters
     ----------
