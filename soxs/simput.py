@@ -38,7 +38,7 @@ def read_simput_catalog(simput_file):
         f_phlist.close()
         events.append(evt)
     return events, parameters
-    
+
 def write_photon_list(simput_prefix, phlist_prefix, exp_time, area, 
                       ra, dec, energy, append=False, clobber=False):
     r"""
