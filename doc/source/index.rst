@@ -11,7 +11,8 @@ X-ray Surveyor. SOXS
 
 There are two main entry points to SOXS: a command-line interface, and a
 Python interface. The former is simpler to use, but the latter has more power
-and flexibility. Both of them are documented here. 
+and flexibility. Both of these entry points are extensively documented here with
+examples.
 
 Why Another Mock X-ray Observation Package?
 -------------------------------------------
@@ -21,12 +22,16 @@ observations, and it is a sensible question as to why it would not have made
 more sense to adapt one of these existing 
 
 Firstly, SOXS is 
+
 Secondly, SOXS is being developed in Python, reflecting the growing popularity 
 of the use of Python in astronomy and astrophysics. Though there are a number
 of command-line scripts provided in SOXS, which can carry out the most important
-tasks, the Python interface to SOXS is more powerful and flexible.
+tasks, the Python interface to SOXS is more powerful and flexible. 
 
-Thirdly, SOXS is being developed out in the open, 
+Thirdly, SOXS is being developed out in the open, on `GitHub <http://github.com/XRStools/soxs>`_, 
+to encourage contributions in the form of bugfixes and enhancements, and to make
+contributing as simple as forking the code and submitting a pull request for review.
+
 Documentation Contents:
 
 .. toctree::
@@ -36,6 +41,7 @@ Documentation Contents:
    overview
    command_line/index
    python/index
+   examples/index
    api/modules
 
 
