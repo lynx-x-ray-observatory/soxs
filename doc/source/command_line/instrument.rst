@@ -5,19 +5,19 @@ Instrument Simulator Scripts
 
 These command-line scripts allow one to run and modify the instrument simulator. 
 
-``simulate_events``
--------------------
+``instrument_simulator``
+------------------------
 
-The ``simulate_events`` script takes a SIMPUT file and generates a simulated observation
-in a standard event file format which can then be processed by standard tools such as 
-CIAO, HEATOOLS, XSPEC, etc. 
+The ``instrument_simulator`` script takes a SIMPUT file and generates a simulated observation
+in a standard event file format which can then be processed by standard tools such as CIAO, 
+HEATOOLS, XSPEC, etc. 
 
 .. code-block:: text
 
-    usage: simulate_events [-h] [--clobber] [--dither_shape DITHER_SHAPE]
-                           [--dither_size DITHER_SIZE] [--roll_angle ROLL_ANGLE]
-                           [--bkgnd_scale BKGND_SCALE]
-                           simput_file out_file exp_time instrument sky_center
+    usage: instrument_simulator [-h] [--clobber] [--dither_shape DITHER_SHAPE]
+                                [--dither_size DITHER_SIZE] [--roll_angle ROLL_ANGLE]
+                                [--bkgnd_scale BKGND_SCALE]
+                                simput_file out_file exp_time instrument sky_center
     
     Create a simulated event file.
     
@@ -54,10 +54,10 @@ This example uses the pre-built HDXI instrument specification.
 
 .. code-block:: bash
 
-    [~]$ simulate_events sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --clobber
 
 This example uses a JSON file created by the user. 
 
 .. code-block:: bash
 
-    [~]$ simulate_events sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --clobber

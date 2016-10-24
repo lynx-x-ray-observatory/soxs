@@ -259,10 +259,10 @@ def write_instrument_json(inst_name, filename):
     json.dump(inst_dict, fp, indent=4)
     fp.close()
 
-def simulate_events(simput_file, out_file, exp_time, instrument,
-                    sky_center, clobber=False, dither_shape="square",
-                    dither_size=16.0, roll_angle=0.0, bkgnd_scale=1.0,
-                    prng=np.random):
+def instrument_simulator(simput_file, out_file, exp_time, instrument,
+                         sky_center, clobber=False, dither_shape="square",
+                         dither_size=16.0, roll_angle=0.0, bkgnd_scale=1.0,
+                         prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
     file from them. This function does the following:
@@ -308,8 +308,8 @@ def simulate_events(simput_file, out_file, exp_time, instrument,
 
     Examples
     --------
-    >>> simulate_events("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
-    ...                 [30., 45.], clobber=True)
+    >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
+    ...                     [30., 45.], clobber=True)
     """
     event_list, parameters = read_simput_catalog(simput_file)
 

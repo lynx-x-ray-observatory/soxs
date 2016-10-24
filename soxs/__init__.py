@@ -12,7 +12,7 @@ from soxs.instrument import \
     add_instrument_to_registry, \
     show_instrument_registry, \
     write_instrument_json, \
-    simulate_events
+    instrument_simulator
 
 from soxs.background import \
     make_astrophysical_background, \
