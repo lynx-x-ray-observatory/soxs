@@ -12,10 +12,12 @@ from soxs.instrument import \
     add_instrument_to_registry, \
     show_instrument_registry, \
     write_instrument_json, \
-    instrument_simulator
+    instrument_simulator, \
+    instrument_registry
 
 from soxs.background import \
-    add_background_to_registry
+    add_background_to_registry, \
+    background_registry
 
 from soxs.spatial import \
     PointSourceModel, \
