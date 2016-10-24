@@ -15,11 +15,13 @@ HEATOOLS, XSPEC, etc.
 .. code-block:: text
 
     usage: instrument_simulator [-h] [--clobber] [--dither_shape DITHER_SHAPE]
-                                [--dither_size DITHER_SIZE] [--roll_angle ROLL_ANGLE]
+                                [--dither_size DITHER_SIZE]
+                                [--roll_angle ROLL_ANGLE]
                                 [--bkgnd_scale BKGND_SCALE]
-                                simput_file out_file exp_time instrument sky_center
+                                simput_file out_file exp_time instrument
+                                sky_center
     
-    Create a simulated event file.
+    Run the instrument simulator and produce a simulated event file.
     
     positional arguments:
       simput_file           The SIMPUT file to be used as input.
