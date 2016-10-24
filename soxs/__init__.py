@@ -11,9 +11,7 @@ from soxs.spectra import \
 from soxs.instrument import \
     add_instrument_to_registry, \
     show_instrument_registry, \
-    write_instrument_json
-
-from soxs.events import \
+    write_instrument_json, \
     simulate_events
 
 from soxs.background import \
