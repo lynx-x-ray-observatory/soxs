@@ -1,9 +1,9 @@
 .. _cmd-events:
 
-Command Line Event File Scripts
-===============================
+Instrument Simulator Scripts
+============================
 
-These command-line scripts produce and manipulate event files.
+These command-line scripts allow one to run and modify the instrument simulator. 
 
 ``simulate_events``
 -------------------

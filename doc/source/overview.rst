@@ -31,10 +31,10 @@ The Instrument Simulator
 ------------------------
 
 .. |simulate_events_cmd| replace:: ``simulate_events`` command-line script
-.. _simulate_events_cmd: command_line/events.html#simulate-events
+.. _simulate_events_cmd: command_line/instrument.html#simulate-events
 
 .. |simulate_events_py| replace:: ``simulate_events()`` Python function
-.. _simulate_events_py: python/events.html#creating-event-files
+.. _simulate_events_py: python/instrument.html#creating-event-files
 
 The instrument simulator in SOXS takes unconvolved events in the form of a
 SIMPUT file and performs the following operations:

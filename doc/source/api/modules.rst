@@ -7,4 +7,3 @@ SOXS Python API
     spectra     
     simput
     instrument
-    events

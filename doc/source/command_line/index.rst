@@ -10,4 +10,4 @@ This section documents the various command-line scripts included with SOXS.
 
    spectra
    sources
-   events     
+   instrument     

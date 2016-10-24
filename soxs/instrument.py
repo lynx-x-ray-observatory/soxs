@@ -8,10 +8,9 @@ import os
 
 from astropy.utils.console import ProgressBar
 from soxs.constants import erg_per_keV
-from soxs.events import write_event_file
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array
+    ensure_numpy_array, write_event_file
 from soxs.background import background_registry
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
