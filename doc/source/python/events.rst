@@ -23,7 +23,7 @@ All of the photon lists in the SIMPUT catalog will be processed. A typical invoc
 
 .. code-block:: python
 
-    from soxs import make_event_file
+    from soxs import simulate_events
     simput_file = "snr_simput.fits" # SIMPUT file to be read
     out_file = "evt_xcal.fits" # event file to be written
     exp_time = 30000. # The exposure time in seconds
