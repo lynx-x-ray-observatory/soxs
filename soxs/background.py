@@ -26,7 +26,7 @@ class BackgroundSpectrum(Spectrum):
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
 acisi_particle_bkgnd = BackgroundSpectrum(acisi_bkgnd_file, "instrumental")
 
-hm_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
+hm_bkgnd_file = os.path.join(soxs_files_path, "hm_cxb_bkgnd.dat")
 hm_astro_bkgnd = BackgroundSpectrum(hm_bkgnd_file, "astrophysical")
 
 background_registry = {"acisi": acisi_particle_bkgnd,
