@@ -113,7 +113,7 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
-def make_event_file(simput_file, out_file, exp_time, instrument,
+def simulate_events(simput_file, out_file, exp_time, instrument,
                     sky_center, clobber=False, dither_shape="square",
                     dither_size=16.0, roll_angle=0.0, bkgnd_scale=1.0, 
                     prng=np.random):
@@ -162,7 +162,7 @@ def make_event_file(simput_file, out_file, exp_time, instrument,
 
     Examples
     --------
-    >>> make_event_file("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
+    >>> simulate_events("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
     ...                 [30., 45.], clobber=True)
     """
     event_list, parameters = read_simput_catalog(simput_file)

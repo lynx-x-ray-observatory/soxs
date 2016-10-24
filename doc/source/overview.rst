@@ -24,8 +24,8 @@ Surveyor with other instruments.
 SOXS currently provides facilities for both input and output of SIMPUT catalogs with
 photon lists. The SIMPUT outputs can be used to compare simulations made with SOXS for 
 X-ray Surveyor to simulations of other X-ray instruments past, current, and future, and 
-likewise SIMPUT files not created with SOXS can be used as inputs to SOXS's instrument
-simulator. 
+likewise SIMPUT catalogs with photon lists not created with SOXS can be used as inputs 
+to SOXS's instrument simulator. 
 
 The Instrument Simulator
 ------------------------
@@ -41,6 +41,13 @@ SIMPUT file and performs the following operations:
 4. Convolves the event energies with the response matrix from an RMF to produce
    channels.
 5. Writes everything to an event file.
+
+The instrument simulator is called using either the :func:`~soxs.events.simulate_events` 
+Python function or the ``simulate_events`` command-line script. 
+
+The instrument simulator can simulate "default" instrument configurations for 
+X-ray Surveyor, but one can also supply a modified instrument configuration for use
+with the instrument simulator, which is laid out in more detail in :ref:`instrument`. 
 
 Working with Other Tools
 ------------------------
