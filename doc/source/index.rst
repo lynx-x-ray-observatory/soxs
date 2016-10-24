@@ -42,7 +42,8 @@ Thirdly, SOXS is being developed out in the open, on `GitHub <http://github.com/
 to encourage contributions in the form of bugfixes and enhancements, and to make
 contributing as simple as forking the code and submitting a pull request for review.
 
-Documentation Contents:
+Documentation Contents
+----------------------
 
 .. toctree::
    :maxdepth: 2
