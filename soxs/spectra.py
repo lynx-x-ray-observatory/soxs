@@ -30,7 +30,7 @@ class Spectrum(object):
 
     def __add__(self, other):
         if self.units != other.units:
-            s = "The two spectra do not have the same units!"
+            s = "The two spectra do not have the same units! "
             s += "%s vs. %s" % (self.units, other.units)
             raise RuntimeError(s)
         if self.nbins != other.nbins or \

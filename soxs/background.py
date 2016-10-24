@@ -23,9 +23,11 @@ class BackgroundSpectrum(Spectrum):
                                                                            self.tot_energy_flux)
         return s
 
+# ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
 acisi_particle_bkgnd = BackgroundSpectrum(acisi_bkgnd_file, "instrumental")
 
+# X-ray foreground from Hickox & Markevitch 2007 (http://adsabs.harvard.edu/abs/2007ApJ...661L.117H)
 hm_bkgnd_file = os.path.join(soxs_files_path, "hm_cxb_bkgnd.dat")
 hm_astro_bkgnd = BackgroundSpectrum(hm_bkgnd_file, "astrophysical")
 
