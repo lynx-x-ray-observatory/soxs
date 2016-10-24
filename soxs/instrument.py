@@ -259,17 +259,55 @@ def write_instrument_json(inst_name, filename):
     json.dump(inst_dict, fp, indent=4)
     fp.close()
 
+def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, prng=np.random):
+
+    fov = event_params["num_pixels"]*event_params["plate_scale"]*60.0
+
+    bkgnd_spec = background_registry[bkgnd_name]
+
+    # Generate background events
+
+    bkg_events = {}
+    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                                        fov, bkgnd_scale, prng=prng)
+
+    # If this is an astrophysical background, detect the events with the ARF used
+    # for the observation
+    if bkgnd_spec.bkgnd_type == "astrophysical":
+        mylog.info("Applying energy-dependent effective area from %s." % event_params["arf"])
+        arf_file = check_file_location(event_params["arf"], "files")
+        arf = AuxiliaryResponseFile(arf_file)
+        refband = [bkgnd_spec.ebins[0], bkgnd_spec.ebins[-1]]
+        bkg_events = arf.detect_events(bkg_events, event_params["exposure_time"],
+                                       bkgnd_spec.tot_energy_flux, refband, prng=prng)
+
+    n_events = bkg_events["energy"].size
+
+    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
+                                                size=n_events))
+    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
+                                                size=n_events))
+    bkg_events["detx"] = np.round(bkg_events["chipx"] - event_params['pix_center'][0] +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    bkg_events["dety"] = np.round(bkg_events["chipy"] - event_params['pix_center'][1] +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
+    bkg_events["xpix"] = pix[0,:] + event_params['pix_center'][0]
+    bkg_events["ypix"] = pix[1,:] + event_params['pix_center'][1]
+
+    return bkg_events
+
 def instrument_simulator(simput_file, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
-                         dither_size=16.0, roll_angle=0.0, bkgnd_scale=1.0,
-                         prng=np.random):
+                         dither_size=16.0, roll_angle=0.0, astro_bkgnd="hm_cxb",
+                         bkgnd_scale=1.0, prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
     file from them. This function does the following:
 
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
-    3. Adds instrumental background events
+    3. Adds instrumental and astrophysical background events
     4. Determines energy channels using the RMF
     5. Writes the events to a file
 
@@ -299,6 +337,10 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
+    astro_bkgnd : string
+        The astrophysical background spectrum to assume. Must be the name of a
+        background registered in the background registry. If None, no astrophysical
+        background is applied. Default: "hm_cxb"
     bkgnd_scale : float, optional
         The scale of the instrumental background. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
@@ -472,31 +514,28 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
                     all_events[key] = np.append(all_events[key], events[key])
             first = False
 
-    # Step 3: Add particle background
+    if all_events["energy"].size == 0:
+        mylog.warning("No events from any of the sources in the catalog were detected!")
+
+    # Step 3: Add astrophysical background
+
+    if astro_bkgnd is not None:
+
+        mylog.info("Adding in astrophysical background.")
+
+        bkg_events = add_background(astro_bkgnd, event_params, rot_mat, 1.0, prng=prng)
+
+        for key in all_events:
+            all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
+
+    # Step 4: Add particle background
 
     if bkgnd_scale > 0.0:
+
         mylog.info("Adding in instrumental background.")
 
-        fov = event_params["num_pixels"]*event_params["plate_scale"]*60.0
-
-        bkgnd_spec = background_registry[instrument_spec["bkgnd"]]
-
-        bkg_events = {}
-        bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                            fov, bkgnd_scale, prng=prng)
-        n_events = bkg_events["energy"].size
-
-        bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                    size=n_events))
-        bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                    size=n_events))
-        bkg_events["detx"] = np.round(bkg_events["chipx"] - event_params['pix_center'][0] +
-                                      prng.uniform(low=-0.5, high=0.5, size=n_events))
-        bkg_events["dety"] = np.round(bkg_events["chipy"] - event_params['pix_center'][1] +
-                                      prng.uniform(low=-0.5, high=0.5, size=n_events))
-        pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
-        bkg_events["xpix"] = pix[0,:] + event_params['pix_center'][0]
-        bkg_events["ypix"] = pix[1,:] + event_params['pix_center'][1]
+        bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
+                                    bkgnd_scale, prng=prng)
 
         for key in all_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
@@ -504,13 +543,13 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     if all_events["energy"].size == 0:
         raise RuntimeError("No events were detected!!!")
 
-    # Step 4: Scatter energies with RMF
+    # Step 5: Scatter energies with RMF
 
     if all_events["energy"].size > 0:
         mylog.info("Scattering energies with RMF %s." % event_params['rmf'])
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
-    # Step 5: Add times to events
+    # Step 6: Add times to events
 
     all_events['time'] = np.random.uniform(size=all_events["energy"].size, low=0.0,
                                            high=event_params["exposure_time"])

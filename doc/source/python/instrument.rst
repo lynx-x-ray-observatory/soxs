@@ -17,7 +17,7 @@ performs the following actions:
 1. Uses the effective area curve to determine which events will actually be detected.
 2. Projects these events onto the detector plane and perform PSF blurring and dithering 
    of their positions.
-3. Add particle/instrumental background events. 
+3. Add particle/instrumental and astrophysical background events.
 4. Convolves the event energies with the response matrix to produce channels.
 5. Writes everything to an event file.
 

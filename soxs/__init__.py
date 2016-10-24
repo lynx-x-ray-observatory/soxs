@@ -15,7 +15,6 @@ from soxs.instrument import \
     instrument_simulator
 
 from soxs.background import \
-    make_astrophysical_background, \
     add_background_to_registry
 
 from soxs.spatial import \
