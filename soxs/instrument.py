@@ -275,18 +275,17 @@ def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, prng=np.rando
     # Generate background events
 
     bkg_events = {}
-    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                        fov, bkgnd_scale, prng=prng)
 
     # If this is an astrophysical background, detect the events with the ARF used
-    # for the observation
+    # for the observation, otherwise it's a particle background and assume area = 1.
     if bkgnd_spec.bkgnd_type == "astrophysical":
-        mylog.info("Applying energy-dependent effective area from %s." % event_params["arf"])
-        arf_file = check_file_location(event_params["arf"], "files")
-        arf = AuxiliaryResponseFile(arf_file)
-        refband = [bkgnd_spec.ebins[0], bkgnd_spec.ebins[-1]]
-        bkg_events = arf.detect_events(bkg_events, event_params["exposure_time"],
-                                       bkgnd_spec.tot_energy_flux, refband, prng=prng)
+        arf = AuxiliaryResponseFile(check_file_location(event_params["arf"], "files"))
+        area = arf.interpolate_area(bkgnd_spec.emid)
+    else:
+        area = 1.0
+
+    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                                        area, fov, bkgnd_scale, prng=prng)
 
     n_events = bkg_events["energy"].size
 

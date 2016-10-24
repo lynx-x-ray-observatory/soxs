@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from soxs.spectra import Spectrum
-from soxs.utils import construct_wcs, soxs_files_path
+from soxs.utils import soxs_files_path
 
 class BackgroundSpectrum(Spectrum):
     def __init__(self, filename, bkgnd_type):
@@ -10,15 +10,18 @@ class BackgroundSpectrum(Spectrum):
         de = np.diff(emid)[0]
         ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
         super(BackgroundSpectrum, self).__init__(ebins, flux)
+        self.units = "photons/cm**2/arcmin**2/s/keV"
 
-    def generate_energies(self, t_exp, fov, bkgnd_scale, area=30000.0, prng=None):
-        if self.bkgnd_type == "instrumental":
-            A = 1.0
-        else:
-            A = area
-        A *= fov*fov*bkgnd_scale
+    def generate_energies(self, t_exp, area, fov, bkgnd_scale, prng=None):
+        A = area*fov*fov*bkgnd_scale
         return super(BackgroundSpectrum, self).generate_energies(t_exp, A,
                                                                  prng=prng)
+
+    def __repr__(self):
+        s = "BackgroundSpectrum (%g - %g keV): " % (self.ebins[0], self.ebins[-1])
+        s += "Total flux %g (%g) photons (erg) / cm**2 / arcmin**2 / s" % (self.tot_flux,
+                                                                           self.tot_energy_flux)
+        return s
 
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
 acisi_particle_bkgnd = BackgroundSpectrum(acisi_bkgnd_file, "instrumental")

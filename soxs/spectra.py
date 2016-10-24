@@ -18,6 +18,7 @@ class Spectrum(object):
         self.nbins = len(self.emid)
         self.de = ebins[1]-ebins[0]
         self._compute_tot_flux()
+        self.units = "photons/cm**2/s/keV"
 
     def _compute_tot_flux(self):
         self.tot_flux = self.flux.sum()*self.de
@@ -28,6 +29,10 @@ class Spectrum(object):
         self.cumspec = cumspec
 
     def __add__(self, other):
+        if self.units != other.units:
+            s = "The two spectra do not have the same units!"
+            s += "%s vs. %s" % (self.units, other.units)
+            raise RuntimeError(s)
         if self.nbins != other.nbins or \
             not np.isclose(self.ebins, other.ebins).all():
             raise RuntimeError("Energy binning for these two "
@@ -212,9 +217,10 @@ class Spectrum(object):
         ----------
         t_exp : float
             The exposure time in seconds.
-        area : float, optional
-            The effective area (constant) in cm**2. Must be large enough to draw enough
-            events from the ARF. Default: 30000.0
+        area : float or NumPy array, optional
+            The effective area in cm**2. If one is creating events for a SIMPUT file,
+            a constant should be used and it must be large enough so that a sufficiently
+            large sample is drawn for the ARF. Default: 30000.0
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
@@ -222,11 +228,21 @@ class Spectrum(object):
         """
         if prng is None:
             prng = np.random
-        n_ph = np.modf(t_exp*area*self.tot_flux)
+        if isinstance(area, np.ndarray):
+            rate_arr = area*self.flux*self.de
+            rate = rate_arr.sum()
+            cumspec = np.cumsum(rate_arr)
+            cumspec = np.insert(cumspec, 0, 0.0)
+            cumspec /= cumspec[-1]
+        else:
+            rate = area*self.tot_flux
+            cumspec = self.cumspec
+        n_ph = np.modf(t_exp*rate)
         n_ph = np.uint64(n_ph[1]) + np.uint64(n_ph[0] >= prng.uniform())
+        mylog.info("Creating %d events from this spectrum." % n_ph)
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
-        energies = np.interp(randvec, self.cumspec, self.ebins)
+        energies = np.interp(randvec, cumspec, self.ebins)
         return energies
 
 class ApecGenerator(object):
