@@ -30,6 +30,12 @@ to SOXS's instrument simulator.
 The Instrument Simulator
 ------------------------
 
+.. |simulate_events_cmd| replace:: ``simulate_events`` command-line script
+.. _simulate_events_cmd: command_line/events.html#simulate-events
+
+.. |simulate_events_py| replace:: ``simulate_events()`` Python function
+.. _simulate_events_py: python/events.html#creating-event-files
+
 The instrument simulator in SOXS takes unconvolved events in the form of a
 SIMPUT file and performs the following operations:
  
@@ -42,8 +48,8 @@ SIMPUT file and performs the following operations:
    channels.
 5. Writes everything to an event file.
 
-The instrument simulator is called using either the :func:`~soxs.events.simulate_events` 
-Python function or the ``simulate_events`` command-line script. 
+The instrument simulator is called using either the |simulate_events_py|_ or the
+|simulate_events_cmd|_. 
 
 The instrument simulator can simulate "default" instrument configurations for 
 X-ray Surveyor, but one can also supply a modified instrument configuration for use
