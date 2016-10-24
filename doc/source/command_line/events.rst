@@ -3,6 +3,8 @@
 Command Line Event File Scripts
 ===============================
 
+These command-line scripts produce and manipulate event files.
+
 ``simulate_events``
 -------------------
 
