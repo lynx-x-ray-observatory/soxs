@@ -1,8 +1,24 @@
 import os
-from astropy import log as mylog
+import logging
 import astropy.io.fits as pyfits
 import numpy as np
 import astropy.wcs as pywcs
+
+soxsLogger = logging.getLogger("soxs")
+
+ufstring = "%(name)-3s: [%(levelname)-9s] %(asctime)s %(message)s"
+cfstring = "%(name)-3s: [%(levelname)-18s] %(asctime)s %(message)s"
+
+soxs_sh = logging.StreamHandler()
+# create formatter and add it to the handlers
+formatter = logging.Formatter(ufstring)
+soxs_sh.setFormatter(formatter)
+# add the handler to the logger
+soxsLogger.addHandler(soxs_sh)
+soxsLogger.setLevel('INFO')
+soxsLogger.propagate = False
+
+mylog = soxsLogger
 
 mylog.setLevel('INFO')
 
