@@ -45,7 +45,7 @@ spec.rescale_flux(args.flux, emin=args.emin, emax=args.emax, flux_type="energy")
 if args.absorb:
     spec.apply_foreground_absorption(args.nh)
 
-energy = spec.generate_energies(args.exp_time, area=args.area)
+energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
 
 beta_src = BetaModel(args.ra0, args.dec0, args.beta, args.r_c, n_evt)

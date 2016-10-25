@@ -25,7 +25,7 @@ args = parser.parse_args()
 append = os.path.exists(args.simput_prefix+"_simput.fits")
 
 spec = Spectrum.from_file(args.specfile)
-energy = spec.generate_energies(args.exp_time, area=args.area)
+energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
 fov_src = FillFOVModel(args.ra0, args.dec0, args.fov, n_evt)
 
