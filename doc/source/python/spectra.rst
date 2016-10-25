@@ -71,7 +71,7 @@ an :class:`~soxs.spectra.ApecGenerator`:
 
 The ``broadening`` parameter sets whether or not spectral lines will be thermally and
 velocity broadened. The ``apec_vers`` parameter sets the version of the AtomDB tables
-to use. Versions 2.0.2 and 3.0.3 are built into SOXS. 
+to use. Versions 2.0.2 and 3.0.3 are built into SOXS, the default version is 3.0.3.
 
 You may also supply another location for the AtomDB tables. For example, the following 
 construction will look for the AtomDB tables in the current working directory:
@@ -117,8 +117,8 @@ the energy binning.
     before running the Python script, as it would be if you were using XSPEC to fit 
     spectra. 
 
-Adding Spectra Together
------------------------
+Math with ``Spectrum`` Objects
+------------------------------
 
 Two :class:`~soxs.spectra.Spectrum` objects can be co-added, provided that
 they have the same energy binning:
@@ -131,6 +131,13 @@ they have the same energy binning:
     total_spectrum = spec1 + spec2
     
 If they do not, an error will be thrown. 
+
+You can also multiply a spectrum by a constant float number or divide it by one:
+
+.. code-block:: python
+
+    spec3 = 6.0*spec2
+    spec4 = spec1/4.4
 
 Rescaling the Normalization of a Spectrum
 -----------------------------------------

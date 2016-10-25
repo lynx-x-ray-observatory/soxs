@@ -9,6 +9,7 @@ This section documents the Python interface to SOXS.
    :maxdepth: 1
 
    spectra
+   spatial
    simput
    background
    instrument 

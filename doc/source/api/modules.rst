@@ -4,6 +4,7 @@ SOXS Python API
 .. toctree::
     :maxdepth: 1
         
-    spectra     
+    spectra
+    spatial
     simput
     instrument

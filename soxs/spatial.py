@@ -160,7 +160,7 @@ class BetaModel(RadialFunctionModel):
 
 class AnnulusModel(RadialFunctionModel):
     """
-    Create positions for photons within an annulus shape.
+    Create positions for photons within an annulus shape with uniform surface brightness.
 
     Parameters
     ----------
