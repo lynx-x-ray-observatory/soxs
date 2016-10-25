@@ -219,15 +219,19 @@ class Spectrum(object):
         t_exp : float
             The exposure time in seconds.
         area : float or NumPy array
-            The effective area in cm**2. If one is creating events for a SIMPUT file,
-            a constant should be used and it must be large enough so that a sufficiently
-            large sample is drawn for the ARF.
+            The effective area in cm**2, or the effective area multiplied by the field of view
+            area in cm**2*arcmin**2 if the spectrum has units of intensity. If one is creating 
+            events for a SIMPUT file, a constant should be used and it must be large enough 
+            so that a sufficiently large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
-        A = u.Quantity(area, "cm**2")
+        if "arcmin" in self._units:
+            A = u.Quantity(area, "cm**2*arcmin**2")
+        else:
+            A = u.Quantity(area, "cm**2")
         if prng is None:
             prng = np.random
         if isinstance(area, np.ndarray):

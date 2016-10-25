@@ -46,10 +46,10 @@ else:
 
 if args.astro_bkgnd == "None":
     astro_bkgnd = None
-elif args.background not in background_registry and os.path.exists(args.background):
-    astro_bkgnd = add_background_to_registry(args.background)
+elif args.astro_bkgnd not in background_registry and os.path.exists(args.astro_bkgnd):
+    astro_bkgnd = add_background_to_registry(args.astro_bkgnd)
 else:
-    astro_bkgnd = args.background
+    astro_bkgnd = args.astro_bkgnd
 
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      args.instrument, sky_center, dither_size=args.dither_size,
