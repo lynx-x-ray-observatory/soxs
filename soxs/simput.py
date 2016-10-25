@@ -66,6 +66,11 @@ def write_photon_list(simput_prefix, phlist_prefix, exp_time, area,
     clobber : boolean, optional
         Set to True to overwrite previous files.
     """
+    # Make sure these are arrays
+    energy = np.array(energy)
+    ra = np.array(ra)
+    dec = np.array(dec)
+
     emin = energy.min()
     emax = energy.max()
 
