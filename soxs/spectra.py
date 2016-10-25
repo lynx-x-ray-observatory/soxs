@@ -205,7 +205,7 @@ class Spectrum(object):
         nH : float
             The hydrogen column in units of 10**22 atoms/cm**2
         """
-        sigma = wabs_cross_section(self.emid)
+        sigma = wabs_cross_section(self.emid.value)
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()
 
