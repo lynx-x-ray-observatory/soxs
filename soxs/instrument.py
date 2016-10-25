@@ -357,7 +357,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     Examples
     --------
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
-    ...                     [30., 45.], clobber=True)
+    ...                      [30., 45.], clobber=True)
     """
     event_list, parameters = read_simput_catalog(simput_file)
 
@@ -412,7 +412,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     first = True
 
-    for i, events in enumerate(event_list):
+    for i, evts in enumerate(event_list):
 
         mylog.info("Detecting events from source %d" % (i+1))
 
@@ -420,7 +420,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
         mylog.info("Applying energy-dependent effective area from %s." % event_params["arf"])
         refband = [parameters["emin"][i], parameters["emax"][i]]
-        events = arf.detect_events(events, exp_time, parameters["flux"][i],
+        events = arf.detect_events(evts, exp_time, parameters["flux"][i],
                                    refband, prng=prng)
 
         n_evt = events["energy"].size
@@ -517,7 +517,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
                 if first:
                     all_events[key] = events[key]
                 else:
-                    all_events[key] = np.append(all_events[key], events[key])
+                    all_events[key] = np.concatenate([all_events[key], events[key]])
             first = False
 
     if all_events["energy"].size == 0:
