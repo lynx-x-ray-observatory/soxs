@@ -25,4 +25,5 @@ from soxs.spatial import \
     RadialArrayModel, \
     RadialFileModel, \
     AnnulusModel, \
-    BetaModel
+    BetaModel, \
+    FillFOVModel

@@ -66,3 +66,12 @@ class AnnulusModel(RadialFunctionModel):
             return f
         super(AnnulusModel, self).__init__(ra0, dec0, func,
                                            num_events, prng=prng)
+
+class FillFOVModel(SpatialModel):
+    def __init__(self, ra0, dec0, fov, num_events, prng=np.random):
+        w = construct_wcs(ra0, dec0)
+        width = fov*60.0
+        x = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
+        y = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
+        ra, dec = w.wcs_pix2world(x, y, 1)
+        super(FillFOVModel, self).__init__(ra, dec)
