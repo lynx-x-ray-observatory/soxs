@@ -9,32 +9,29 @@ from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
     m_u
 import astropy.io.fits as pyfits
+import astropy.units as u
 
 class Spectrum(object):
+    _units = "photon/(cm**2*s*keV)"
     def __init__(self, ebins, flux):
-        self.ebins = ebins
-        self.emid = 0.5*(ebins[1:]+ebins[:-1])
-        self.flux = flux
+        self.ebins = u.Quantity(ebins, "keV")
+        self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
+        self.flux = u.Quantity(flux, self._units)
         self.nbins = len(self.emid)
-        self.de = ebins[1]-ebins[0]
-        self._compute_tot_flux()
-        self.units = "photons/cm**2/s/keV"
+        self.de = self.ebins[1]-self.ebins[0]
+        self._compute_total_flux()
 
-    def _compute_tot_flux(self):
-        self.tot_flux = self.flux.sum()*self.de
-        self.tot_energy_flux = (self.flux*self.emid).sum()*erg_per_keV*self.de
-        cumspec = np.cumsum(self.flux*self.de)
+    def _compute_total_flux(self):
+        self.total_flux = self.flux.sum()*self.de
+        self.total_energy_flux = (self.flux*self.emid.to("erg")).sum()*self.de/(1.0*u.photon)
+        cumspec = np.cumsum(self.flux.value*self.de.value)
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
 
     def __add__(self, other):
-        if self.units != other.units:
-            s = "The two spectra do not have the same units! "
-            s += "%s vs. %s" % (self.units, other.units)
-            raise RuntimeError(s)
         if self.nbins != other.nbins or \
-            not np.isclose(self.ebins, other.ebins).all():
+            not np.isclose(self.ebins.value, other.ebins.value).all():
             raise RuntimeError("Energy binning for these two "
                                "spectra is not the same!!")
         return Spectrum(self.ebins, self.flux+other.flux)
@@ -44,10 +41,12 @@ class Spectrum(object):
 
     __rmul__ = __mul__
 
+    def __truediv__(self, other):
+        return Spectrum(self.ebins, self.flux/other)
+
     def __repr__(self):
-        s = "Spectrum (%g - %g keV): " % (self.ebins[0], self.ebins[-1])
-        s += "Total flux %g (%g) photons (erg) / cm**2 / s" % (self.tot_flux, 
-                                                               self.tot_energy_flux)
+        s = "Spectrum (%s - %s)\n" % (self.ebins[0], self.ebins[-1])
+        s += "Total flux:\n    %s\n    %s\n" % (self.total_flux, self.total_energy_flux)
         return s
 
     @classmethod
@@ -168,16 +167,16 @@ class Spectrum(object):
                 "energy": erg/s/cm**2
         """
         if emin is None:
-            emin = self.ebins[0]
+            emin = self.ebins[0].value
         if emax is None:
-            emax = self.ebins[-1]
-        idxs = np.logical_and(self.emid >= emin, self.emid <= emax)
+            emax = self.ebins[-1].value
+        idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         if flux_type == "photons":
             f = self.flux[idxs].sum()*self.de
         elif flux_type == "energy":
-            f = (self.flux*self.emid)[idxs].sum()*erg_per_keV*self.de
-        self.flux *= new_flux/f
-        self._compute_tot_flux()
+            f = (self.flux*self.emid.to("erg"))[idxs].sum()*self.de
+        self.flux *= new_flux/f.value
+        self._compute_total_flux()
 
     def write_file(self, specfile, clobber=False):
         """
@@ -206,9 +205,9 @@ class Spectrum(object):
         """
         sigma = wabs_cross_section(self.emid)
         self.flux *= np.exp(-nH*1.0e22*sigma)
-        self._compute_tot_flux()
+        self._compute_total_flux()
 
-    def generate_energies(self, t_exp, area=30000.0, prng=None):
+    def generate_energies(self, t_exp, area, prng=None):
         """
         Generate photon energies from this spectrum given an
         exposure time and effective area.
@@ -217,32 +216,33 @@ class Spectrum(object):
         ----------
         t_exp : float
             The exposure time in seconds.
-        area : float or NumPy array, optional
+        area : float or NumPy array
             The effective area in cm**2. If one is creating events for a SIMPUT file,
             a constant should be used and it must be large enough so that a sufficiently
-            large sample is drawn for the ARF. Default: 30000.0
+            large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
+        A = u.Quantity(area, "cm**2")
         if prng is None:
             prng = np.random
         if isinstance(area, np.ndarray):
-            rate_arr = area*self.flux*self.de
+            rate_arr = A*self.flux*self.de
             rate = rate_arr.sum()
-            cumspec = np.cumsum(rate_arr)
+            cumspec = np.cumsum(rate_arr.value)
             cumspec = np.insert(cumspec, 0, 0.0)
             cumspec /= cumspec[-1]
         else:
-            rate = area*self.tot_flux
+            rate = A*self.total_flux
             cumspec = self.cumspec
-        n_ph = np.modf(t_exp*rate)
+        n_ph = np.modf(t_exp*rate.value)
         n_ph = np.uint64(n_ph[1]) + np.uint64(n_ph[0] >= prng.uniform())
         mylog.info("Creating %d events from this spectrum." % n_ph)
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
-        energies = np.interp(randvec, cumspec, self.ebins)
+        energies = u.Quantity(np.interp(randvec, cumspec, self.ebins.value), "keV")
         return energies
 
 class ApecGenerator(object):

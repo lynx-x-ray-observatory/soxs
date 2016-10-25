@@ -4,24 +4,39 @@ from soxs.spectra import Spectrum
 from soxs.utils import soxs_files_path
 
 class BackgroundSpectrum(Spectrum):
+    _units = "photon/(cm**2*s*keV*arcmin**2)"
     def __init__(self, filename, bkgnd_type):
         self.bkgnd_type = bkgnd_type
         emid, flux = np.loadtxt(filename, unpack=True)
         de = np.diff(emid)[0]
         ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
         super(BackgroundSpectrum, self).__init__(ebins, flux)
-        self.units = "photons/cm**2/arcmin**2/s/keV"
 
     def generate_energies(self, t_exp, area, fov, bkgnd_scale, prng=None):
+        """
+        Generate photon energies from this background spectrum given an
+        exposure time, effective area, and field of view.
+
+        Parameters
+        ----------
+        t_exp : float
+            The exposure time in seconds.
+        area : float or NumPy array
+            The effective area in cm**2. If one is creating events for a SIMPUT file,
+            a constant should be used and it must be large enough so that a sufficiently
+            large sample is drawn for the ARF.
+        fov : float
+            The width of the field of view on a side in arcminutes.
+        bkgnd_scale : float
+            A uniform scaling factor for the background. 
+        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+            A pseudo-random number generator. Typically will only be specified
+            if you have a reason to generate the same set of random numbers, such as for a
+            test. Default is the :mod:`numpy.random` module.
+        """
         A = area*fov*fov*bkgnd_scale
         return super(BackgroundSpectrum, self).generate_energies(t_exp, A,
                                                                  prng=prng)
-
-    def __repr__(self):
-        s = "BackgroundSpectrum (%g - %g keV): " % (self.ebins[0], self.ebins[-1])
-        s += "Total flux %g (%g) photons (erg) / cm**2 / arcmin**2 / s" % (self.tot_flux,
-                                                                           self.tot_energy_flux)
-        return s
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
