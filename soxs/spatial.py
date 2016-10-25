@@ -3,12 +3,10 @@ from soxs.utils import construct_wcs
 
 def generate_radial_events(num_events, func, prng=np.random):
     rbins = np.linspace(0.0, 3000.0, 100000)
-    pdf = func(rbins)
-    cdf = np.cumsum(pdf)
-    cdf /= cdf[-1]
-    randvec = prng.uniform(size=num_events)
-    randvec.sort()
-    radius = np.interp(randvec, cdf, rbins)
+    rmid = 0.5*(rbins[1:]+rbins[:-1])
+    pdf = func(rmid)*rmid
+    pdf /= pdf.sum()
+    radius = prng.choice(rmid, size=num_events, p=pdf)
     theta = 2.*np.pi*prng.uniform(size=num_events)
     x = radius*np.cos(theta)
     y = radius*np.sin(theta)
