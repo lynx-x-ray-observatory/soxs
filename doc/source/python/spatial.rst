@@ -19,7 +19,6 @@ by some other criterion (e.g., from the corresponding ``Spectrum``) and can be s
 Each ``SpatialModel`` has only two attributes, ``ra`` and ``dec``, which are unitful NumPy arrays giving the
 positions of the photons on the sky in degrees.
 
-
 Point Sources
 -------------
 
@@ -84,7 +83,18 @@ The following classes generate azimuthally symmetric models from generic functio
 "Field of View" Sources
 -----------------------
 
-The :class:`~soxs.spatial.FillFOVModel` generates photon positions on the sky which fill a given field of view.
+The :class:`~soxs.spatial.FillFOVModel` generates photon positions on the sky which fill a given field of view:
+
+.. code-block:: python
+
+    from soxs import FillFOVModel
+    ra0 = 30.0 # center RA in degrees
+    dec0 = 45.0 # center Dec in degrees
+    fov = 20.0 # width of the field of view in arcminutes
+    num_events = 100000 # The number of events
+    fov_src = FillFOVModel(ra0, dec0, fov, num_events)
+
+This may be useful for creating background-like sources.
 
 Combining Sources
 -----------------
