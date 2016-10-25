@@ -1,5 +1,6 @@
 import numpy as np
 from soxs.utils import construct_wcs
+import astropy.units as u
 
 def generate_radial_events(num_events, func, prng=np.random):
     rbins = np.linspace(0.0, 3000.0, 100000)
@@ -14,8 +15,8 @@ def generate_radial_events(num_events, func, prng=np.random):
 
 class SpatialModel(object):
     def __init__(self, ra, dec):
-        self.ra = ra
-        self.dec = dec
+        self.ra = u.Quantity(ra, "deg")
+        self.dec = u.Quantity(dec, "deg")
         self.num_events = self.ra.size
 
     def __add__(self, other):
