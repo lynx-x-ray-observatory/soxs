@@ -16,12 +16,12 @@ parser.add_argument("dec", type=float, help="The declination of the source in de
 parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
 parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
 parser.add_argument("--area", type=float, default=30000.0, help='The collecting area to use, in cm^2.')
+parser.add_argument("--append", action='store_true',
+                    help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
 
 args = parser.parse_args()
-
-append = os.path.exists(args.simput_prefix+"_simput.fits")
 
 spec = Spectrum.from_file(args.specfile)
 energy = spec.generate_energies(args.exp_time, args.area)
@@ -29,5 +29,5 @@ n_evt = energy.size
 pt_src = PointSourceModel(args.ra, args.dec, n_evt)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                  args.area, pt_src.ra, pt_src.dec, energy, append=append, 
+                  args.area, pt_src.ra, pt_src.dec, energy, append=args.append, 
                   clobber=args.clobber)

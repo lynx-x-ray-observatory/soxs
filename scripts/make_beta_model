@@ -29,13 +29,12 @@ parser.add_argument("--absorb", action='store_true',
 parser.add_argument("--nh", type=float, default=0.02,
                     help='The hydrogen column in units of 10**22 atoms/cm**2')
 parser.add_argument("--area", type=float, default=30000.0, help='The collecting area to use, in cm^2.')
+parser.add_argument("--append", action='store_true',
+                    help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
 
 args = parser.parse_args()
-
-append = os.path.exists(args.simput_prefix+"_simput.fits")
-
 
 agen = ApecGenerator(0.01, 20.0, 20000)
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, 1.0,
@@ -51,5 +50,5 @@ n_evt = energy.size
 beta_src = BetaModel(args.ra0, args.dec0, args.beta, args.r_c, n_evt)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                  args.area, beta_src.ra, beta_src.dec, energy, append=append, 
+                  args.area, beta_src.ra, beta_src.dec, energy, append=args.append, 
                   clobber=args.clobber)
