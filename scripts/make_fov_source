@@ -27,8 +27,8 @@ append = os.path.exists(args.simput_prefix+"_simput.fits")
 spec = Spectrum.from_file(args.specfile)
 energy = spec.generate_energies(args.exp_time, area=args.area)
 n_evt = energy.size
-ann_src = FillFOVModel(args.ra0, args.dec0, args.fov, n_evt)
+fov_src = FillFOVModel(args.ra0, args.dec0, args.fov, n_evt)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                  args.area, ann_src.ra, ann_src.dec, energy, append=append, 
+                  args.area, fov_src.ra, fov_src.dec, energy, append=append, 
                   clobber=args.clobber)
