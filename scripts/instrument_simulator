@@ -3,8 +3,9 @@
 import argparse
 import os
 import numpy as np
-from soxs import instrument_simulator, add_instrument_to_registry
-from soxs.instrument import instrument_registry
+from soxs import instrument_simulator, instrument_registry, \
+    add_instrument_to_registry, add_background_to_registry, \
+    background_registry
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated event file.')
 parser.add_argument("simput_file", type=str, help='The SIMPUT file to be used as input.')
@@ -25,6 +26,8 @@ parser.add_argument("--dither_size", type=float, default=16.0,
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--roll_angle", type=float, default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
+parser.add_argument("--astro_bkgnd", type=str, default="hm_cxb",
+                    help='The astrophysical background to use.')
 parser.add_argument("--bkgnd_scale", type=float, default=1.0, help='The scale of the background.')
 
 args = parser.parse_args()
@@ -41,7 +44,15 @@ if args.dither_shape == "None":
 else:
     dither_shape = args.dither_shape
 
+if args.astro_bkgnd == "None":
+    astro_bkgnd = None
+elif args.background not in background_registry and os.path.exists(args.background):
+    astro_bkgnd = add_background_to_registry(args.background)
+else:
+    astro_bkgnd = args.background
+
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      args.instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
-                     roll_angle=args.roll_angle, bkgnd_scale=args.bkgnd_scale)
+                     roll_angle=args.roll_angle, bkgnd_scale=args.bkgnd_scale,
+                     astro_bkgnd=astro_bkgnd)
