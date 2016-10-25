@@ -102,19 +102,25 @@ def write_photon_list(simput_prefix, phlist_prefix, exp_time, area,
 
     simputfile = simput_prefix+"_simput.fits"
 
+    ph_ext = phfile+"[PHLIST,1]"
+
     if append:
         f = pyfits.open(simputfile)
         num_sources = f["SRC_CAT"].data["SRC_ID"].size
         id = num_sources + 1
+        spec_files = f["SRC_CAT"].data["SPECTRUM"][:]
+        img_files = f["SRC_CAT"].data["IMAGE"][:]
+        if ph_ext in spec_files or ph_ext in img_files:
+            raise IOError("This SIMPUT catalog already has an entry for file %s!" % phfile)
         src_id = np.append(f["SRC_CAT"].data["SRC_ID"][:], id)
         ra = np.append(f["SRC_CAT"].data["RA"][:], 0.0)
         dec = np.append(f["SRC_CAT"].data["DEC"][:], 0.0)
         e_min = np.append(f["SRC_CAT"].data["E_MIN"][:], emin)
         e_max = np.append(f["SRC_CAT"].data["E_MAX"][:], emax)
         flx = np.append(f["SRC_CAT"].data["FLUX"][:], flux)
-        spectrum = np.append(f["SRC_CAT"].data["SPECTRUM"][:], phfile+"[PHLIST,1]")
-        image = np.append(f["SRC_CAT"].data["IMAGE"][:], phfile+"[PHLIST,1]")
-        src_name = np.append(f["SRC_CAT"].data["SRC_NAME"][:], "sox_src_%d" % id)
+        spectrum = np.append(spec_files, ph_ext)
+        image = np.append(img_files, ph_ext)
+        src_name = np.append(f["SRC_CAT"].data["SRC_NAME"][:], "soxs_src_%d" % id)
         f.close()
     else:
         src_id = np.array([1]).astype("int32")
@@ -123,9 +129,9 @@ def write_photon_list(simput_prefix, phlist_prefix, exp_time, area,
         e_min = np.array([emin])
         e_max = np.array([emax])
         flx = np.array([flux])
-        spectrum = np.array([phfile+"[PHLIST,1]"])
+        spectrum = np.array([ph_ext])
         image = spectrum
-        src_name = np.array(["sox_src_1"])
+        src_name = np.array(["soxs_src_1"])
 
     col1 = pyfits.Column(name='SRC_ID', format='J', array=src_id)
     col2 = pyfits.Column(name='RA', format='D', array=ra)
