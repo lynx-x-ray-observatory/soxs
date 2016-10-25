@@ -16,6 +16,7 @@ parser.add_argument("--velocity", type=float, default=0.0,
 parser.add_argument("--emin", type=float, default=0.01, help='The minimum energy in keV.')
 parser.add_argument("--emax", type=float, default=50.0, help='The maximum energy in keV.')
 parser.add_argument("--nbins", type=int, default=10000, help='The number of bins in the spectrum.')
+parser.add_argument("--apec_vers", type=str, default="3.0.3", help='The version of the AtomDB tables to use.')
 parser.add_argument("--absorb", action='store_true', 
                     help='Whether or not to apply foreground galactic absorption.')
 parser.add_argument("--no_broadening", action='store_true',
@@ -29,7 +30,8 @@ args = parser.parse_args()
 
 broadening = not args.no_broadening
 
-agen = ApecGenerator(args.emin, args.emax, args.nbins, broadening=broadening)
+agen = ApecGenerator(args.emin, args.emax, args.nbins, apec_vers=args.apec_vers, 
+                     broadening=broadening)
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
                          velocity=args.velocity)
 
