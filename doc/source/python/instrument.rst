@@ -59,9 +59,15 @@ The particle background scale can be set using the ``bkgnd_scale`` argument:
 Customizing the Instrument Simulator
 ------------------------------------
 
+SOXS provides the ability to customize the models of the different components of X-ray Surveyor being
+simulated. This is provided by the use of the instrument registry and JSON files which contain prescriptions
+for different instrument configurations.
+
 The Instrument Registry
 +++++++++++++++++++++++
 
 Making Custom Instruments with JSON Files
 +++++++++++++++++++++++++++++++++++++++++
 
+As SOXS matures, the components which one can simulate will likely expand as well as the options for each
+component.

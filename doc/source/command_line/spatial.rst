@@ -1,7 +1,7 @@
-.. _cmd-sources:
+.. _cmd-spatial:
 
-Command Line Scripts for Sources
-================================
+Command Line Scripts for Spatial Models
+=======================================
 
 These are scripts that create photon lists for SIMPUT catalogs that can serve
 as inputs to the instrument simulator.

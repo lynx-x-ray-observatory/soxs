@@ -4,10 +4,30 @@ SOXS Overview
 =============
 
 This section provides a general overview of the capabilities of SOXS. SOXS has 
-three main goals
+three main components:
+
+1. Tools to generate simple models of astrophysical sources
+2. I/O interface to SIMPUT files
+3. An instrument simulator for X-ray Surveyor
+
+These are outlined in detail below.
 
 Generating Simplified Models of Sources
 ---------------------------------------
+
+SOXS provides tools to build simplified models of sources on the sky. These consist of
+``Spectrum`` and ``SpatialModel`` objects. The first creates models of spectra of a number
+of different types and a number of different sources. Methods are also provided to
+
+To find out more about ``Spectrum`` objects, visit one of the following links:
+
+* Python interface: :ref:`spectra`
+* Command-line interface: :ref:`cmd-spectra`
+
+To learn about ``SpatialModel`` objects, visit one of the following links:
+
+* Python interface: :ref:`spatial`
+* Command-line interface: :ref:`cmd-spatial`
 
 SIMPUT Files
 ------------
