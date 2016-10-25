@@ -36,7 +36,8 @@ of command-line scripts provided in SOXS, which can carry out the most important
 tasks, the Python interface to SOXS is more powerful and flexible. Working with the
 Python interface also provides a direct connection to other Python packages for 
 science in general and astronomy in particular, including `NumPy <http://www.numpy.org>`_, 
-`SciPy <http://www.scipy.org>`_, and `AstroPy <http://www.astropy.org>`_.
+`SciPy <http://www.scipy.org>`_, `AstroPy <http://www.astropy.org>`_, `yt <http://yt-project.org/>`_,
+and `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyXSIM>`_. 
 
 Thirdly, SOXS is being developed out in the open, on `GitHub <http://github.com/XRStools/soxs>`_, 
 to encourage contributions in the form of bugfixes and enhancements, and to make

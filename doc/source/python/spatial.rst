@@ -43,7 +43,7 @@ brightness profile is:
 
 .. math::
 
-    S(r) = S_0\left[1+\left(\frac{r}{r_c}\right)^2\right]^(-3\beta+1/2)
+    S(r) = S_0\left[1+\left(\frac{r}{r_c}\right)^2\right]^{(-3\beta+1/2)}
 
 where :math:`S_0` is the central surface brightness, :math:`\beta` is the slope parameter, and :math:`r_c`
 is the core radius. To construct one:
@@ -77,8 +77,17 @@ with uniform surface brightness:
 Generic Radial Models
 ---------------------
 
-The following classes generate azimuthally symmetric models from generic functions or lookup tables.
+The following classes generate azimuthally symmetric models from generic functions or lookup tables for
+a surface brightness profile as a function of radius.
 
+``RadialFunctionModel``
++++++++++++++++++++++++
+
+``RadialArrayModel``
+++++++++++++++++++++
+
+``RadialFileModel``
++++++++++++++++++++
 
 "Field of View" Sources
 -----------------------
