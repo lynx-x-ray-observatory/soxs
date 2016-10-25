@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import os
 from soxs import Spectrum, write_photon_list, AnnulusModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an annulus source from '+
