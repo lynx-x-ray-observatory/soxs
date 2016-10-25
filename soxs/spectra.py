@@ -191,7 +191,9 @@ class Spectrum(object):
         """
         if os.path.exists(specfile) and not clobber:
             raise IOError("File %s exists and clobber=False!" % specfile)
-        np.savetxt(specfile, np.transpose([self.emid, self.flux]), delimiter="\t")
+        header = "Energy\tFlux\nkeV\t%s" % self._units
+        np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
+                   delimiter="\t", header=header)
 
     def apply_foreground_absorption(self, nH):
         """
