@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+from soxs import Spectrum, write_photon_list, FillFOVModel
+
+parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of uniformly filled '+
+                                             'field of view source from a spectrum supplied in a file.')
+parser.add_argument("simput_prefix", type=str, 
+                    help='The prefix of the SIMPUT file to be used as the root of the '+
+                         'catalog. If it does not exist, it will be created.')
+parser.add_argument("phlist_prefix", type=str, 
+                    help='The prefix of the photon list file to be written.')
+parser.add_argument("ra0", type=float, help="The right ascension of the source center in degrees.")
+parser.add_argument("dec0", type=float, help="The declination of the source center in degrees.")
+parser.add_argument("fov", type=float, help="The field of view on a side in arcminutes.")
+parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
+parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("--area", type=float, default=30000.0, help='The collecting area to use, in cm^2.')
+parser.add_argument("--clobber", action='store_true',
+                    help='Whether or not to clobber an existing file with the same name.')
+
+args = parser.parse_args()
+
+append = os.path.exists(args.simput_prefix+"_simput.fits")
+
+spec = Spectrum.from_file(args.specfile)
+energy = spec.generate_energies(args.exp_time, area=args.area)
+n_evt = energy.size
+ann_src = FillFOVModel(args.ra0, args.dec0, args.fov, n_evt)
+
+write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
+                  args.area, ann_src.ra, ann_src.dec, energy, append=append, 
+                  clobber=args.clobber)
