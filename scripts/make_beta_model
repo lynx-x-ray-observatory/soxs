@@ -28,7 +28,7 @@ spec = Spectrum.from_file(args.specfile)
 energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
 
-beta_src = BetaModel(args.ra0, args.dec0, args.beta, args.r_c, n_evt)
+beta_src = BetaModel(args.ra0, args.dec0, args.r_c, args.beta, n_evt)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
                   args.area, beta_src.ra, beta_src.dec, energy, append=args.append, 

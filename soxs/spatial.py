@@ -141,10 +141,10 @@ class BetaModel(RadialFunctionModel):
         The center RA of the beta model in degrees.
     dec0 : float
         The center Dec of the beta model in degrees.
-    beta : float
-        The "beta" parameter of the profile.
     r_c: float
         The core radius of the profile in arcseconds.
+    beta : float
+        The "beta" parameter of the profile.
     num_events : integer
         The number of events to generate. 
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
@@ -152,7 +152,7 @@ class BetaModel(RadialFunctionModel):
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
-    def __init__(self, ra0, dec0, beta, r_c, num_events,
+    def __init__(self, ra0, dec0, r_c, beta, num_events,
                  prng=np.random):
         func = lambda r: (1.0+(r/r_c)**2)**(-3*beta+0.5)
         super(BetaModel, self).__init__(ra0, dec0, func,
