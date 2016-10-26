@@ -246,7 +246,7 @@ def show_instrument_registry():
     Print the contents of the instrument registry.
     """
     for name, spec in instrument_registry.items():
-        print("Instrument: %s" % name.upper())
+        print("Instrument: %s" % name)
         for k, v in spec.items():
             print("    %s: %s" % (k, v))
 

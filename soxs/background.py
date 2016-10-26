@@ -66,3 +66,12 @@ def add_background_to_registry(name, filename, bkgnd_type):
         The type of background, either "instrumental" or "astrophysical".
     """
     background_registry[name] = BackgroundSpectrum(filename, bkgnd_type)
+
+def show_background_registry():
+    """
+    Print the contents of the background registry.
+    """
+    for name, spec in background_registry.items():
+        print("Background: %s" % name)
+        print("    Type: %s" % spec.bkgnd_type)
+        print("    Total Flux (%s - %s): %s" % (spec.ebins[0], spec.ebins[-1], spec.total_flux))

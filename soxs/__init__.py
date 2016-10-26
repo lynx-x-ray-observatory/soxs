@@ -16,7 +16,8 @@ from soxs.instrument import \
     get_instrument_from_registry
 
 from soxs.background import \
-    add_background_to_registry
+    add_background_to_registry, \
+    show_background_registry
 
 from soxs.spatial import \
     PointSourceModel, \

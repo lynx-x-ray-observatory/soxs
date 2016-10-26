@@ -46,7 +46,7 @@ class Spectrum(object):
 
     def __repr__(self):
         s = "Spectrum (%s - %s)\n" % (self.ebins[0], self.ebins[-1])
-        s += "Total flux:\n    %s\n    %s\n" % (self.total_flux, self.total_energy_flux)
+        s += "    Total Flux:\n    %s\n    %s\n" % (self.total_flux, self.total_energy_flux)
         return s
 
     @classmethod
