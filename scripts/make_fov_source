@@ -3,7 +3,7 @@
 import argparse
 from soxs import Spectrum, write_photon_list, FillFOVModel
 
-parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of uniformly filled '+
+parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a uniformly filled '+
                                              'field of view source from a spectrum supplied in a file.')
 parser.add_argument("simput_prefix", type=str, 
                     help='The prefix of the SIMPUT file to be used as the root of the '+

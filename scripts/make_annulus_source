@@ -3,8 +3,8 @@
 import argparse
 from soxs import Spectrum, write_photon_list, AnnulusModel
 
-parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an annulus source from '+
-                                             'a spectrum supplied in a file.')
+parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an annulus source with '+
+                                             'uniform surface brightness from a spectrum supplied in a file.')
 parser.add_argument("simput_prefix", type=str, 
                     help='The prefix of the SIMPUT file to be used as the root of the '+
                          'catalog. If it does not exist, it will be created.')
