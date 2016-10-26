@@ -29,7 +29,8 @@ parser.add_argument("--roll_angle", type=float, default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
 parser.add_argument("--astro_bkgnd", type=str, default="hm_cxb",
                     help='The astrophysical background to use.')
-parser.add_argument("--bkgnd_scale", type=float, default=1.0, help='The scale of the background.')
+parser.add_argument("--instr_bkgnd_scale", type=float, default=1.0, 
+                    help='The scale of the instrumental background.')
 
 args = parser.parse_args()
 
@@ -55,5 +56,5 @@ else:
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      args.instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
-                     roll_angle=args.roll_angle, bkgnd_scale=args.bkgnd_scale,
+                     roll_angle=args.roll_angle, instr_bkgnd_scale=args.instr_bkgnd_scale,
                      astro_bkgnd=astro_bkgnd)

@@ -231,6 +231,7 @@ def add_instrument_to_registry(inst_spec):
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
     instrument_registry[name] = inst
+    mylog.info("The %s instrument specification has been added to the instrument registry." % name)
     return name
 
 def get_instrument_from_registry(name):
@@ -307,7 +308,7 @@ def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, prng=np.rando
 def instrument_simulator(simput_file, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
                          dither_size=16.0, roll_angle=0.0, astro_bkgnd="hm_cxb",
-                         bkgnd_scale=1.0, prng=np.random):
+                         instr_bkgnd_scale=1.0, prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
     file from them. This function does the following:
@@ -348,7 +349,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
         The astrophysical background spectrum to assume. Must be the name of a
         background registered in the background registry. If None, no astrophysical
         background is applied. Default: "hm_cxb"
-    bkgnd_scale : float, optional
+    instr_bkgnd_scale : float, optional
         The scale of the instrumental background. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
@@ -537,12 +538,12 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     # Step 4: Add particle background
 
-    if bkgnd_scale > 0.0:
+    if instr_bkgnd_scale > 0.0:
 
         mylog.info("Adding in instrumental background.")
 
         bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
-                                    bkgnd_scale, prng=prng)
+                                    instr_bkgnd_scale, prng=prng)
 
         for key in all_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
