@@ -202,13 +202,14 @@ instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
                                "plate_scale": 1./3.,
                                "psf": ["gaussian", 0.5]}
 
-def add_instrument_to_registry(filename):
+def add_instrument_to_registry(inst_spec):
     """
-    Add an instrument specification to the registry contained
-    in a JSON file. The JSON file must have the structure as 
-    shown below. The order is not important, but do not write 
-    a JSON file with comments, the ones below are just for 
-    clarity.
+    Add an instrument specification to the registry, contained
+    in either a dictionary or a JSON file.
+
+    The *inst_spec* must have the structure as shown below. 
+    The order is not important. If you use a JSON file, the
+    structure is the same, but the file cannot include comments.
 
     >>> {
     ...     "name": "hdxi", # The short name of the instrument
@@ -217,20 +218,15 @@ def add_instrument_to_registry(filename):
     ...     "bkgnd": "acisi_particle_bkgnd.dat" # The file containing the particle background
     ...     "plate_scale": 0.33333333333, # The plate scale in arcsec
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
-    ...     "psf": [
-    ...         "gaussian", 
-    ...         0.5
-    ...     ] # The type of PSF and its FWHM
+    ...     "psf": ["gaussian", 0.5] # The type of PSF and its FWHM
     ... }
-
-    Parameters
-    ----------
-    filename : string
-        The JSON file containing the instrument specification.
     """
-    f = open(filename)
-    inst = json.load(f)
-    f.close()
+    if isinstance(inst_spec, dict):
+        inst = inst_spec
+    elif os.path.exists(inst_spec):
+        f = open(inst_spec, "r")
+        inst = json.load(f)
+        f.close()
     name = inst.pop("name")
     instrument_registry[name] = inst
     return name
