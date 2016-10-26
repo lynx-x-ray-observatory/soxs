@@ -20,17 +20,17 @@ parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
 parser.add_argument("--dither_shape", type=str, default='square',
-                    help='The shape of the dither pattern: "square", "circle", or "None". '+
-                    'Default: "square"')
+                    help='The shape of the dither pattern: square, circle, or None. '+
+                    'Default: square')
 parser.add_argument("--dither_size", type=float, default=16.0,
                     help='The size of the dither pattern in arcseconds. For a circle, the'+
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--roll_angle", type=float, default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
 parser.add_argument("--astro_bkgnd", type=str, default="hm_cxb",
-                    help='The astrophysical background to use.')
+                    help='The astrophysical background to use. Default: hm_cxb')
 parser.add_argument("--instr_bkgnd_scale", type=float, default=1.0, 
-                    help='The scale of the instrumental background.')
+                    help='The scale of the instrumental background. Default: 1.0')
 
 args = parser.parse_args()
 

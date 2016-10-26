@@ -11,13 +11,16 @@ parser.add_argument("norm", type=float,
                     help='The normalization of the source in units of '+
                          'photons/s/cm**2/keV at 1 keV in the source frame.')
 parser.add_argument("specfile", type=str, help="The filename to write the spectrum to.")
-parser.add_argument("--emin", type=float, default=0.01, help='The minimum energy in keV.')
-parser.add_argument("--emax", type=float, default=50.0, help='The maximum energy in keV.')
-parser.add_argument("--nbins", type=int, default=10000, help='The number of bins in the spectrum.')
+parser.add_argument("--emin", type=float, default=0.01, 
+                    help='The minimum energy in keV. Default: 0.01')
+parser.add_argument("--emax", type=float, default=50.0, 
+                    help='The maximum energy in keV. Default: 50.0')
+parser.add_argument("--nbins", type=int, default=10000, 
+                    help='The number of bins in the spectrum. Default: 10000')
 parser.add_argument("--absorb", action='store_true', 
                     help='Whether or not to apply foreground galactic absorption.')
 parser.add_argument("--nh", type=float, default=0.02, 
-                    help='The hydrogen column in units of 10**22 atoms/cm**2')
+                    help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
 

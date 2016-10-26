@@ -16,7 +16,8 @@ parser.add_argument("r_in", type=float, help="The inner annulus of the source ce
 parser.add_argument("r_out", type=float, help="The outer annulus of the source center in arcseconds.")
 parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
 parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
-parser.add_argument("--area", type=float, default=30000.0, help='The collecting area to use, in cm^2.')
+parser.add_argument("--area", type=float, default=30000.0, 
+                    help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--clobber", action='store_true',
