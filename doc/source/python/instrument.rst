@@ -99,6 +99,8 @@ backgrounds).
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
                          sky_center, clobber=True, astro_bkgnd=None)
 
+.. _instrument-registry:
+
 Creating New Instrument Specifications
 --------------------------------------
 

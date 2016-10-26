@@ -3,12 +3,13 @@
 Command Line Scripts for the Instrument Simulator
 =================================================
 
-These command-line scripts allow one to run and modify the instrument simulator. 
+These command-line scripts allow one to run and modify the instrument simulator. For details on
+what's going on under the hood, see :ref:`instrument`.
 
 ``instrument_simulator``
 ------------------------
 
-The ``instrument_simulator`` script takes a SIMPUT file and generates a simulated observation
+The ``instrument_simulator`` script takes a SIMPUT catalog and generates a simulated observation
 in a standard event file format which can then be processed by standard tools such as CIAO, 
 HEATOOLS, XSPEC, etc. 
 
@@ -55,14 +56,62 @@ HEATOOLS, XSPEC, etc.
 Examples
 ++++++++
 
-This example uses the pre-built HDXI instrument specification. 
+Changing Instrument Specification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example uses the pre-built HDXI instrument specification, assuming a 50 ks observation
+with the pointing (RA, Dec) = (30, 45) degrees.
 
 .. code-block:: bash
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --clobber
 
-This example uses a JSON file created by the user. 
+This example uses a JSON file created by the user, which contains a custom instrument specification. See
+:ref:`instrument-registry` for details on how to do this.
 
 .. code-block:: bash
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --clobber
+
+Changing Roll Angle and Dither
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Change the roll angle to 45 degrees:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --roll_angle=45.0 --clobber
+
+Change the dither shape to a circle and make the dither radius 32 arcsec:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --clobber
+
+Turn dithering off entirely:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=None --clobber
+
+Changing Backgrounds
+~~~~~~~~~~~~~~~~~~~~
+
+Rescale the instrumental background by 1/3:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --instr_bkgnd_scale=0.33333333 --clobber
+
+Set the astrophysical background to the "my_bkg" model, which must be in the 
+`background registry <../python/background.html>`_:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --astro_bkgnd=my_bkg --clobber
+
+Turn the astrophysical background off entirely:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --astro_bkgnd=None --clobber

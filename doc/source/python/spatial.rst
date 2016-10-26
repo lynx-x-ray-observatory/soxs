@@ -53,10 +53,10 @@ is the core radius. To construct one:
     from soxs import BetaModel
     ra0 = 30.0 # center RA in degrees
     dec0 = 45.0 # center Dec in degrees
-    beta = 2./3. # the beta slope parameter
     r_c = 20.0 # the core radius in arc seconds
+    beta = 2./3. # the beta slope parameter
     num_events = 100000 # The number of events
-    beta_src = BetaModel(ra0, dec0, beta, r_c, num_events)
+    beta_src = BetaModel(ra0, dec0, r_c, beta, num_events)
 
 Annulus
 -------

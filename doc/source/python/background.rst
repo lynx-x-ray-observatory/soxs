@@ -8,7 +8,7 @@ in a simulation of an observation. Backgrounds are turned on in the instrument s
 
 Backgrounds in SOXS, both astrophysical and particle, are stored in a background registry, which is a 
 Python dictionary. Each background is a ``BackgroundSpectrum`` object, which simply stores the background
-spectrum itself (in units of :math:`photons~s^{-1}~cm^{-2}~arcmin^{-2}~keV^{-1}`) as well as the background
+spectrum itself (in units of :math:`\rm{photons~s^{-1}~cm^{-2}~arcmin^{-2}~keV^{-1}}`) as well as the background
 type. You can see what backgrounds are registered by calling :func:`~soxs.background.show_background_registry`:
 
 .. code-block:: python
@@ -58,7 +58,7 @@ Adding Your Own Backgrounds to SOXS
 
 You can add your own background to the SOXS background registry. What you need is an ASCII table
 file with two columns, one with the bin energy in keV and the background in that bin in units of 
-:math:`photons~s^{-1}~cm^{-2}~arcmin^{-2}~keV^{-1}`. The binning must be linear and the bins 
+:math:`\rm{photons~s^{-1}~cm^{-2}~arcmin^{-2}~keV^{-1}}`. The binning must be linear and the bins 
 must be equally spaced. Then you can supply it to SOXS using 
 :func:`~soxs.background.add_background_to_registry`, along with the name you want to give it and
 the background type, ``"instrumental"``, or ``"astrophysical"``:
