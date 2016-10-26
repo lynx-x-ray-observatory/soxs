@@ -121,14 +121,14 @@ gives:
 
 .. code-block:: pycon
 
-    Instrument: XCAL
+    Instrument: xcal
         arf: xrs_calorimeter.arf
         num_pixels: 300
         bkgnd: acisi
         psf: ['gaussian', 0.5]
         rmf: xrs_calorimeter.rmf
         plate_scale: 1.0
-    Instrument: HDXI
+    Instrument: hdxi
         arf: xrs_hdxi.arf
         num_pixels: 4096
         bkgnd: acisi

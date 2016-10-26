@@ -1,7 +1,7 @@
 .. _cmd-instrument:
 
-Instrument Simulator Scripts
-============================
+Command Line Scripts for the Instrument Simulator
+=================================================
 
 These command-line scripts allow one to run and modify the instrument simulator. 
 

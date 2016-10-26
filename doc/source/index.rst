@@ -14,7 +14,10 @@ convolve them with simulated models of the X-ray Surveyor instrument.
 There are two main entry points to SOXS: a command-line interface, and a
 Python interface. The former is simpler to use, but the latter has more power
 and flexibility. Both of these entry points are extensively documented here with
-examples.
+examples. Though you will find details on usage and example runs of the command
+line scripts in the :ref:`command-line`, it is recommended to also look over
+the corresponding documentation in the :ref:`python` for details about what is 
+going on under the hood. 
 
 Why Another Mock X-ray Observation Package?
 -------------------------------------------
