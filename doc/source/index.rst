@@ -57,7 +57,7 @@ Documentation Contents
    command_line/index
    python/index
    examples/index
-   api/modules
+   api/index
 
 
 Indices and tables

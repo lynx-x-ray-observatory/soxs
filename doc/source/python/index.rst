@@ -11,5 +11,5 @@ This section documents the Python interface to SOXS.
    spectra
    spatial
    simput
+   instrument
    background
-   instrument 

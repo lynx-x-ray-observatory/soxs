@@ -16,6 +16,8 @@ type. You can see what backgrounds are registered by calling :func:`~soxs.backgr
     from soxs import show_background_registry
     show_background_registry()
 
+which prints:
+
 .. code-block:: pycon
 
     Background: hm_cxb
