@@ -228,8 +228,17 @@ def add_instrument_to_registry(inst_spec):
         inst = json.load(f)
         f.close()
     name = inst.pop("name")
+    if name in instrument_registry:
+        raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
     instrument_registry[name] = inst
     return name
+
+def get_instrument_from_registry(name):
+    """
+    Returns a copy of the instrument specification
+    corresponding to *name*.
+    """
+    return instrument_registry[name].copy()
 
 def show_instrument_registry():
     """
