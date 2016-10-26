@@ -9,6 +9,8 @@ in a simulation of an observation.
 The ``BackgroundSpectrum`` Object
 ---------------------------------
 
+.. _background-registry:
+
 The Background Registry
 -----------------------
 

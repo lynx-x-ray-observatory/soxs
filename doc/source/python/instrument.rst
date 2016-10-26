@@ -45,19 +45,62 @@ which you can then supply as the instrument argument instead:
 
 Available instruments are:
 
-* ``"hdxi"``: 
-* ``"xcal"``:
+* ``"hdxi"``: Nominal configuration for the High Definition X-ray Imager
+* ``"xcal"``: Nominal configuration for the microcalorimeter
 
 You can also change other aspects of the observation with :func:`~soxs.instrument.instrument_simulator`. 
-For example, you can change the shape and size of the dither pattern:
+For example, you can change the shape and size of the dither pattern. The default dither pattern is a 
+square of width 16.0 arcseconds on a side. You can change it to be a circle dither pattern or turn off
+dithering entirely:
 
+.. code-block:: python
+
+    # this invocation makes the dither shape a circle and sets the radius to 8 arcsec
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, dither_shape="circle", 
+                         dither_size=8.0)
+    
+.. code-block:: python
+
+    # this invocation turns off dithering entirely
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, dither_shape=None) 
 
 You can also specify a non-zero roll angle:
 
-The particle background scale can be set using the ``bkgnd_scale`` argument:
+.. code-block:: python
 
-Customizing the Instrument Simulator
-------------------------------------
+    # adds a roll of 45.0 degrees
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, roll_angle=45.0) 
+
+The particle background scale can be set using the ``instr_bkgnd_scale`` argument:
+
+.. code-block:: python
+
+    # decreases the particle background intensity by half
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, instr_bkgnd_scale=0.5) 
+
+The astrophysical background/foreground can be changed by setting the ``astro_bkgnd`` argument. 
+This corresponds to the name of a stored background in the background registry (see 
+:ref:`background` for more information on how to create, store, and access new astrophysical 
+backgrounds). 
+
+.. code-block:: python
+
+    # uses the default astrophysical background
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, astro_bkgnd="hm_cxb")
+                          
+.. code-block:: python
+
+    # turns off the astrophysical background entirely
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, astro_bkgnd=None)
+
+Creating New Instrument Specifications
+--------------------------------------
 
 SOXS provides the ability to customize the models of the different components of X-ray Surveyor being
 simulated. This is provided by the use of the instrument registry and JSON files which contain prescriptions
@@ -66,8 +109,80 @@ for different instrument configurations.
 The Instrument Registry
 +++++++++++++++++++++++
 
-Making Custom Instruments with JSON Files
-+++++++++++++++++++++++++++++++++++++++++
+The instrument registry is simply a Python dictionary containing various instrument specifications. You
+can see the contents of the instrument registry by calling :func:`~soxs.instrument.show_instrument_registry`:
 
-As SOXS matures, the components which one can simulate will likely expand as well as the options for each
-component.
+.. code-block:: python
+
+    import soxs
+    soxs.show_instrument_registry()
+
+gives:
+
+.. code-block:: pycon
+
+    Instrument: XCAL
+        arf: xrs_calorimeter.arf
+        num_pixels: 300
+        bkgnd: acisi
+        psf: ['gaussian', 0.5]
+        rmf: xrs_calorimeter.rmf
+        plate_scale: 1.0
+    Instrument: HDXI
+        arf: xrs_hdxi.arf
+        num_pixels: 4096
+        bkgnd: acisi
+        psf: ['gaussian', 0.5]
+        rmf: xrs_hdxi.rmf
+        plate_scale: 0.3333333333333333
+    
+You can see there are currently two instruments, ``"XCAL"`` and ``"HDXI"``. The various parts of each
+instrument specification are:
+
+* ``"arf"``: The file containing the ARF.
+* ``"num_pixels"``: The number of resolution elements on a side of the field of view.
+* ``"bkgnd"``: The name of the instrumental background to use, stored in the background registry
+  (see :ref:`background` for more details).
+* ``"psf"``: The PSF specification to use. At time of writing, the only one available is that of
+  a Gaussian PSF, with a single parameter, the FWHM of the PSF. This is specified using a Python 
+  list, e.g. ``["gaussian", 0.5]``
+* ``"rmf"``: The file containing the RMF.
+* ``"plate_scale"``: The arcseconds per resolution element (pixel). 
+
+As SOXS matures, this list of specifications will likely expand, and the number of options for 
+some of them (e.g., the PSF) will also expand.
+
+Making Custom Instruments
++++++++++++++++++++++++++
+
+To make a custom instrument, you can take an existing instrument specification and modify it, giving
+it a new name, or write a new specification to a `JSON <http://www.json.org>`_ file and read it in. To
+make a new specification from a dictionary, construct the dictionary and feed it to 
+:func:`~soxs.instrument.add_instrument_to_registry`. For example, if you wanted to take the default 
+calorimeter specification and change the plate scale, you would do it this way, using 
+:func:`~soxs.instrument.get_instrument_from_registry` to get the specification so that you can alter it:
+
+.. code-block:: python
+
+    from soxs import get_instrument_from_registry, add_instrument_to_registry
+    new_xcal = get_instrument_from_registry("xcal")
+    new_xcal["name"] = "xcal_high_res" # Must change the name, otherwise an error will be thrown
+    new_xcal["plate_scale"] = 0.1 # Ambitiously smaller plate scale, 0.1 arcsec per pixel
+    name = add_instrument_to_registry(new_xcal)
+    
+You can also store an instrument specification in a JSON file and import it:
+
+.. code-block:: python
+
+    name = add_instrument_to_registry("my_xcal.json")
+    
+You can download an example instrument specification JSON file `here <../example_xcal_spec.json>`_. 
+
+You can also take an existing instrument specification and write it to a JSON file for editing
+using :func:`~soxs.instrument.write_instrument_json`:
+
+.. code-block:: python
+
+    from soxs import write_instrument_json
+    # Using the "new_xcal" from above
+    write_instrument_json("xcal_high_res", "xcal_high_res.json")

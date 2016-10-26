@@ -1,0 +1,11 @@
+{
+    "rmf": "xrs_calorimeter.rmf",
+    "psf": [
+        "gaussian",
+        0.5
+    ],
+    "bkgnd": "acisi",
+    "plate_scale": 1.0,
+    "arf": "xrs_calorimeter.arf",
+    "num_pixels": 300
+}

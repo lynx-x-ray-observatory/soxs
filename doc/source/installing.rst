@@ -9,7 +9,10 @@ SOXS and its dependencies are installed as a standard Python package. You may us
 
     pip install soxs
 
-or, if you use `Anaconda Python <https://www.continuum.io/anaconda-overview>`_, you may 
+If the Python distribution is not "owned" by you on your machine you might have to call
+``sudo pip install soxs``. 
+
+If you use `Anaconda Python <https://www.continuum.io/anaconda-overview>`_, you may 
 install SOXS using ``conda``:
 
 .. code-block:: bash
@@ -27,5 +30,6 @@ and install it manually:
     cd soxs
     python setup.py install
     
-or run ``python setup.py develop`` if you want to make changes to the code and see them 
-reflected without recompiling. 
+or run ``python setup.py develop`` instead if you want to make changes to the code 
+and see them reflected without recompiling (though if you make updates to the command-line
+scripts you will have to run ``python setup.py develop`` again). 

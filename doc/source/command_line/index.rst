@@ -9,5 +9,5 @@ This section documents the various command-line scripts included with SOXS.
    :maxdepth: 1
 
    spectra
-   sources
+   spatial
    instrument     

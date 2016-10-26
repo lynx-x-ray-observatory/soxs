@@ -1,4 +1,4 @@
-.. _cmd-events:
+.. _cmd-instrument:
 
 Instrument Simulator Scripts
 ============================
@@ -17,7 +17,8 @@ HEATOOLS, XSPEC, etc.
     usage: instrument_simulator [-h] [--clobber] [--dither_shape DITHER_SHAPE]
                                 [--dither_size DITHER_SIZE]
                                 [--roll_angle ROLL_ANGLE]
-                                [--bkgnd_scale BKGND_SCALE]
+                                [--astro_bkgnd ASTRO_BKGND]
+                                [--instr_bkgnd_scale INSTR_BKGND_SCALE]
                                 simput_file out_file exp_time instrument
                                 sky_center
     
@@ -38,16 +39,18 @@ HEATOOLS, XSPEC, etc.
       --clobber             Whether or not to clobber an existing file with the
                             same name.
       --dither_shape DITHER_SHAPE
-                            The shape of the dither pattern: "square", "circle",
-                            or "None". Default: "square"
+                            The shape of the dither pattern: square, circle, or
+                            None. Default: square
       --dither_size DITHER_SIZE
                             The size of the dither pattern in arcseconds. For a
                             circle, thesize is the radius; for a square, the size
                             is the width. Default: 16.0
       --roll_angle ROLL_ANGLE
                             The roll angle in degrees. Default: 0.0
-      --bkgnd_scale BKGND_SCALE
-                            The scale of the background.
+      --astro_bkgnd ASTRO_BKGND
+                            The astrophysical background to use. Default: hm_cxb
+      --instr_bkgnd_scale INSTR_BKGND_SCALE
+                            The scale of the instrumental background. Default: 1.0
 
 Examples
 ++++++++
