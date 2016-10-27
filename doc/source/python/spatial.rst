@@ -83,11 +83,52 @@ a surface brightness profile as a function of radius.
 ``RadialFunctionModel``
 +++++++++++++++++++++++
 
+:class:`~soxs.spatial.RadialFunctionModel` takes as input a central RA, Dec, and a Python function or callable
+object to generate an azimuthally symmetric distribution of photon positions:
+
+.. code-block:: python
+
+    from soxs import RadialFunctionModel
+    # A simple inverse square-law surface brightness profile.
+    # There is no need to normalize it properly, since that is taken
+    # care of by the number of photons. r is in arcseconds.
+    def S_r(r):
+        return 1.0/(r*r)
+    ra0 = 100.0 # center RA in degrees
+    dec0 = -30.0 # center Dec in degrees
+    num_events = 100000 # The number of events
+    my_src = RadialFunctionModel(ra0, dec0, S_r, num_events)
+
 ``RadialArrayModel``
 ++++++++++++++++++++
 
+:class:`~soxs.spatial.RadialArrayModel` takes as input a central RA, Dec, and two NumPy arrays
+of radius and surface brightness to generate an azimuthally symmetric distribution of photon positions:
+
+.. code-block:: python
+
+    from soxs import RadialArrayModel
+    ra0 = 100.0 # center RA in degrees
+    dec0 = -30.0 # center Dec in degrees
+    num_events = 100000 # The number of events
+    r = np.linspace(0.0, 100.0, 10000) # binned array of radii in arcseconds
+    r_s = 100.0 # scale radius of arcseconds
+    S_r = 1.0/((1.0+r/r_s)**2*(r/r_s)) # the surface brightness array
+    my_src = RadialArrayModel(ra0, dec0, r, S_r, num_events)
+
 ``RadialFileModel``
 +++++++++++++++++++
+
+:class:`~soxs.spatial.RadialFileModel` takes as input a central RA, Dec, and an ASCII table of two columns,
+radius and surface brightness, to generate an azimuthally symmetric distribution of photon positions:
+
+.. code-block:: python
+
+    from soxs import RadialFileModel
+    ra0 = 100.0 # center RA in degrees
+    dec0 = -30.0 # center Dec in degrees
+    num_events = 100000 # The number of events
+    my_src = RadialFileModel(ra0, dec0, "my_profile.dat", num_events)
 
 "Field of View" Sources
 -----------------------

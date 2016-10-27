@@ -61,8 +61,6 @@ class RadialFunctionModel(SpatialModel):
     func : function or function-like, something callable.
         A function that takes an array of radii and generates a radial
         surface brightness profile. 
-    r_out: float
-        The outer radius of the annulus in arcseconds.
     num_events : integer
         The number of events to generate. 
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
