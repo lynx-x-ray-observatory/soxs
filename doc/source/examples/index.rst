@@ -10,6 +10,11 @@ different parts of SOXS will typically be combined.
 Python Notebooks
 ----------------
 
-Command Line Notebooks
-----------------------
+Command Line Scripts
+--------------------
+
+.. toctree::
+   :maxdepth: 1
+       
+   make_multiple_sources
 
