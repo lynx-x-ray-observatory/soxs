@@ -16,7 +16,7 @@ source_model = pyxsim.ThermalSourceModel(spec_model, Zmet=0.3)
 # We set up some basic parameters to determine the sample
 exp_time = (50., "ks") # exposure time
 area = (30000.0, "cm**2") # collecting area
-redshift = 0.1
+redshift = 0.2
 
 # This line generates the photons
 photons = pyxsim.PhotonList.from_data_source(sp, redshift, area, exp_time, source_model)

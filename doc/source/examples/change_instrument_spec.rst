@@ -70,3 +70,6 @@ Download these scripts and JSON files here:
 
 The result of this script are three event files with an increasingly broadened PSF, as shown
 here:
+
+.. image:: ../images/var_psf.png
+   :width: 800px

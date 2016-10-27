@@ -34,4 +34,4 @@ The result of this script is an observation of an annulus with a point source in
 looks like this in ds9:
 
 .. image:: ../images/multiple_source.png
-   :width: 500px
+   :width: 800px

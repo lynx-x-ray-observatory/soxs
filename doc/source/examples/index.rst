@@ -17,4 +17,5 @@ Command Line Scripts
    :maxdepth: 1
        
    make_multiple_sources
+   change_instrument_spec
 
