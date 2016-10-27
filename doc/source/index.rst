@@ -56,7 +56,7 @@ Documentation Contents
    overview
    command_line/index
    python/index
-   examples/index
+   cookbook/index
    api/index
 
 
