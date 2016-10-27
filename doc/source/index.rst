@@ -9,7 +9,7 @@ SOXS: Simulated Observations with X-ray Surveyor
 .. raw:: html
 
    <figure style="display: table; float: right; margin: 0 0 20px 20px;">
-   <img src="_images/galaxy_compare.png" width="400" style="float: right;"/>
+   <img src="galaxy_compare.png" width="600" style="float: right;"/>
    <figcaption style="display: table-caption; caption-side: bottom;">
    Simulated X-ray events from a spiral galaxy from the Illustris simulation,
    assuming <em>Chandra</em>/ACIS-I on the left and X-ray Surveyor/HDXI on the right.
