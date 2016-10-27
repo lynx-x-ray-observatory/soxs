@@ -3,10 +3,13 @@
 Command Line Scripts for Spectra
 ================================
 
-These are scripts that create spectra for use by other modules in SOXS.
+These are scripts that create ASCII tables of spectra for use by other 
+modules in SOXS. For details on what's going on under the hood, see :ref:`spectra`.
 
 ``make_thermal_spectrum``
 -------------------------
+
+This script creates an ASCII table of an optionally absorbed thermal spectrum using the AtomDB tables.
 
 .. code-block:: text
 
@@ -47,8 +50,51 @@ These are scripts that create spectra for use by other modules in SOXS.
 Examples
 ++++++++
 
+Make a basic spectrum for a thermal plasma. 
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --clobber
+
+The same spectrum, but with velocity broadening.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --velocity=200.0 --clobber
+
+The same spectrum, but with velocity and thermal broadening turned off.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --no_broadening --clobber
+
+The same spectrum, but with foreground galactic absorption with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --absorb --nh 0.04 --clobber
+
+The same spectrum, but with different binning.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --emin=0.1 --emax=10.0 --nbins=20000 --clobber
+
+The same spectrum, but with a different APEC version.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --apec_vers=2.0.2 --clobber
+
 ``make_powerlaw_spectrum``
 --------------------------
+
+This script creates an ASCII table of an optionally absorbed power-law spectrum. This spectrum has the
+form:
+
+.. math::
+
+    F_E = K\left[\frac{E(1+z)}{{\rm 1~keV}}\right]^{-\alpha}
 
 .. code-block:: text
 
@@ -78,3 +124,21 @@ Examples
                  
 Examples
 ++++++++
+
+Make a basic power-law spectrum. 
+
+.. code-block:: bash
+
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --clobber
+
+The same spectrum, but with foreground galactic absorption with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
+
+.. code-block:: bash
+
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --absorb --nh 0.04 --clobber
+
+The same spectrum, but with different binning.
+
+.. code-block:: bash
+
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --emin=0.1 --emax=10.0 --nbins=20000 --clobber
