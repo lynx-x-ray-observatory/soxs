@@ -10,6 +10,11 @@ these examples show how different parts of SOXS will typically be combined.
 Python Notebooks
 ----------------
 
+.. toctree::
+   :maxdepth: 1
+
+   two_clusters
+
 Command Line Scripts
 --------------------
 
