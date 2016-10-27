@@ -58,8 +58,8 @@ is the core radius. To construct one:
     num_events = 100000 # The number of events
     beta_src = BetaModel(ra0, dec0, r_c, beta, num_events)
 
-Annulus
--------
+Annulus Model
+-------------
 
 The :class:`~soxs.spatial.AnnulusModel` can be used to generate photon positions for a annulus or disk
 with uniform surface brightness:
