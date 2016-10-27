@@ -1,6 +1,8 @@
 import yt
 import pyxsim
 
+# This example simulates photons for a sloshing galaxy cluster core. 
+
 # Load the file using yt
 # This file can be obtained at http://yt-project.org/data/GasSloshing.tar.gz
 ds = yt.load("GasSloshing/sloshing_nomag2_hdf5_plt_cnt_0150")

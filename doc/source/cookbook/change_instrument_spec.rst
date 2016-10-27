@@ -11,7 +11,8 @@ example requires pyXSIM.
 
     #!/bin/bash
     
-    # First, we make the SIMPUT file using the Python script which calls pyXSIM
+    # First, we make a SIMPUT file of gas sloshing in a galaxy cluster core using the Python 
+    # script which calls pyXSIM
     python make_sloshing.py
     
     # Next, we make three event files, using a different instrument specification for each
@@ -32,6 +33,8 @@ The ``make_sloshing.py`` script that is called:
     import yt
     import pyxsim
     
+    # This example simulates photons for a sloshing galaxy cluster core. 
+
     # Load the file using yt
     # This file can be obtained at http://yt-project.org/data/GasSloshing.tar.gz
     ds = yt.load("GasSloshing/sloshing_nomag2_hdf5_plt_cnt_0150")

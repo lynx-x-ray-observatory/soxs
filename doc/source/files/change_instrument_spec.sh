@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# First, we make the SIMPUT file using the Python script which calls pyXSIM
+# First, we make a SIMPUT file of gas sloshing in a galaxy cluster core using the Python 
+# script which calls pyXSIM
 python make_sloshing.py
 
 # Next, we make three event files, using a different instrument specification for each
