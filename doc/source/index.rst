@@ -54,6 +54,7 @@ Documentation Contents
 
    installing
    overview
+   responses
    command_line/index
    python/index
    cookbook/index
