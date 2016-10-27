@@ -189,13 +189,15 @@ class RedistributionMatrixFile(object):
         return events
 
 instrument_registry = {}
-instrument_registry["xcal"] = {"arf": "xrs_calorimeter.arf",
+instrument_registry["xcal"] = {"name": "xcal",
+                               "arf": "xrs_calorimeter.arf",
                                "rmf": "xrs_calorimeter.rmf",
                                "bkgnd": "acisi",
                                "num_pixels": 300,
                                "plate_scale": 1.0,
                                "psf": ["gaussian", 0.5]}
-instrument_registry["hdxi"] = {"arf": "xrs_hdxi.arf",
+instrument_registry["hdxi"] = {"name": "hdxi",
+                               "arf": "xrs_hdxi.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "bkgnd": "acisi",
                                "num_pixels": 4096,
@@ -227,7 +229,7 @@ def add_instrument_to_registry(inst_spec):
         f = open(inst_spec, "r")
         inst = json.load(f)
         f.close()
-    name = inst.pop("name")
+    name = inst["name"]
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
     instrument_registry[name] = inst

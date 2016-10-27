@@ -1,4 +1,5 @@
 {
+    "name": "example_xcal",
     "rmf": "xrs_calorimeter.rmf",
     "psf": [
         "gaussian",

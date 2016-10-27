@@ -141,6 +141,7 @@ gives:
 You can see there are currently two instruments, ``"XCAL"`` and ``"HDXI"``. The various parts of each
 instrument specification are:
 
+* ``"name"``: The name of the instrument specification. 
 * ``"arf"``: The file containing the ARF.
 * ``"num_pixels"``: The number of resolution elements on a side of the field of view.
 * ``"bkgnd"``: The name of the instrumental background to use, stored in the background registry
