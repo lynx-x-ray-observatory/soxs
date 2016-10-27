@@ -365,8 +365,6 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     """
     event_list, parameters = read_simput_catalog(simput_file)
 
-    if instrument not in instrument_registry and os.path.exists(instrument):
-        instrument = add_instrument_to_registry(instrument)
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:

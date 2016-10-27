@@ -54,7 +54,7 @@ else:
     astro_bkgnd = args.astro_bkgnd
 
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
-                     args.instrument, sky_center, dither_size=args.dither_size,
+                     instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
                      roll_angle=args.roll_angle, instr_bkgnd_scale=args.instr_bkgnd_scale,
                      astro_bkgnd=astro_bkgnd)
