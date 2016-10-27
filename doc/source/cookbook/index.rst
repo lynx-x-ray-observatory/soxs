@@ -14,7 +14,8 @@ Python Notebooks
    :maxdepth: 1
 
    two_clusters
-
+   pyxsim_example
+   
 Command Line Scripts
 --------------------
 
