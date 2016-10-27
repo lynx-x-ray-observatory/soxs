@@ -511,8 +511,8 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
                 pix = np.dot(rot_mat, np.array([events["detx"], events["dety"]]))
 
-                events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset
-                events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset
+                events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset[keep]
+                events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset[keep]
 
         if n_evt > 0:
             for key in events:
