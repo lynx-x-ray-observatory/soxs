@@ -1,0 +1,9 @@
+{
+    "name": "hdxi_2",
+    "arf": "xrs_hdxi.arf",
+    "rmf": "xrs_hdxi.rmf",
+    "bkgnd": "acisi",
+    "num_pixels": 4096,
+    "plate_scale": 0.33333333333333333333,
+    "psf": ["gaussian", 5.0]
+}

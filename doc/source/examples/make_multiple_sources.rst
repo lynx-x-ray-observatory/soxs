@@ -28,7 +28,7 @@ into a single SIMPUT catalog, which is then used to make a single event file.
     # Take the SIMPUT catalog and make an event file
     instrument_simulator my_cat_simput.fits evt.fits 50000.0 hdxi 30.0,45.0 --clobber
 
-`Download this script here. <../make_multiple_sources.sh>`_
+Download this script here: `make_multiple_sources.sh <../make_multiple_sources.sh>`_
 
 The result of this script is an observation of an annulus with a point source in the center, which
 looks like this in ds9:
