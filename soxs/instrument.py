@@ -451,8 +451,8 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
             # Dither pixel coordinates
 
-            x_offset = 0.0
-            y_offset = 0.0
+            x_offset = np.zeros(n_evt)
+            y_offset = np.zeros(n_evt)
             if dither_shape == "circle":
                 r = dsize*np.sqrt(prng.uniform(size=n_evt))
                 theta = 2.*np.pi*prng.uniform(size=n_evt)
