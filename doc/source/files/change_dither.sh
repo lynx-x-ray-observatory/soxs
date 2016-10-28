@@ -6,7 +6,7 @@
 make_powerlaw_spectrum 1.1 0.05 1.0e-4 powerlaw_spec.dat --absorb --nh 0.04 --clobber
 
 # Take this spectrum and make a SIMPUT catalog with a point source photon list
-make_point_source my_cat point_source 30.0 45.0 thermal_spec.dat 100000.0 --clobber
+make_point_source my_cat point_source 30.0 45.0 powerlaw_spec.dat 100000.0 --clobber
 
 # Next, we make three event files, using a different dither for each
 
