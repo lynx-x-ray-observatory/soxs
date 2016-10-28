@@ -374,6 +374,8 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
+    dsize = dither_size/instrument_spec["plate_scale"]
+
     nx = instrument_spec["num_pixels"]
     plate_scale = instrument_spec["plate_scale"]/3600. # arcsec to deg
 
@@ -452,13 +454,13 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
             x_offset = 0.0
             y_offset = 0.0
             if dither_shape == "circle":
-                r = dither_size*np.sqrt(prng.uniform(size=n_evt))
+                r = dsize*np.sqrt(prng.uniform(size=n_evt))
                 theta = 2.*np.pi*prng.uniform(size=n_evt)
                 x_offset = r*np.cos(theta)
                 y_offset = r*np.sin(theta)
             elif dither_shape == "square":
-                x_offset = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                y_offset = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                x_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                y_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
             xpix -= x_offset
             ypix -= y_offset
