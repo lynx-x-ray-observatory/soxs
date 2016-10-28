@@ -180,11 +180,11 @@ Generating Photon Energies From a Spectrum
 Given a :class:`~soxs.spectra.Spectrum`, a set of photon energies can be 
 drawn from it using the :meth:`~soxs.spectra.Spectrum.generate_energies`
 method. This will most often be used to generate discrete samples for mock 
-observations. For this method, an exposure time and a constant effective area 
-must be supplied to convert the spectrum's flux to a number of photons. These
+observations. For this method, an exposure time and a constant (energy-independent)
+effective area must be supplied to convert the spectrum's flux to a number of photons. These
 values need not be realistic--in fact, they both should be larger than the 
 values for the mock observation that you want to simulate, to create a statistically
-robust sample to draw photons from. 
+robust sample to draw photons from when we actually pass them to the instrument simulator.
 
 An example using a :class:`~soxs.spectra.Spectrum` created from a file:
 

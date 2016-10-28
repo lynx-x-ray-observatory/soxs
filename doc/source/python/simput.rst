@@ -33,7 +33,8 @@ the SIMPUT file and photon list file like this:
                       area, pt_src.ra, pt_src.dec, energies, clobber=True) 
                          
 We have to give :func:`~soxs.simput.write_photon_list` the exposure time and area because
-we need to compute a flux for the source.
+we need to compute a flux for the source. This should be the same values that you used when you generated
+the energies from the :class:`~soxs.spectra.Spectrum` object using :meth:`~soxs.spectra.Spectrum.generate_energies`.
 
 Alternatively, you may already have a SIMPUT file associated with a photon list file, but want to 
 add another source to the same SIMPUT catalog. You can accomplish this by making the same call to

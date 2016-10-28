@@ -29,6 +29,9 @@ To learn about ``SpatialModel`` objects, visit one of the following links:
 * Python interface: :ref:`spatial`
 * Command-line interface: :ref:`cmd-spatial`
 
+The purpose of these methods is to generate statistically representative samples of photons
+which can be written to SIMPUT files, described next.
+
 SIMPUT Files
 ------------
 
@@ -42,10 +45,12 @@ produced in or for SOXS with these packages to compare the expected performance 
 Surveyor with other instruments. 
 
 SOXS currently provides facilities for both input and output of SIMPUT catalogs with
-photon lists. The SIMPUT outputs can be used to compare simulations made with SOXS for 
-X-ray Surveyor to simulations of other X-ray instruments past, current, and future, and 
-likewise SIMPUT catalogs with photon lists not created with SOXS can be used as inputs 
-to SOXS's instrument simulator. 
+photon lists. Photon lists are FITS tables of RA, Dec, and energy from the simulated source,
+generate assuming a large exposure time and a large collecting area so that the sample is large
+enough that the instrument simulator is able to "observe" a representative subset. The SIMPUT
+outputs can be used to compare simulations made with SOXS for X-ray Surveyor to simulations of
+other X-ray instruments past, current, and future, and likewise SIMPUT catalogs with photon
+lists not created with SOXS can be used as inputs to SOXS's instrument simulator.
 
 The Instrument Simulator
 ------------------------
