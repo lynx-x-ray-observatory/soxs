@@ -12,7 +12,8 @@ SOXS: Simulated Observations with X-ray Surveyor
    <img src="galaxy_compare.png" width="600" style="float: right;"/>
    <figcaption style="display: table-caption; caption-side: bottom;">
    Simulated X-ray events from a spiral galaxy from the Illustris simulation,
-   assuming <em>Chandra</em>/ACIS-I on the left and X-ray Surveyor/HDXI on the right.
+   assuming <em>Chandra</em>/ACIS-I on the left and X-ray Surveyor/HDXI on the 
+   right. Both exposures are 50 ks. 
    </figcaption>
    </figure>
 
