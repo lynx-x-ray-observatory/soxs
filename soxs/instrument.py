@@ -26,7 +26,7 @@ class AuxiliaryResponseFile(object):
 
     Examples
     --------
-    >>> arf = AuxiliaryResponseFile("xrs_calorimeter.arf")
+    >>> arf = AuxiliaryResponseFile("xrs_mucal_3x10.arf")
     """
     def __init__(self, filename):
         self.filename = filename
@@ -188,21 +188,38 @@ class RedistributionMatrixFile(object):
 
         return events
 
+# The Instrument Registry
+
 instrument_registry = {}
-instrument_registry["xcal"] = {"name": "xcal",
-                               "arf": "xrs_calorimeter.arf",
-                               "rmf": "xrs_calorimeter.rmf",
-                               "bkgnd": "acisi",
-                               "num_pixels": 300,
-                               "plate_scale": 1.0,
-                               "psf": ["gaussian", 0.5]}
+
+# Micro-calorimeter
+instrument_registry["mucal"] = {"name": "mucal",
+                                "arf": "xrs_mucal_3x10.arf",
+                                "rmf": "xrs_mucal.rmf",
+                                "bkgnd": "acisi",
+                                "num_pixels": 300,
+                                "plate_scale": 1.0,
+                                "psf": ["gaussian", 0.5]}
+instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
+# The next line is for backwards-compatibility
+instrument_registry["xcal"] = instrument_registry["mucal"]
+
+# High-Definition X-ray Imager
 instrument_registry["hdxi"] = {"name": "hdxi",
-                               "arf": "xrs_hdxi.arf",
+                               "arf": "xrs_hdxi_3x10.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "bkgnd": "acisi",
                                "num_pixels": 4096,
                                "plate_scale": 1./3.,
                                "psf": ["gaussian", 0.5]}
+instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
+
+# Account for different ARFs
+for det in ["hdxi", "mucal"]:
+    for mirror in ["3x15", "3x20", "6x20"]:
+        instrument_registry["%s_%s" % (det, mirror)] = instrument_registry[det].copy()
+        instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf"
+
 
 def add_instrument_to_registry(inst_spec):
     """
@@ -214,8 +231,8 @@ def add_instrument_to_registry(inst_spec):
     structure is the same, but the file cannot include comments.
 
     >>> {
-    ...     "name": "hdxi", # The short name of the instrument
-    ...     "arf": "xrs_hdxi.arf", # The file containing the ARF
+    ...     "name": "hdxi_3x10", # The short name of the instrument
+    ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf" # The file containing the RMF
     ...     "bkgnd": "acisi_particle_bkgnd.dat" # The file containing the particle background
     ...     "plate_scale": 0.33333333333, # The plate scale in arcsec
