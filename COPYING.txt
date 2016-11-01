@@ -5,7 +5,7 @@
 SOXS is licensed under the terms of the Modified BSD License (also known as New
 or Revised BSD), as follows:
 
-Copyright (c) 2016-, John ZuHone <jzuhone@gmail.com>
+Copyright (c) 2016-, John ZuHone <john.zuhone@cfa.harvard.edu>
 
 All rights reserved.
 
