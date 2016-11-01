@@ -10,7 +10,7 @@ This version contains new features.
 
 * New ARFs corresponding to various configurations of the mirrors have been added and the old ARFs have been
   removed (November 1st, 2016).
-* Documentation now includes references to ways of getting help and the license. 
+* Documentation now includes references to ways of getting help and the license.
 
 Version 0.1.1
 -------------

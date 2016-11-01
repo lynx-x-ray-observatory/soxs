@@ -16,7 +16,7 @@ examples.
 
 SOXS and its dependencies are installed as a standard Python package, and it is compatible
 with Python 2.7 and 3.5. You may use `pip` to install it (if you do not have pip, check
-that your executable is not named `pip3``, otherwise visit https://pip.pypa.io/ to download
+that your executable is not named `pip3`, otherwise visit https://pip.pypa.io/ to download
 it):
 
 ```
