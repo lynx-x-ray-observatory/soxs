@@ -28,9 +28,9 @@ All of the photon lists in the SIMPUT catalog will be processed. A typical invoc
 
     from soxs import instrument_simulator
     simput_file = "snr_simput.fits" # SIMPUT file to be read
-    out_file = "evt_xcal.fits" # event file to be written
+    out_file = "evt_mucal.fits" # event file to be written
     exp_time = 30000. # The exposure time in seconds
-    instrument = "xcal" # short name for instrument to be used
+    instrument = "mucal" # short name for instrument to be used
     sky_center = [30., 45.] # RA, Dec of pointing in degrees
     instrument_simulator(simput_file, out_file, exp_time, instrument, sky_center, clobber=True)
  
@@ -46,7 +46,7 @@ which you can then supply as the instrument argument instead:
 Available instruments are:
 
 * ``"hdxi"``: Nominal configuration for the High Definition X-ray Imager
-* ``"xcal"``: Nominal configuration for the microcalorimeter
+* ``"mucal"``: Nominal configuration for the microcalorimeter
 
 You can also change other aspects of the observation with :func:`~soxs.instrument.instrument_simulator`. 
 For example, you can change the shape and size of the dither pattern. The default dither pattern is a 
@@ -168,18 +168,18 @@ calorimeter specification and change the plate scale, you would do it this way, 
 .. code-block:: python
 
     from soxs import get_instrument_from_registry, add_instrument_to_registry
-    new_xcal = get_instrument_from_registry("xcal")
-    new_xcal["name"] = "xcal_high_res" # Must change the name, otherwise an error will be thrown
-    new_xcal["plate_scale"] = 0.1 # Ambitiously smaller plate scale, 0.1 arcsec per pixel
-    name = add_instrument_to_registry(new_xcal)
+    new_mucal = get_instrument_from_registry("mucal")
+    new_mucal["name"] = "mucal_high_res" # Must change the name, otherwise an error will be thrown
+    new_mucal["plate_scale"] = 0.1 # Ambitiously smaller plate scale, 0.1 arcsec per pixel
+    name = add_instrument_to_registry(new_mucal)
     
 You can also store an instrument specification in a JSON file and import it:
 
 .. code-block:: python
 
-    name = add_instrument_to_registry("my_xcal.json")
+    name = add_instrument_to_registry("my_mucal.json")
     
-You can download an example instrument specification JSON file `here <../example_xcal_spec.json>`_. 
+You can download an example instrument specification JSON file `here <../example_mucal_spec.json>`_. 
 
 You can also take an existing instrument specification and write it to a JSON file for editing
 using :func:`~soxs.instrument.write_instrument_json`:
@@ -187,5 +187,5 @@ using :func:`~soxs.instrument.write_instrument_json`:
 .. code-block:: python
 
     from soxs import write_instrument_json
-    # Using the "new_xcal" from above
-    write_instrument_json("xcal_high_res", "xcal_high_res.json")
+    # Using the "new_mucal" from above
+    write_instrument_json("mucal_high_res", "mucal_high_res.json")
