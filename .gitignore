@@ -1,5 +1,7 @@
 doc/build/doctrees
 doc/build/html
+doc/source/files/*.rmf
+doc/source/files/*.arf
 soxs.egg-info
 .eggs
 *.pyc
