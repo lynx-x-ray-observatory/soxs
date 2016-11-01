@@ -18,8 +18,8 @@ High-Definition X-ray Imager
   * :math:`d` = 6 m, :math:`f` = 20 m: `xrs_hdxi_6x20.arf <xrs_hdxi_6x20.arf>`_
 
 
-Micro-Calorimeter
------------------
+Microcalorimeter
+----------------
 
 * RMF: `xrs_mucal.rmf <xrs_mucal.rmf>`_
 * ARFs:

@@ -34,8 +34,26 @@ All of the photon lists in the SIMPUT catalog will be processed. A typical invoc
     sky_center = [30., 45.] # RA, Dec of pointing in degrees
     instrument_simulator(simput_file, out_file, exp_time, instrument, sky_center, clobber=True)
  
-The ``clobber`` argument allows an existing file to be overwritten. Instruments must exist
-in the instrument registry, unless you have your own JSON-based instrument specification, 
+The ``clobber`` argument allows an existing file to be overwritten.
+
+.. _instrument-arg:
+
+The ``instrument`` Argument
++++++++++++++++++++++++++++
+
+For the ``instrument`` argument, there are currently two base instruments, ``"hdxi"`` for the High-Definition
+X-ray Imager, and ``"mucal"`` for the microcalorimeter. There are also variations on these instruments which
+use different mirror parameters. The different variations on mirror parameters available are:
+
+* :math:`d` = 3 m, :math:`f` = 10 m (default case)
+* :math:`d` = 3 m, :math:`f` = 15 m
+* :math:`d` = 3 m, :math:`f` = 20 m
+* :math:`d` = 6 m, :math:`f` = 20 m
+
+Where :math:`d` is the diameter of the outermost mirror shell, and :math:`f` is the focal length. To use a different
+case other than the default, append it to the instrument string in a ``dxf`` pattern, e.g. ``"hdxi_3x20"``, ``"mucal_6x20"``.
+
+Instruments must exist in the instrument registry, unless you have your own JSON-based instrument specification,
 which you can then supply as the instrument argument instead:
 
 .. code-block:: python
@@ -43,12 +61,12 @@ which you can then supply as the instrument argument instead:
     instrument = "my_imager.json"
     instrument_simulator(simput_file, out_file, instrument, sky_center, clobber=True)
 
-Available instruments are:
+.. _other-mods:
 
-* ``"hdxi"``: Nominal configuration for the High Definition X-ray Imager
-* ``"mucal"``: Nominal configuration for the microcalorimeter
+Other Modifications
++++++++++++++++++++
 
-You can also change other aspects of the observation with :func:`~soxs.instrument.instrument_simulator`. 
+You can also change other aspects of the observation with :func:`~soxs.instrument.instrument_simulator`.
 For example, you can change the shape and size of the dither pattern. The default dither pattern is a 
 square of width 16.0 arcseconds on a side. You can change it to be a circle dither pattern or turn off
 dithering entirely:
@@ -163,13 +181,6 @@ gives (showing only a subset for brevity):
         name: hdxi
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
- 
-You can see there are currently two base instruments, ``"hdxi"`` and ``"mucal"``, with variations on
-the ARF depending on the mirror parameters. The pattern ``"dxf"`` before the suffix in the ARF filename
-corresponds to ``d`` as the diameter of the outermost mirror shell, and ``f`` as the focal length. For
-example, if you wanted to use the default ``"hdxi"`` specification with ``d`` = 3 m, ``f`` = 10 m,
-you could use ``"hdxi"`` or ``"hdxi_3x10"``. For all other combinations of ``d`` and ``f``, you must specify
-the specific case explicitly, e.g. ``"hdxi_6x20"``.
 
 The various parts of each instrument specification are:
 

@@ -73,12 +73,16 @@ The same, but use the HDXI specification with mirror diameter of :math:`d` = 3 m
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi_3x20 30.,45. --clobber
 
+See :ref:`instrument-arg` for details on the options for the ``instrument`` argument.
+
 This example uses a JSON file created by the user, which contains a custom instrument specification. See
 :ref:`instrument-registry` for details on how to do this.
 
 .. code-block:: bash
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --clobber
+
+The following details how to change the other options, for more info see :ref:`other-mods`.
 
 Changing Roll Angle and Dither
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
