@@ -119,27 +119,53 @@ can see the contents of the instrument registry by calling :func:`~soxs.instrume
     import soxs
     soxs.show_instrument_registry()
 
-gives:
+gives (showing only a subset for brevity):
 
 .. code-block:: pycon
 
-    Instrument: xcal
-        arf: xrs_calorimeter.arf
-        num_pixels: 300
-        bkgnd: acisi
-        psf: ['gaussian', 0.5]
-        rmf: xrs_calorimeter.rmf
-        plate_scale: 1.0
     Instrument: hdxi
-        arf: xrs_hdxi.arf
         num_pixels: 4096
+        plate_scale: 0.3333333333333333
         bkgnd: acisi
         psf: ['gaussian', 0.5]
+        name: hdxi
+        arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
+    Instrument: mucal
+        num_pixels: 300
+        plate_scale: 1.0
+        bkgnd: acisi
+        psf: ['gaussian', 0.5]
+        name: mucal
+        arf: xrs_mucal_3x10.arf
+        rmf: xrs_mucal.rmf
+    Instrument: mucal_3x15
+        num_pixels: 300
+        plate_scale: 1.0
+        bkgnd: acisi
+        psf: ['gaussian', 0.5]
+        name: mucal
+        arf: xrs_mucal_3x15.arf
+        rmf: xrs_mucal.rmf
+    Instrument: hdxi_3x15
+        num_pixels: 4096
         plate_scale: 0.3333333333333333
-    
-You can see there are currently two instruments, ``"XCAL"`` and ``"HDXI"``. The various parts of each
-instrument specification are:
+        bkgnd: acisi
+        psf: ['gaussian', 0.5]
+        name: hdxi
+        arf: xrs_hdxi_3x15.arf
+        rmf: xrs_hdxi.rmf
+    Instrument: hdxi_3x10
+        num_pixels: 4096
+        plate_scale: 0.3333333333333333
+        bkgnd: acisi
+        psf: ['gaussian', 0.5]
+        name: hdxi
+        arf: xrs_hdxi_3x10.arf
+        rmf: xrs_hdxi.rmf
+ 
+You can see there are currently two base instruments, ``"hdxi"`` and ``"mucal"``, with variations on
+the ARF. The various parts of each instrument specification are:
 
 * ``"name"``: The name of the instrument specification. 
 * ``"arf"``: The file containing the ARF.
