@@ -218,7 +218,7 @@ instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 for det in ["hdxi", "mucal"]:
     for mirror in ["3x15", "3x20", "6x20"]:
         instrument_registry["%s_%s" % (det, mirror)] = instrument_registry[det].copy()
-        instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf"
+        instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf" % (det, mirror)
 
 
 def add_instrument_to_registry(inst_spec):
