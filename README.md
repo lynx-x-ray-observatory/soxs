@@ -1,0 +1,61 @@
+[![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
+
+# What is SOXS?
+
+SOXS is a software suite which creates simulated X-ray observations of
+astrophysical sources with the mission concept X-ray Surveyor. The goal of
+SOXS is to provide a comprehensive set of tools to design source models and
+convolve them with simulated models of the X-ray Surveyor instrument.
+
+There are two main entry points to SOXS: a command-line interface, and a
+Python interface. The former is simpler to use, but the latter has more power
+and flexibility. Both of these entry points are extensively documented with
+examples.
+
+# Installing SOXS
+
+SOXS and its dependencies are installed as a standard Python package, and it is compatible
+with Python 2.7 and 3.5. You may use `pip` to install it (if you do not have pip, check
+that your executable is not named `pip3``, otherwise visit https://pip.pypa.io/ to download
+it):
+
+```
+[~]$ pip install soxs
+```
+
+If the Python distribution is not "owned" by you on your machine you might have to call
+`sudo pip install soxs`.
+
+If you use [Anaconda Python](https://www.continuum.io/anaconda-overview), you may
+install SOXS using `conda`:
+
+```
+[~]$ conda install -c jzuhone soxs
+```
+
+These methods install both the Python interface and the command-line scripts.
+
+Alternatively, to install into your Python distribution from [source](http://github.com/XRStools/soxs):
+
+```
+[~]$ python setup.py install
+```
+
+# Getting Help
+
+There are a number of ways to get help with SOXS.
+
+## Documentation
+
+Documentation for SOXS lives at http://hea-www.cfa.harvard.edu/~jzuhone/soxs.
+
+## Mailing List
+
+There's a [SOXS Google Group](https://groups.google.com/forum/#!forum/soxs-sims) to get help and
+discuss related matters.
+
+## GitHub Issues Page
+
+If you have a specific code issue that seems like a bug or have a feature or enhancement request,
+the best place to note it is on the [GitHub issues page](http://github.com/XRStools/soxs/issues)
+so that we can keep track of it. 
