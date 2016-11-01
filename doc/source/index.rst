@@ -57,6 +57,17 @@ Thirdly, SOXS is being developed out in the open, on `GitHub <http://github.com/
 to encourage contributions in the form of bugfixes and enhancements, and to make
 contributing as simple as forking the code and submitting a pull request for review.
 
+License
+-------
+
+SOXS is released under a `BSD 3-clause license <https://opensource.org/licenses/BSD-3-Clause>`_.
+
+Current Version
+---------------
+
+The current stable version is 0.2.0. See the :ref:`changelog` for details on changes from previous
+versions.
+
 Documentation Contents
 ----------------------
 
@@ -69,6 +80,7 @@ Documentation Contents
    command_line/index
    python/index
    cookbook/index
+   getting_help
    api/index
 
 
