@@ -165,7 +165,13 @@ gives (showing only a subset for brevity):
         rmf: xrs_hdxi.rmf
  
 You can see there are currently two base instruments, ``"hdxi"`` and ``"mucal"``, with variations on
-the ARF. The various parts of each instrument specification are:
+the ARF depending on the mirror parameters. The pattern ``"dxf"`` before the suffix in the ARF filename
+corresponds to ``d`` as the diameter of the outermost mirror shell, and ``f`` as the focal length. For
+example, if you wanted to use the default ``"hdxi"`` specification with ``d`` = 3 m, ``f`` = 10 m,
+you could use ``"hdxi"`` or ``"hdxi_3x10"``. For all other combinations of ``d`` and ``f``, you must specify
+the specific case explicitly, e.g. ``"hdxi_6x20"``.
+
+The various parts of each instrument specification are:
 
 * ``"name"``: The name of the instrument specification. 
 * ``"arf"``: The file containing the ARF.

@@ -66,6 +66,13 @@ with the pointing (RA, Dec) = (30, 45) degrees.
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --clobber
 
+The same, but use the HDXI specification with mirror diameter of :math:`d` = 3 m and focal length of
+:math:`f` = 20 m:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi_3x20 30.,45. --clobber
+
 This example uses a JSON file created by the user, which contains a custom instrument specification. See
 :ref:`instrument-registry` for details on how to do this.
 
