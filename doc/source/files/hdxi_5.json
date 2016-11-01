@@ -1,6 +1,6 @@
 {
     "name": "hdxi_5",
-    "arf": "xrs_hdxi.arf",
+    "arf": "xrs_hdxi_3x10.arf",
     "rmf": "xrs_hdxi.rmf",
     "bkgnd": "acisi",
     "num_pixels": 4096,

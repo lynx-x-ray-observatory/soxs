@@ -1,12 +1,12 @@
 {
-    "name": "example_xcal",
-    "rmf": "xrs_calorimeter.rmf",
+    "name": "example_mucal",
+    "rmf": "xrs_mucal.rmf",
     "psf": [
         "gaussian",
         0.5
     ],
     "bkgnd": "acisi",
     "plate_scale": 1.0,
-    "arf": "xrs_calorimeter.arf",
+    "arf": "xrs_mucal_3x10.arf",
     "num_pixels": 300
 }

@@ -377,7 +377,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     Examples
     --------
-    >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", "hdxi",
+    >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", "hdxi_3x10",
     ...                      [30., 45.], clobber=True)
     """
     event_list, parameters = read_simput_catalog(simput_file)
