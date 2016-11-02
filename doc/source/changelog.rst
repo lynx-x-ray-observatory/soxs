@@ -3,6 +3,12 @@
 ChangeLog
 =========
 
+Version 0.2.1
+-------------
+
+This is a bugfix release.
+
+* The supporting files (ARFs, RMFs, spectral files, etc.) were not being bundled properly in previous versions. 
 Version 0.2.0
 -------------
 
