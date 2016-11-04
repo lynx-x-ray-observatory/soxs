@@ -199,6 +199,7 @@ instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "bkgnd": "acisi",
                                 "num_pixels": 300,
                                 "plate_scale": 1.0,
+                                "focal_length": 10.0,
                                 "psf": ["gaussian", 0.5]}
 instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
 # The next line is for backwards-compatibility
@@ -211,6 +212,7 @@ instrument_registry["hdxi"] = {"name": "hdxi_3x10",
                                "bkgnd": "acisi",
                                "num_pixels": 4096,
                                "plate_scale": 1./3.,
+                               "focal_length": 10.0,
                                "psf": ["gaussian", 0.5]}
 instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 
@@ -220,7 +222,7 @@ for det in ["hdxi", "mucal"]:
         instrument_registry["%s_%s" % (det, mirror)] = instrument_registry[det].copy()
         instrument_registry["%s_%s" % (det, mirror)]["name"] = "%s_%s" % (det, mirror)
         instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf" % (det, mirror)
-
+        instrument_registry["%s_%s" % (det, mirror)]["focal_length"] = float(mirror.split("x")[-1])
 
 def add_instrument_to_registry(inst_spec):
     """
@@ -237,6 +239,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "rmf": "xrs_hdxi.rmf" # The file containing the RMF
     ...     "bkgnd": "acisi_particle_bkgnd.dat" # The file containing the particle background
     ...     "plate_scale": 0.33333333333, # The plate scale in arcsec
+    ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
     ...     "psf": ["gaussian", 0.5] # The type of PSF and its FWHM
     ... }
