@@ -193,7 +193,7 @@ class RedistributionMatrixFile(object):
 instrument_registry = {}
 
 # Micro-calorimeter
-instrument_registry["mucal"] = {"name": "mucal",
+instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "arf": "xrs_mucal_3x10.arf",
                                 "rmf": "xrs_mucal.rmf",
                                 "bkgnd": "acisi",
@@ -205,7 +205,7 @@ instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
 instrument_registry["xcal"] = instrument_registry["mucal"]
 
 # High-Definition X-ray Imager
-instrument_registry["hdxi"] = {"name": "hdxi",
+instrument_registry["hdxi"] = {"name": "hdxi_3x10",
                                "arf": "xrs_hdxi_3x10.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "bkgnd": "acisi",
@@ -218,6 +218,7 @@ instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 for det in ["hdxi", "mucal"]:
     for mirror in ["3x15", "3x20", "6x20"]:
         instrument_registry["%s_%s" % (det, mirror)] = instrument_registry[det].copy()
+        instrument_registry["%s_%s" % (det, mirror)]["name"] = "%s_%s" % (det, mirror)
         instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf" % (det, mirror)
 
 
