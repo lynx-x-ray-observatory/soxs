@@ -149,6 +149,7 @@ gives (showing only a subset for brevity):
         name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
+        focal_length: 10.0
     Instrument: mucal
         num_pixels: 300
         plate_scale: 1.0
@@ -157,6 +158,7 @@ gives (showing only a subset for brevity):
         name: mucal_3x10
         arf: xrs_mucal_3x10.arf
         rmf: xrs_mucal.rmf
+        focal_length: 10.0
     Instrument: mucal_3x15
         num_pixels: 300
         plate_scale: 1.0
@@ -165,6 +167,7 @@ gives (showing only a subset for brevity):
         name: mucal_3x15
         arf: xrs_mucal_3x15.arf
         rmf: xrs_mucal.rmf
+        focal_length: 15.0
     Instrument: hdxi_3x15
         num_pixels: 4096
         plate_scale: 0.3333333333333333
@@ -173,6 +176,7 @@ gives (showing only a subset for brevity):
         name: hdxi_3x15
         arf: xrs_hdxi_3x15.arf
         rmf: xrs_hdxi.rmf
+        focal_length: 15.0
     Instrument: hdxi_3x10
         num_pixels: 4096
         plate_scale: 0.3333333333333333
@@ -181,6 +185,7 @@ gives (showing only a subset for brevity):
         name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
+        focal_length: 10.0
 
 The various parts of each instrument specification are:
 
