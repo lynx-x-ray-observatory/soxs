@@ -8,5 +8,6 @@
     "bkgnd": "acisi",
     "plate_scale": 1.0,
     "arf": "xrs_mucal_3x10.arf",
-    "num_pixels": 300
+    "num_pixels": 300,
+    "focal_length": 10.0
 }

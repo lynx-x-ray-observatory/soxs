@@ -146,7 +146,7 @@ gives (showing only a subset for brevity):
         plate_scale: 0.3333333333333333
         bkgnd: acisi
         psf: ['gaussian', 0.5]
-        name: hdxi
+        name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
     Instrument: mucal
@@ -154,7 +154,7 @@ gives (showing only a subset for brevity):
         plate_scale: 1.0
         bkgnd: acisi
         psf: ['gaussian', 0.5]
-        name: mucal
+        name: mucal_3x10
         arf: xrs_mucal_3x10.arf
         rmf: xrs_mucal.rmf
     Instrument: mucal_3x15
@@ -162,7 +162,7 @@ gives (showing only a subset for brevity):
         plate_scale: 1.0
         bkgnd: acisi
         psf: ['gaussian', 0.5]
-        name: mucal
+        name: mucal_3x15
         arf: xrs_mucal_3x15.arf
         rmf: xrs_mucal.rmf
     Instrument: hdxi_3x15
@@ -170,7 +170,7 @@ gives (showing only a subset for brevity):
         plate_scale: 0.3333333333333333
         bkgnd: acisi
         psf: ['gaussian', 0.5]
-        name: hdxi
+        name: hdxi_3x15
         arf: xrs_hdxi_3x15.arf
         rmf: xrs_hdxi.rmf
     Instrument: hdxi_3x10
@@ -178,7 +178,7 @@ gives (showing only a subset for brevity):
         plate_scale: 0.3333333333333333
         bkgnd: acisi
         psf: ['gaussian', 0.5]
-        name: hdxi
+        name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
 
@@ -194,6 +194,7 @@ The various parts of each instrument specification are:
   list, e.g. ``["gaussian", 0.5]``
 * ``"rmf"``: The file containing the RMF.
 * ``"plate_scale"``: The arcseconds per resolution element (pixel). 
+* ``"focal_length"``: The focal length of the telescope in meters.
 
 As SOXS matures, this list of specifications will likely expand, and the number of options for 
 some of them (e.g., the PSF) will also expand.
