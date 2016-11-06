@@ -49,6 +49,27 @@ class Spectrum(object):
         s += "    Total Flux:\n    %s\n    %s\n" % (self.total_flux, self.total_energy_flux)
         return s
 
+    def get_flux_in_band(self, emin, emax):
+        """
+        Determine the total flux within a band specified by an energy range. 
+
+        Parameters
+        ----------
+        emin : float
+            The minimum energy in the band, in keV.
+        emax : float
+            The maximum energy in the band, in keV.
+
+        Returns
+        -------
+        A tuple of values for the flux/intensity in the band: the first value is in
+        terms of the photon rate, the second value is in terms of the energy rate. 
+        """
+        range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
+        pflux = self.flux[range].sum()*self.de
+        eflux = (self.flux*self.emid.to("erg"))[range].sum()*self.de/(1.0*u.photon)
+        return pflux, eflux
+
     @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
                    nbins=10000):
