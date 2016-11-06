@@ -43,11 +43,16 @@ class BackgroundSpectrum(Spectrum):
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
 acisi_particle_bkgnd = BackgroundSpectrum(acisi_bkgnd_file, "instrumental")
 
+# Athena-like microcalorimeter background (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
+mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.dat")
+mucal_particle_bkgnd = BackgroundSpectrum(mucal_bkgnd_file, "instrumental")
+
 # X-ray foreground from Hickox & Markevitch 2007 (http://adsabs.harvard.edu/abs/2007ApJ...661L.117H)
 hm_bkgnd_file = os.path.join(soxs_files_path, "hm_cxb_bkgnd.dat")
 hm_astro_bkgnd = BackgroundSpectrum(hm_bkgnd_file, "astrophysical")
 
 background_registry = {"acisi": acisi_particle_bkgnd,
+                       "mucal": mucal_particle_bkgnd, 
                        "hm_cxb": hm_astro_bkgnd}
 
 def add_background_to_registry(name, filename, bkgnd_type):
