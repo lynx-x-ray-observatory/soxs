@@ -291,7 +291,8 @@ def write_instrument_json(inst_name, filename):
     json.dump(inst_dict, fp, indent=4)
     fp.close()
 
-def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, prng=np.random):
+def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, focal_length=None,
+                   prng=np.random):
 
     fov = event_params["num_pixels"]*event_params["plate_scale"]*60.0
 
@@ -307,7 +308,7 @@ def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, prng=np.rando
         arf = AuxiliaryResponseFile(check_file_location(event_params["arf"], "files"))
         area = arf.interpolate_area(bkgnd_spec.emid)
     else:
-        area = 1.0
+        area = (focal_length/10.0)**2
 
     bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
                                                         area, fov, bkgnd_scale, prng=prng)
@@ -566,7 +567,8 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
         mylog.info("Adding in instrumental background.")
 
         bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
-                                    instr_bkgnd_scale, prng=prng)
+                                    instr_bkgnd_scale, prng=prng,
+                                    focal_length=instrument_spec["focal_length"])
 
         for key in all_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
