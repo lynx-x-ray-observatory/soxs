@@ -40,7 +40,7 @@ def read_simput_catalog(simput_file):
     return events, parameters
 
 def write_photon_list(simput_prefix, phlist_prefix, exp_time, area, 
-                      ra, dec, energy, append=False, clobber=False):
+                      ra, dec, energy, flux=None, append=False, clobber=False):
     r"""
     Write events to a new SIMPUT photon list. It can be associated
     with a new or existing SIMPUT catalog. 
@@ -61,6 +61,9 @@ def write_photon_list(simput_prefix, phlist_prefix, exp_time, area,
         The declination of the photons, in degrees.
     energy : NumPy array
         The energy of the photons, in keV.
+    flux : float, optional
+        If the flux is known, use it instead of computing it from the exposure time
+        and area. Must be of all the photons, in units of erg/cm**2/s. Default: None
     append : boolean, optional
         If True, append a new source an existing SIMPUT catalog. 
     clobber : boolean, optional
@@ -74,7 +77,8 @@ def write_photon_list(simput_prefix, phlist_prefix, exp_time, area,
     emin = energy.min()
     emax = energy.max()
 
-    flux = np.sum(energy)*erg_per_keV / exp_time / area
+    if flux is None:
+        flux = np.sum(energy)*erg_per_keV / exp_time / area
 
     col1 = pyfits.Column(name='ENERGY', format='E', array=energy)
     col2 = pyfits.Column(name='RA', format='D', array=ra)
