@@ -6,18 +6,23 @@ from soxs.simput import \
 
 from soxs.spectra import \
     Spectrum, \
-    ApecGenerator
+    ApecGenerator, \
+    ConvolvedSpectrum
 
 from soxs.instrument import \
     add_instrument_to_registry, \
     show_instrument_registry, \
     write_instrument_json, \
     instrument_simulator, \
-    get_instrument_from_registry
+    get_instrument_from_registry, \
+    AuxiliaryResponseFile, \
+    RedistributionMatrixFile
 
 from soxs.background import \
     add_background_to_registry, \
-    show_background_registry
+    show_background_registry, \
+    BackgroundSpectrum, \
+    ConvolvedBackgroundSpectrum
 
 from soxs.spatial import \
     PointSourceModel, \
