@@ -187,7 +187,41 @@ class AnnulusModel(RadialFunctionModel):
         super(AnnulusModel, self).__init__(ra0, dec0, func,
                                            num_events, prng=prng)
 
-class FillFOVModel(SpatialModel):
+class RectangleModel(SpatialModel):
+    """
+    Create positions for photons within a rectangle or line shape.
+
+    Parameters
+    ----------
+    ra0 : float
+        The center RA of the rectangle in degrees.
+    dec0 : float
+        The center Dec of the rectangle in degrees.
+    width : float
+        The width of the rectangle in arcseconds.
+    height : float
+        The height of the rectangle in arcseconds.
+    num_events : integer
+        The number of events to generate.
+    theta : float, optional
+        The angle through which to rotate the rectangle in degrees. Default: 0.0
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only be specified
+        if you have a reason to generate the same set of random numbers, such as for a
+        test. Default is the :mod:`numpy.random` module.
+    """
+    def __init__(self, ra0, dec0, width, height, num_events, theta=0.0, prng=np.random):
+        w = construct_wcs(ra0, dec0)
+        x = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
+        y = prng.uniform(low=-0.5*height, high=0.5*height, size=num_events)
+        theta_rad = np.deg2rad(theta)
+        rot_mat = np.array([[np.cos(theta_rad), -np.sin(theta_rad)],
+                            [np.sin(theta_rad), np.cos(theta_rad)]])
+        coords = np.dot(rot_mat, np.array([x, y]))
+        ra, dec = w.wcs_pix2world(coords[0,:], coords[1,:], 1)
+        super(RectangleModel, self).__init__(ra, dec)
+
+class FillFOVModel(RectangleModel):
     """
     Create positions for photons which span a field of view.
 
@@ -207,9 +241,6 @@ class FillFOVModel(SpatialModel):
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, fov, num_events, prng=np.random):
-        w = construct_wcs(ra0, dec0)
         width = fov*60.0
-        x = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
-        y = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
-        ra, dec = w.wcs_pix2world(x, y, 1)
-        super(FillFOVModel, self).__init__(ra, dec)
+        height = fov*60.0
+        super(FillFOVModel, self).__init__(ra0, dec0, width, height, num_events, prng=prng)
