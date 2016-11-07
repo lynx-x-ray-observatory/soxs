@@ -439,3 +439,10 @@ def wabs_cross_section(E):
     idxs = np.minimum(np.searchsorted(emax, E)-1, 13)
     sigma = (c0[idxs]+c1[idxs]*E+c2[idxs]*E*E)*1.0e-24/E**3
     return sigma
+
+class ConvolvedSpectrum(Spectrum):
+    _units = "photon/(s*keV)"
+    def __init__(self, spectrum, arf):
+        earea = arf.interpolate_area(spectrum.emid)
+        rate = spectrum.flux * earea
+        super(ConvolvedSpectrum, self).__init__(spectrum.ebins, rate)

@@ -1,7 +1,7 @@
 from __future__ import print_function
 import numpy as np
 import os
-from soxs.spectra import Spectrum
+from soxs.spectra import Spectrum, ConvolvedSpectrum
 from soxs.utils import soxs_files_path
 
 class BackgroundSpectrum(Spectrum):
@@ -38,6 +38,9 @@ class BackgroundSpectrum(Spectrum):
         A = area*fov*fov*bkgnd_scale
         return super(BackgroundSpectrum, self).generate_energies(t_exp, A,
                                                                  prng=prng)
+
+class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
+    _units = "photon/(s*keV*arcmin**2)"
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
