@@ -197,7 +197,7 @@ instrument_registry = {}
 instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "arf": "xrs_mucal_3x10.arf",
                                 "rmf": "xrs_mucal.rmf",
-                                "bkgnd": "acisi",
+                                "bkgnd": "mucal",
                                 "num_pixels": 300,
                                 "plate_scale": 1.0,
                                 "focal_length": 10.0,
