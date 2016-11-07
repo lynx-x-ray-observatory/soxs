@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+import numpy as np
+import argparse
+from soxs import write_photon_list
+from argparse import RawTextHelpFormatter
+
+descr = "Create a SIMPUT photon list from an ASCII table of positions and energies. " + \
+        "The file must contain the total source flux in erg/s/cm**2 on the first line, " + \
+        "commented with #, and must have three columns of RA (degrees), Dec (degrees), " + \
+        "and energy (keV) for each event.\n\nExample:\n\n" + \
+        "# 1.194e-15\n" + \
+        "30.1  45.5  2.71\n" + \
+        "29.67 44.95 0.31\n" + \
+        "31.25 45.03 10.01\n" + \
+        "29.75 44.44 7.34\n" + \
+        "30.05 44.01 12.01\n" + \
+        "31.99 45.21 0.05\n" + \
+        "..."
+
+parser = argparse.ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter)
+parser.add_argument("simput_prefix", type=str,
+                    help='The prefix of the SIMPUT file to be used as the root of the '+
+                         'catalog. If it does not exist, it will be created.')
+parser.add_argument("phlist_prefix", type=str,
+                    help='The prefix of the photon list file to be written.')
+parser.add_argument("infile", type=str, help="The file containing the flux and positions and energies.")
+parser.add_argument("--append", action='store_true',
+                    help='If set, append a new source an existing SIMPUT catalog. ')
+parser.add_argument("--clobber", action='store_true',
+                    help='Whether or not to clobber an existing file with the same name.')
+
+args = parser.parse_args()
+
+# Read the flux from the first line.
+f = open(args.infile, "r")
+line = f.readline()
+f.close()
+flux = float(line.split()[-1])
+
+# Now read the positions and energies from the rest.
+ra, dec, energy = np.loadtxt(args.infile, unpack=True, skiprows=1)
+
+write_photon_list(args.simput_prefix, args.phlist_prefix, flux,
+                  ra, dec, energy, append=args.append,
+                  clobber=args.clobber)
