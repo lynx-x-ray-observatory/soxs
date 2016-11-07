@@ -24,7 +24,8 @@ it):
 ```
 
 If the Python distribution is not "owned" by you on your machine you might have to call
-`sudo pip install soxs`.
+`sudo pip install soxs`. If you need to upgrade from a previous version of SOXS, issue
+`[sudo] pip install -U soxs` from the command line. 
 
 If you use [Anaconda Python](https://www.continuum.io/anaconda-overview), you may
 install SOXS using `conda`:
