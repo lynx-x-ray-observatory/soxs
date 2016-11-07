@@ -71,14 +71,14 @@ class Spectrum(object):
         return pflux, eflux
 
     @classmethod
-    def from_xcm_file(cls, infile, emin=0.01, emax=50.0, nbins=10000):
+    def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         """
-        Create a model spectrum using an "xcm" file as input to XSPEC.
+        Create a model spectrum using a script file as input to XSPEC.
 
         Parameters
         ----------
         infile : string
-            Path to the xcm file to use. 
+            Path to the script file to use. 
         emin : float, optional
             The minimum energy of the spectrum in keV. Default: 0.01
         emax : float, optional
@@ -92,8 +92,8 @@ class Spectrum(object):
         return cls._from_xspec(xspec_in, emin, emax, nbins)
 
     @classmethod
-    def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
-                   nbins=10000):
+    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0,
+                         nbins=10000):
         """
         Create a model spectrum using a model string and parameters
         as input to XSPEC.
@@ -120,6 +120,13 @@ class Spectrum(object):
         model_str += " /*"
         xspec_in.append("model %s\n" % model_str)
         return cls._from_xspec(xspec_in, emin, emax, nbins)
+
+    @classmethod
+    def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
+                   nbins=10000):
+        mylog.warning("The 'from_xspec' method has been deprecated: "
+                      "use 'from_xspec_model' instead.")
+        cls.from_xspec_model(model_string, params, emin=emin, emax=emax, nbins=nbins)
 
     @classmethod
     def _from_xspec(cls, xspec_in, emin, emax, nbins):

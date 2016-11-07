@@ -98,18 +98,49 @@ Generating a Spectrum from XSPEC
 ++++++++++++++++++++++++++++++++
 
 If you have XSPEC installed on your machine, you can use it with SOXS to create any 
-spectral model that XSPEC supports. This is done by passing in a model string and a
-list of parameters:
+spectral model that XSPEC supports. You can do this in two ways. The first is by 
+passing in a model string and a list of parameters to the :meth:`~soxs.spectra.Spectrum.from_xspec_model`
+method:
 
 .. code-block:: python
 
     model_string = "phabs*(mekal+powerlaw)" # A somewhat complicated model
     params = [0.02, 6.0, 1.0, 0.3, 0.03, 1, 0.01, 1.2, 1.0e-3]
-    spec = Spectrum.from_xspec(model_string, params, emin=0.1, emax=1.0, nbins=20000)
+    spec = Spectrum.from_xspec_model(model_string, params, emin=0.1, emax=1.0, nbins=20000)
     
 Note that the parameters must be in the same order that they would be if you were entering
 them in XSPEC. The ``emin``, ``emax``, and ``nbins`` keyword arguments are used to control
 the energy binning.
+
+The second way involves passing an XSPEC script file to the :meth:`~soxs.spectra.Spectrum.from_xspec_script`
+method which defines an XSPEC model. For example, a script that creates a model spectrum
+from a sum of two APEC models may look like this:
+
+.. code-block:: text
+
+    statistic chi
+    method leven 10 0.01
+    abund angr
+    xsect bcmc
+    cosmo 70 0 0.73
+    xset delta 0.01
+    systematic 0
+    model  apec    +   apec
+                0.2       0.01      0.008      0.008         64         64
+                  1     -0.001          0          0          5          5
+                  0      -0.01     -0.999     -0.999         10         10
+        6.82251e-07       0.01          0          0      1e+24      1e+24
+              0.099       0.01      0.008      0.008         64         64
+                  1     -0.001          0          0          5          5
+                  0      -0.01     -0.999     -0.999         10         10
+        1.12328e-06       0.01          0          0      1e+24      1e+24
+
+If it is contained within the file ``"two_apec.xcm"``, it can be used to create a :class:`~soxs.spectra.Spectrum`
+like this:
+
+.. code-block:: python
+
+    spec = Spectrum.from_xspec_script("two_apec.xcm", emin=0.1, emax=1.0, nbins=20000)
 
 .. note::
 
