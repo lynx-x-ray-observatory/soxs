@@ -170,6 +170,24 @@ You can also multiply a spectrum by a constant float number or divide it by one:
     spec3 = 6.0*spec2
     spec4 = spec1/4.4
 
+Getting the Flux of a Spectrum Within a Specific Energy Band
+------------------------------------------------------------
+
+The :meth:`~soxs.spectra.Spectrum.get_flux_in_band` method can be used
+to quickly report on the total flux within a specific energy band:
+
+.. code-block:: python
+
+    emin = 0.5
+    emax = 7.0
+    print(spec.get_flux_in_band(emin, emax))
+
+which returns a tuple of the photon flux and the energy flux, showing:
+
+.. code-block:: pycon
+
+    (<Quantity 2.2215588675210208e-07 ph / (cm2 s)>, <Quantity 7.8742710307246895e-16 erg / (cm2 s)>)
+    
 Rescaling the Normalization of a Spectrum
 -----------------------------------------
 
