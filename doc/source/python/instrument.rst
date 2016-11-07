@@ -153,7 +153,7 @@ gives (showing only a subset for brevity):
     Instrument: mucal
         num_pixels: 300
         plate_scale: 1.0
-        bkgnd: acisi
+        bkgnd: mucal
         psf: ['gaussian', 0.5]
         name: mucal_3x10
         arf: xrs_mucal_3x10.arf
@@ -162,7 +162,7 @@ gives (showing only a subset for brevity):
     Instrument: mucal_3x15
         num_pixels: 300
         plate_scale: 1.0
-        bkgnd: acisi
+        bkgnd: mucal
         psf: ['gaussian', 0.5]
         name: mucal_3x15
         arf: xrs_mucal_3x15.arf
