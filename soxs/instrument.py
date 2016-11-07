@@ -4,6 +4,7 @@ import json
 import numpy as np
 import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
+import astropy.units as u
 import os
 
 from astropy.utils.console import ProgressBar
@@ -29,7 +30,7 @@ class AuxiliaryResponseFile(object):
     >>> arf = AuxiliaryResponseFile("xrs_mucal_3x10.arf")
     """
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = check_file_location(filename, "files")
         f = pyfits.open(self.filename)
         self.elo = f["SPECRESP"].data.field("ENERG_LO")
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
@@ -46,7 +47,7 @@ class AuxiliaryResponseFile(object):
         Interpolate the effective area to the energies provided by the supplied *energy* array.
         """
         earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
-        return earea
+        return u.Quantity(earea, "cm**2")
 
     def detect_events(self, events, exp_time, flux, refband, prng=None):
         """
@@ -74,7 +75,7 @@ class AuxiliaryResponseFile(object):
         if prng is None:
             prng = np.random
         energy = events["energy"]
-        earea = self.interpolate_area(energy)
+        earea = self.interpolate_area(energy).value
         idxs = np.logical_and(energy >= refband[0], energy <= refband[1])
         rate = flux/(energy[idxs].sum()*erg_per_keV)*earea[idxs].sum()
         n_ph = np.uint64(rate*exp_time)
@@ -106,7 +107,7 @@ class RedistributionMatrixFile(object):
     >>> rmf = RedistributionMatrixFile("xrs_hdxi.rmf")
     """
     def __init__(self, filename):
-        self.filename = filename
+        self.filename = check_file_location(filename, "files")
         self.handle = pyfits.open(self.filename)
         if "MATRIX" in self.handle:
             self.mat_key = "MATRIX"
