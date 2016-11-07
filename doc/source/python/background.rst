@@ -23,6 +23,9 @@ which prints:
     Background: hm_cxb
         Type: astrophysical
         Total Flux (0.1 keV - 10.0 keV): 1.100008388272249e-05 ph / (arcmin2 cm2 s)
+    Background: mucal
+        Type: instrumental
+        Total Flux (0.1 keV - 10.0 keV): 0.0029680200000000035 ph / (arcmin2 cm2 s)
     Background: acisi
         Type: instrumental
         Total Flux (0.1 keV - 10.0 keV): 0.004312855625210535 ph / (arcmin2 cm2 s)
@@ -31,7 +34,8 @@ Applying instrumental and astrophysical backgrounds are handled somewhat differe
 specification has a default instrumental/particle background given in its entry in the SOXS instrument 
 registry, which simply refers to the entry in the background registry. To change the instrumental background,
 one would need to define a new instrument specification with a different background. The default instrumental
-background in SOXS is the *Chandra*/ACIS-I particle background, named ``"acisi"``.
+background in SOXS for the HDXI is the *Chandra*/ACIS-I particle background, named ``"acisi"``, and the default
+instrumental background for the calorimeter is from a model developed for the *Athena* calorimeter, named ``"mucal"``.
 
 Astrophysical backgrounds are not tied to a particular instrument specification and can be specified in the
 call to :func:`~soxs.instrument.instrument_simulator`. To specify a particular astrophysical background,
