@@ -307,7 +307,7 @@ def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, focal_length=
     # for the observation, otherwise it's a particle background and assume area = 1.
     if bkgnd_spec.bkgnd_type == "astrophysical":
         arf = AuxiliaryResponseFile(check_file_location(event_params["arf"], "files"))
-        area = arf.interpolate_area(bkgnd_spec.emid)
+        area = arf.interpolate_area(bkgnd_spec.emid).value
     else:
         area = (focal_length/10.0)**2
 
