@@ -130,6 +130,24 @@ radius and surface brightness, to generate an azimuthally symmetric distribution
     num_events = 100000 # The number of events
     my_src = RadialFileModel(ra0, dec0, "my_profile.dat", num_events)
 
+Rectangle Sources
+-----------------
+
+The :class:`~soxs.spatial.RectangleModel` generates photon positions on the sky which fill a given field of view:
+
+.. code-block:: python
+
+    from soxs import RectangleModel
+    ra0 = 30.0 # center RA in degrees
+    dec0 = 45.0 # center Dec in degrees
+    width = 20.0 # width of the rectangle in arcseconds
+    height = 10.0 # height of the rectangle in arcseconds
+    theta = 20.0 # rotation angle of the rectangle in degrees
+    num_events = 100000 # The number of events
+    fov_src = RectangleModel(ra0, dec0, fov, num_events, theta=theta)
+
+Setting either the ``width`` or ``height`` parameter to 0.0 creates a line source.
+
 "Field of View" Sources
 -----------------------
 

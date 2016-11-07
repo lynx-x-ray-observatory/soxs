@@ -176,6 +176,75 @@ Specify a different collecting area for the photons.
 
     [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --area=50000. --clobber
 
+``make_rectangle_source``
+-------------------------
+
+This script creates a SIMPUT photon list of a rectangle shape with constant surface brightness
+from a spectrum supplied in a file.
+
+.. code-block:: text
+
+    usage: make_rectangle_source [-h] [--theta THETA] [--area AREA] [--append]
+                                 [--clobber]
+                                 simput_prefix phlist_prefix ra0 dec0 width height
+                                 specfile exp_time
+
+    Create a SIMPUT photon list of a uniformly filled rectangle source from a
+    spectrum supplied in a file.
+
+    positional arguments:
+      simput_prefix  The prefix of the SIMPUT file to be used as the root of the
+                     catalog. If it does not exist, it will be created.
+      phlist_prefix  The prefix of the photon list file to be written.
+      ra0            The right ascension of the source center in degrees.
+      dec0           The declination of the source center in degrees.
+      width          The width of the rectangle in arcseconds.
+      height         The width of the rectangle in arcseconds.
+      specfile       The file containing the spectrum to be used.
+      exp_time       The exposure time to use, in seconds.
+
+    optional arguments:
+      -h, --help     show this help message and exit
+      --theta THETA  The angle through which to rotate the rectangle in degrees.
+                     Default: 0.0
+      --area AREA    The collecting area to use, in cm^2. Default: 30000.0
+      --append       If set, append a new source an existing SIMPUT catalog.
+      --clobber      Whether or not to clobber an existing file with the same
+                     name.
+
+Examples
+++++++++
+
+Make a brand-new SIMPUT catalog for a rectangle photon list, assuming 100 ks exposure.
+
+.. code-block:: bash
+
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --clobber
+
+Make the same rectangle, but rotate it by 30.0 degrees.
+
+.. code-block:: bash
+
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --theta=30.0 --clobber
+
+Create a line source with the same width and rotation angle.
+
+.. code-block:: bash
+
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 0.0 my_spectrum.dat 100000. --theta=30.0 --clobber
+
+Add a new rectangle model to an existing SIMPUT catalog, assuming 50 ks exposure.
+
+.. code-block:: bash
+
+    [~]$ make_rectangle_source my_srcs rect_src2 19.0 -31.0 20.0 10.0 my_spectrum.dat 50000. --append --clobber
+
+Specify a different collecting area for the photons.
+
+.. code-block:: bash
+
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --area=50000. --clobber
+
 ``make_fov_source``
 -------------------
 
