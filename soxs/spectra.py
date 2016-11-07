@@ -71,10 +71,32 @@ class Spectrum(object):
         return pflux, eflux
 
     @classmethod
+    def from_xcm_file(cls, infile, emin=0.01, emax=50.0, nbins=10000):
+        """
+        Create a model spectrum using an "xcm" file as input to XSPEC.
+
+        Parameters
+        ----------
+        infile : string
+            Path to the xcm file to use. 
+        emin : float, optional
+            The minimum energy of the spectrum in keV. Default: 0.01
+        emax : float, optional
+            The maximum energy of the spectrum in keV. Default: 50.0
+        nbins : integer, optional
+            The number of bins in the spectrum. Default: 10000
+        """
+        f = open(infile, "r")
+        xspec_in = f.readlines()
+        f.close()
+        return cls._from_xspec(xspec_in, emin, emax, nbins)
+
+    @classmethod
     def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
                    nbins=10000):
         """
-        Create a model spectrum using XSPEC.
+        Create a model spectrum using a model string and parameters
+        as input to XSPEC.
 
         Parameters
         ----------
@@ -91,15 +113,19 @@ class Spectrum(object):
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
         """
-        tmpdir = tempfile.mkdtemp()
-        curdir = os.getcwd()
-        os.chdir(tmpdir)
         xspec_in = []
         model_str = "%s &" % model_string
         for param in params:
             model_str += " %g &" % param
         model_str += " /*"
         xspec_in.append("model %s\n" % model_str)
+        return cls._from_xspec(xspec_in, emin, emax, nbins)
+
+    @classmethod
+    def _from_xspec(cls, xspec_in, emin, emax, nbins):
+        tmpdir = tempfile.mkdtemp()
+        curdir = os.getcwd()
+        os.chdir(tmpdir)
         xspec_in.append("dummyrsp %g %g %d lin\n" % (emin, emax, nbins))
         xspec_in += ["set fp [open spec_therm.xspec w+]\n",
                      "tclout energies\n", "puts $fp $xspec_tclout\n",
@@ -110,7 +136,7 @@ class Spectrum(object):
         f_xin.close()
         logfile = os.path.join(curdir, "xspec.log")
         with open(logfile, "ab") as xsout:
-            subprocess.call(["xspec", "-", "xspec.in"], 
+            subprocess.call(["xspec", "-", "xspec.in"],
                             stdout=xsout, stderr=xsout)
         f_s = open("spec_therm.xspec", "r")
         lines = f_s.readlines()
