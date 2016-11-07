@@ -16,7 +16,7 @@ of astrophysical sources to event lists using SOXS.
 .. figure:: images/flowchart.png
     :align: center
     :figclass: w
-    :scale: 40 %
+    :scale: 20 %
 
     Figure 1: Flowchart depicting how source models are written to SIMPUT files which then
     can be used to simulate X-ray Surveyor observations using SOXS and compare them with the
