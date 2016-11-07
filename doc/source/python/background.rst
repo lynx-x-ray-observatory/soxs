@@ -35,7 +35,8 @@ specification has a default instrumental/particle background given in its entry 
 registry, which simply refers to the entry in the background registry. To change the instrumental background,
 one would need to define a new instrument specification with a different background. The default instrumental
 background in SOXS for the HDXI is the *Chandra*/ACIS-I particle background, named ``"acisi"``, and the default
-instrumental background for the calorimeter is from a model developed for the *Athena* calorimeter, named ``"mucal"``.
+instrumental background for the calorimeter is from a model developed for the *Athena* calorimeter 
+(`see here for details <http://adsabs.harvard.edu/abs/2014A%26A...569A..54L>`_), named ``"mucal"``.
 
 Astrophysical backgrounds are not tied to a particular instrument specification and can be specified in the
 call to :func:`~soxs.instrument.instrument_simulator`. To specify a particular astrophysical background,
