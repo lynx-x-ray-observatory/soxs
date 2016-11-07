@@ -42,6 +42,9 @@ class BackgroundSpectrum(Spectrum):
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
 
+    def generate_energies(self, t_exp, area, fov, bkgnd_scale, prng=None):
+        raise NotImplementedError()
+
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
 acisi_particle_bkgnd = BackgroundSpectrum(acisi_bkgnd_file, "instrumental")

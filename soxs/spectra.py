@@ -479,3 +479,6 @@ class ConvolvedSpectrum(Spectrum):
         earea = arf.interpolate_area(spectrum.emid)
         rate = spectrum.flux * earea
         super(ConvolvedSpectrum, self).__init__(spectrum.ebins, rate)
+
+    def generate_energies(self, t_exp, area, prng=None):
+        raise NotImplementedError()
