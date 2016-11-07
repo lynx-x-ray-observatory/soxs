@@ -56,7 +56,7 @@ Surveyor with other instruments.
 
 SOXS currently provides facilities for both input and output of SIMPUT catalogs with
 photon lists. Photon lists are FITS tables of RA, Dec, and energy from the simulated source,
-generate assuming a large exposure time and a large collecting area so that the sample is large
+generated assuming a large exposure time and a large collecting area so that the sample is large
 enough that the instrument simulator is able to "observe" a representative subset. The SIMPUT
 outputs can be used to compare simulations made with SOXS for X-ray Surveyor to simulations of
 other X-ray instruments past, current, and future, and likewise SIMPUT catalogs with photon

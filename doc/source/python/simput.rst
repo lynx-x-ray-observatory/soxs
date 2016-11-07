@@ -29,12 +29,12 @@ the SIMPUT file and photon list file like this:
     num_events = len(energies)
     pt_src = PointSource(30.0, 45.0)
     
-    write_photon_list("point_source", "source1", exp_time, 
-                      area, pt_src.ra, pt_src.dec, energies, clobber=True) 
+    write_photon_list("point_source", "source1", energies.flux,
+                      pt_src.ra, pt_src.dec, energies, clobber=True)
                          
-We have to give :func:`~soxs.simput.write_photon_list` the exposure time and area because
-we need to compute a flux for the source. This should be the same values that you used when you generated
-the energies from the :class:`~soxs.spectra.Spectrum` object using :meth:`~soxs.spectra.Spectrum.generate_energies`.
+The ``energies`` returned by :meth:`~soxs.spectra.Spectrum.generate_energies` is an augmented NumPy array with unit
+information and the value of the flux for that set of energies. This flux needs to be passed to :func:`~soxs.simput.write_photon_list`
+as the third argument.
 
 Alternatively, you may already have a SIMPUT file associated with a photon list file, but want to 
 add another source to the same SIMPUT catalog. You can accomplish this by making the same call to
@@ -42,7 +42,7 @@ add another source to the same SIMPUT catalog. You can accomplish this by making
 
 .. code-block:: python
 
-    write_photon_list("point_source", "source2" exp_time, area, 
+    write_photon_list("point_source", "source2" energies2.flux,
                       pt2.ra, pt2.dec, energies2, append=True) 
 
 Reading SIMPUT Files

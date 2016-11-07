@@ -244,6 +244,19 @@ An example using a :class:`~soxs.spectra.Spectrum` created from a file:
     area = 30000. # constant effective area
     energies = spec.generate_energies(t_exp, area)
 
+The ``energies`` object :meth:`~soxs.spectra.Spectrum.generate_energies` returns is an augmented
+NumPy array which also carries the unit information and the total flux of energies:
+
+.. code-block:: python
+
+    print(energies.unit)
+    print(energies.flux)
+
+.. code-block:: pycon
+
+    Unit("keV")
+    <Quantity 1.1256362913845828e-15 erg / (cm2 s)>
+
 These photon energies can then be combined with sky positions at your discretion
 and be written to SIMPUT files for use in mock observations. See :ref:`simput` for
 more information.
