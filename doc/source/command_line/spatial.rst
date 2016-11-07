@@ -297,3 +297,40 @@ Specify a different collecting area for the photons.
 .. code-block:: bash
 
     [~]$ make_fov_source my_srcs fov_src1 20.0 -32.0 20.0 my_spectrum.dat 100000. --area=50000. --clobber
+
+``make_phlist_from_ascii``
+--------------------------
+
+This script takes a table of photon RA, Dec, and energies from an ASCII-formatted table and writes them
+to a new SIMPUT photon list file.
+
+.. code-block:: text
+
+    usage: make_phlist_from_ascii [-h] [--append] [--clobber]
+                                  simput_prefix phlist_prefix infile
+
+    Create a SIMPUT photon list from an ASCII table of positions and energies. The file must contain
+    the total source flux in erg/s/cm**2 on the first line, commented with #, and must have three
+    columns of RA (degrees), Dec (degrees), and energy (keV) for each event.
+
+    Example:
+
+    # 1.194e-15
+    30.1  45.5  2.71
+    29.67 44.95 0.31
+    31.25 45.03 10.01
+    29.75 44.44 7.34
+    30.05 44.01 12.01
+    31.99 45.21 0.05
+    ...
+
+    positional arguments:
+      simput_prefix  The prefix of the SIMPUT file to be used as the root of the catalog.
+                     If it does not exist, it will be created.
+      phlist_prefix  The prefix of the photon list file to be written.
+      infile         The file containing the flux and positions and energies.
+
+    optional arguments:
+      -h, --help     show this help message and exit
+      --append       If set, append a new source an existing SIMPUT catalog.
+      --clobber      Whether or not to clobber an existing file with the same name.
