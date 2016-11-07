@@ -29,6 +29,6 @@ energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
 fov_src = FillFOVModel(args.ra0, args.dec0, args.fov, n_evt)
 
-write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                  args.area, fov_src.ra, fov_src.dec, energy, append=args.append, 
+write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
+                  fov_src.ra, fov_src.dec, energy, append=args.append,
                   clobber=args.clobber)

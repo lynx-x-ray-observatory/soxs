@@ -32,6 +32,6 @@ energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
 rect_src = RectangleModel(args.ra0, args.dec0, args.width, args.height, n_evt, theta=args.theta)
 
-write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                  args.area, rect_src.ra, rect_src.dec, energy, append=args.append,
+write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
+                  rect_src.ra, rect_src.dec, energy, append=args.append,
                   clobber=args.clobber)

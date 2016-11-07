@@ -30,6 +30,5 @@ energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
 ann_src = AnnulusModel(args.ra0, args.dec0, args.r_in, args.r_out, n_evt)
 
-write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                  args.area, ann_src.ra, ann_src.dec, energy, append=args.append, 
-                  clobber=args.clobber)
+write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux, ann_src.ra,
+                  ann_src.dec, energy, append=args.append, clobber=args.clobber)

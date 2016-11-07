@@ -11,6 +11,12 @@ from soxs.constants import erg_per_keV, hc, \
 import astropy.io.fits as pyfits
 import astropy.units as u
 
+class Energies(u.Quantity):
+    def __new__(cls, energy, flux):
+        ret = u.Quantity.__new__(cls, energy, unit="keV")
+        ret.flux = u.Quantity(flux, "erg/(cm**2*s)")
+        return ret
+
 class Spectrum(object):
     _units = "photon/(cm**2*s*keV)"
     def __init__(self, ebins, flux):
@@ -302,7 +308,9 @@ class Spectrum(object):
         mylog.info("Creating %d events from this spectrum." % n_ph)
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
-        energies = u.Quantity(np.interp(randvec, cumspec, self.ebins.value), "keV")
+        energy = np.interp(randvec, cumspec, self.ebins.value)
+        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        energies = Energies(energy, flux)
         return energies
 
 class ApecGenerator(object):

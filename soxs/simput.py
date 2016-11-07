@@ -2,8 +2,6 @@ import astropy.io.fits as pyfits
 import numpy as np
 import os
 
-from soxs.constants import erg_per_keV
-
 def read_simput_catalog(simput_file):
     r"""
     Read events from a SIMPUT catalog. This will read all of the sources
@@ -39,8 +37,8 @@ def read_simput_catalog(simput_file):
         events.append(evt)
     return events, parameters
 
-def write_photon_list(simput_prefix, phlist_prefix, exp_time, area, 
-                      ra, dec, energy, flux=None, append=False, clobber=False):
+def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
+                      append=False, clobber=False):
     r"""
     Write events to a new SIMPUT photon list. It can be associated
     with a new or existing SIMPUT catalog. 
@@ -51,19 +49,14 @@ def write_photon_list(simput_prefix, phlist_prefix, exp_time, area,
         The filename prefix for the SIMPUT file.
     phlist_prefix : string
         The filename prefix for the photon list file.
-    exp_time : float
-        The exposure time in seconds.
-    area : float
-        The effective area in cm^2.
+    flux : float
+        The energy flux of all the photons, in units of erg/cm**2/s.
     ra : NumPy array
         The right ascension of the photons, in degrees.
     dec : NumPy array
         The declination of the photons, in degrees.
-    energy : NumPy array
+    energy : NumPy array or array-like thing
         The energy of the photons, in keV.
-    flux : float, optional
-        If the flux is known, use it instead of computing it from the exposure time
-        and area. Must be of all the photons, in units of erg/cm**2/s. Default: None
     append : boolean, optional
         If True, append a new source an existing SIMPUT catalog. 
     clobber : boolean, optional
@@ -73,12 +66,11 @@ def write_photon_list(simput_prefix, phlist_prefix, exp_time, area,
     energy = np.array(energy)
     ra = np.array(ra)
     dec = np.array(dec)
+    if hasattr(flux, "value"):
+        flux = flux.value
 
     emin = energy.min()
     emax = energy.max()
-
-    if flux is None:
-        flux = np.sum(energy)*erg_per_keV / exp_time / area
 
     col1 = pyfits.Column(name='ENERGY', format='E', array=energy)
     col2 = pyfits.Column(name='RA', format='D', array=ra)

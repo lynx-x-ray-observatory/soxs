@@ -28,6 +28,6 @@ energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
 pt_src = PointSourceModel(args.ra0, args.dec0, n_evt)
 
-write_photon_list(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                  args.area, pt_src.ra, pt_src.dec, energy, append=args.append, 
+write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
+                  pt_src.ra, pt_src.dec, energy, append=args.append,
                   clobber=args.clobber)
