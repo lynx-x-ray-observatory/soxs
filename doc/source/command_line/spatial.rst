@@ -51,19 +51,19 @@ Make a brand-new SIMPUT catalog for a point source photon list, assuming 100 ks 
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src1 20.0,-32.0 pt_src_spectrum.dat 100000. --clobber
+    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100000. --clobber
 
 Add a new point source to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src2 19.0,-31.0 pt_src_spectrum.dat 50000. --append --clobber
+    [~]$ make_point_source pt_src src2 19.0 -31.0 pt_src_spectrum.dat 50000. --append --clobber
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src1 20.0,-32.0 pt_src_spectrum.dat 100000. --area=40000. --clobber
+    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100000. --area=40000. --clobber
 
 ``make_beta_model``
 -------------------
@@ -108,19 +108,19 @@ Make a brand-new SIMPUT catalog for a :math:`\beta`-model photon list, assuming 
 
 .. code-block:: bash
 
-    [~]$ make_beta_model my_srcs beta_src1 20.0,-32.0 10.0 1.0 my_spectrum.dat 100000. --clobber
+    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --clobber
 
 Add a new :math:`\beta`-model to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_beta_model my_srcs beta_src2 19.0,-31.0 10.0 1.0 my_spectrum.dat 50000. --append --clobber
+    [~]$ make_beta_model my_srcs beta_src2 19.0 -31.0 10.0 1.0 my_spectrum.dat 50000. --append --clobber
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_beta_model my_srcs beta_src1 20.0,-32.0 10.0 1.0 my_spectrum.dat 100000. --area=50000. --clobber
+    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --area=50000. --clobber
 
 ``make_annulus_source``
 -----------------------
@@ -162,19 +162,19 @@ Make a brand-new SIMPUT catalog for an annulus photon list, assuming 100 ks expo
 
 .. code-block:: bash
 
-    [~]$ make_annulus_source my_srcs ann_src1 20.0,-32.0 0.0 30.0 my_spectrum.dat 100000. --clobber
+    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --clobber
 
 Add a new annulus model to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_annulus_source my_srcs ann_src2 19.0,-31.0 0.0 30.0 my_spectrum.dat 50000. --append --clobber
+    [~]$ make_annulus_source my_srcs ann_src2 19.0 -31.0 0.0 30.0 my_spectrum.dat 50000. --append --clobber
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_annulus_source my_srcs ann_src1 20.0,-32.0 0.0 30.0 my_spectrum.dat 100000. --area=50000. --clobber
+    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --area=50000. --clobber
 
 ``make_fov_source``
 -------------------
@@ -215,16 +215,16 @@ Make a brand-new SIMPUT catalog for a field-of-view photon list, assuming 100 ks
 
 .. code-block:: bash
 
-    [~]$ make_fov_source my_srcs fov_src1 20.0,-32.0 20.0 my_spectrum.dat 100000. --clobber
+    [~]$ make_fov_source my_srcs fov_src1 20.0 -32.0 20.0 my_spectrum.dat 100000. --clobber
 
 Add a new field-of-view model to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_fov_source my_srcs fov_src2 19.0,-31.0 20.0 my_spectrum.dat 50000. --append --clobber
+    [~]$ make_fov_source my_srcs fov_src2 19.0 -31.0 20.0 my_spectrum.dat 50000. --append --clobber
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_fov_source my_srcs fov_src1 20.0,-32.0 20.0 my_spectrum.dat 100000. --area=50000. --clobber
+    [~]$ make_fov_source my_srcs fov_src1 20.0 -32.0 20.0 my_spectrum.dat 100000. --area=50000. --clobber
