@@ -11,7 +11,7 @@ This version contains new features and bugfixes.
 * An *Athena*-like microcalorimeter background is now the default particle background for all microcalorimeter models.
 * All instrumental backgrounds now have a dependence on the focal length. The focal length is now an element of the
   instrument specification. 
-* The ``name``s of the instruments in the instrument registry were made consistent with their associated keys.
+* The names of the instruments in the instrument registry were made consistent with their associated keys.
 * A convenience function, :meth:`~soxs.spectra.Spectrum.get_flux_in_band`, has been added. 
 * A new method of generating a spectrum from an XSPEC script, :meth:`~soxs.spectra.Spectrum.from_xspec_script`, has been added.
 * The :meth:`~soxs.spectra.Spectrum.from_xspec` method has been renamed to :meth:`~soxs.spectra.Spectrum.from_xspec_model`. 
