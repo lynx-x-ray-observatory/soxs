@@ -3,6 +3,14 @@
 ChangeLog
 =========
 
+Version 0.3.1
+-------------
+
+This is a bugfix release.
+
+* The RMF for the HDXI was updated so that the binning between it and the HDXI ARFs is consistent.
+* Various small edits to the documentation were made.
+
 Version 0.3.0
 -------------
 
