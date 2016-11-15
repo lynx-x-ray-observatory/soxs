@@ -200,8 +200,8 @@ instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "arf": "xrs_mucal_3x10.arf",
                                 "rmf": "xrs_mucal.rmf",
                                 "bkgnd": "mucal",
+                                "fov": 5.0,
                                 "num_pixels": 300,
-                                "plate_scale": 1.0,
                                 "focal_length": 10.0,
                                 "psf": ["gaussian", 0.5]}
 instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
@@ -213,8 +213,8 @@ instrument_registry["hdxi"] = {"name": "hdxi_3x10",
                                "arf": "xrs_hdxi_3x10.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "bkgnd": "acisi",
+                               "fov": 20.0,
                                "num_pixels": 4096,
-                               "plate_scale": 1./3.,
                                "focal_length": 10.0,
                                "psf": ["gaussian", 0.5]}
 instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
@@ -241,7 +241,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf" # The file containing the RMF
     ...     "bkgnd": "acisi" # The name of the particle background
-    ...     "plate_scale": 0.33333333333, # The plate scale in arcsec
+    ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
     ...     "psf": ["gaussian", 0.5] # The type of PSF and its FWHM
@@ -256,6 +256,10 @@ def add_instrument_to_registry(inst_spec):
     name = inst["name"]
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
+    # Catch old JSON files with plate scale
+    if "plate_scale" in inst:
+        inst["fov"] = inst["num_pixels"]*inst["plate_scale"]/60.0
+        inst.pop("plate_scale")
     instrument_registry[name] = inst
     mylog.info("The %s instrument specification has been added to the instrument registry." % name)
     return name
@@ -297,7 +301,7 @@ def write_instrument_json(inst_name, filename):
 def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, focal_length=None,
                    prng=np.random):
 
-    fov = event_params["num_pixels"]*event_params["plate_scale"]*60.0
+    fov = event_params["fov"]
 
     bkgnd_spec = background_registry[bkgnd_name]
 
@@ -399,10 +403,10 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
-    dsize = dither_size/instrument_spec["plate_scale"]
-
     nx = instrument_spec["num_pixels"]
-    plate_scale = instrument_spec["plate_scale"]/3600. # arcsec to deg
+    plate_scale = instrument_spec["fov"]/nx/60. # arcmin to deg
+    plate_scale_arcsec = plate_scale * 3600.0
+    dsize = dither_size/plate_scale_arcsec
 
     event_params = {}
     event_params["exposure_time"] = exp_time
@@ -418,6 +422,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     event_params["mission"] = rmf.header.get("MISSION", "")
     event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
     event_params["roll_angle"] = roll_angle
+    event_params["fov"] = instrument_spec["fov"]
     num = 0
     for i in range(1, rmf.num_mat_columns+1):
         if rmf.header["TTYPE%d" % i] == "F_CHAN":
@@ -500,7 +505,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
             psf_type, psf_spec = instrument_spec["psf"]
             if psf_type == "gaussian":
-                sigma = psf_spec/sigma_to_fwhm/instrument_spec["plate_scale"]
+                sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
                 detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
                 dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
             else:
