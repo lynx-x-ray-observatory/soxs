@@ -78,7 +78,7 @@ class AuxiliaryResponseFile(object):
         earea = self.interpolate_area(energy).value
         idxs = np.logical_and(energy >= refband[0], energy <= refband[1])
         rate = flux/(energy[idxs].sum()*erg_per_keV)*earea[idxs].sum()
-        n_ph = np.uint64(rate*exp_time)
+        n_ph = np.int64(rate*exp_time)
         fak = float(n_ph)/energy.size
         if fak > 1.0:
             mylog.error("Number of events in sample: %d, Number of events wanted: %d" % (energy.size, n_ph))
@@ -87,7 +87,7 @@ class AuxiliaryResponseFile(object):
                              "in the sample!!!")
         w = earea / self.max_area
         randvec = prng.uniform(size=energy.size)
-        eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("uint64")
+        eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("int64")
         mylog.info("%s events detected." % n_ph)
         for key in events:
             events[key] = events[key][eidxs]

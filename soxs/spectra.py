@@ -304,7 +304,7 @@ class Spectrum(object):
             rate = A*self.total_flux
             cumspec = self.cumspec
         n_ph = np.modf(t_exp*rate.value)
-        n_ph = np.uint64(n_ph[1]) + np.uint64(n_ph[0] >= prng.uniform())
+        n_ph = np.int64(n_ph[1]) + np.int64(n_ph[0] >= prng.uniform())
         mylog.info("Creating %d events from this spectrum." % n_ph)
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
