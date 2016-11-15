@@ -1,8 +1,13 @@
 from soxs.instrument import RedistributionMatrixFile
+from soxs.spectra import wabs_cross_section
 import astropy.io.fits as pyfits
 import numpy as np
 
-def write_spectrum(self, evtfile, specfile, clobber=False):
+def get_wabs_absorb(e, nH):
+    sigma = wabs_cross_section(e)
+    return np.exp(-nH*1.0e22*sigma)
+
+def write_spectrum(evtfile, specfile, clobber=False):
     r"""
     Bin event energies into a spectrum and write it to a FITS binary table. Can bin
     on energy or channel. In the latter case, the spectral binning will be determined by
@@ -24,7 +29,7 @@ def write_spectrum(self, evtfile, specfile, clobber=False):
     """
     f = pyfits.open(evtfile)
     spectype = f["EVENTS"].header["CHANTYPE"]
-    rmf = RedistributionMatrixFile(self.parameters["RMF"])
+    rmf = RedistributionMatrixFile(f["EVENTS"].header["RESPFILE"])
     minlength = rmf.n_ch
     if rmf.cmin == 1: minlength += 1
     spec = np.bincount(f["EVENTS"].data[spectype], minlength=minlength)
