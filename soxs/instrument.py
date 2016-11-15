@@ -123,6 +123,17 @@ class RedistributionMatrixFile(object):
         self.ebounds = self.handle["EBOUNDS"].data
         self.ebounds_header = self.handle["EBOUNDS"].header
         self.weights = np.array([w.sum() for w in self.data["MATRIX"]])
+        self.elo = self.data["ENERG_LO"]
+        self.ehi = self.data["ENERG_HI"]
+        self.n_de = self.elo.size
+        self.n_ch = len(self.ebounds["CHANNEL"])
+        num = 0
+        for i in range(1, self.num_mat_columns+1):
+            if self.header["TTYPE%d" % i] == "F_CHAN":
+                num = i
+                break
+        self.cmin = self.header["TLMIN%d" % num]
+        self.cmax = self.header["TLMAX%d" % num]
 
     def __str__(self):
         return self.filename
@@ -141,15 +152,6 @@ class RedistributionMatrixFile(object):
             if you have a reason to generate the same set of random numbers, such as for a
             test. Default is the :mod:`~numpy.random` module.
         """
-        elo = self.data["ENERG_LO"]
-        ehi = self.data["ENERG_HI"]
-        n_de = elo.shape[0]
-        mylog.info("Number of energy bins in RMF: %d" % n_de)
-        mylog.info("Energy limits: %g %g" % (min(elo), max(ehi)))
-
-        n_ch = len(self.ebounds["CHANNEL"])
-        mylog.info("Number of channels in RMF: %d" % n_ch)
-
         eidxs = np.argsort(events["energy"])
         sorted_e = events["energy"][eidxs]
 
@@ -160,7 +162,7 @@ class RedistributionMatrixFile(object):
         last = sorted_e.shape[0]
 
         with ProgressBar(last) as pbar:
-            for (k, low), high in zip(enumerate(elo), ehi):
+            for (k, low), high in zip(enumerate(self.elo), self.ehi):
                 # weight function for probabilities from RMF
                 weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
                 weights /= weights.sum()
