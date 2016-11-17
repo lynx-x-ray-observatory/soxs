@@ -298,7 +298,7 @@ def write_instrument_json(inst_name, filename):
     json.dump(inst_dict, fp, indent=4)
     fp.close()
 
-def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, focal_length=None,
+def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
                    prng=np.random):
 
     fov = event_params["fov"]
@@ -318,7 +318,7 @@ def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, focal_length=
         area = (focal_length/10.0)**2
 
     bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                        area, fov, bkgnd_scale, prng=prng)
+                                                        area, fov, prng=prng)
 
     n_events = bkg_events["energy"].size
 
@@ -338,8 +338,8 @@ def add_background(bkgnd_name, event_params, rot_mat, bkgnd_scale, focal_length=
 
 def instrument_simulator(simput_file, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
-                         dither_size=16.0, roll_angle=0.0, astro_bkgnd="hm_cxb",
-                         instr_bkgnd_scale=1.0, prng=np.random):
+                         dither_size=16.0, roll_angle=0.0, astro_bkgnd=True,
+                         instr_bkgnd=True, prng=np.random):
     """
     Take unconvolved events in a SIMPUT catalog and create an event
     file from them. This function does the following:
@@ -376,12 +376,10 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
-    astro_bkgnd : string
-        The astrophysical background spectrum to assume. Must be the name of a
-        background registered in the background registry. If None, no astrophysical
-        background is applied. Default: "hm_cxb"
-    instr_bkgnd_scale : float, optional
-        The scale of the instrumental background. Default: 1.0
+    astro_bkgnd : boolean, optional
+        Whether or not to include astrophysical background. Default: True
+    instr_bkgnd : boolean, optional
+        Whether or not to include instrumental/particle background. Default: True
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
@@ -454,8 +452,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
         mylog.info("Applying energy-dependent effective area from %s." % event_params["arf"])
         refband = [parameters["emin"][i], parameters["emax"][i]]
-        events = arf.detect_events(evts, exp_time, parameters["flux"][i],
-                                   refband, prng=prng)
+        events = arf.detect_events(evts, exp_time, parameters["flux"][i], refband, prng=prng)
 
         n_evt = events["energy"].size
 
@@ -559,25 +556,18 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     # Step 3: Add astrophysical background
 
-    if astro_bkgnd is not None:
-
+    if astro_bkgnd:
         mylog.info("Adding in astrophysical background.")
-
-        bkg_events = add_background(astro_bkgnd, event_params, rot_mat, 1.0, prng=prng)
-
+        bkg_events = add_background(astro_bkgnd, event_params, rot_mat, prng=prng)
         for key in all_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
 
     # Step 4: Add particle background
 
-    if instr_bkgnd_scale > 0.0:
-
+    if instr_bkgnd:
         mylog.info("Adding in instrumental background.")
-
         bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
-                                    instr_bkgnd_scale, prng=prng,
-                                    focal_length=instrument_spec["focal_length"])
-
+                                    prng=prng, focal_length=instrument_spec["focal_length"])
         for key in all_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
 
