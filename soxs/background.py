@@ -34,8 +34,8 @@ class BackgroundSpectrum(Spectrum):
             test. Default is the :mod:`numpy.random` module.
         """
         A = area*fov*fov
-        return super(BackgroundSpectrum, self).generate_energies(t_exp, A,
-                                                                 prng=prng)
+        ret = super(BackgroundSpectrum, self).generate_energies(t_exp, A, prng=prng)
+        return ret.value
 
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"

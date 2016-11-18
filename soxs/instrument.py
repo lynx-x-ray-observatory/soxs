@@ -6,6 +6,7 @@ import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import astropy.units as u
 import os
+from collections import defaultdict
 
 from astropy.utils.console import ProgressBar
 from soxs.constants import erg_per_keV
@@ -353,7 +354,8 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     Parameters
     ----------
     simput_file : string
-        The SIMPUT catalog file to be used as input.
+        The SIMPUT catalog file to be used as input. Set to None if you
+        want to simulate backgrounds/foregrounds only.
     out_file : string
         The name of the event file to be written.
     exp_time : float
@@ -390,7 +392,14 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", "hdxi_3x10",
     ...                      [30., 45.], clobber=True)
     """
-    event_list, parameters = read_simput_catalog(simput_file)
+    if simput_file is None:
+        if not astro_bkgnd and not instr_bkgnd:
+            raise RuntimeError("No backgrounds and no sources, so I can't do anything!!")
+        # only doing backgrounds
+        event_list = []
+        parameters = {}
+    else:
+        event_list, parameters = read_simput_catalog(simput_file)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -440,9 +449,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
                         [-np.cos(roll_angle), -np.sin(roll_angle)]])
 
-    all_events = {}
-
-    first = True
+    all_events = defaultdict(list)
 
     for i, evts in enumerate(event_list):
 
@@ -545,21 +552,18 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
         if n_evt > 0:
             for key in events:
-                if first:
-                    all_events[key] = events[key]
-                else:
-                    all_events[key] = np.concatenate([all_events[key], events[key]])
-            first = False
+                all_events[key] = np.concatenate([all_events[key], events[key]])
 
-    if all_events["energy"].size == 0:
-        mylog.warning("No events from any of the sources in the catalog were detected!")
+    if simput_file is not None:
+        if all_events["energy"].size == 0:
+            mylog.warning("No events from any of the sources in the catalog were detected!")
 
     # Step 3: Add astrophysical background
 
     if astro_bkgnd:
         mylog.info("Adding in astrophysical background.")
-        bkg_events = add_background(astro_bkgnd, event_params, rot_mat, prng=prng)
-        for key in all_events:
+        bkg_events = add_background("hm_cxb", event_params, rot_mat, prng=prng)
+        for key in bkg_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
 
     # Step 4: Add particle background
@@ -568,7 +572,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
         mylog.info("Adding in instrumental background.")
         bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
                                     prng=prng, focal_length=instrument_spec["focal_length"])
-        for key in all_events:
+        for key in bkg_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
 
     if all_events["energy"].size == 0:
