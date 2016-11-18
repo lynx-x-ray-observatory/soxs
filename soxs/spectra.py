@@ -345,7 +345,7 @@ class ApecGenerator(object):
     ...                            broadening=True)
     """
     def __init__(self, emin, emax, nbins, apec_root=None,
-                 apec_vers="3.0.3", broadening=True):
+                 apec_vers="2.0.2", broadening=True):
         self.emin = emin
         self.emax = emax
         self.nbins = nbins
