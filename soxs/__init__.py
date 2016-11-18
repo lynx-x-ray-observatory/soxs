@@ -19,10 +19,7 @@ from soxs.instrument import \
     RedistributionMatrixFile
 
 from soxs.background import \
-    add_background_to_registry, \
-    show_background_registry, \
-    BackgroundSpectrum, \
-    ConvolvedBackgroundSpectrum
+    show_background_registry
 
 from soxs.spatial import \
     PointSourceModel, \
