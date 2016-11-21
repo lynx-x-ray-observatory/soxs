@@ -195,7 +195,7 @@ The various parts of each instrument specification are:
 * ``"bkgnd"``: The name of the instrumental background to use, stored in the background registry
   (see :ref:`background` for more details).
 * ``"psf"``: The PSF specification to use. At time of writing, the only one available is that of
-  a Gaussian PSF, with a single parameter, the FWHM of the PSF. This is specified using a Python 
+  a Gaussian PSF, with a single parameter, the HPD of the PSF. This is specified using a Python
   list, e.g. ``["gaussian", 0.5]``
 * ``"rmf"``: The file containing the RMF.
 * ``"plate_scale"``: The arcseconds per resolution element (pixel). 

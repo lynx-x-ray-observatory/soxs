@@ -245,7 +245,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
-    ...     "psf": ["gaussian", 0.5] # The type of PSF and its FWHM
+    ...     "psf": ["gaussian", 0.5] # The type of PSF and its HPD
     ... }
     """
     if isinstance(inst_spec, dict):
