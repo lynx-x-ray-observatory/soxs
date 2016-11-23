@@ -378,14 +378,16 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
             x_offset = np.zeros(n_evt)
             y_offset = np.zeros(n_evt)
-            if dither_shape == "circle":
-                r = dsize*np.sqrt(prng.uniform(size=n_evt))
-                theta = 2.*np.pi*prng.uniform(size=n_evt)
-                x_offset = r*np.cos(theta)
-                y_offset = r*np.sin(theta)
-            elif dither_shape == "square":
-                x_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                y_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+            
+            if instrument_spec["dither"]:
+                if dither_shape == "circle":
+                    r = dsize*np.sqrt(prng.uniform(size=n_evt))
+                    theta = 2.*np.pi*prng.uniform(size=n_evt)
+                    x_offset = r*np.cos(theta)
+                    y_offset = r*np.sin(theta)
+                elif dither_shape == "square":
+                    x_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                    y_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
             xpix -= x_offset
             ypix -= y_offset

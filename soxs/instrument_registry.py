@@ -17,6 +17,7 @@ instrument_registry["hdxi"] = {"name": "hdxi_3x10",
                                "fov": 20.0,
                                "num_pixels": 4096,
                                "focal_length": 10.0,
+                               "dither": True,
                                "psf": ["gaussian", 0.5]}
 instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 
@@ -28,6 +29,7 @@ instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "fov": 5.0,
                                 "num_pixels": 300,
                                 "focal_length": 10.0,
+                                "dither": True,
                                 "psf": ["gaussian", 0.5]}
 instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
 # The next line is for backwards-compatibility
@@ -50,6 +52,7 @@ instrument_registry["athena_wfi"] = {"name": "wfi",
                                      "fov": 60.0,
                                      "num_pixels": 1024,
                                      "focal_length": 12.0,
+                                     "dither": False,
                                      "psf": ["gaussian", 5.0]}
 
 instrument_registry["athena_xifu"] = {"name": "xifu",
@@ -59,6 +62,7 @@ instrument_registry["athena_xifu"] = {"name": "xifu",
                                       "fov": 10.0,
                                       "num_pixels": 66,
                                       "focal_length": 12.0,
+                                      "dither": False,
                                       "psf": ["gaussian", 5.0]}
 
 def add_instrument_to_registry(inst_spec):
@@ -78,6 +82,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
+    ...     "dither": True, # Whether or not to dither the instrument
     ...     "psf": ["gaussian", 0.5] # The type of PSF and its HPD
     ... }
     """
