@@ -41,6 +41,26 @@ for det in ["hdxi", "mucal"]:
         instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf" % (det, mirror)
         instrument_registry["%s_%s" % (det, mirror)]["focal_length"] = float(mirror.split("x")[-1])
 
+# Athena
+
+instrument_registry["athena_wfi"] = {"name": "wfi",
+                                     "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
+                                     "rmf": "athena_wfi_rmf_v20150326.rmf",
+                                     "bkgnd": "",
+                                     "fov": 60.0,
+                                     "num_pixels": 1024,
+                                     "focal_length": 12.0,
+                                     "psf": ["gaussian", 5.0]}
+
+instrument_registry["athena_xifu"] = {"name": "xifu",
+                                      "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
+                                      "rmf": "athena_xifu_rmf_v20160401.rmf",
+                                      "bkgnd": "mucal",
+                                      "fov": 10.0,
+                                      "num_pixels": 66,
+                                      "focal_length": 12.0,
+                                      "psf": ["gaussian", 5.0]}
+
 def add_instrument_to_registry(inst_spec):
     """
     Add an instrument specification to the registry, contained
