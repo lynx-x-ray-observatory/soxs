@@ -10,13 +10,15 @@ from soxs.spectra import \
     ConvolvedSpectrum
 
 from soxs.instrument import \
+    instrument_simulator, \
+    AuxiliaryResponseFile, \
+    RedistributionMatrixFile
+
+from soxs.instrument_registry import \
     add_instrument_to_registry, \
     show_instrument_registry, \
     write_instrument_json, \
-    instrument_simulator, \
-    get_instrument_from_registry, \
-    AuxiliaryResponseFile, \
-    RedistributionMatrixFile
+    get_instrument_from_registry
 
 from soxs.background import \
     show_background_registry
