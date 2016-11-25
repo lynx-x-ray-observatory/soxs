@@ -1,12 +1,14 @@
 from soxs.spatial import PointSourceModel, BetaModel
 from soxs.spectra import ApecGenerator
+import numpy as np
 import os
 import shutil
 import tempfile
 import astropy.io.fits as pyfits
 from soxs.tests.utils import bin_profile
 from soxs.simput import write_photon_list
-from soxs.instrument import instrument_simulator
+from soxs.instrument import instrument_simulator, sigma_to_fwhm
+from soxs.instrument_registry import get_instrument_from_registry
 from numpy.random import RandomState
 
 kT = 6.0
@@ -39,10 +41,20 @@ def test_point_source():
                          "hdxi", [30.0, 45.0], astro_bkgnd=False,
                          instr_bkgnd=False, prng=prng)
 
+    inst = get_instrument_from_registry("hdxi")
+    psf_scale = inst["psf"][1]
+    dtheta = inst["fov"]*60.0/inst["num_pixels"]
+
     f = pyfits.open("pt_src_evt.fits")
     x = f["EVENTS"].data["X"]
     y = f["EVENTS"].data["Y"]
     f.close()
+
+    scalex = np.std(x)*sigma_to_fwhm*dtheta
+    scaley = np.std(y)*sigma_to_fwhm*dtheta
+
+    assert (scalex - psf_scale)/psf_scale < 0.01
+    assert (scaley - psf_scale)/psf_scale < 0.01
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
