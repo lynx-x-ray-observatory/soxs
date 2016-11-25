@@ -15,7 +15,6 @@ from numpy.random import RandomState
 from sherpa.astro.ui import set_source, freeze, \
     fit, covar, get_covar_results, set_covar_opt, \
     load_arrays, Data1D
-from IPython import embed
 
 kT = 6.0
 Z = 0.3
@@ -78,7 +77,7 @@ def test_beta_model():
     e = spec.generate_energies(exp_time, area, prng=prng)
 
     r_c = 20.0
-    beta = 2./3.
+    beta = 1.0
 
     beta_src = BetaModel(30.0, 45.0, r_c, beta, e.size, prng=prng)
 
@@ -94,6 +93,7 @@ def test_beta_model():
     arf = AuxiliaryResponseFile(inst["arf"])
     cspec = ConvolvedSpectrum(spec, arf)
     ph_flux = cspec.get_flux_in_band(0.5, 7.0)[0].value
+    S0 = 3.0*ph_flux/(2.0*np.pi*r_c*r_c)
 
     f = pyfits.open("beta_evt.fits")
     e = f["EVENTS"].data["ENERGY"]
@@ -111,12 +111,12 @@ def test_beta_model():
 
     Serr = np.sqrt(S)/A/exp_time
     S = S/A/exp_time
-
+    
     load_arrays(1, rmid, S, Serr, Data1D)
     set_source("beta1d.src")
     src.beta = 1.0
     src.r0 = 10.0
-    src.ampl = 10.0
+    src.ampl = 0.8*S0
     freeze(src.xpos)
 
     fit()
@@ -126,6 +126,7 @@ def test_beta_model():
 
     assert np.abs(res.parvals[0]-r_c) < res.parmaxes[0]
     assert np.abs(res.parvals[1]-beta) < res.parmaxes[1]
+    assert np.abs(res.parvals[2]-S0) < res.parmaxes[2]
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
