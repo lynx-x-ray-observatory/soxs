@@ -10,11 +10,11 @@ matrix:
 
         # Try all python versions with the latest numpy
         - python: 2.7
-          env: CMD='python setup.py test'
+          env: CMD='python setup.py test'; PYTHON='python'
         - python: 3.5
-          env: CMD='python setup.py test'
+          env: CMD='python setup.py test'; PYTHON='python3'
         - python: 2.7
-          env: CMD='coverage run --source soxs -m py.test'
+          env: CMD='coverage run --source soxs -m py.test'; PYTHON='python'
 
 before_install:
 
