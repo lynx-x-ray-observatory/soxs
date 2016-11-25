@@ -4,7 +4,8 @@
     "rmf": "xrs_hdxi.rmf",
     "bkgnd": "acisi",
     "num_pixels": 4096,
-    "plate_scale": 0.33333333333333333333,
+    "fov": 20.0,
     "focal_length": 10.0,
+    "dither": true,
     "psf": ["gaussian", 2.0]
 }

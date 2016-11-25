@@ -5,8 +5,9 @@
         "gaussian",
         0.5
     ],
-    "bkgnd": "acisi",
-    "plate_scale": 1.0,
+    "bkgnd": "mucal",
+    "fov": 5.0,
+    "dither": true,
     "arf": "xrs_mucal_3x10.arf",
     "num_pixels": 300,
     "focal_length": 10.0
