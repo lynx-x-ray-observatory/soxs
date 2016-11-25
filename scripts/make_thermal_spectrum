@@ -19,8 +19,8 @@ parser.add_argument("--emax", type=float, default=50.0,
                     help='The maximum energy in keV. Default: 50.0')
 parser.add_argument("--nbins", type=int, default=10000, 
                     help='The number of bins in the spectrum. Default: 10000')
-parser.add_argument("--apec_vers", type=str, default="3.0.3", 
-                    help='The version of the AtomDB tables to use. Default: 3.0.3')
+parser.add_argument("--apec_vers", type=str, default="2.0.2", 
+                    help='The version of the AtomDB tables to use. Default: 2.0.2')
 parser.add_argument("--no_broadening", action='store_true',
                     help='Set this to turn off thermal and velocity broadening.')
 parser.add_argument("--absorb", action='store_true', 
