@@ -57,14 +57,19 @@ The default astrophysical background in SOXS is from
 `Hickox & Markevitch 2007 <http://adsabs.harvard.edu/abs/2007ApJ...661L.117H>`_, named ``"hm_cxb"``, and
 is modeled as a sum of two thermal models, ``apec+apec``, with parameters:
 
-=========  ==========  ==========
-Model      apec 1      apec 2     
-=========  ==========  ==========
-kT         0.2         0.099      
-abund      1.0         1.0        
-redshift   0.0         0.0        
-norm       6.82251E-7  1.12328E-6 
-=========  ==========  ==========
+``apec`` **Model 1**
+
+* ``kT``: :math:`\rm{0.2~keV}`
+* ``abund``: :math:`\rm{1.0~Z_\odot}`
+* ``redshift``: :math:`0.0`
+* ``norm``: :math:`\rm{6.82251 \times 10^{-7}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A(1+z)^2}}`
+ 
+``apec`` **Model 2**
+
+* ``kT``: :math:`\rm{0.099~keV}`
+* ``abund``: :math:`\rm{1.0~Z_\odot}`
+* ``redshift``: :math:`0.0`
+* ``norm``: :math:`\rm{1.12328 \times 10^{-6}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A(1+z)^2}}`
 
 Adding Your Own Backgrounds to SOXS
 -----------------------------------
