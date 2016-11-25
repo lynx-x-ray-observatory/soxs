@@ -18,8 +18,8 @@ HEATOOLS, XSPEC, etc.
     usage: instrument_simulator [-h] [--clobber] [--dither_shape DITHER_SHAPE]
                                 [--dither_size DITHER_SIZE]
                                 [--roll_angle ROLL_ANGLE]
-                                [--astro_bkgnd ASTRO_BKGND]
-                                [--instr_bkgnd_scale INSTR_BKGND_SCALE]
+                                [--no_astro_bkgnd]
+                                [--no_instr_bkgnd]
                                 simput_file out_file exp_time instrument
                                 sky_center
     
@@ -48,10 +48,10 @@ HEATOOLS, XSPEC, etc.
                             is the width. Default: 16.0
       --roll_angle ROLL_ANGLE
                             The roll angle in degrees. Default: 0.0
-      --astro_bkgnd ASTRO_BKGND
-                            The astrophysical background to use. Default: hm_cxb
-      --instr_bkgnd_scale INSTR_BKGND_SCALE
-                            The scale of the instrumental background. Default: 1.0
+      --no_astro_bkgnd
+                            Turn the astrophysical background off.
+      --no_instr_bkgnd
+                            Turn the instrumental background off. 
 
 Examples
 ++++++++
@@ -105,24 +105,14 @@ Turn dithering off entirely:
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=None --clobber
 
-Changing Backgrounds
-~~~~~~~~~~~~~~~~~~~~
-
-Rescale the instrumental background by 1/3:
+Turn off the instrumental background:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --instr_bkgnd_scale=0.33333333 --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_instr_bkgnd --clobber
 
-Set the astrophysical background to the "my_bkg" model, which must be in the 
-`background registry <../python/background.html>`_:
-
-.. code-block:: bash
-
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --astro_bkgnd=my_bkg --clobber
-
-Turn the astrophysical background off entirely:
+Turn off the astrophysical background:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --astro_bkgnd=None --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_astro_bkgnd --clobber
