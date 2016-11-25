@@ -121,3 +121,9 @@ def convert_rmf(rmffile):
         matrix_new.header[key] = matrix.header[key]
 
     new_f.writeto(os.path.split(rmffile)[-1], clobber=True)
+
+def bin_profile(x, y, x0, y0, rmin, rmax, nbins):
+    r = np.sqrt((x-x0)**2+(y-y0)**2)
+    rbin = np.linspace(rmin, rmax, nbins+1)
+    S, _ = np.histogram(r, bins=rbin)
+    return rbin, S
