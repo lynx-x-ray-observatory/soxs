@@ -16,3 +16,6 @@ exclude_lines =
 
     # Don't complain about ImportError
     except ImportError
+    
+    show_background_registry
+    show_instrument_registry
