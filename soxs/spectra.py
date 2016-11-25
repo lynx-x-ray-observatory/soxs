@@ -228,7 +228,6 @@ class Spectrum(object):
             The number of bins in the spectrum. Default: 10000
         """
         ebins = np.linspace(emin, emax, nbins+1)
-        emid = 0.5*(ebins[1:]+ebins[:-1])
         flux = const_flux*np.ones(nbins)
         return cls(ebins, flux)
 
