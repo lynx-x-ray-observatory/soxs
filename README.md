@@ -1,4 +1,6 @@
 [![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
+[![Build Status](https://travis-ci.org/jzuhone/soxs.svg?branch=master)](https://travis-ci.org/jzuhone/soxs)  
+[![Coverage Status](https://coveralls.io/repos/github/jzuhone/soxs/badge.svg?branch=master)](https://coveralls.io/github/jzuhone/soxs?branch=master)  
 
 # What is SOXS?
 
