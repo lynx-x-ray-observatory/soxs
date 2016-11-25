@@ -21,3 +21,5 @@ exclude_lines =
     show_instrument_registry
     from_xspec_script
     from_xspec_model
+    from_xspec
+    _from_xspec
