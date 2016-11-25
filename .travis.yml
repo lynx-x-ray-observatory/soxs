@@ -38,7 +38,7 @@ install:
 
     # CORE DEPENDENCIES
     - conda config --add channels https://conda.anaconda.org/sherpa
-    - conda install --yes numpy=$NUMPY_VERSION pytest pip yt astropy sherpa cython
+    - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy sherpa cython
 
     # COVERAGE DEPENDENCIES
     - pip install coverage coveralls
