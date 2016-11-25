@@ -16,7 +16,7 @@ from sherpa.astro.ui import load_user_model, add_user_pars, \
     covar, get_covar_results, set_covar_opt
 from numpy.random import RandomState
 
-prng = RandomState(99)
+prng = RandomState(23)
 
 def mymodel(pars, x, xhi=None):
     dx = x[1]-x[0]
