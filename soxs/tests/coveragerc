@@ -1,0 +1,18 @@
+[run]
+source = soxs
+omit =
+   soxs/__init__*
+   soxs/*setup*
+   soxs/*tests/*
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+
+    # Don't complain about ImportError
+    except ImportError
