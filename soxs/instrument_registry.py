@@ -99,6 +99,11 @@ def add_instrument_to_registry(inst_spec):
     if "plate_scale" in inst:
         inst["fov"] = inst["num_pixels"]*inst["plate_scale"]/60.0
         inst.pop("plate_scale")
+    default_set = {"name", "arf", "rmf", "bkgnd", "fov", 
+                   "focal_length", "num_pixels", "dither", "psf"}
+    if set(inst.keys()) != default_set:
+        raise RuntimeError("One or more items is missing from the instrument specification!\n"
+                           "Items present: %s\nItems needed: %s" % (set(inst.keys()), default_set))
     instrument_registry[name] = inst
     mylog.info("The %s instrument specification has been added to the instrument registry." % name)
     return name
