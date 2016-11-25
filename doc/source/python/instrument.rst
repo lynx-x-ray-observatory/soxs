@@ -41,8 +41,14 @@ The ``clobber`` argument allows an existing file to be overwritten.
 The ``instrument`` Argument
 +++++++++++++++++++++++++++
 
-For the ``instrument`` argument, there are currently two base instruments, ``"hdxi"`` for the High-Definition
-X-ray Imager, and ``"mucal"`` for the microcalorimeter. There are also variations on these instruments which
+SOXS currently supports instrument configurations for *Lynx* and *Athena* "out of the box". Any
+of these can be specified with the ``instrument`` argument:
+
+Lynx
+~~~~
+
+For *Lynx*, there are currently two base instruments, ``"hdxi"`` for the High-Definition X-ray 
+Imager, and ``"mucal"`` for the microcalorimeter. There are also variations on these instruments which
 use different mirror parameters. The different variations on mirror parameters available are:
 
 * :math:`d` = 3 m, :math:`f` = 10 m (default case)
@@ -53,13 +59,12 @@ use different mirror parameters. The different variations on mirror parameters a
 Where :math:`d` is the diameter of the outermost mirror shell, and :math:`f` is the focal length. To use a different
 case other than the default, append it to the instrument string in a ``dxf`` pattern, e.g. ``"hdxi_3x20"``, ``"mucal_6x20"``.
 
-Instruments must exist in the instrument registry, unless you have your own JSON-based instrument specification,
-which you can then supply as the instrument argument instead:
+Athena
+~~~~~~
 
-.. code-block:: python
+For simulating *Athena* observations, two instrument specifications are available, for the WFI (Wide-Field 
+Imager) and the X-IFU (X-ray Integral Field Unit): 
 
-    instrument = "my_imager.json"
-    instrument_simulator(simput_file, out_file, instrument, sky_center, clobber=True)
 
 .. _other-mods:
 
@@ -92,37 +97,27 @@ You can also specify a non-zero roll angle:
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
                          sky_center, clobber=True, roll_angle=45.0) 
 
-The particle background scale can be set using the ``instr_bkgnd_scale`` argument:
+.. note:: 
+
+    Dithering will only be enabled if the instrument specification allows for it. For *Lynx*,
+    dithering is on by default, but for *Athena* it is off. 
+
+The astrophysical and instrumental backgrounds can be turned on and off using the ``astro_bkgnd``
+and ``instr_bkgnd`` arguments:
 
 .. code-block:: python
 
     # decreases the particle background intensity by half
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, instr_bkgnd_scale=0.5) 
-
-The astrophysical background/foreground can be changed by setting the ``astro_bkgnd`` argument. 
-This corresponds to the name of a stored background in the background registry (see 
-:ref:`background` for more information on how to create, store, and access new astrophysical 
-backgrounds). 
-
-.. code-block:: python
-
-    # uses the default astrophysical background
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, astro_bkgnd="hm_cxb")
-                          
-.. code-block:: python
-
-    # turns off the astrophysical background entirely
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, astro_bkgnd=None)
+                         sky_center, clobber=True, instr_bkgnd=False,
+                         astro_bkgnd=True) 
 
 .. _instrument-registry:
 
 Creating New Instrument Specifications
 --------------------------------------
 
-SOXS provides the ability to customize the models of the different components of X-ray Surveyor being
+SOXS provides the ability to customize the models of the different components of the instrument being
 simulated. This is provided by the use of the instrument registry and JSON files which contain prescriptions
 for different instrument configurations.
 
@@ -143,49 +138,54 @@ gives (showing only a subset for brevity):
 
     Instrument: hdxi
         num_pixels: 4096
-        plate_scale: 0.3333333333333333
+        fov: 5.0
         bkgnd: acisi
         psf: ['gaussian', 0.5]
         name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
         focal_length: 10.0
+        dither: True
     Instrument: mucal
         num_pixels: 300
-        plate_scale: 1.0
+        fov: 5.0
         bkgnd: mucal
         psf: ['gaussian', 0.5]
         name: mucal_3x10
         arf: xrs_mucal_3x10.arf
         rmf: xrs_mucal.rmf
         focal_length: 10.0
+        dither: True
     Instrument: mucal_3x15
         num_pixels: 300
-        plate_scale: 1.0
+        fov: 5.0
         bkgnd: mucal
         psf: ['gaussian', 0.5]
         name: mucal_3x15
         arf: xrs_mucal_3x15.arf
         rmf: xrs_mucal.rmf
         focal_length: 15.0
+        dither: True
     Instrument: hdxi_3x15
         num_pixels: 4096
-        plate_scale: 0.3333333333333333
+        fov: 20.0
         bkgnd: acisi
         psf: ['gaussian', 0.5]
         name: hdxi_3x15
         arf: xrs_hdxi_3x15.arf
         rmf: xrs_hdxi.rmf
         focal_length: 15.0
+        dither: True
     Instrument: hdxi_3x10
         num_pixels: 4096
-        plate_scale: 0.3333333333333333
+        fov: 20.0
         bkgnd: acisi
         psf: ['gaussian', 0.5]
         name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
         focal_length: 10.0
+        dither: True
 
 The various parts of each instrument specification are:
 
@@ -198,8 +198,9 @@ The various parts of each instrument specification are:
   a Gaussian PSF, with a single parameter, the HPD of the PSF. This is specified using a Python
   list, e.g. ``["gaussian", 0.5]``
 * ``"rmf"``: The file containing the RMF.
-* ``"plate_scale"``: The arcseconds per resolution element (pixel). 
+* ``"fov"``: The field of view in arcminutes. 
 * ``"focal_length"``: The focal length of the telescope in meters.
+* ``"dither"``: Whether or not the instrument dithers by default. 
 
 As SOXS matures, this list of specifications will likely expand, and the number of options for 
 some of them (e.g., the PSF) will also expand.
@@ -219,7 +220,7 @@ calorimeter specification and change the plate scale, you would do it this way, 
     from soxs import get_instrument_from_registry, add_instrument_to_registry
     new_mucal = get_instrument_from_registry("mucal")
     new_mucal["name"] = "mucal_high_res" # Must change the name, otherwise an error will be thrown
-    new_mucal["plate_scale"] = 0.1 # Ambitiously smaller plate scale, 0.1 arcsec per pixel
+    new_mucal["num_pixels"] = 12000 # Results in an ambitiously smaller plate scale, 0.1 arcsec per pixel
     name = add_instrument_to_registry(new_mucal)
     
 You can also store an instrument specification in a JSON file and import it:
@@ -238,3 +239,12 @@ using :func:`~soxs.instrument.write_instrument_json`:
     from soxs import write_instrument_json
     # Using the "new_mucal" from above
     write_instrument_json("mucal_high_res", "mucal_high_res.json")
+
+Instrument specifications in JSON files can be supplied as the instrument argument to
+:func:`~soxs.instrument.instrument_simulator`, and they will be automatically added to
+the registry:
+
+.. code-block:: python
+
+    instrument = "my_imager.json"
+    instrument_simulator(simput_file, out_file, instrument, sky_center, clobber=True)
