@@ -29,6 +29,21 @@ must be linear and the bins must be equally spaced. For example:
     from soxs import Spectrum
     my_spec = Spectrum.from_file("my_spec.dat")
 
+Creating a Constant Spectrum
+++++++++++++++++++++++++++++
+
+A simple constant spectrum can be created using the :meth:`~soxs.spectra.Spectrum.from_constant` 
+method. This takes as input the value of the flux ``const_flux``, which is in units of 
+:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`:
+
+.. code-block:: python
+
+    const_flux = 1.0e-7
+    spec = Spectrum.from_constant(const_flux, emin=0.1, emax=10.0, nbins=20000)
+
+The optional parameters ``emin``, ``emax``, and ``nbins`` can be used to control the
+binning. 
+
 Creating a Power-Law Spectrum
 +++++++++++++++++++++++++++++
 
