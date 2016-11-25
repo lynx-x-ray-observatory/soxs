@@ -27,10 +27,10 @@ parser.add_argument("--dither_size", type=float, default=16.0,
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--roll_angle", type=float, default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
-parser.add_argument("--astro_bkgnd", type=str, default="hm_cxb",
-                    help='The astrophysical background to use. Default: hm_cxb')
-parser.add_argument("--instr_bkgnd_scale", type=float, default=1.0, 
-                    help='The scale of the instrumental background. Default: 1.0')
+parser.add_argument("--no_astro_bkgnd", action='store_true',
+                    help='Turn the astrophysical background off.')
+parser.add_argument("--no_instr_bkgnd", action='store_true', 
+                    help='Turn the instrumental background off.')
 
 args = parser.parse_args()
 
@@ -46,15 +46,11 @@ if args.dither_shape == "None":
 else:
     dither_shape = args.dither_shape
 
-if args.astro_bkgnd == "None":
-    astro_bkgnd = None
-elif args.astro_bkgnd not in background_registry and os.path.exists(args.astro_bkgnd):
-    astro_bkgnd = add_background_to_registry(args.astro_bkgnd)
-else:
-    astro_bkgnd = args.astro_bkgnd
+astro_bkgnd = not args.no_astro_bkgnd
+instr_bkgnd = not args.no_instr_bkgnd
 
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
-                     roll_angle=args.roll_angle, instr_bkgnd_scale=args.instr_bkgnd_scale,
+                     roll_angle=args.roll_angle, instr_bkgnd=instr_bkgnd,
                      astro_bkgnd=astro_bkgnd)
