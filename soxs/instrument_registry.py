@@ -97,6 +97,9 @@ def add_instrument_to_registry(inst_spec):
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
     # Catch old JSON files with plate scale
     if "plate_scale" in inst:
+        mylog.warning("Instrument specifications with the 'plate_scale' item are deprecated, and will "
+                      "not work in a future release. Please specify the field of view in arcminutes "
+                      "with 'fov' instead.")
         inst["fov"] = inst["num_pixels"]*inst["plate_scale"]/60.0
         inst.pop("plate_scale")
     default_set = {"name", "arf", "rmf", "bkgnd", "fov", 
