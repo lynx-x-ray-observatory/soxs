@@ -1,5 +1,5 @@
 from soxs.spatial import PointSourceModel, BetaModel
-from soxs.spectra import ApecGenerator
+from soxs.spectra import ApecGenerator, ConvolvedSpectrum
 import numpy as np
 import os
 import shutil
@@ -7,10 +7,15 @@ import tempfile
 import astropy.io.fits as pyfits
 from soxs.tests.utils import bin_profile
 from soxs.simput import write_photon_list
-from soxs.instrument import instrument_simulator, sigma_to_fwhm
+from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
+    AuxiliaryResponseFile
 from soxs.instrument_registry import get_instrument_from_registry, \
     add_instrument_to_registry
 from numpy.random import RandomState
+from sherpa.astro.ui import set_source, freeze, \
+    fit, covar, get_covar_results, set_covar_opt, \
+    load_arrays, Data1D
+from IPython import embed
 
 kT = 6.0
 Z = 0.3
@@ -72,7 +77,10 @@ def test_beta_model():
 
     e = spec.generate_energies(exp_time, area, prng=prng)
 
-    beta_src = BetaModel(30.0, 45.0, 20.0, 2./3., e.size, prng=prng)
+    r_c = 20.0
+    beta = 2./3.
+
+    beta_src = BetaModel(30.0, 45.0, r_c, beta, e.size, prng=prng)
 
     write_photon_list("beta", "beta", e.flux, beta_src.ra, beta_src.dec,
                       e, clobber=True)
@@ -81,18 +89,47 @@ def test_beta_model():
                          "hdxi", [30.0, 45.0], astro_bkgnd=False,
                          instr_bkgnd=False, prng=prng)
 
+    inst = get_instrument_from_registry("hdxi")
+    dtheta = inst["fov"]*60.0/inst["num_pixels"]
+    arf = AuxiliaryResponseFile(inst["arf"])
+    cspec = ConvolvedSpectrum(spec, arf)
+    ph_flux = cspec.get_flux_in_band(0.5, 7.0)[0].value
+
     f = pyfits.open("beta_evt.fits")
-    x = f["EVENTS"].data["X"]
-    y = f["EVENTS"].data["Y"]
+    e = f["EVENTS"].data["ENERGY"]
+    idxs = np.logical_and(e > 500.0, e < 7000.0)
+    x = f["EVENTS"].data["X"][idxs]
+    y = f["EVENTS"].data["Y"][idxs]
     x0 = f["EVENTS"].header["TCRPX2"]
     y0 = f["EVENTS"].header["TCRPX3"]
     f.close()
 
-    S, rbin = bin_profile(x, y, x0, y0, 0.0, 200.0, 200)
+    rbin, S = bin_profile(x, y, x0, y0, 0.0, 200.0, 200)
+    rbin *= dtheta
+    rmid = 0.5*(rbin[1:]+rbin[:-1])
+    A = np.pi*(rbin[1:]**2-rbin[:-1]**2)
+
+    Serr = np.sqrt(S)/A/exp_time
+    S = S/A/exp_time
+
+    load_arrays(1, rmid, S, Serr, Data1D)
+    set_source("beta1d.src")
+    src.beta = 1.0
+    src.r0 = 10.0
+    src.ampl = 10.0
+    freeze(src.xpos)
+
+    fit()
+    set_covar_opt("sigma", 1.645)
+    covar()
+    res = get_covar_results()
+
+    assert np.abs(res.parvals[0]-r_c) < res.parmaxes[0]
+    assert np.abs(res.parvals[1]-beta) < res.parmaxes[1]
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":
-    test_point_source()
+    #test_point_source()
     test_beta_model()
