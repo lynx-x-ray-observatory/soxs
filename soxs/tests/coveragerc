@@ -19,3 +19,5 @@ exclude_lines =
     
     show_background_registry
     show_instrument_registry
+    from_xspec_script
+    from_xspec_model
