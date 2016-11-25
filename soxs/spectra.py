@@ -49,6 +49,9 @@ class Spectrum(object):
 
     __rmul__ = __mul__
 
+    def __div__(self, other):
+        return Spectrum(self.ebins, self.flux/other)
+
     def __truediv__(self, other):
         return Spectrum(self.ebins, self.flux/other)
 
