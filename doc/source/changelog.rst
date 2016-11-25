@@ -3,6 +3,28 @@
 ChangeLog
 =========
 
+Version 0.4.0
+-------------
+
+This version contains new features and bugfixes. Some changes are not backwards-compatible. 
+
+* SOXS has been re-branded as "Simulating Observations of X-ray Sources".
+* Instrument specifications for the *Athena* WFI and XIFU have been added to the instrument registry.
+* A test suite infrastructure has been added to SOXS. 
+* The default astrophysical background in SOXS was not identical to the advertised input spectrum, which
+  has been fixed.
+* The options for dealing with background have been restricted. Backgrounds can now only be turned on 
+  and off. The keyword arguments to :func:`~soxs.instrument.instrument_simulator` for dealing with 
+  background have been correspondingly modified (see :ref:`instrument` and :ref:`cmd-instrument`). This
+  is a backwards-incompatible change.
+* The default version of APEC in :class:`~soxs.spectra.ApecGenerator` is now version 2.0.2, to match
+  XSPEC. 
+* A new option has been added to the instrument specification to turn dithering on and off by default
+  for a given instrument. Please change instrument specification JSON files accordingly.
+* Instead of the plate scale, the instrument field of view is specified in the instrument specification,
+  and the plate scale is calculated from this and the number of pixels. Please change instrument 
+  specification JSON files accordingly.
+
 Version 0.3.1
 -------------
 
