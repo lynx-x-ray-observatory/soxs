@@ -190,6 +190,11 @@ class RedistributionMatrixFile(object):
 
         return events
 
+default_f = {"acisi": 10.0, 
+             "mucal": 10.0,
+             "athena_wfi": 12.0,
+             "athena_xifu": 12.0}
+
 def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
                    prng=np.random):
 
@@ -207,7 +212,7 @@ def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
         arf = AuxiliaryResponseFile(check_file_location(event_params["arf"], "files"))
         area = arf.interpolate_area(bkgnd_spec.emid).value
     else:
-        area = (focal_length/10.0)**2
+        area = (focal_length/default_f[bkgnd_name])**2
 
     bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
                                                         area, fov, prng=prng)
@@ -378,7 +383,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
             x_offset = np.zeros(n_evt)
             y_offset = np.zeros(n_evt)
-            
+
             if instrument_spec["dither"]:
                 if dither_shape == "circle":
                     r = dsize*np.sqrt(prng.uniform(size=n_evt))
