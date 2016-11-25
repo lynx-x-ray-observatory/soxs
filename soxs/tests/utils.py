@@ -3,6 +3,7 @@ from soxs.spectra import wabs_cross_section
 import astropy.io.fits as pyfits
 import numpy as np
 import os
+from copy import copy
 
 def get_wabs_absorb(e, nH):
     sigma = wabs_cross_section(e)
@@ -86,7 +87,7 @@ def convert_rmf(rmffile):
             idx = i
             break
 
-    new_f = pyfits.HDUList(f.copy())
+    new_f = copy(f)
 
     matrix = new_f[names[idx]]
     fchan = matrix.data["F_CHAN"]
