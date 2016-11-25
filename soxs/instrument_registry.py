@@ -45,20 +45,20 @@ for det in ["hdxi", "mucal"]:
 
 # Athena
 
-instrument_registry["athena_wfi"] = {"name": "wfi",
+instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                      "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
                                      "rmf": "athena_wfi_rmf_v20150326.rmf",
-                                     "bkgnd": "athena_wfi.dat",
+                                     "bkgnd": "athena_wfi",
                                      "fov": 60.0,
                                      "num_pixels": 1024,
                                      "focal_length": 12.0,
                                      "dither": False,
                                      "psf": ["gaussian", 5.0]}
 
-instrument_registry["athena_xifu"] = {"name": "xifu",
+instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
                                       "rmf": "athena_xifu_rmf_v20160401.rmf",
-                                      "bkgnd": "athena_xifu.dat",
+                                      "bkgnd": "athena_xifu",
                                       "fov": 10.0,
                                       "num_pixels": 66,
                                       "focal_length": 12.0,
