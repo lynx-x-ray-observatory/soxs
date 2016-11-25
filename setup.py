@@ -14,7 +14,7 @@ cython_extensions = [
 
 setup(name='soxs',
       packages=['soxs'],
-      version="0.3.1",
+      version="0.4.0",
       description='Simulated Observations with X-ray Surveyor',
       author='John ZuHone',
       author_email='john.zuhone@cfa.harvard.edu',
