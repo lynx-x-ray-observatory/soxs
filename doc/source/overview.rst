@@ -8,7 +8,7 @@ three main components:
 
 1. Tools to generate simple models of astrophysical sources
 2. I/O interface to SIMPUT files
-3. An instrument simulator for X-ray Surveyor
+3. An instrument simulator for X-ray telescopes
 
 These are outlined in detail below. Figure 1 shows a flowchart of how one transforms models
 of astrophysical sources to event lists using SOXS.
@@ -19,7 +19,7 @@ of astrophysical sources to event lists using SOXS.
     :scale: 20 %
 
     Figure 1: Flowchart depicting how source models are written to SIMPUT files which then
-    can be used to simulate X-ray Surveyor observations using SOXS and compare them with the
+    can be used to simulate X-ray observations using SOXS and compare them with the
     outputs of other tools.
 
 Generating Simplified Models of Sources
@@ -58,9 +58,9 @@ SOXS currently provides facilities for both input and output of SIMPUT catalogs 
 photon lists. Photon lists are FITS tables of RA, Dec, and energy from the simulated source,
 generated assuming a large exposure time and a large collecting area so that the sample is large
 enough that the instrument simulator is able to "observe" a representative subset. The SIMPUT
-outputs can be used to compare simulations made with SOXS for X-ray Surveyor to simulations of
-other X-ray instruments past, current, and future, and likewise SIMPUT catalogs with photon
-lists not created with SOXS can be used as inputs to SOXS's instrument simulator.
+outputs can be used to compare simulations made with SOXS to simulations of other X-ray instruments 
+past, current, and future, and likewise SIMPUT catalogs with photon lists not created with SOXS 
+can be used as inputs to SOXS's instrument simulator.
 
 The Instrument Simulator
 ------------------------
@@ -86,8 +86,8 @@ SIMPUT file and performs the following operations:
 The instrument simulator is called using either the |instrument_simulator_py|_ or the
 |instrument_simulator_cmd|_. 
 
-The instrument simulator can simulate "default" instrument configurations for 
-X-ray Surveyor, but one can also supply a modified instrument configuration for use
+Currently, the instrument simulator can simulate "default" instrument configurations for 
+*Lynx* and *Athena*, but one can also supply a modified instrument configuration for use
 with the instrument simulator, which is laid out in more detail in :ref:`instrument`. 
 
 Working with Other Tools
@@ -105,7 +105,7 @@ Website: http://space.mit.edu/CXC/MARX/
 
 MARX is a set of programs developed to provide a detailed ray-tracing simulation of the
 on-orbit performance of *Chandra*. The SIMPUT files produced by SOXS can be used as inputs
-to MARX to simulate *Chandra* observations to compare with X-ray Surveyor. 
+to MARX to simulate *Chandra* observations to compare with those made by SOXS.
 
 SIMX
 ++++
@@ -142,4 +142,4 @@ observations of these sources from a wide variety of models, whether from grid-b
 simulation codes such as FLASH, Enzo, and Athena, to particle-based codes such as 
 Gadget and AREPO, and even from datasets that have been created “by hand”, such as from
 NumPy arrays. pyXSIM can be used to produce SIMPUT files which can be ingested by 
-SOXS for making simulated X-ray Surveyor observations.
+SOXS for making simulated observations.

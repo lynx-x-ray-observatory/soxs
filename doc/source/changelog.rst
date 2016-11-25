@@ -9,7 +9,7 @@ Version 0.4.0
 This version contains new features and bugfixes. Some changes are not backwards-compatible. 
 
 * SOXS has been re-branded as "Simulating Observations of X-ray Sources".
-* Instrument specifications for the *Athena* WFI and XIFU have been added to the instrument registry.
+* Instrument specifications for the *Athena* WFI and X-IFU have been added to the instrument registry.
 * A test suite infrastructure has been added to SOXS. 
 * The default astrophysical background in SOXS was not identical to the advertised input spectrum, which
   has been fixed.
