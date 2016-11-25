@@ -334,7 +334,11 @@ class Spectrum(object):
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
         energy = np.interp(randvec, cumspec, self.ebins.value)
-        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        if isinstance(area, np.ndarray):
+            aa = area.sum()
+        else:
+            aa = area 
+        flux = np.sum(energy)*erg_per_keV/t_exp/aa
         energies = Energies(energy, flux)
         return energies
 
