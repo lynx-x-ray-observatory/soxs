@@ -170,7 +170,7 @@ class Spectrum(object):
     def from_powerlaw(cls, photon_index, redshift, norm,
                       emin=0.01, emax=50.0, nbins=10000):
         """
-        Create a spectrum from a power-law model using XSPEC.
+        Create a spectrum from a power-law model.
 
         Parameters
         ----------
@@ -209,6 +209,27 @@ class Spectrum(object):
         emid, flux = np.loadtxt(filename, unpack=True)
         de = np.diff(emid)[0]
         ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+        return cls(ebins, flux)
+
+    @classmethod
+    def from_constant(cls, const_flux, emin=0.01, emax=50.0, nbins=10000):
+        """
+        Create a spectrum from a constant model using XSPEC.
+
+        Parameters
+        ----------
+        const_flux : float
+            The value of the constant flux in the units of the spectrum. 
+        emin : float, optional
+            The minimum energy of the spectrum in keV. Default: 0.01
+        emax : float, optional
+            The maximum energy of the spectrum in keV. Default: 50.0
+        nbins : integer, optional
+            The number of bins in the spectrum. Default: 10000
+        """
+        ebins = np.linspace(emin, emax, nbins+1)
+        emid = 0.5*(ebins[1:]+ebins[:-1])
+        flux = const_flux*np.ones(nbins)
         return cls(ebins, flux)
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
