@@ -66,7 +66,7 @@ For simulating *Athena* observations, two instrument specifications are availabl
 Imager) and the X-IFU (X-ray Integral Field Unit). For both of these specifications, a 12 meter focal length
 is assumed, along with a 5-arcsecond Gaussian PSF, and observations are not dithered. For more information
 about the specification of the *Athena* instruments assumed here, consult 
-`the *Athena* simulation tools web portal <http://www.the-athena-x-ray-observatory.eu/resources/simulation-tools.html>`_.
+`the Athena simulation tools web portal <http://www.the-athena-x-ray-observatory.eu/resources/simulation-tools.html>`_.
 
 .. _other-mods:
 
@@ -197,6 +197,7 @@ gives (showing only a subset for brevity):
         rmf: xrs_hdxi.rmf
         focal_length: 10.0
         dither: True
+    ...
 
 The various parts of each instrument specification are:
 

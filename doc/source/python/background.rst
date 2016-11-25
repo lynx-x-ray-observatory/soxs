@@ -16,7 +16,7 @@ type. You can see what backgrounds are registered by calling :func:`~soxs.backgr
     from soxs import show_background_registry
     show_background_registry()
 
-which prints:
+which prints something like:
 
 .. code-block:: pycon
 
@@ -29,7 +29,8 @@ which prints:
     Background: acisi
         Type: instrumental
         Total Flux (0.1 keV - 10.0 keV): 0.004312855625210535 ph / (arcmin2 cm2 s)
-
+    ...
+    
 Applying instrumental and astrophysical backgrounds are handled somewhat differently. Each instrument 
 specification has a default instrumental/particle background given in its entry in the SOXS instrument 
 registry, which simply refers to the entry in the background registry. To change the instrumental background,
@@ -37,8 +38,11 @@ one would need to define a new instrument specification with a different backgro
 
 The default instrumental background in SOXS for the *Lynx* HDXI is the *Chandra*/ACIS-I particle 
 background, named ``"acisi"``, and the default instrumental background for the *Lynx* microcalorimeter 
-is from a model developed for the *Athena* calorimeter 
+is based on a model developed for the *Athena* calorimeter 
 (`see here for details <http://adsabs.harvard.edu/abs/2014A%26A...569A..54L>`_), named ``"mucal"``.
+
+The default instrumental backgrounds in SOXS for the *Athena* WFI and X-IFU are based on the specifications
+that can be found at `the Athena simulation tools web portal <http://www.the-athena-x-ray-observatory.eu/resources/simulation-tools.html>`_.
 
 The astrophysical background is not tied to a particular instrument specification. It can be turned off
 entirely in the call to :func:`~soxs.instrument.instrument_simulator` by setting ``astro_bkgnd=False``:
@@ -50,7 +54,17 @@ entirely in the call to :func:`~soxs.instrument.instrument_simulator` by setting
                          sky_center, clobber=True, astro_bkgnd=False)
 
 The default astrophysical background in SOXS is from 
-`Hickox & Markevitch 2007 <http://adsabs.harvard.edu/abs/2007ApJ...661L.117H>`_, named ``"hm_cxb"``.
+`Hickox & Markevitch 2007 <http://adsabs.harvard.edu/abs/2007ApJ...661L.117H>`_, named ``"hm_cxb"``, and
+is modeled as a sum of two thermal models, ``apec+apec``, with parameters:
+
+=========  ==========  ==========
+Model      apec 1      apec 2     
+=========  ==========  ==========
+kT         0.2         0.099      
+abund      1.0         1.0        
+redshift   0.0         0.0        
+norm       6.82251E-7  1.12328E-6 
+=========  ==========  ==========
 
 Adding Your Own Backgrounds to SOXS
 -----------------------------------
