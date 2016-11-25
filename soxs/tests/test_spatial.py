@@ -8,7 +8,8 @@ import astropy.io.fits as pyfits
 from soxs.tests.utils import bin_profile
 from soxs.simput import write_photon_list
 from soxs.instrument import instrument_simulator, sigma_to_fwhm
-from soxs.instrument_registry import get_instrument_from_registry
+from soxs.instrument_registry import get_instrument_from_registry, \
+    add_instrument_to_registry
 from numpy.random import RandomState
 
 kT = 6.0
@@ -37,11 +38,16 @@ def test_point_source():
     write_photon_list("pt_src", "pt_src", e.flux, pt_src.ra, pt_src.dec,
                       e, clobber=True)
 
+    inst = get_instrument_from_registry("hdxi")
+    inst["name"] = "hdxi_big_psf"
+    inst["psf"] = ["gaussian", 5.0]
+
+    add_instrument_to_registry(inst)
+
     instrument_simulator("pt_src_simput.fits", "pt_src_evt.fits", exp_time,
-                         "hdxi", [30.0, 45.0], astro_bkgnd=False,
+                         "hdxi_big_psf", [30.0, 45.0], astro_bkgnd=False,
                          instr_bkgnd=False, prng=prng)
 
-    inst = get_instrument_from_registry("hdxi")
     psf_scale = inst["psf"][1]
     dtheta = inst["fov"]*60.0/inst["num_pixels"]
 
@@ -88,4 +94,5 @@ def test_beta_model():
     shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":
+    test_point_source()
     test_beta_model()
