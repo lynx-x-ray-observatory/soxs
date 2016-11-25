@@ -10,7 +10,11 @@ This version contains new features and bugfixes. Some changes are not backwards-
 
 * SOXS has been re-branded as "Simulating Observations of X-ray Sources".
 * Instrument specifications for the *Athena* WFI and X-IFU have been added to the instrument registry.
-* A test suite infrastructure has been added to SOXS. 
+* A test suite infrastructure has been added to SOXS, which runs automatically on GitHub when changes
+  are made to the source code. 
+* Simulating backgrounds without an input source is now possible by providing ``None`` to 
+  :func:`~soxs.instrument.instrument_simulator` or ``"None"`` to the ``instrument_simulator`` command 
+  line script (see :ref:`cmd-instrument`).
 * The default astrophysical background in SOXS was not identical to the advertised input spectrum, which
   has been fixed.
 * The options for dealing with background have been restricted. Backgrounds can now only be turned on 

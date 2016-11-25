@@ -112,6 +112,15 @@ and ``instr_bkgnd`` arguments:
                          sky_center, clobber=True, instr_bkgnd=False,
                          astro_bkgnd=True) 
 
+Finally, to simulate an observation of backgrounds only without a source, simply run 
+:func:`~soxs.instrument.instrument_simulator` with ``None`` as the argument for the ``simput_file``:
+
+.. code-block:: python
+
+    # simulates backgrounds only
+    instrument_simulator(None, "bkg_evt.fits", exp_time, instrument, 
+                         sky_center, clobber=True)
+
 .. _instrument-registry:
 
 Creating New Instrument Specifications

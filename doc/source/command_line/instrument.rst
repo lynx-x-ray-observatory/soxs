@@ -26,7 +26,7 @@ HEATOOLS, XSPEC, etc.
     Run the instrument simulator and produce a simulated event file.
     
     positional arguments:
-      simput_file           The SIMPUT file to be used as input.
+      simput_file           The SIMPUT file to be used as input, or "None" if you only want to simulate backgrounds.
       out_file              The name of the event file to be written.
       exp_time              The exposure time to use, in seconds.
       instrument            The name of the instrument to use, or alternatively
@@ -116,3 +116,12 @@ Turn off the astrophysical background:
 .. code-block:: bash
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_astro_bkgnd --clobber
+
+Simulating Backgrounds with No Sources
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To simulate backgrounds without any sources, simply provide ``"None"`` as the first argument:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator None bkg_evt.fits 50000.0 hdxi 30.,45. --clobber
