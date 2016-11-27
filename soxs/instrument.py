@@ -480,7 +480,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 
     # Step 4: Add particle background
 
-    if instr_bkgnd:
+    if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
         bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
                                     prng=prng, focal_length=instrument_spec["focal_length"])
