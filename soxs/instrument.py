@@ -466,7 +466,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             for key in events:
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
-    if simput_file is not None:
+    if input_events is not None:
         if all_events["energy"].size == 0:
             mylog.warning("No events from any of the sources in the catalog were detected!")
 
