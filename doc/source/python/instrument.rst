@@ -251,12 +251,3 @@ using :func:`~soxs.instrument.write_instrument_json`:
     from soxs import write_instrument_json
     # Using the "new_mucal" from above
     write_instrument_json("mucal_high_res", "mucal_high_res.json")
-
-Instrument specifications in JSON files can be supplied as the instrument argument to
-:func:`~soxs.instrument.instrument_simulator`, and they will be automatically added to
-the registry:
-
-.. code-block:: python
-
-    instrument = "my_imager.json"
-    instrument_simulator(simput_file, out_file, instrument, sky_center, clobber=True)

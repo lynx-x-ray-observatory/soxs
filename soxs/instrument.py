@@ -266,9 +266,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry. Can also be a JSON
-        file with a new instrument specification. If this is the case,
-        it will be loaded into the instrument registry. 
+        specification from the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     clobber : boolean, optional
