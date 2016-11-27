@@ -12,6 +12,7 @@ from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array, write_event_file
 from soxs.background import background_registry
 from soxs.instrument_registry import instrument_registry
+from six import string_types
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -233,13 +234,13 @@ def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
 
     return bkg_events
 
-def instrument_simulator(simput_file, out_file, exp_time, instrument,
+def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
                          dither_size=16.0, roll_angle=0.0, astro_bkgnd=True,
                          instr_bkgnd=True, prng=np.random):
     """
-    Take unconvolved events in a SIMPUT catalog and create an event
-    file from them. This function does the following:
+    Take unconvolved events and create an event file from them. This 
+    function does the following:
 
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
@@ -249,9 +250,16 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     Parameters
     ----------
-    simput_file : string
-        The SIMPUT catalog file to be used as input. Set to None if you
-        want to simulate backgrounds/foregrounds only.
+    input_events : string, dict, or None
+        The unconvolved events to be used as input. Can be one of the
+        following:
+        1. The name of a SIMPUT catalog file.
+        2. A Python dictionary containing the following items:
+            "ra": A NumPy array of right ascension values in degrees.
+            "dec": A NumPy array of declination values in degrees.
+            "energy": A NumPy array of energy values in keV.
+            "flux": The flux of the entire source, in units of erg/cm**2/s. 
+        3. None if you want to simulate backgrounds/foregrounds only.
     out_file : string
         The name of the event file to be written.
     exp_time : float
@@ -288,14 +296,20 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", "hdxi_3x10",
     ...                      [30., 45.], clobber=True)
     """
-    if simput_file is None:
+    if input_events is None:
         if not astro_bkgnd and not instr_bkgnd:
             raise RuntimeError("No backgrounds and no sources, so I can't do anything!!")
         # only doing backgrounds
         event_list = []
         parameters = {}
-    else:
-        event_list, parameters = read_simput_catalog(simput_file)
+    elif isinstance(input_events, dict):
+        event_list = [{k:input_events[k] for k in ["ra", "dec", "energy"]}]
+        parameters = {"flux": np.array([input_events["flux"]]),
+                      "emin": np.array([input_events["energy"].min()]),
+                      "emax": np.array([input_events["energy"].max()])}
+    elif isinstance(input_events, string_types):
+        # Assume this is a SIMPUT catalog
+        event_list, parameters = read_simput_catalog(input_events)
 
     try:
         instrument_spec = instrument_registry[instrument]
