@@ -417,13 +417,14 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 
             # PSF scattering of detector coordinates
 
-            psf_type, psf_spec = instrument_spec["psf"]
-            if psf_type == "gaussian":
-                sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
-                detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-                dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-            else:
-                raise NotImplementedError("PSF type %s not implemented!" % psf_type)
+            if instrument_spec["psf"] is not None:
+                psf_type, psf_spec = instrument_spec["psf"]
+                if psf_type == "gaussian":
+                    sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
+                    detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                    dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                else:
+                    raise NotImplementedError("PSF type %s not implemented!" % psf_type)
 
             # Convert detector coordinates to chip coordinates
 
