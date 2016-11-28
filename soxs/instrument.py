@@ -325,12 +325,12 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 
     event_params = {}
     event_params["exposure_time"] = exp_time
-    event_params["arf"] = os.path.split(arf.filename)[-1]
+    event_params["arf"] = arf.filename
     event_params["sky_center"] = sky_center
     event_params["pix_center"] = np.array([0.5*(nx+1)]*2)
     event_params["num_pixels"] = nx
     event_params["plate_scale"] = plate_scale
-    event_params["rmf"] = os.path.split(rmf.filename)[-1]
+    event_params["rmf"] = rmf.filename
     event_params["channel_type"] = rmf.header["CHANTYPE"]
     event_params["telescope"] = rmf.header["TELESCOP"]
     event_params["instrument"] = rmf.header["INSTRUME"]
@@ -365,7 +365,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 
         # Step 1: Use ARF to determine which photons are observed
 
-        mylog.info("Applying energy-dependent effective area from %s." % event_params["arf"])
+        mylog.info("Applying energy-dependent effective area from %s." % os.path.split(arf.filename)[-1])
         refband = [parameters["emin"][i], parameters["emax"][i]]
         events = arf.detect_events(evts, exp_time, parameters["flux"][i], refband, prng=prng)
 
@@ -492,7 +492,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     # Step 5: Scatter energies with RMF
 
     if all_events["energy"].size > 0:
-        mylog.info("Scattering energies with RMF %s." % event_params['rmf'])
+        mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
     # Step 6: Add times to events
