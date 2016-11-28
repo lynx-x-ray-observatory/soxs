@@ -33,9 +33,11 @@ def write_spectrum(evtfile, specfile, clobber=False):
     spectype = f["EVENTS"].header["CHANTYPE"]
     rmf = RedistributionMatrixFile(f["EVENTS"].header["RESPFILE"])
     minlength = rmf.n_ch
-    if rmf.cmin == 1: minlength += 1
+    if rmf.cmin == 1:
+        minlength += 1
     spec = np.bincount(f["EVENTS"].data[spectype], minlength=minlength)
-    if rmf.cmin == 1: spec = spec[1:]
+    if rmf.cmin == 1: 
+        spec = spec[1:]
     bins = (np.arange(rmf.n_ch)+rmf.cmin).astype("int32")
 
     col1 = pyfits.Column(name='CHANNEL', format='1J', array=bins)
@@ -64,7 +66,7 @@ def write_spectrum(evtfile, specfile, clobber=False):
     tbhdu.header["BACKFILE"] = "none"
     tbhdu.header["CORRFILE"] = "none"
     tbhdu.header["POISSERR"] = True
-    for key in ["RESPFILE","ANCRFILE","MISSION","TELESCOP","INSTRUME"]:
+    for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
         tbhdu.header[key] = f["EVENTS"].header[key]
     tbhdu.header["AREASCAL"] = 1.0
     tbhdu.header["CORRSCAL"] = 0.0
