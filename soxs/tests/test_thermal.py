@@ -27,7 +27,7 @@ def mymodel(pars, x, xhi=None):
     dx = x[1]-x[0]
     wabs = get_wabs_absorb(x+0.5*dx, pars[0])
     apec = agen.get_spectrum(pars[1], pars[2], pars[3], pars[4])
-    eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.ehi <= x[-1]+0.5*dx)
+    eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
     return dx*wabs*apec.flux.value[eidxs]
 
 def test_thermal():
