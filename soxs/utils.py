@@ -6,8 +6,8 @@ import astropy.wcs as pywcs
 
 soxsLogger = logging.getLogger("soxs")
 
-ufstring = "%(name)-3s: [%(levelname)-9s] %(asctime)s %(message)s"
-cfstring = "%(name)-3s: [%(levelname)-18s] %(asctime)s %(message)s"
+ufstring = "%(name)-3s : [%(levelname)-9s] %(asctime)s %(message)s"
+cfstring = "%(name)-3s : [%(levelname)-18s] %(asctime)s %(message)s"
 
 soxs_sh = logging.StreamHandler()
 # create formatter and add it to the handlers
