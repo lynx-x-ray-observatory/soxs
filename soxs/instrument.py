@@ -5,7 +5,6 @@ import astropy.units as u
 import os
 from collections import defaultdict
 
-from astropy.utils.console import ProgressBar
 from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
@@ -13,6 +12,7 @@ from soxs.utils import mylog, check_file_location, \
 from soxs.background import background_registry
 from soxs.instrument_registry import instrument_registry
 from six import string_types
+from tqdm import tqdm
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -161,29 +161,31 @@ class RedistributionMatrixFile(object):
         fcurr = 0
         last = sorted_e.shape[0]
 
-        with ProgressBar(last) as pbar:
-            for (k, low), high in zip(enumerate(self.elo), self.ehi):
-                # weight function for probabilities from RMF
-                weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
-                weights /= weights.sum()
-                # build channel number list associated to array value,
-                # there are groups of channels in rmfs with nonzero probabilities
-                trueChannel = []
-                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
-                n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-                for start, nchan in zip(f_chan, n_chan):
-                    if nchan == 0:
-                        trueChannel.append(start)
-                    else:
-                        trueChannel += list(range(start, start+nchan))
-                trueChannel = np.array(trueChannel)
-                if len(trueChannel) > 0:
-                    e = sorted_e[fcurr:last]
-                    nn = np.logical_and(low <= e, e < high).sum()
-                    channelInd = prng.choice(len(weights), size=nn, p=weights)
-                    detectedChannels.append(trueChannel[channelInd])
-                    fcurr += nn
-                    pbar.update(fcurr)
+        pbar = tqdm(leave=True, total=last, desc="Scattering energies ")
+        for (k, low), high in zip(enumerate(self.elo), self.ehi):
+            # weight function for probabilities from RMF
+            weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+            weights /= weights.sum()
+            # build channel number list associated to array value,
+            # there are groups of channels in rmfs with nonzero probabilities
+            trueChannel = []
+            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+            for start, nchan in zip(f_chan, n_chan):
+                if nchan == 0:
+                    trueChannel.append(start)
+                else:
+                    trueChannel += list(range(start, start+nchan))
+            trueChannel = np.array(trueChannel)
+            if len(trueChannel) > 0:
+                e = sorted_e[fcurr:last]
+                nn = np.logical_and(low <= e, e < high).sum()
+                channelInd = prng.choice(len(weights), size=nn, p=weights)
+                detectedChannels.append(trueChannel[channelInd])
+                fcurr += nn
+                pbar.update(nn)
+
+        pbar.close()
 
         for key in events:
             events[key] = events[key][eidxs]

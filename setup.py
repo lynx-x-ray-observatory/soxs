@@ -20,7 +20,7 @@ setup(name='soxs',
       author_email='john.zuhone@cfa.harvard.edu',
       url='http://github.com/XRStools/soxs',
       setup_requires=["numpy","cython>=0.24"],
-      install_requires=["six","numpy","astropy"],
+      install_requires=["six","numpy","astropy","tqdm"],
       include_package_data=True,
       scripts=scripts,
       classifiers=[
