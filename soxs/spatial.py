@@ -220,20 +220,30 @@ class AnnulusModel(RadialFunctionModel):
         The outer radius of the annulus in arcseconds.
     num_events : integer
         The number of events to generate. 
+    theta : float, optional
+        The angle through which to rotate the beta model in degrees. Only makes
+        sense if ellipticity is added. Default: 0.0
+    ellipticity : float, optional
+        The ellipticity of the radial profile, expressed as the ratio between the length
+        scales of the x and y coordinates. The value of this parameter will shrink
+        or expand the profile in the direction of the "y" coordinate, so you may need 
+        to rotate to get the shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r_in, r_out, num_events,
-                 prng=np.random):
+                 theta=0.0, ellipticity=1.0, prng=np.random):
         def func(r):
             f = np.zeros(r.size)
             idxs = np.logical_and(r >= r_in, r < r_out)
             f[idxs] = 1.0
             return f
-        super(AnnulusModel, self).__init__(ra0, dec0, func,
-                                           num_events, prng=prng)
+        super(AnnulusModel, self).__init__(ra0, dec0, func, 
+                                           num_events, theta=theta,
+                                           ellipticity=ellipticity, 
+                                           prng=prng)
 
 class RectangleModel(SpatialModel):
     """
