@@ -120,7 +120,8 @@ def convert_rmf(rmffile):
                    "HIERARCH LO_THRESH", "LO_THRES", "RMFVERSN", "TLMIN4", "TLMAX4"]
 
     for key in header_keys:
-        matrix_new.header[key] = matrix.header[key]
+        if key in matrix.header:
+            matrix_new.header[key] = matrix.header[key]
 
     new_f.writeto(os.path.split(rmffile)[-1], clobber=True)
 
