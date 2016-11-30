@@ -2,8 +2,6 @@ import os
 import logging
 import astropy.io.fits as pyfits
 import numpy as np
-from soxs.instrument import RedistributionMatrixFile
-from soxs.spectra import wabs_cross_section
 from copy import copy
 
 soxsLogger = logging.getLogger("soxs")
@@ -174,6 +172,7 @@ def write_event_file(events, parameters, filename, clobber=False):
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
 def get_wabs_absorb(e, nH):
+    from soxs.spectra import wabs_cross_section
     sigma = wabs_cross_section(e)
     return np.exp(-nH*1.0e22*sigma)
 
@@ -197,6 +196,7 @@ def write_spectrum(evtfile, specfile, clobber=False):
     nchan : integer, optional
         The number of channels. Only used if binning without an RMF.
     """
+    from soxs.instrument import RedistributionMatrixFile
     f = pyfits.open(evtfile)
     spectype = f["EVENTS"].header["CHANTYPE"]
     rmf = RedistributionMatrixFile(f["EVENTS"].header["RESPFILE"])
