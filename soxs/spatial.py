@@ -1,6 +1,16 @@
 import numpy as np
-from soxs.utils import construct_wcs
+from soxs.constants import one_arcsec
 import astropy.units as u
+import astropy.wcs as pywcs
+
+def construct_wcs(ra0, dec0):
+    w = pywcs.WCS(naxis=2)
+    w.wcs.crval = [ra0, dec0]
+    w.wcs.crpix = [0.0]*2
+    w.wcs.cdelt = [-one_arcsec, one_arcsec]
+    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
+    w.wcs.cunit = ["deg"]*2
+    return w
 
 def generate_radial_events(num_events, func, ellipticity=1.0, 
                            prng=np.random):
@@ -22,15 +32,19 @@ def rotate_xy(theta, x, y):
     return coords
 
 class SpatialModel(object):
-    def __init__(self, ra, dec):
+    def __init__(self, ra, dec, x, y, w):
         self.ra = u.Quantity(ra, "deg")
         self.dec = u.Quantity(dec, "deg")
+        self.x = u.Quantity(x, "arcsec")
+        self.y = u.Quantity(y, "arcsec")
+        self.w = w
         self.num_events = self.ra.size
 
     def __add__(self, other):
         ra = np.concatenate([self.ra, other.ra])
         dec = np.concatenate([self.dec, other.dec])
-        return SpatialModel(ra, dec)
+        x, y = self.w.all_world2pix(ra, dec, 1)
+        return SpatialModel(ra, dec, x, y, self.w)
 
 class PointSourceModel(SpatialModel):
     """
@@ -53,7 +67,10 @@ class PointSourceModel(SpatialModel):
     def __init__(self, ra0, dec0, num_events):
         ra = ra0*np.ones(num_events)
         dec = dec0*np.ones(num_events)
-        super(PointSourceModel, self).__init__(ra, dec)
+        w = construct_wcs(ra0, dec0)
+        super(PointSourceModel, self).__init__(ra, dec, 
+                                               np.zeros(num_events),
+                                               np.zeros(num_events), w)
 
 class RadialFunctionModel(SpatialModel):
     """
@@ -91,8 +108,9 @@ class RadialFunctionModel(SpatialModel):
                                       prng=prng)
         w = construct_wcs(ra0, dec0)
         coords = rotate_xy(theta, x, y)
-        ra, dec = w.wcs_pix2world(coords[0,:], coords[1,:], 1)
-        super(RadialFunctionModel, self).__init__(ra, dec)
+        ra, dec = self.w.wcs_pix2world(coords[0,:], coords[1,:], 1)
+        super(RadialFunctionModel, self).__init__(ra, dec, coords[0,:], 
+                                                  coords[1,:], w)
 
 class RadialArrayModel(RadialFunctionModel):
     """
@@ -274,7 +292,7 @@ class RectangleModel(SpatialModel):
         y = prng.uniform(low=-0.5*height, high=0.5*height, size=num_events)
         coords = rotate_xy(theta, x, y)
         ra, dec = w.wcs_pix2world(coords[0,:], coords[1,:], 1)
-        super(RectangleModel, self).__init__(ra, dec)
+        super(RectangleModel, self).__init__(ra, dec, coords[0,:], coords[1,:], w)
 
 class FillFOVModel(RectangleModel):
     """

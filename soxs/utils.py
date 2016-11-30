@@ -2,7 +2,6 @@ import os
 import logging
 import astropy.io.fits as pyfits
 import numpy as np
-import astropy.wcs as pywcs
 
 soxsLogger = logging.getLogger("soxs")
 
@@ -69,17 +68,6 @@ def ensure_numpy_array(obj):
         return np.asarray(obj)
     else:
         return np.asarray([obj])
-
-one_arcsec = 1.0/3600.0
-
-def construct_wcs(ra0, dec0):
-    w = pywcs.WCS(naxis=2)
-    w.wcs.crval = [ra0, dec0]
-    w.wcs.crpix = [0.0]*2
-    w.wcs.cdelt = [-one_arcsec, one_arcsec]
-    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
-    w.wcs.cunit = ["deg"]*2
-    return w
 
 def write_event_file(events, parameters, filename, clobber=False):
     from astropy.time import Time, TimeDelta
