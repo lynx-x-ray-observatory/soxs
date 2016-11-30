@@ -6,7 +6,7 @@ import os
 import shutil
 import tempfile
 import astropy.io.fits as pyfits
-from soxs.tests.utils import bin_profile
+from soxs.utils import bin_profile
 from soxs.simput import write_photon_list
 from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
     AuxiliaryResponseFile
