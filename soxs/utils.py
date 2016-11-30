@@ -171,11 +171,6 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
 
-def get_wabs_absorb(e, nH):
-    from soxs.spectra import wabs_cross_section
-    sigma = wabs_cross_section(e)
-    return np.exp(-nH*1.0e22*sigma)
-
 def write_spectrum(evtfile, specfile, clobber=False):
     r"""
     Bin event energies into a spectrum and write it to a FITS binary table. Can bin

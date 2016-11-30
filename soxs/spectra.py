@@ -510,6 +510,10 @@ def wabs_cross_section(E):
     sigma = (c0[idxs]+c1[idxs]*E+c2[idxs]*E*E)*1.0e-24/E**3
     return sigma
 
+def get_wabs_absorb(e, nH):
+    sigma = wabs_cross_section(e)
+    return np.exp(-nH*1.0e22*sigma)
+
 class ConvolvedSpectrum(Spectrum):
     _units = "photon/(s*keV)"
     def __init__(self, spectrum, arf):

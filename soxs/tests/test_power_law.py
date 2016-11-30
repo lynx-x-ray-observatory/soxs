@@ -2,15 +2,14 @@ import numpy as np
 import os
 import shutil
 import tempfile
-from soxs.spectra import Spectrum
+from soxs.spectra import Spectrum, get_wabs_absorb
 from soxs.spatial import PointSourceModel
 from soxs.simput import write_photon_list
 from soxs.instrument_registry import \
     get_instrument_from_registry
 from soxs.instrument import instrument_simulator, \
     RedistributionMatrixFile, AuxiliaryResponseFile
-from soxs.utils import write_spectrum, get_wabs_absorb, \
-    convert_rmf
+from soxs.utils import write_spectrum, convert_rmf
 from sherpa.astro.ui import load_user_model, add_user_pars, \
     load_pha, ignore, fit, set_model, set_stat, set_method, \
     covar, get_covar_results, set_covar_opt
