@@ -108,7 +108,7 @@ class RadialFunctionModel(SpatialModel):
                                       prng=prng)
         w = construct_wcs(ra0, dec0)
         coords = rotate_xy(theta, x, y)
-        ra, dec = self.w.wcs_pix2world(coords[0,:], coords[1,:], 1)
+        ra, dec = w.wcs_pix2world(coords[0,:], coords[1,:], 1)
         super(RadialFunctionModel, self).__init__(ra, dec, coords[0,:], 
                                                   coords[1,:], w)
 
