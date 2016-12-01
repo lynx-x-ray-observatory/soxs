@@ -6,7 +6,7 @@ import os
 import shutil
 import tempfile
 import astropy.io.fits as pyfits
-from soxs.utils import bin_profile
+from soxs.events import write_radial_profile
 from soxs.simput import write_photon_list
 from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
     AuxiliaryResponseFile
@@ -15,7 +15,7 @@ from soxs.instrument_registry import get_instrument_from_registry, \
 from numpy.random import RandomState
 from sherpa.astro.ui import set_source, freeze, \
     fit, covar, get_covar_results, set_covar_opt, \
-    load_arrays, Data1D, set_stat, set_method
+    load_data, set_stat, set_method
 
 kT = 6.0
 Z = 0.3
@@ -94,30 +94,16 @@ def test_annulus():
                          instr_bkgnd=False, prng=prng)
 
     inst = get_instrument_from_registry("hdxi")
-    dtheta = inst["fov"]*60.0/inst["num_pixels"]
     arf = AuxiliaryResponseFile(inst["arf"])
     cspec = ConvolvedSpectrum(spec, arf)
     ph_flux = cspec.get_flux_in_band(0.5, 7.0)[0].value
     S0 = ph_flux/(np.pi*(r_out**2-r_in**2))
 
-    f = pyfits.open("ann_evt.fits")
-    e = f["EVENTS"].data["ENERGY"]
-    idxs = np.logical_and(e > 500.0, e < 7000.0)
-    x = f["EVENTS"].data["X"][idxs]
-    y = f["EVENTS"].data["Y"][idxs]
-    x0 = f["EVENTS"].header["TCRPX2"]
-    y0 = f["EVENTS"].header["TCRPX3"]
-    f.close()
+    write_radial_profile("ann_evt.fits", "ann_evt_profile.fits", ra0, dec0,
+                         1.1*r_in, 0.9*r_out, 100, ctr_type="celestial", 
+                         emin=0.5, emax=7.0, clobber=True)
 
-    rbin, S = bin_profile(x, y, x0, y0, 1.1*r_in/dtheta, 0.9*r_out/dtheta, 100)
-    rbin *= dtheta
-    rmid = 0.5*(rbin[1:]+rbin[:-1])
-    A = np.pi*(rbin[1:]**2-rbin[:-1]**2)
-
-    Serr = np.sqrt(S)/A/exp_time
-    S = S/A/exp_time
-
-    load_arrays(1, rmid, S, Serr, Data1D)
+    load_data(1, "ann_evt_profile.fits", 3, ["RMID","SUR_BRI","SUR_BRI_ERR"])
     set_stat("chi2")
     set_method("levmar")
     set_source("const1d.src")
@@ -153,30 +139,16 @@ def test_beta_model():
                          instr_bkgnd=False, prng=prng)
 
     inst = get_instrument_from_registry("hdxi")
-    dtheta = inst["fov"]*60.0/inst["num_pixels"]
     arf = AuxiliaryResponseFile(inst["arf"])
     cspec = ConvolvedSpectrum(spec, arf)
     ph_flux = cspec.get_flux_in_band(0.5, 7.0)[0].value
     S0 = 3.0*ph_flux/(2.0*np.pi*r_c*r_c)
 
-    f = pyfits.open("beta_evt.fits")
-    e = f["EVENTS"].data["ENERGY"]
-    idxs = np.logical_and(e > 500.0, e < 7000.0)
-    x = f["EVENTS"].data["X"][idxs]
-    y = f["EVENTS"].data["Y"][idxs]
-    x0 = f["EVENTS"].header["TCRPX2"]
-    y0 = f["EVENTS"].header["TCRPX3"]
-    f.close()
+    write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", ra0, dec0,
+                         0.0, 200.0, 200, ctr_type="celestial", emin=0.5, 
+                         emax=7.0, clobber=True)
 
-    rbin, S = bin_profile(x, y, x0, y0, 0.0, 200.0, 200)
-    rbin *= dtheta
-    rmid = 0.5*(rbin[1:]+rbin[:-1])
-    A = np.pi*(rbin[1:]**2-rbin[:-1]**2)
-
-    Serr = np.sqrt(S)/A/exp_time
-    S = S/A/exp_time
-
-    load_arrays(1, rmid, S, Serr, Data1D)
+    load_data(1, "beta_evt_profile.fits", 3, ["RMID","SUR_BRI","SUR_BRI_ERR"])
     set_stat("chi2")
     set_method("levmar")
     set_source("beta1d.src")

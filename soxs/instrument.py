@@ -8,7 +8,8 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array, write_event_file
+    ensure_numpy_array
+from soxs.events import write_event_file
 from soxs.background import background_registry, ConvolvedBackgroundSpectrum
 from soxs.instrument_registry import instrument_registry
 from six import string_types
