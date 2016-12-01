@@ -25,7 +25,7 @@ nH = 0.04
 exp_time = 5.0e4
 area = 30000.0
 
-prng = RandomState(24)
+prng = RandomState(23)
 
 agen = ApecGenerator(0.05, 12.0, 10000, broadening=True)
 spec = agen.get_spectrum(kT, Z, redshift, norm)
@@ -145,7 +145,7 @@ def test_beta_model():
     S0 = 3.0*ph_flux/(2.0*np.pi*r_c*r_c)
 
     write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", ra0, dec0,
-                         0.0, 200.0, 200, ctr_type="celestial", emin=0.5, 
+                         0.0, 100.0, 200, ctr_type="celestial", emin=0.5, 
                          emax=7.0, clobber=True)
 
     load_data(1, "beta_evt_profile.fits", 3, ["RMID","SUR_BRI","SUR_BRI_ERR"])
