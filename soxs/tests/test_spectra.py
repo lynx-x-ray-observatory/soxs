@@ -25,6 +25,11 @@ def test_arithmetic():
 
     assert_allclose(spec6.flux, flux6)
 
+    spec7 = Spectrum.from_constant(1.0e-4)
+    spec8 = spec1+spec7
+
+    assert_allclose(spec8.flux.value, spec1.flux.value+1.0e-4)
+
 def test_read_write():
 
     tmpdir = tempfile.mkdtemp()
