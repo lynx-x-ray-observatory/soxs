@@ -43,7 +43,6 @@ def test_point_source():
 
     pt_src = PointSourceModel(ra0, dec0, e.size)
 
-
     write_photon_list("pt_src", "pt_src", e.flux, pt_src.ra, pt_src.dec,
                       e, clobber=True)
 
