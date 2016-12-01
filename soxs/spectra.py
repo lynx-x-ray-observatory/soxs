@@ -486,11 +486,11 @@ class ApecGenerator(object):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
             for elem in cosmic_elem:
-                cspec[i,:] += self._make_spectrum(kT, elem, v, line_fields, 
+                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
                                                   coco_fields, scale_factor)
             # Next do the metals
             for elem in metal_elem:
-                mspec[i,:] += self._make_spectrum(kT, elem, v, line_fields, 
+                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
                                                   coco_fields, scale_factor)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
