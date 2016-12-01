@@ -9,7 +9,7 @@ from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array, write_event_file
-from soxs.background import background_registry
+from soxs.background import background_registry, ConvolvedBackgroundSpectrum
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -213,12 +213,13 @@ def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
     # for the observation, otherwise it's a particle background and assume area = 1.
     if bkgnd_spec.bkgnd_type == "astrophysical":
         arf = AuxiliaryResponseFile(check_file_location(event_params["arf"], "files"))
-        area = arf.interpolate_area(bkgnd_spec.emid).value
+        conv_bkgnd_spec = ConvolvedBackgroundSpectrum(bkgnd_spec, arf)
+        bkg_events["energy"] = conv_bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                                                 fov, prng=prng)
     else:
         area = (focal_length/default_f[bkgnd_name])**2
-
-    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                        area, fov, prng=prng)
+        bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                                            area, fov, prng=prng)
 
     n_events = bkg_events["energy"].size
 

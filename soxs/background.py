@@ -1,8 +1,10 @@
 from __future__ import print_function
 import numpy as np
 import os
-from soxs.spectra import Spectrum, ConvolvedSpectrum
+from soxs.spectra import Spectrum, ConvolvedSpectrum, \
+    _generate_energies, Energies
 from soxs.utils import soxs_files_path
+from soxs.constants import erg_per_keV
 
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
@@ -22,7 +24,7 @@ class BackgroundSpectrum(Spectrum):
         ----------
         t_exp : float
             The exposure time in seconds.
-        area : float or NumPy array
+        area : float
             The effective area in cm**2. If one is creating events for a SIMPUT file,
             a constant should be used and it must be large enough so that a sufficiently
             large sample is drawn for the ARF.
@@ -33,15 +35,40 @@ class BackgroundSpectrum(Spectrum):
             if you have a reason to generate the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
-        A = area*fov*fov
-        ret = super(BackgroundSpectrum, self).generate_energies(t_exp, A, prng=prng)
-        return ret.value
+        if prng is None:
+            prng = np.random
+        rate = area*fov*fov*self.total_flux.value
+        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        flux = np.sum(energy)*erg_per_keV/t_exp/area/(fov*fov)
+        energies = Energies(energy, flux, "erg/(cm**2*arcmin**2*s)")
+        return energies
 
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
 
-    def generate_energies(self, t_exp, area, fov, prng=None):
-        raise NotImplementedError()
+    def generate_energies(self, t_exp, fov, prng=None):
+        """
+        Generate photon energies from this convolved background spectrum given an
+        exposure time and field of view.
+
+        Parameters
+        ----------
+        t_exp : float
+            The exposure time in seconds.
+        fov : float
+            The width of the field of view on a side in arcminutes.
+        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+            A pseudo-random number generator. Typically will only be specified
+            if you have a reason to generate the same set of random numbers, such as for a
+            test. Default is the :mod:`numpy.random` module.
+        """
+        if prng is None:
+            prng = np.random
+        rate = fov*fov*self.total_flux.value
+        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        flux = np.sum(energy)*erg_per_keV/t_exp/(fov*fov)
+        energies = Energies(energy, flux, "erg/(arcmin**2*s)")
+        return energies
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
