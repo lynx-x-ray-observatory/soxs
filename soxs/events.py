@@ -2,7 +2,6 @@ import numpy as np
 import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import os
-from IPython import embed
 
 def wcs_from_event_file(f):
     h = f["EVENTS"].header
