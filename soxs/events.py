@@ -182,10 +182,43 @@ def write_spectrum(evtfile, specfile, clobber=False):
 
     hdulist.writeto(specfile, clobber=clobber)
 
-def write_radial_profile(evt_file, out_file, x0, y0, rmin, 
+def write_radial_profile(evt_file, out_file, ctr, rmin, 
                          rmax, nbins, ctr_type="physical", 
                          emin=None, emax=None, clobber=False):
+    r"""
+    Bin up events into a radial profile and write them to a FITS
+    table. 
 
+    Parameters
+    ----------
+    evt_file : string
+        Input event file.
+    out_file : string
+        The output file to write the profile to. 
+    ctr : array-like
+        The central coordinate of the profile. Can either be in 
+        physical pixel coordinates (the default) or celestial
+        coordinates (RA, Dec) in degrees. If the latter, the 
+        ``ctr_type`` keyword argument must be set to "physical".
+    rmin : float
+        The minimum radius of the profile, in arcseconds. 
+    rmax : float
+        The maximum radius of the profile, in arcseconds.
+    nbins : integer
+        The number of bins in the profile.
+    ctr_type : string, optional
+        The type of center coordinate. Either "physical" for pixel
+        coordinates (the default), or "celestial" for (RA, Dec). 
+    emin : float
+        The minimum energy of the events to be binned in keV. Default
+        is the lowest energy available.
+    emax : float
+        The maximum energy of the events to be binned in keV. Default
+        is the highest energy available.
+    clobber : boolean, optional
+        Whether or not to clobber an existing file with the same name.
+        Default: False
+    """
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]
     if emin is None:
@@ -205,9 +238,9 @@ def write_radial_profile(evt_file, out_file, x0, y0, rmin,
     f.close()
 
     if ctr_type == "celestial":
-        x0, y0 = w.all_world2pix(x0, y0, 1)
+        ctr = w.all_world2pix(ctr[0], ctr[1], 1)
 
-    r = np.sqrt((x-x0)**2+(y-y0)**2)
+    r = np.sqrt((x-ctr[0])**2+(y-ctr[1])**2)
     rbin = np.linspace(rmin/dtheta, rmax/dtheta, nbins+1)
     C, _ = np.histogram(r, bins=rbin)
     rbin *= dtheta
@@ -261,7 +294,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     emax : float, optional
         The maximum energy of the photons to put in the image, in keV.
     clobber : boolean, optional
-        Set to True to overwrite a previous file. Default: False
+        Whether or not to clobber an existing file with the same name.
+        Default: False
     """
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]

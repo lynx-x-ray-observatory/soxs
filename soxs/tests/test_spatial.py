@@ -99,7 +99,7 @@ def test_annulus():
     ph_flux = cspec.get_flux_in_band(0.5, 7.0)[0].value
     S0 = ph_flux/(np.pi*(r_out**2-r_in**2))
 
-    write_radial_profile("ann_evt.fits", "ann_evt_profile.fits", ra0, dec0,
+    write_radial_profile("ann_evt.fits", "ann_evt_profile.fits", [ra0, dec0],
                          1.1*r_in, 0.9*r_out, 100, ctr_type="celestial", 
                          emin=0.5, emax=7.0, clobber=True)
 
@@ -144,7 +144,7 @@ def test_beta_model():
     ph_flux = cspec.get_flux_in_band(0.5, 7.0)[0].value
     S0 = 3.0*ph_flux/(2.0*np.pi*r_c*r_c)
 
-    write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", ra0, dec0,
+    write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", [ra0, dec0],
                          0.0, 100.0, 200, ctr_type="celestial", emin=0.5, 
                          emax=7.0, clobber=True)
 
