@@ -41,8 +41,8 @@ class SpatialModel(object):
         self.num_events = self.ra.size
 
     def __add__(self, other):
-        ra = np.concatenate([self.ra, other.ra])
-        dec = np.concatenate([self.dec, other.dec])
+        ra = np.concatenate([self.ra.value, other.ra.value])
+        dec = np.concatenate([self.dec.value, other.dec.value])
         x, y = self.w.all_world2pix(ra, dec, 1)
         return SpatialModel(ra, dec, x, y, self.w)
 
