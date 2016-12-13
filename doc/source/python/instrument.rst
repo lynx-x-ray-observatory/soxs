@@ -208,7 +208,7 @@ The various parts of each instrument specification are:
   (see :ref:`background` for more details).
 * ``"psf"``: The PSF specification to use. At time of writing, the only one available is that of
   a Gaussian PSF, with a single parameter, the HPD of the PSF. This is specified using a Python
-  list, e.g. ``["gaussian", 0.5]``
+  list, e.g. ``["gaussian", 0.5]``. This can also be set to ``None`` for no PSF.
 * ``"rmf"``: The file containing the RMF.
 * ``"fov"``: The field of view in arcminutes. 
 * ``"focal_length"``: The focal length of the telescope in meters.
@@ -251,3 +251,10 @@ using :func:`~soxs.instrument.write_instrument_json`:
     from soxs import write_instrument_json
     # Using the "new_mucal" from above
     write_instrument_json("mucal_high_res", "mucal_high_res.json")
+
+.. warning::
+
+    Since JSON files use Javascript-style notation instead of Python's, there are two 
+    differences one must note when creating JSON-based instrument specifications:
+    * Python's ``None`` will convert to ``null``, and vice-versa.
+    * ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
