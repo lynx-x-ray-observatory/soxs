@@ -9,8 +9,25 @@ simulator and make derivative products from them.
 ``write_image``
 ---------------
 
+:func:`~soxs.events.write_image` bins up events into an image according to the coordinate
+system inherent in the event file and writes the image to a FITS file. Images of sky, detector,
+or chip coordinates can be written. You can also restrict events within a particular energy range 
+to be written to the file.
+
 ``write_radial_profile``
 ------------------------
 
 ``write_spectrum``
 ------------------
+
+:func:`~soxs.events.write_image` bins up events into a spectrum and writes the spectrum
+to a FITS file:
+
+.. code-block:: python
+
+    from soxs import write_spectrum
+    write_spectrum("my_evt.fits", "my_spec.pha", clobber=True)
+
+This spectrum file can be read and fit with standard X-ray analysis software such as 
+`XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_, `ISIS <http://space.mit.edu/CXC/ISIS/>`_, 
+and `Sherpa <http://cxc.harvard.edu/sherpa/>`_. 
