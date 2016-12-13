@@ -10,6 +10,7 @@ from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
     m_u
+from soxs.instrument import AuxiliaryResponseFile
 import astropy.io.fits as pyfits
 import astropy.units as u
 
@@ -510,10 +511,13 @@ class ConvolvedSpectrum(Spectrum):
 
         Parameters
         ----------
-        spectrum
-        arf
-
+        spectrum : :class:`~soxs.spectra.Spectrum` object
+            The input spectrum to convolve with.
+        arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
+            The ARF to use in the convolution.
         """
+        if not isinstance(arf, AuxiliaryResponseFile):
+            arf = AuxiliaryResponseFile(arf)
         self.arf = arf
         earea = arf.interpolate_area(spectrum.emid)
         rate = spectrum.flux * earea
