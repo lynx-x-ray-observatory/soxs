@@ -77,29 +77,42 @@ file. The functional form of the :math:`\beta`-model for a surface brightness pr
 
 .. code-block:: text
 
-    usage: make_beta_model [-h] [--area AREA] [--append] [--clobber]
+    usage: make_beta_model [-h] [--area AREA] [--theta THETA]
+                           [--ellipticity ELLIPTICITY] [--append] [--clobber]
                            simput_prefix phlist_prefix ra0 dec0 r_c beta specfile
                            exp_time
     
     Create a SIMPUT photon list of a beta-model source.
     
     positional arguments:
-      simput_prefix  The prefix of the SIMPUT file to be used as the root of the
-                     catalog. If it does not exist, it will be created.
-      phlist_prefix  The prefix of the photon list file to be written.
-      ra0            The right ascension of the source center in degrees.
-      dec0           The declination of the source center in degrees.
-      r_c            The core radius in arcseconds.
-      beta           The beta parameter.
-      specfile       The file containing the spectrum to be used.
-      exp_time       The exposure time to use, in seconds.
+      simput_prefix         The prefix of the SIMPUT file to be used as the root
+                            of the catalog. If it does not exist, it will be
+                            created.
+      phlist_prefix         The prefix of the photon list file to be written.
+      ra0                   The right ascension of the source center in degrees.
+      dec0                  The declination of the source center in degrees.
+      r_c                   The core radius in arcseconds.
+      beta                  The beta parameter.
+      specfile              The file containing the spectrum to be used.
+      exp_time              The exposure time to use, in seconds.
     
     optional arguments:
-      -h, --help     show this help message and exit
-      --area AREA    The collecting area to use, in cm^2. Default: 30000.0
-      --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Whether or not to clobber an existing file with the same
-                     name.
+      -h, --help            show this help message and exit
+      --area AREA           The collecting area to use, in cm^2. Default: 30000.0
+      --theta THETA         The angle through which to rotate the beta model in
+                            degrees. Only makes sense if ellipticity is added.
+                            Default: 0.0
+      --ellipticity ELLIPTICITY
+                            The ellipticity of the radial profile, expressed as
+                            the ratio between the length scales of the x and y
+                            coordinates. The value of this parameter will shrink
+                            or expand the profile in the direction of the "y"
+                            coordinate, so you may need to rotate to get the shape
+                            you want. Default: 1.0
+      --append              If set, append a new source an existing SIMPUT
+                            catalog.
+      --clobber             Whether or not to clobber an existing file with the
+                            same name.
                      
 Examples
 ++++++++
@@ -122,6 +135,12 @@ Specify a different collecting area for the photons.
 
     [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --area=50000. --clobber
 
+Add ellipticity and tilt the model:
+
+.. code-block:: bash
+
+    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --ellipticity=0.5 --theta=45.0 --clobber
+
 ``make_annulus_source``
 -----------------------
 
@@ -130,7 +149,8 @@ from a spectrum supplied in a file.
 
 .. code-block:: text
 
-    usage: make_annulus_source [-h] [--area AREA] [--append] [--clobber]
+    usage: make_annulus_source [-h] [--theta THETA] [--ellipticity ELLIPTICITY]
+                               [--area AREA] [--append] [--clobber]
                                simput_prefix phlist_prefix ra0 dec0 r_in r_out
                                specfile exp_time
     
@@ -138,22 +158,34 @@ from a spectrum supplied in a file.
     brightness from a spectrum supplied in a file.
     
     positional arguments:
-      simput_prefix  The prefix of the SIMPUT file to be used as the root of the
-                     catalog. If it does not exist, it will be created.
-      phlist_prefix  The prefix of the photon list file to be written.
-      ra0            The right ascension of the source center in degrees.
-      dec0           The declination of the source center in degrees.
-      r_in           The inner annulus of the source center in arcseconds.
-      r_out          The outer annulus of the source center in arcseconds.
-      specfile       The file containing the spectrum to be used.
-      exp_time       The exposure time to use, in seconds.
+      simput_prefix         The prefix of the SIMPUT file to be used as the root
+                            of the catalog. If it does not exist, it will be
+                            created.
+      phlist_prefix         The prefix of the photon list file to be written.
+      ra0                   The right ascension of the source center in degrees.
+      dec0                  The declination of the source center in degrees.
+      r_in                  The inner annulus of the source center in arcseconds.
+      r_out                 The outer annulus of the source center in arcseconds.
+      specfile              The file containing the spectrum to be used.
+      exp_time              The exposure time to use, in seconds.
     
     optional arguments:
-      -h, --help     show this help message and exit
-      --area AREA    The collecting area to use, in cm^2. Default: 30000.0
-      --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Whether or not to clobber an existing file with the same
-                     name.
+      -h, --help            show this help message and exit
+      --theta THETA         The angle through which to rotate the beta model in
+                            degrees. Only makes sense if ellipticity is added.
+                            Default: 0.0
+      --ellipticity ELLIPTICITY
+                            The ellipticity of the radial profile, expressed as
+                            the ratio between the length scales of the x and y
+                            coordinates. The value of this parameter will shrink
+                            or expand the profile in the direction of the "y"
+                            coordinate, so you may need to rotate to get the shape
+                            you want. Default: 1.0
+      --area AREA           The collecting area to use, in cm^2. Default: 30000.0
+      --append              If set, append a new source an existing SIMPUT
+                            catalog.
+      --clobber             Whether or not to clobber an existing file with the
+                            same name.
 
 Examples
 ++++++++
@@ -175,6 +207,12 @@ Specify a different collecting area for the photons.
 .. code-block:: bash
 
     [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --area=50000. --clobber
+
+Add ellipticity and tilt the model:
+
+.. code-block:: bash
+
+    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --ellipticity=2.0 --theta=30.0 --clobber
 
 ``make_rectangle_source``
 -------------------------
