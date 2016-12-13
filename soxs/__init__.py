@@ -33,3 +33,8 @@ from soxs.spatial import \
     BetaModel, \
     FillFOVModel, \
     RectangleModel
+
+from soxs.events import \
+    write_spectrum, \
+    write_image, \
+    write_radial_profile

@@ -32,9 +32,29 @@ which prints something like:
     ...
     
 Applying instrumental and astrophysical backgrounds are handled somewhat differently. Each instrument 
-specification has a default instrumental/particle background given in its entry in the SOXS instrument 
-registry, which simply refers to the entry in the background registry. To change the instrumental background,
-one would need to define a new instrument specification with a different background. 
+specification in the SOXS instrument registry has a default instrumental/particle background given by its ``"bkgnd"``
+entry, which simply refers to the entry in the background registry:
+
+.. code-block:: python
+
+    from soxs import get_instrument_from_registry
+    hdxi = get_instrument_from_registry("hdxi")
+    print(hdxi)
+ 
+.. code-block:: pycon
+
+    {'arf': 'xrs_hdxi_3x10.arf',
+     'bkgnd': 'acisi',
+     'dither': True,
+     'focal_length': 10.0,
+     'fov': 20.0,
+     'name': 'hdxi_3x10',
+     'num_pixels': 4096,
+     'psf': ['gaussian', 0.5],
+     'rmf': 'xrs_hdxi.rmf'}
+
+The ``"bkgnd"`` entry can also be set to ``None``, which corresponds to no particle background. To change 
+the particle background, one would need to define a new instrument specification with a different background. 
 
 The default instrumental background in SOXS for the *Lynx* HDXI is the *Chandra*/ACIS-I particle 
 background, named ``"acisi"``, and the default instrumental background for the *Lynx* microcalorimeter 

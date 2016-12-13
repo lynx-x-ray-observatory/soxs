@@ -1,8 +1,19 @@
 import numpy as np
-from soxs.utils import construct_wcs
+from soxs.constants import one_arcsec
 import astropy.units as u
+import astropy.wcs as pywcs
 
-def generate_radial_events(num_events, func, prng=np.random):
+def construct_wcs(ra0, dec0):
+    w = pywcs.WCS(naxis=2)
+    w.wcs.crval = [ra0, dec0]
+    w.wcs.crpix = [0.0]*2
+    w.wcs.cdelt = [-one_arcsec, one_arcsec]
+    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
+    w.wcs.cunit = ["deg"]*2
+    return w
+
+def generate_radial_events(num_events, func, ellipticity=1.0, 
+                           prng=np.random):
     rbins = np.linspace(0.0, 3000.0, 100000)
     rmid = 0.5*(rbins[1:]+rbins[:-1])
     pdf = func(rmid)*rmid
@@ -10,19 +21,30 @@ def generate_radial_events(num_events, func, prng=np.random):
     radius = prng.choice(rmid, size=num_events, p=pdf)
     theta = 2.*np.pi*prng.uniform(size=num_events)
     x = radius*np.cos(theta)
-    y = radius*np.sin(theta)
+    y = radius*np.sin(theta)*ellipticity
     return x, y
 
+def rotate_xy(theta, x, y):
+    theta_rad = np.deg2rad(theta)
+    rot_mat = np.array([[np.cos(theta_rad), -np.sin(theta_rad)],
+                        [np.sin(theta_rad), np.cos(theta_rad)]])
+    coords = np.dot(rot_mat, np.array([x, y]))
+    return coords
+
 class SpatialModel(object):
-    def __init__(self, ra, dec):
+    def __init__(self, ra, dec, x, y, w):
         self.ra = u.Quantity(ra, "deg")
         self.dec = u.Quantity(dec, "deg")
+        self.x = u.Quantity(x, "arcsec")
+        self.y = u.Quantity(y, "arcsec")
+        self.w = w
         self.num_events = self.ra.size
 
     def __add__(self, other):
-        ra = np.concatenate([self.ra, other.ra])
-        dec = np.concatenate([self.dec, other.dec])
-        return SpatialModel(ra, dec)
+        ra = np.concatenate([self.ra.value, other.ra.value])
+        dec = np.concatenate([self.dec.value, other.dec.value])
+        x, y = self.w.all_world2pix(ra, dec, 1)
+        return SpatialModel(ra, dec, x, y, self.w)
 
 class PointSourceModel(SpatialModel):
     """
@@ -45,7 +67,10 @@ class PointSourceModel(SpatialModel):
     def __init__(self, ra0, dec0, num_events):
         ra = ra0*np.ones(num_events)
         dec = dec0*np.ones(num_events)
-        super(PointSourceModel, self).__init__(ra, dec)
+        w = construct_wcs(ra0, dec0)
+        super(PointSourceModel, self).__init__(ra, dec, 
+                                               np.zeros(num_events),
+                                               np.zeros(num_events), w)
 
 class RadialFunctionModel(SpatialModel):
     """
@@ -63,17 +88,29 @@ class RadialFunctionModel(SpatialModel):
         surface brightness profile. 
     num_events : integer
         The number of events to generate. 
+    theta : float, optional
+        The angle through which to rotate the beta model in degrees. Only makes
+        sense if ellipticity is added. Default: 0.0
+    ellipticity : float, optional
+        The ellipticity of the radial profile, expressed as the ratio between the length
+        scales of the x and y coordinates. The value of this parameter will shrink
+        or expand the profile in the direction of the "y" coordinate, so you may need 
+        to rotate to get the shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
-    def __init__(self, ra0, dec0, func, num_events, prng=np.random):
+    def __init__(self, ra0, dec0, func, num_events, theta=0.0, 
+                 ellipticity=1.0, prng=np.random):
         x, y = generate_radial_events(num_events, func,
+                                      ellipticity=ellipticity, 
                                       prng=prng)
         w = construct_wcs(ra0, dec0)
-        ra, dec = w.wcs_pix2world(x, y, 1)
-        super(RadialFunctionModel, self).__init__(ra, dec)
+        coords = rotate_xy(theta, x, y)
+        ra, dec = w.wcs_pix2world(coords[0,:], coords[1,:], 1)
+        super(RadialFunctionModel, self).__init__(ra, dec, coords[0,:], 
+                                                  coords[1,:], w)
 
 class RadialArrayModel(RadialFunctionModel):
     """
@@ -92,15 +129,25 @@ class RadialArrayModel(RadialFunctionModel):
         The array of the surface brightness of the profile. 
     num_events : integer
         The number of events to generate. 
+    theta : float, optional
+        The angle through which to rotate the beta model in degrees. Only makes
+        sense if ellipticity is added. Default: 0.0
+    ellipticity : float, optional
+        The ellipticity of the radial profile, expressed as the ratio between the length
+        scales of the x and y coordinates. The value of this parameter will shrink
+        or expand the profile in the direction of the "y" coordinate, so you may need 
+        to rotate to get the shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
-    def __init__(self, ra0, dec0, r, S_r, num_events, prng=np.random):
+    def __init__(self, ra0, dec0, r, S_r, num_events, theta=0.0, 
+                 ellipticity=1.0, prng=np.random):
         func = lambda rr: np.interp(rr, r, S_r, left=0.0, right=0.0)
-        super(RadialArrayModel, self).__init__(ra0, dec0, func,
-                                               num_events, prng=prng)
+        super(RadialArrayModel, self).__init__(ra0, dec0, func, num_events,
+                                               theta=theta, ellipticity=ellipticity,
+                                               prng=prng)
 
 class RadialFileModel(RadialArrayModel):
     """
@@ -119,15 +166,25 @@ class RadialFileModel(RadialArrayModel):
         columns. 
     num_events : integer
         The number of events to generate. 
+    theta : float, optional
+        The angle through which to rotate the beta model in degrees. Only makes
+        sense if ellipticity is added. Default: 0.0
+    ellipticity : float, optional
+        The ellipticity of the radial profile, expressed as the ratio between the length
+        scales of the x and y coordinates. The value of this parameter will shrink
+        or expand the profile in the direction of the "y" coordinate, so you may need 
+        to rotate to get the shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
-    def __init__(self, ra0, dec0, radfile, num_events, prng=np.random):
+    def __init__(self, ra0, dec0, radfile, num_events, theta=0.0, 
+                 ellipticity=1.0, prng=np.random):
         r, S_r = np.loadtxt(radfile, unpack=True)
         super(RadialFileModel, self).__init__(ra0, dec0, r, S_r, 
-                                              num_events, prng=prng)
+                                              num_events, theta=theta,
+                                              ellipticity=ellipticity, prng=prng)
 
 class BetaModel(RadialFunctionModel):
     """
@@ -145,16 +202,25 @@ class BetaModel(RadialFunctionModel):
         The "beta" parameter of the profile.
     num_events : integer
         The number of events to generate. 
+    theta : float, optional
+        The angle through which to rotate the beta model in degrees. Only makes
+        sense if ellipticity is added. Default: 0.0
+    ellipticity : float, optional
+        The ellipticity of the radial profile, expressed as the ratio between the length
+        scales of the x and y coordinates. The value of this parameter will shrink
+        or expand the profile in the direction of the "y" coordinate, so you may need 
+        to rotate to get the shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r_c, beta, num_events,
-                 prng=np.random):
+                 theta=0.0, ellipticity=1.0, prng=np.random):
         func = lambda r: (1.0+(r/r_c)**2)**(-3*beta+0.5)
         super(BetaModel, self).__init__(ra0, dec0, func,
-                                        num_events, prng=prng)
+                                        num_events, theta=theta, 
+                                        ellipticity=ellipticity, prng=prng)
 
 class AnnulusModel(RadialFunctionModel):
     """
@@ -172,20 +238,30 @@ class AnnulusModel(RadialFunctionModel):
         The outer radius of the annulus in arcseconds.
     num_events : integer
         The number of events to generate. 
+    theta : float, optional
+        The angle through which to rotate the beta model in degrees. Only makes
+        sense if ellipticity is added. Default: 0.0
+    ellipticity : float, optional
+        The ellipticity of the radial profile, expressed as the ratio between the length
+        scales of the x and y coordinates. The value of this parameter will shrink
+        or expand the profile in the direction of the "y" coordinate, so you may need 
+        to rotate to get the shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be specified
         if you have a reason to generate the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r_in, r_out, num_events,
-                 prng=np.random):
+                 theta=0.0, ellipticity=1.0, prng=np.random):
         def func(r):
             f = np.zeros(r.size)
             idxs = np.logical_and(r >= r_in, r < r_out)
             f[idxs] = 1.0
             return f
-        super(AnnulusModel, self).__init__(ra0, dec0, func,
-                                           num_events, prng=prng)
+        super(AnnulusModel, self).__init__(ra0, dec0, func, 
+                                           num_events, theta=theta,
+                                           ellipticity=ellipticity, 
+                                           prng=prng)
 
 class RectangleModel(SpatialModel):
     """
@@ -214,12 +290,9 @@ class RectangleModel(SpatialModel):
         w = construct_wcs(ra0, dec0)
         x = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
         y = prng.uniform(low=-0.5*height, high=0.5*height, size=num_events)
-        theta_rad = np.deg2rad(theta)
-        rot_mat = np.array([[np.cos(theta_rad), -np.sin(theta_rad)],
-                            [np.sin(theta_rad), np.cos(theta_rad)]])
-        coords = np.dot(rot_mat, np.array([x, y]))
+        coords = rotate_xy(theta, x, y)
         ra, dec = w.wcs_pix2world(coords[0,:], coords[1,:], 1)
-        super(RectangleModel, self).__init__(ra, dec)
+        super(RectangleModel, self).__init__(ra, dec, coords[0,:], coords[1,:], w)
 
 class FillFOVModel(RectangleModel):
     """

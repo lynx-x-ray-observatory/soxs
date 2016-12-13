@@ -108,7 +108,7 @@ def add_instrument_to_registry(inst_spec):
         raise RuntimeError("One or more items is missing from the instrument specification!\n"
                            "Items present: %s\nItems needed: %s" % (set(inst.keys()), default_set))
     instrument_registry[name] = inst
-    mylog.info("The %s instrument specification has been added to the instrument registry." % name)
+    mylog.debug("The %s instrument specification has been added to the instrument registry." % name)
     return name
 
 def get_instrument_from_registry(name):

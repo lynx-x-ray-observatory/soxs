@@ -25,6 +25,11 @@ def test_arithmetic():
 
     assert_allclose(spec6.flux, flux6)
 
+    spec7 = Spectrum.from_constant(1.0e-4)
+    spec8 = spec1+spec7
+
+    assert_allclose(spec8.flux.value, spec1.flux.value+1.0e-4)
+
 def test_read_write():
 
     tmpdir = tempfile.mkdtemp()
@@ -42,3 +47,15 @@ def test_read_write():
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
+
+def test_rescale_flux():
+    spec = Spectrum.from_powerlaw(2.0, 0.01, 1.0)
+
+    spec.rescale_flux(1.0e-4, emin=0.5, emax=7.0, flux_type="photons")
+    f = spec.get_flux_in_band(0.5, 7.0)[0]
+    assert_allclose(1.0e-4, f.value)
+
+    spec.rescale_flux(1.0e-12, emin=0.4, emax=1.0, flux_type="energy")
+    f = spec.get_flux_in_band(0.4, 1.0)[1]
+    assert_allclose(1.0e-12, f.value)
+

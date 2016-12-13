@@ -16,6 +16,15 @@ parser.add_argument("r_in", type=float, help="The inner annulus of the source ce
 parser.add_argument("r_out", type=float, help="The outer annulus of the source center in arcseconds.")
 parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
 parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("--theta", type=float, default=0.0,
+                    help="The angle through which to rotate the beta model in degrees. "
+                         "Only makes sense if ellipticity is added. Default: 0.0")
+parser.add_argument("--ellipticity", type=float, default=1.0,
+                    help="The ellipticity of the radial profile, expressed as the ratio "
+                         "between the length scales of the x and y coordinates. The value "
+                         "of this parameter will shrink or expand the profile in the "
+                         "direction of the \"y\" coordinate, so you may need to rotate to "
+                         "get the shape you want. Default: 1.0")
 parser.add_argument("--area", type=float, default=30000.0, 
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
@@ -28,7 +37,8 @@ args = parser.parse_args()
 spec = Spectrum.from_file(args.specfile)
 energy = spec.generate_energies(args.exp_time, args.area)
 n_evt = energy.size
-ann_src = AnnulusModel(args.ra0, args.dec0, args.r_in, args.r_out, n_evt)
+ann_src = AnnulusModel(args.ra0, args.dec0, args.r_in, args.r_out, n_evt, 
+                       theta=args.theta, ellipticity=args.ellipticity)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux, ann_src.ra,
                   ann_src.dec, energy, append=args.append, clobber=args.clobber)

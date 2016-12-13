@@ -2,6 +2,8 @@ import astropy.units as apu
 from astropy.constants import h, c, u
 import numpy as np
 
+one_arcsec = 1.0/3600.0
+
 erg_per_eV = apu.eV.to("erg")
 erg_per_keV = erg_per_eV * 1.0e3
 keV_per_erg = 1.0 / erg_per_keV

@@ -14,10 +14,19 @@ import astropy.io.fits as pyfits
 import astropy.units as u
 
 class Energies(u.Quantity):
-    def __new__(cls, energy, flux):
+    def __new__(cls, energy, flux, flux_units):
         ret = u.Quantity.__new__(cls, energy, unit="keV")
-        ret.flux = u.Quantity(flux, "erg/(cm**2*s)")
+        ret.flux = u.Quantity(flux, flux_units)
         return ret
+
+def _generate_energies(spec, t_exp, rate, prng=None):
+    cumspec = spec.cumspec
+    n_ph = np.modf(t_exp*rate)
+    n_ph = np.int64(n_ph[1]) + np.int64(n_ph[0] >= prng.uniform())
+    mylog.info("Creating %d events from this spectrum." % n_ph)
+    randvec = prng.uniform(size=n_ph)
+    randvec.sort()
+    return np.interp(randvec, cumspec, spec.ebins.value)
 
 class Spectrum(object):
     _units = "photon/(cm**2*s*keV)"
@@ -303,43 +312,21 @@ class Spectrum(object):
         ----------
         t_exp : float
             The exposure time in seconds.
-        area : float or NumPy array
-            The effective area in cm**2, or the effective area multiplied by the field of view
-            area in cm**2*arcmin**2 if the spectrum has units of intensity. If one is creating 
-            events for a SIMPUT file, a constant should be used and it must be large enough 
-            so that a sufficiently large sample is drawn for the ARF.
+        area : float
+            The effective area in cm**2, If one is creating events for a SIMPUT file, 
+            a constant should be used and it must be large enough  so that a sufficiently 
+            large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
-        if "arcmin" in self._units:
-            A = u.Quantity(area, "cm**2*arcmin**2")
-        else:
-            A = u.Quantity(area, "cm**2")
         if prng is None:
             prng = np.random
-        if isinstance(area, np.ndarray):
-            rate_arr = A*self.flux*self.de
-            rate = rate_arr.sum()
-            cumspec = np.cumsum(rate_arr.value)
-            cumspec = np.insert(cumspec, 0, 0.0)
-            cumspec /= cumspec[-1]
-        else:
-            rate = A*self.total_flux
-            cumspec = self.cumspec
-        n_ph = np.modf(t_exp*rate.value)
-        n_ph = np.int64(n_ph[1]) + np.int64(n_ph[0] >= prng.uniform())
-        mylog.info("Creating %d events from this spectrum." % n_ph)
-        randvec = prng.uniform(size=n_ph)
-        randvec.sort()
-        energy = np.interp(randvec, cumspec, self.ebins.value)
-        if isinstance(area, np.ndarray):
-            aa = area.sum()
-        else:
-            aa = area 
-        flux = np.sum(energy)*erg_per_keV/t_exp/aa
-        energies = Energies(energy, flux)
+        rate = area*self.total_flux.value
+        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        energies = Energies(energy, flux, "erg/(cm**2*s)")
         return energies
 
 class ApecGenerator(object):
@@ -486,11 +473,11 @@ class ApecGenerator(object):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
             for elem in cosmic_elem:
-                cspec[i,:] += self._make_spectrum(kT, elem, v, line_fields, 
+                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
                                                   coco_fields, scale_factor)
             # Next do the metals
             for elem in metal_elem:
-                mspec[i,:] += self._make_spectrum(kT, elem, v, line_fields, 
+                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
                                                   coco_fields, scale_factor)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
@@ -510,12 +497,50 @@ def wabs_cross_section(E):
     sigma = (c0[idxs]+c1[idxs]*E+c2[idxs]*E*E)*1.0e-24/E**3
     return sigma
 
+def get_wabs_absorb(e, nH):
+    sigma = wabs_cross_section(e)
+    return np.exp(-nH*1.0e22*sigma)
+
 class ConvolvedSpectrum(Spectrum):
     _units = "photon/(s*keV)"
     def __init__(self, spectrum, arf):
+        """
+        Generate a convolved spectrum by convolving a spectrum with an
+        ARF.
+
+        Parameters
+        ----------
+        spectrum : :class:`~soxs.spectra.Spectrum` object
+            The input spectrum to convolve with.
+        arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
+            The ARF to use in the convolution.
+        """
+        from soxs.instrument import AuxiliaryResponseFile
+        if not isinstance(arf, AuxiliaryResponseFile):
+            arf = AuxiliaryResponseFile(arf)
+        self.arf = arf
         earea = arf.interpolate_area(spectrum.emid)
         rate = spectrum.flux * earea
         super(ConvolvedSpectrum, self).__init__(spectrum.ebins, rate)
 
-    def generate_energies(self, t_exp, area, prng=None):
-        raise NotImplementedError()
+    def generate_energies(self, t_exp, prng=None):
+        """
+        Generate photon energies from this convolved spectrum given an
+        exposure time.
+
+        Parameters
+        ----------
+        t_exp : float
+            The exposure time in seconds.
+        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+            A pseudo-random number generator. Typically will only be specified
+            if you have a reason to generate the same set of random numbers, such as for a
+            test. Default is the :mod:`numpy.random` module.
+        """
+        if prng is None:
+            prng = np.random
+        rate = self.total_flux.value
+        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        flux = np.sum(energy)*erg_per_keV/t_exp
+        energies = Energies(energy, flux, "erg/s")
+        return energies

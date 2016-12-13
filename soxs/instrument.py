@@ -5,13 +5,15 @@ import astropy.units as u
 import os
 from collections import defaultdict
 
-from astropy.utils.console import ProgressBar
 from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array, write_event_file
-from soxs.background import background_registry
+    ensure_numpy_array
+from soxs.events import write_event_file
+from soxs.background import background_registry, ConvolvedBackgroundSpectrum
 from soxs.instrument_registry import instrument_registry
+from six import string_types
+from tqdm import tqdm
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
@@ -160,29 +162,31 @@ class RedistributionMatrixFile(object):
         fcurr = 0
         last = sorted_e.shape[0]
 
-        with ProgressBar(last) as pbar:
-            for (k, low), high in zip(enumerate(self.elo), self.ehi):
-                # weight function for probabilities from RMF
-                weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
-                weights /= weights.sum()
-                # build channel number list associated to array value,
-                # there are groups of channels in rmfs with nonzero probabilities
-                trueChannel = []
-                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
-                n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-                for start, nchan in zip(f_chan, n_chan):
-                    if nchan == 0:
-                        trueChannel.append(start)
-                    else:
-                        trueChannel += list(range(start, start+nchan))
-                trueChannel = np.array(trueChannel)
-                if len(trueChannel) > 0:
-                    e = sorted_e[fcurr:last]
-                    nn = np.logical_and(low <= e, e < high).sum()
-                    channelInd = prng.choice(len(weights), size=nn, p=weights)
-                    detectedChannels.append(trueChannel[channelInd])
-                    fcurr += nn
-                    pbar.update(fcurr)
+        pbar = tqdm(leave=True, total=last, desc="Scattering energies ")
+        for (k, low), high in zip(enumerate(self.elo), self.ehi):
+            # weight function for probabilities from RMF
+            weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+            weights /= weights.sum()
+            # build channel number list associated to array value,
+            # there are groups of channels in rmfs with nonzero probabilities
+            trueChannel = []
+            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+            for start, nchan in zip(f_chan, n_chan):
+                if nchan == 0:
+                    trueChannel.append(start)
+                else:
+                    trueChannel += list(range(start, start+nchan))
+            trueChannel = np.array(trueChannel)
+            if len(trueChannel) > 0:
+                e = sorted_e[fcurr:last]
+                nn = np.logical_and(low <= e, e < high).sum()
+                channelInd = prng.choice(len(weights), size=nn, p=weights)
+                detectedChannels.append(trueChannel[channelInd])
+                fcurr += nn
+                pbar.update(nn)
+
+        pbar.close()
 
         for key in events:
             events[key] = events[key][eidxs]
@@ -210,12 +214,13 @@ def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
     # for the observation, otherwise it's a particle background and assume area = 1.
     if bkgnd_spec.bkgnd_type == "astrophysical":
         arf = AuxiliaryResponseFile(check_file_location(event_params["arf"], "files"))
-        area = arf.interpolate_area(bkgnd_spec.emid).value
+        conv_bkgnd_spec = ConvolvedBackgroundSpectrum(bkgnd_spec, arf)
+        bkg_events["energy"] = conv_bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                                                 fov, prng=prng)
     else:
         area = (focal_length/default_f[bkgnd_name])**2
-
-    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                        area, fov, prng=prng)
+        bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                                            area, fov, prng=prng)
 
     n_events = bkg_events["energy"].size
 
@@ -233,13 +238,13 @@ def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
 
     return bkg_events
 
-def instrument_simulator(simput_file, out_file, exp_time, instrument,
+def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
                          dither_size=16.0, roll_angle=0.0, astro_bkgnd=True,
                          instr_bkgnd=True, prng=np.random):
     """
-    Take unconvolved events in a SIMPUT catalog and create an event
-    file from them. This function does the following:
+    Take unconvolved events and create an event file from them. This 
+    function does the following:
 
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
@@ -249,18 +254,23 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     Parameters
     ----------
-    simput_file : string
-        The SIMPUT catalog file to be used as input. Set to None if you
-        want to simulate backgrounds/foregrounds only.
+    input_events : string, dict, or None
+        The unconvolved events to be used as input. Can be one of the
+        following:
+        1. The name of a SIMPUT catalog file.
+        2. A Python dictionary containing the following items:
+            "ra": A NumPy array of right ascension values in degrees.
+            "dec": A NumPy array of declination values in degrees.
+            "energy": A NumPy array of energy values in keV.
+            "flux": The flux of the entire source, in units of erg/cm**2/s. 
+        3. None if you want to simulate backgrounds/foregrounds only.
     out_file : string
         The name of the event file to be written.
     exp_time : float
         The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry. Can also be a JSON
-        file with a new instrument specification. If this is the case,
-        it will be loaded into the instrument registry. 
+        specification from the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     clobber : boolean, optional
@@ -288,14 +298,20 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", "hdxi_3x10",
     ...                      [30., 45.], clobber=True)
     """
-    if simput_file is None:
+    if input_events is None:
         if not astro_bkgnd and not instr_bkgnd:
             raise RuntimeError("No backgrounds and no sources, so I can't do anything!!")
         # only doing backgrounds
         event_list = []
         parameters = {}
-    else:
-        event_list, parameters = read_simput_catalog(simput_file)
+    elif isinstance(input_events, dict):
+        event_list = [{k:input_events[k] for k in ["ra", "dec", "energy"]}]
+        parameters = {"flux": np.array([input_events["flux"]]),
+                      "emin": np.array([input_events["energy"].min()]),
+                      "emax": np.array([input_events["energy"].max()])}
+    elif isinstance(input_events, string_types):
+        # Assume this is a SIMPUT catalog
+        event_list, parameters = read_simput_catalog(input_events)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -313,12 +329,12 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     event_params = {}
     event_params["exposure_time"] = exp_time
-    event_params["arf"] = os.path.split(arf.filename)[-1]
+    event_params["arf"] = arf.filename
     event_params["sky_center"] = sky_center
     event_params["pix_center"] = np.array([0.5*(nx+1)]*2)
     event_params["num_pixels"] = nx
     event_params["plate_scale"] = plate_scale
-    event_params["rmf"] = os.path.split(rmf.filename)[-1]
+    event_params["rmf"] = rmf.filename
     event_params["channel_type"] = rmf.header["CHANTYPE"]
     event_params["telescope"] = rmf.header["TELESCOP"]
     event_params["instrument"] = rmf.header["INSTRUME"]
@@ -353,7 +369,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
         # Step 1: Use ARF to determine which photons are observed
 
-        mylog.info("Applying energy-dependent effective area from %s." % event_params["arf"])
+        mylog.info("Applying energy-dependent effective area from %s." % os.path.split(arf.filename)[-1])
         refband = [parameters["emin"][i], parameters["emax"][i]]
         events = arf.detect_events(evts, exp_time, parameters["flux"][i], refband, prng=prng)
 
@@ -405,13 +421,14 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
             # PSF scattering of detector coordinates
 
-            psf_type, psf_spec = instrument_spec["psf"]
-            if psf_type == "gaussian":
-                sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
-                detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-                dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-            else:
-                raise NotImplementedError("PSF type %s not implemented!" % psf_type)
+            if instrument_spec["psf"] is not None:
+                psf_type, psf_spec = instrument_spec["psf"]
+                if psf_type == "gaussian":
+                    sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
+                    detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                    dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                else:
+                    raise NotImplementedError("PSF type %s not implemented!" % psf_type)
 
             # Convert detector coordinates to chip coordinates
 
@@ -452,7 +469,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
             for key in events:
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
-    if simput_file is not None:
+    if input_events is not None:
         if all_events["energy"].size == 0:
             mylog.warning("No events from any of the sources in the catalog were detected!")
 
@@ -466,7 +483,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
 
     # Step 4: Add particle background
 
-    if instr_bkgnd:
+    if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
         bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
                                     prng=prng, focal_length=instrument_spec["focal_length"])
@@ -479,7 +496,7 @@ def instrument_simulator(simput_file, out_file, exp_time, instrument,
     # Step 5: Scatter energies with RMF
 
     if all_events["energy"].size > 0:
-        mylog.info("Scattering energies with RMF %s." % event_params['rmf'])
+        mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
     # Step 6: Add times to events

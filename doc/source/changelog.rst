@@ -3,6 +3,32 @@
 ChangeLog
 =========
 
+Version 0.5.0
+-------------
+
+This version contains new features and bugfixes.
+
+* The PSF can now be set to ``None`` (or ``null`` in JSON files) in an instrument specification
+  for no PSF scattering of events.
+* The particle background can be set to ``None`` (or ``null`` in JSON files) in an instrument 
+  specification for no particle background.
+* A faster progress bar, `tqdm <https://github.com/tqdm/tqdm>`_, is now in use in SOXS.
+* Fixed a minor bug in the interpolation of APEC tables for thermal spectra. The difference in
+  the generated spectra is small, at around the fifth decimal place.
+* Added a constant spectrum generator: :meth:`~soxs.spectra.Spectrum.from_constant`.
+* Added ellipticity and angle parameters to :class:`~soxs.spatial.RadialFunctionModel` objects
+  to create models with ellipticity.
+* Added flat-field coordinates to :class:`~soxs.spatial.SpatialModel` objects.
+* Made public subclass of :class:`~soxs.spectra.Spectrum` objects, :class:`~soxs.spectra.ConvolvedSpectrum`,
+  which is a :class:`~soxs.spectra.Spectrum` convolved with an ARF.
+* Small internal changes designed to provide a more seamless interface to 
+  `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_.
+* Three new tools have been included to produce derivative products from event files:
+
+  * :func:`~soxs.events.write_image`: Bins events into an image and writes it to a FITS file.
+  * :func:`~soxs.events.write_spectrum`: Bins events into a spectrum and writes it to a FITS file.
+  * :func:`~soxs.events.write_radial_profiles`: Bins events into a radial profile and writes it to a FITS file.
+
 Version 0.4.0
 -------------
 
