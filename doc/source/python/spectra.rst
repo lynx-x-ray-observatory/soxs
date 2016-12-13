@@ -279,6 +279,37 @@ more information.
 "Convolved" Spectra
 -------------------
 
+One may want to examine a spectrum after it has been convolved with a particular effective
+area curve. One can generate such a spectrum using :class:`~soxs.spectra.ConvolvedSpectrum`
+from a :class:`~soxs.spectra.Spectrum` object and an ARF:
+
+.. code-block:: python
+
+    from soxs import ConvolvedSpectrum
+    # Assuming one created an ApecGenerator agen...
+    spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
+    cspec = ConvolvedSpectrum(spec2, "xrs_hdxi_3x10.arf")
+    
+The spectrum in this object has units of :math:`{\rm photons}~{\rm s}^{-1}~{\rm keV}^{-1}`,
+and one can use all of :class:`~soxs.spectra.Spectrum`'s methods on it. For example, to 
+determine the count and energy rate within a particular band:
+
+.. code-block:: python
+
+    cspec.get_flux_in_band(0.5, 7.0)
+
+.. code-block:: python
+
+    (<Quantity 6.802363401824924 ph / s>,
+     <Quantity 1.2428592072628134e-08 erg / s>)
+
+Or to generate an array of energies:
+
+.. code-block:: python
+
+    t_exp = 500000. # in seconds
+    e = cspec.generate_energies(t_exp)
+
 :class:`~soxs.spectra.ConvolvedSpectrum` objects are not used directly in the 
 instrument simulator, but can be used for convenient when one wants to examine the
 properties of a convolved spectrum.
