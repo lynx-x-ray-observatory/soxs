@@ -26,8 +26,8 @@ Each ``SpatialModel`` has four attributes, all corresponding to coordinates for 
 The flat-field coordinates are not used by the instrument simulator and are mainly for convenience, e.g.
 for plotting unconvolved source models.
 
-Point Sources
--------------
+``PointSourceModel``
+--------------------
 
 The :class:`~soxs.spatial.PointSourceModel` generates photon positions for a point source.
 
@@ -41,8 +41,14 @@ The :class:`~soxs.spatial.PointSourceModel` generates photon positions for a poi
 
 Though this model is trivial, it is constructed in the same way as the other models below for consistency.
 
-Beta Model
-----------
+Radial Models
+-------------
+
+The following classes generate azimuthally symmetric models (though see :ref:`ellipticity`) from functions 
+or lookup tables for a surface brightness profile as a function of radius.
+
+``BetaModel``
++++++++++++++
 
 The :class:`~soxs.spatial.BetaModel` generates photon positions for a :math:`\beta`-model profile,
 often used to model galaxy clusters. The functional form of the :math:`\beta`-model for a surface
@@ -65,8 +71,8 @@ is the core radius. To construct one:
     num_events = 100000 # The number of events
     beta_src = BetaModel(ra0, dec0, r_c, beta, num_events)
 
-Annulus Model
--------------
+``AnnulusModel``
+++++++++++++++++
 
 The :class:`~soxs.spatial.AnnulusModel` can be used to generate photon positions for a annulus or disk
 with uniform surface brightness:
@@ -77,15 +83,10 @@ with uniform surface brightness:
     ra0 = 30.0 # center RA in degrees
     dec0 = 45.0 # center Dec in degrees
     r_in = 0.0 # inner radius of shell in arcseconds
-    r_out = 0.0 # outer radius of shell in arcseconds
+    r_out = 10.0 # outer radius of shell in arcseconds
     num_events = 100000 # The number of events
     ann_src = AnnulusModel(ra0, dec0, r_in, r_out, num_events)
 
-Generic Radial Models
----------------------
-
-The following classes generate azimuthally symmetric models from generic functions or lookup tables for
-a surface brightness profile as a function of radius.
 
 ``RadialFunctionModel``
 +++++++++++++++++++++++
@@ -137,8 +138,33 @@ radius and surface brightness, to generate an azimuthally symmetric distribution
     num_events = 100000 # The number of events
     my_src = RadialFileModel(ra0, dec0, "my_profile.dat", num_events)
 
-Rectangle Sources
------------------
+.. _ellipticity:
+
+Ellipticity of Radial Source Models
++++++++++++++++++++++++++++++++++++
+
+Any of the radial source models listed above take two parameters, ``ellipticity`` and ``theta``,
+which define the ellipticity of the model and the orientation of the ellipse, respectively. For
+example, to make an elliptical annulus source tilted 45 degrees from the horizontal:
+
+.. code-block:: python
+
+    from soxs import AnnulusModel
+    ra0 = 30.0 # center RA in degrees
+    dec0 = 45.0 # center Dec in degrees
+    r_in = 10.0 # inner radius of shell in arcseconds
+    r_out = 30.0 # outer radius of shell in arcseconds
+    num_events = 100000 # The number of events
+    ellipticity = 0.5
+    theta = 45.0
+    ann_src = AnnulusModel(ra0, dec0, r_in, r_out, num_events, 
+                           ellipticity=ellipticity, theta=theta)
+
+where ``ellipticity`` will shrink the annulus (or other shape) in the y-direction if < 1 or
+will expand it in the y-direction if > 1. 
+
+``RectangleModel``
+------------------
 
 The :class:`~soxs.spatial.RectangleModel` generates photon positions on the sky which fill a given field of view:
 
