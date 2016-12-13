@@ -19,12 +19,8 @@ This version contains new features and bugfixes.
 * Added ellipticity and angle parameters to :class:`~soxs.spatial.RadialFunctionModel` objects
   to create models with ellipticity.
 * Added flat-field coordinates to :class:`~soxs.spatial.SpatialModel` objects.
-* Made public and refactored the following subclasses of :class:`~soxs.spectra.Spectrum` objects:
-
-  * :class:`~soxs.spectra.ConvolvedSpectrum`: A :class:`~soxs.spectra.Spectrum` convolved with an ARF
-  * :class:`~soxs.background.BackgroundSpectrum`: A class for background spectra.
-  * :class:`~soxs.background.ConvolvedBackgroundSpectrum`: A :class:`~soxs.background.BackgroundSpectrum` convolved with an ARF
-
+* Made public subclass of :class:`~soxs.spectra.Spectrum` objects, :class:`~soxs.spectra.ConvolvedSpectrum`,
+  which is a :class:`~soxs.spectra.Spectrum` convolved with an ARF.
 * Small internal changes designed to provide a more seamless interface to 
   `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_.
 
