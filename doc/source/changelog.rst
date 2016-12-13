@@ -23,6 +23,11 @@ This version contains new features and bugfixes.
   which is a :class:`~soxs.spectra.Spectrum` convolved with an ARF.
 * Small internal changes designed to provide a more seamless interface to 
   `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_.
+* Three new tools have been included to produce derivative products from event files:
+
+  * :func:`~soxs.events.write_image`: Bins events into an image and writes it to a FITS file.
+  * :func:`~soxs.events.write_spectrum`: Bins events into a spectrum and writes it to a FITS file.
+  * :func:`~soxs.events.write_radial_profiles`: Bins events into a radial profile and writes it to a FITS file.
 
 Version 0.4.0
 -------------
