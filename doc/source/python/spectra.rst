@@ -275,3 +275,10 @@ NumPy array which also carries the unit information and the total flux of energi
 These photon energies can then be combined with sky positions at your discretion
 and be written to SIMPUT files for use in mock observations. See :ref:`simput` for
 more information.
+
+"Convolved" Spectra
+-------------------
+
+:class:`~soxs.spectra.ConvolvedSpectrum` objects are not used directly in the 
+instrument simulator, but can be used for convenient when one wants to examine the
+properties of a convolved spectrum.
