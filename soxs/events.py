@@ -183,7 +183,7 @@ def write_spectrum(evtfile, specfile, clobber=False):
     hdulist.writeto(specfile, clobber=clobber)
 
 def write_radial_profile(evt_file, out_file, ctr, rmin, 
-                         rmax, nbins, ctr_type="physical", 
+                         rmax, nbins, ctr_type="celestial", 
                          emin=None, emax=None, clobber=False):
     r"""
     Bin up events into a radial profile and write them to a FITS
@@ -197,9 +197,9 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         The output file to write the profile to. 
     ctr : array-like
         The central coordinate of the profile. Can either be in 
-        physical pixel coordinates (the default) or celestial
-        coordinates (RA, Dec) in degrees. If the latter, the 
-        ``ctr_type`` keyword argument must be set to "physical".
+        celestial coordinates (the default) or "physical" pixel 
+        coordinates. If the former, the ``ctr_type`` keyword 
+        argument must be explicity set to "physical".
     rmin : float
         The minimum radius of the profile, in arcseconds. 
     rmax : float
@@ -207,8 +207,8 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     nbins : integer
         The number of bins in the profile.
     ctr_type : string, optional
-        The type of center coordinate. Either "physical" for pixel
-        coordinates (the default), or "celestial" for (RA, Dec). 
+        The type of center coordinate. Either "celestial" for (RA, Dec)
+        coordinates (the default), or "physical" for pixel coordinates.
     emin : float
         The minimum energy of the events to be binned in keV. Default
         is the lowest energy available.
