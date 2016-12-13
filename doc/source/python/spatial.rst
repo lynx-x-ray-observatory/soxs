@@ -166,7 +166,8 @@ will expand it in the y-direction if > 1.
 ``RectangleModel``
 ------------------
 
-The :class:`~soxs.spatial.RectangleModel` generates photon positions on the sky which fill a given field of view:
+The :class:`~soxs.spatial.RectangleModel` generates photon positions on the sky which 
+fill a given field of view, which can be optionally rotated through an angle:
 
 .. code-block:: python
 
