@@ -23,6 +23,9 @@ Each ``SpatialModel`` has four attributes, all corresponding to coordinates for 
 * ``x``:  An array of flat-field x-coordinates in units of arcseconds, offset from the source center.
 * ``y``:  An array of flat-field y-coordinates in units of arcseconds, offset from the source center.
 
+The flat-field coordinates are not used by the instrument simulator and are mainly for convenience, e.g.
+for plotting unconvolved source models.
+
 Point Sources
 -------------
 
