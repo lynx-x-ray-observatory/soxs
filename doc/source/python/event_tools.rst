@@ -39,6 +39,38 @@ This image can then be viewed in `ds9 <http://ds9.si.edu>`_ or `APLpy <https://a
 ``write_radial_profile``
 ------------------------
 
+:func:`~soxs.events.write_radial_profile` bins up events into an radial profile defined by source 
+center, a minimum radius, a maximum radius, and a number of bins. One can restrict the events that 
+are binned by a specific energy band. An example execution:
+
+.. code-block:: python
+
+    from soxs import write_radial_profile
+    ctr = [30.0, 45.0] # by default the center is in celestial coordinates
+    rmin = 0.0 # arcseconds
+    rmax = 100.0 # arcseconds
+    nbins = 100 # number of bins
+    emin = 0.5 # keV
+    emax = 2.0 # keV
+    write_radial_profile("my_evt.fits", "my_radial_profile.fits", ctr, rmin,
+                         rmax, nbins, emin=emin, emax=emax, clobber=True)
+
+If one wants to specify a center in physical pixel coordinates, you can use the same execution but
+set the ``ctr_type`` keyword to "physical" and use physical pixel coordinates as the ``ctr`` argument:
+
+.. code-block:: python
+
+    from soxs import write_radial_profile
+    ctr = [2048.5, 2048.5] # by default the center is in celestial coordinates
+    rmin = 0.0 # arcseconds
+    rmax = 100.0 # arcseconds
+    nbins = 100 # number of bins
+    emin = 0.5 # keV
+    emax = 2.0 # keV
+    write_radial_profile("my_evt.fits", "my_radial_profile.fits", ctr, rmin,
+                         rmax, nbins, ctr_type="physical", emin=emin, emax=emax, 
+                         clobber=True)
+
 ``write_spectrum``
 ------------------
 
