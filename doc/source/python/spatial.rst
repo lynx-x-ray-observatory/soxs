@@ -16,8 +16,12 @@ In general, each ``SpatialModel`` takes the following information:
 The latter is given as as integer since it is expected that the number of photons you need will be determined
 by some other criterion (e.g., from the corresponding ``Spectrum``) and can be supplied here.
 
-Each ``SpatialModel`` has only two attributes, ``ra`` and ``dec``, which are unitful NumPy arrays giving the
-positions of the photons on the sky in degrees.
+Each ``SpatialModel`` has four attributes, all corresponding to coordinates for the events:
+
+* ``ra``: An array of right ascension coordinates in units of degrees.
+* ``dec``: An array of declination coordinates in units of degrees.
+* ``x``:  An array of flat-field x-coordinates in units of arcseconds, offset from the source center.
+* ``y``:  An array of flat-field y-coordinates in units of arcseconds, offset from the source center.
 
 Point Sources
 -------------
@@ -175,4 +179,6 @@ The spatial positions for the two sources can be combined simply via addition:
     pt_src = PointSourceModel(ra0, dec0, num_events)
     all_src = ann_src+pt_src
 
-which concatenates the arrays of RA and Dec.
+which concatenates the arrays of RA, Dec, and the flat-field coordinates. For the latter,
+the source center of the left-most :class:`~soxs.spatial.SpatialModel` will be used as the
+reference coordinate.
