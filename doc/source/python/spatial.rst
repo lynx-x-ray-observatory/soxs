@@ -210,5 +210,5 @@ The spatial positions for the two sources can be combined simply via addition:
     all_src = ann_src+pt_src
 
 which concatenates the arrays of RA, Dec, and the flat-field coordinates. For the latter,
-the source center of the left-most :class:`~soxs.spatial.SpatialModel` will be used as the
+the source center of the left-most ``SpatialModel`` will be used as the
 reference coordinate.

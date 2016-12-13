@@ -74,7 +74,7 @@ set the ``ctr_type`` keyword to "physical" and use physical pixel coordinates as
 ``write_spectrum``
 ------------------
 
-:func:`~soxs.events.write_image` bins up events into a spectrum and writes the spectrum
+:func:`~soxs.events.write_spectrum` bins up events into a spectrum and writes the spectrum
 to a FITS file:
 
 .. code-block:: python

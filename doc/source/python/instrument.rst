@@ -205,7 +205,7 @@ The various parts of each instrument specification are:
 * ``"arf"``: The file containing the ARF.
 * ``"num_pixels"``: The number of resolution elements on a side of the field of view.
 * ``"bkgnd"``: The name of the instrumental background to use, stored in the background registry
-  (see :ref:`background` for more details).
+  (see :ref:`background` for more details). This can also be set to ``None`` for no particle background.
 * ``"psf"``: The PSF specification to use. At time of writing, the only one available is that of
   a Gaussian PSF, with a single parameter, the HPD of the PSF. This is specified using a Python
   list, e.g. ``["gaussian", 0.5]``. This can also be set to ``None`` for no PSF.
@@ -256,5 +256,5 @@ using :func:`~soxs.instrument.write_instrument_json`:
 
     Since JSON files use Javascript-style notation instead of Python's, there are two 
     differences one must note when creating JSON-based instrument specifications:
-    * Python's ``None`` will convert to ``null``, and vice-versa.
-    * ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
+    1. Python's ``None`` will convert to ``null``, and vice-versa.
+    2. ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
