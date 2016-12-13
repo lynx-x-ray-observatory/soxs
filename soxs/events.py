@@ -287,8 +287,13 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
     Parameters
     ----------
-    imagefile : string
+    evt_file : string
+        The name of the input event file to read.
+    out_file : string
         The name of the image file to write.
+    coord_type : string, optional
+        The type of coordinate to bin into an image. Can be "sky", "det",
+        or "chip". Default: "sky"
     emin : float, optional
         The minimum energy of the photons to put in the image, in keV.
     emax : float, optional
