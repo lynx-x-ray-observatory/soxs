@@ -58,9 +58,9 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     energy : NumPy array or array-like thing
         The energy of the photons, in keV.
     append : boolean, optional
-        If True, append a new source an existing SIMPUT catalog. 
+        If True, append a new source an existing SIMPUT catalog. Default: False
     clobber : boolean, optional
-        Set to True to overwrite previous files.
+        Set to True to overwrite previous files. Default: False
     """
     # Make sure these are arrays
     energy = np.array(energy)

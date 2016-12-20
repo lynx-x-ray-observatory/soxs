@@ -313,7 +313,7 @@ class Spectrum(object):
         t_exp : float
             The exposure time in seconds.
         area : float
-            The effective area in cm**2, If one is creating events for a SIMPUT file, 
+            The effective area in cm**2. If one is creating events for a SIMPUT file, 
             a constant should be used and it must be large enough  so that a sufficiently 
             large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
