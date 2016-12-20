@@ -232,7 +232,7 @@ def add_particle_background(bkgnd_name, event_params, rot_mat, focal_length, prn
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
                          dither_size=16.0, roll_angle=0.0, instr_bkgnd=True, 
-                         prng=np.random):
+                         prng=np.random, **kwargs):
     """
     Take unconvolved events and create an event file from them. This 
     function does the following:
@@ -287,6 +287,10 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 300000.0, "hdxi_3x10",
     ...                      [30., 45.], clobber=True)
     """
+    if "astro_bkgnd" in kwargs:
+        mylog.warning("'astro_bkgnd' is no longer an 'instrument_simulator' option. No "
+                      "foreground photons will be added here. Please use 'make_foreground' "
+                      "to make the astrophysical foreground.")
     if input_events is None:
         if not instr_bkgnd:
             raise RuntimeError("No background and no sources, so I can't do anything!!")
