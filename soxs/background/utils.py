@@ -1,9 +1,6 @@
-from __future__ import print_function
 import numpy as np
-import os
 from soxs.spectra import Spectrum, ConvolvedSpectrum, \
     _generate_energies, Energies
-from soxs.utils import soxs_files_path
 from soxs.constants import erg_per_keV
 
 class BackgroundSpectrum(Spectrum):
@@ -69,56 +66,3 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         flux = np.sum(energy)*erg_per_keV/t_exp/(fov*fov)
         energies = Energies(energy, flux, "erg/(arcmin**2*s)")
         return energies
-
-# ACIS-I particle background
-acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
-acisi_particle_bkgnd = BackgroundSpectrum(acisi_bkgnd_file, "instrumental")
-
-# Athena-like microcalorimeter background (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
-mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.dat")
-mucal_particle_bkgnd = BackgroundSpectrum(mucal_bkgnd_file, "instrumental")
-
-# X-ray foreground from Hickox & Markevitch 2007 (http://adsabs.harvard.edu/abs/2007ApJ...661L.117H)
-hm_bkgnd_file = os.path.join(soxs_files_path, "hm_cxb_bkgnd.dat")
-hm_astro_bkgnd = BackgroundSpectrum(hm_bkgnd_file, "astrophysical")
-
-# Athena microcalorimeter background (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
-xifu_bkgnd_file = os.path.join(soxs_files_path, "xifu_bkgnd.dat")
-athena_xifu_bkgnd = BackgroundSpectrum(xifu_bkgnd_file, "instrumental")
-
-# Athena imager background 
-wfi_bkgnd_file = os.path.join(soxs_files_path, "wfi_bkgnd.dat")
-athena_wfi_bkgnd = BackgroundSpectrum(wfi_bkgnd_file, "instrumental")
-
-background_registry = {"acisi": acisi_particle_bkgnd,
-                       "mucal": mucal_particle_bkgnd, 
-                       "hm_cxb": hm_astro_bkgnd, 
-                       "athena_wfi": athena_wfi_bkgnd,
-                       "athena_xifu": athena_xifu_bkgnd}
-
-def add_background_to_registry(name, filename, bkgnd_type):
-    """
-    Add a background to the background registry.
-
-    Parameters
-    ----------
-    name : string
-        The short name of the background, which will be the key in the 
-        registry.
-    filename : string
-        The file containing the background. It must have two columns: 
-        energy in keV, and background intensity in units of
-        photons/s/cm**2/arcmin**2/keV.
-    bkgnd_type : string
-        The type of background, either "instrumental" or "astrophysical".
-    """
-    background_registry[name] = BackgroundSpectrum(filename, bkgnd_type)
-
-def show_background_registry():
-    """
-    Print the contents of the background registry.
-    """
-    for name, spec in background_registry.items():
-        print("Background: %s" % name)
-        print("    Type: %s" % spec.bkgnd_type)
-        print("    Total Flux (%s - %s): %s" % (spec.ebins[0], spec.ebins[-1], spec.total_flux))

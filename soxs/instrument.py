@@ -10,7 +10,7 @@ from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array
 from soxs.events import write_event_file
-from soxs.background import background_registry, ConvolvedBackgroundSpectrum
+from soxs.background.instrument import instrument_backgrounds
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -199,28 +199,19 @@ default_f = {"acisi": 10.0,
              "athena_wfi": 12.0,
              "athena_xifu": 12.0}
 
-def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
-                   prng=np.random):
+def add_particle_background(bkgnd_name, event_params, rot_mat, focal_length, prng=np.random):
 
     fov = event_params["fov"]
 
-    bkgnd_spec = background_registry[bkgnd_name]
+    bkgnd_spec = instrument_backgrounds[bkgnd_name]
 
     # Generate background events
 
     bkg_events = {}
 
-    # If this is an astrophysical background, detect the events with the ARF used
-    # for the observation, otherwise it's a particle background and assume area = 1.
-    if bkgnd_spec.bkgnd_type == "astrophysical":
-        arf = AuxiliaryResponseFile(check_file_location(event_params["arf"], "files"))
-        conv_bkgnd_spec = ConvolvedBackgroundSpectrum(bkgnd_spec, arf)
-        bkg_events["energy"] = conv_bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                                 fov, prng=prng)
-    else:
-        area = (focal_length/default_f[bkgnd_name])**2
-        bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                            area, fov, prng=prng)
+    area = (focal_length/default_f[bkgnd_name])**2
+    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                                        area, fov, prng=prng)
 
     n_events = bkg_events["energy"].size
 
@@ -240,15 +231,15 @@ def add_background(bkgnd_name, event_params, rot_mat, focal_length=None,
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
-                         dither_size=16.0, roll_angle=0.0, astro_bkgnd=True,
-                         instr_bkgnd=True, prng=np.random):
+                         dither_size=16.0, roll_angle=0.0, instr_bkgnd=True, 
+                         prng=np.random):
     """
     Take unconvolved events and create an event file from them. This 
     function does the following:
 
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
-    3. Adds instrumental and astrophysical background events
+    3. Adds instrumental background events
     4. Determines energy channels using the RMF
     5. Writes the events to a file
 
@@ -262,8 +253,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             "ra": A NumPy array of right ascension values in degrees.
             "dec": A NumPy array of declination values in degrees.
             "energy": A NumPy array of energy values in keV.
-            "flux": The flux of the entire source, in units of erg/cm**2/s. 
-        3. None if you want to simulate backgrounds/foregrounds only.
+            "flux": The flux of the entire source, in units of erg/cm**2/s.
+        3. None if you only want to simulate the instrumental background.
     out_file : string
         The name of the event file to be written.
     exp_time : float
@@ -284,8 +275,6 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
-    astro_bkgnd : boolean, optional
-        Whether or not to include astrophysical background. Default: True
     instr_bkgnd : boolean, optional
         Whether or not to include instrumental/particle background. Default: True
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
@@ -299,13 +288,13 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     ...                      [30., 45.], clobber=True)
     """
     if input_events is None:
-        if not astro_bkgnd and not instr_bkgnd:
-            raise RuntimeError("No backgrounds and no sources, so I can't do anything!!")
-        # only doing backgrounds
+        if not instr_bkgnd:
+            raise RuntimeError("No background and no sources, so I can't do anything!!")
+        # only doing an instrumental background
         event_list = []
         parameters = {}
     elif isinstance(input_events, dict):
-        event_list = [{k:input_events[k] for k in ["ra", "dec", "energy"]}]
+        event_list = [{k: input_events[k] for k in ["ra", "dec", "energy"]}]
         parameters = {"flux": np.array([input_events["flux"]]),
                       "emin": np.array([input_events["energy"].min()]),
                       "emax": np.array([input_events["energy"].max()])}
@@ -473,33 +462,25 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         if all_events["energy"].size == 0:
             mylog.warning("No events from any of the sources in the catalog were detected!")
 
-    # Step 3: Add astrophysical background
-
-    if astro_bkgnd:
-        mylog.info("Adding in astrophysical background.")
-        bkg_events = add_background("hm_cxb", event_params, rot_mat, prng=prng)
-        for key in bkg_events:
-            all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
-
-    # Step 4: Add particle background
+    # Step 3: Add particle background
 
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
-        bkg_events = add_background(instrument_spec["bkgnd"], event_params, rot_mat,
-                                    prng=prng, focal_length=instrument_spec["focal_length"])
+        bkg_events = add_particle_background(instrument_spec["bkgnd"], event_params, rot_mat,
+                                             prng=prng, focal_length=instrument_spec["focal_length"])
         for key in bkg_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
 
     if all_events["energy"].size == 0:
         raise RuntimeError("No events were detected!!!")
 
-    # Step 5: Scatter energies with RMF
+    # Step 4: Scatter energies with RMF
 
     if all_events["energy"].size > 0:
         mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
-    # Step 6: Add times to events
+    # Step 5: Add times to events
 
     all_events['time'] = np.random.uniform(size=all_events["energy"].size, low=0.0,
                                            high=event_params["exposure_time"])
