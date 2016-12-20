@@ -41,11 +41,3 @@ def add_instrument_background(name, filename):
         The type of background, either "instrumental" or "astrophysical".
     """
     instrument_backgrounds[name] = BackgroundSpectrum(filename, "instrumental")
-
-def show_instrument_backgrounds():
-    """
-    Print the contents of the instrumental background registry.
-    """
-    for name, spec in instrument_backgrounds.items():
-        print("Background: %s" % name)
-        print("    Total Flux (%s - %s): %s" % (spec.ebins[0], spec.ebins[-1], spec.total_flux))
