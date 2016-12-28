@@ -12,7 +12,9 @@ from soxs.spectra import \
 from soxs.instrument import \
     instrument_simulator, \
     AuxiliaryResponseFile, \
-    RedistributionMatrixFile
+    RedistributionMatrixFile, \
+    simulate_observation, \
+    make_backgrounds
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \

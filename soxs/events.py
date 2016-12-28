@@ -360,3 +360,43 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     hdu.header["EXPOSURE"] = exp_time
 
     hdu.writeto(out_file, clobber=clobber)
+
+def combine_event_files(in_file1, in_file2, out_file, clobber=False):
+    f1 = pyfits.open(in_file1)
+    f2 = pyfits.open(in_file2)
+
+    hdu1 = f1["EVENTS"]
+    hdu2 = f2["EVENTS"]
+
+    for key in ["MISSION", "TELESCOP", "INSTRUME", "CHANTYPE", "RESPFILE", 
+                "ANCRFILE"]:
+        if hdu1.header[key] != hdu2.header[key]:
+            raise RuntimeError()
+
+    chantype = hdu1.header["CHANTYPE"]
+    if chantype == "PHA":
+        cunit = "adu"
+    elif chantype == "PI":
+        cunit = "Chan"
+
+    col_e = pyfits.Column(name="ENERGY", format="E", unit="eV", 
+                          array=np.concatenate([hdu1.data["ENERGY"],
+                                                hdu2.data["ENERGY"]]))
+    col_ch = pyfits.Column(name=chantype, format='1J', unit=cunit,
+                           array=np.concatenate([hdu1.data[chantype],
+                                                 hdu2.data[chantype]]))
+    col_t = pyfits.Column(name="TIME", format='1D', unit='s',
+                          array=np.concatenate([hdu1.data["TIME"],
+                                                hdu2.data["TIME"]]))
+
+    f1.close()
+    f2.close()
+
+    cols = [col_e, col_x, col_y, col_ch, col_t, col_cx, col_cy, col_dx, col_dy]
+
+    coldefs = pyfits.ColDefs(cols)
+    tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+    tbhdu.update_ext_name("EVENTS")
+
+    hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
+    hdulist.writeto(out_file, clobber=clobber)

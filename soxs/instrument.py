@@ -9,8 +9,9 @@ from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array
-from soxs.events import write_event_file
+from soxs.events import write_event_file, combine_event_files
 from soxs.background.instrument import instrument_backgrounds
+from soxs.background.foreground import make_foreground
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -490,3 +491,55 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                                            high=event_params["exposure_time"])
 
     write_event_file(all_events, event_params, out_file, clobber=clobber)
+
+def make_backgrounds(simput_prefix, out_file, exp_time, instrument, sky_center, clobber=False, 
+                     foreground=True, instr_bkgnd=True, dither_shape="square",
+                     dither_size=16.0, prng=np.random):
+    try:
+        instrument_spec = instrument_registry[instrument]
+    except KeyError:
+        raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
+    fov = instrument_spec["fov"]
+    if foreground:
+        phlist_prefix = simput_prefix + "_foreground"
+        phlist_file = phlist_prefix + "_phlist.fits"
+        if os.path.exists(phlist_file) and not clobber:
+            raise IOError("%s exists, but clobber=False!")
+        mylog.info("Making foreground photon list in %s.")
+        make_foreground(simput_prefix, phlist_prefix, exp_time, fov,
+                        sky_center, append=True, clobber=clobber, prng=prng)
+    simput_file = simput_prefix + "_simput.fits"
+    instrument_simulator(simput_file, out_file, exp_time, instrument,
+                         sky_center, clobber=clobber, dither_shape=dither_shape,
+                         dither_size=dither_size, instr_bkgnd=instr_bkgnd, prng=prng)
+
+def simulate_observation(input_events, out_file, exp_time, instrument,
+                         sky_center, clobber=False, bkgnd=None, dither_shape="square",
+                         dither_size=16.0, roll_angle=0.0, prng=np.random):
+    if "_evt.fits" not in out_file:
+        out_file += "_evt.fits"
+    mylog.info("Making observation of source in %s." % out_file)
+    # Make the source first
+    instrument_simulator(input_events, out_file, exp_time, instrument, 
+                         sky_center, clobber=clobber, dither_shape=dither_shape,
+                         dither_size=dither_size, roll_angle=roll_angle, 
+                         instr_bkgnd=False, prng=prng)
+    # If the user wants backgrounds, either make the background or add an already existing
+    # background event file. It may be necessary to reproject events to a new coordinate system.
+    if bkgnd is False:
+        mylog.info("No backgrounds will be added to this observation.")
+    else:
+        if bkgnd is None:
+            bkgnd_prefix = out_file.strip("_evt.fits") + "_bkgnd"
+            bkgnd_out_file = bkgnd_prefix + "_evt.fits"
+            make_backgrounds(bkgnd_prefix, bkgnd_out_file, exp_time, instrument, 
+                             sky_center, clobber=clobber, foreground=True, instr_bkgnd=True, 
+                             dither_shape=dither_shape, dither_size=dither_size, prng=prng)
+        else:
+            if not os.path.exists(bkgnd):
+                raise IOError("Cannot find the background event file %s!" % bkgnd)
+            bkgnd_out_file = bkgnd
+            mylog.info("Adding the background in the file %s." % bkgnd)
+        combine_event_files(out_file, bkgnd_out_file, out_file, clobber=clobber)
+    mylog.info("Observation complete.")
+
