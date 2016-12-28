@@ -3,6 +3,13 @@
 ChangeLog
 =========
 
+Version 0.5.1
+-------------
+
+This version is a bugfix release. 
+
+* Fixed a big when writing FITS table files when AstroPy 1.3 is installed. 
+
 Version 0.5.0
 -------------
 
