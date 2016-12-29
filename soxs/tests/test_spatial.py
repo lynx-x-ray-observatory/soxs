@@ -53,8 +53,7 @@ def test_point_source():
     add_instrument_to_registry(inst)
 
     instrument_simulator("pt_src_simput.fits", "pt_src_evt.fits", exp_time,
-                         "hdxi_big_psf", [ra0, dec0], astro_bkgnd=False,
-                         instr_bkgnd=False, prng=prng)
+                         "hdxi_big_psf", [ra0, dec0], bkgnd=False, prng=prng)
 
     psf_scale = inst["psf"][1]
     dtheta = inst["fov"]*60.0/inst["num_pixels"]
@@ -90,8 +89,7 @@ def test_annulus():
                       e, clobber=True)
 
     instrument_simulator("ann_simput.fits", "ann_evt.fits", exp_time,
-                         "hdxi", [ra0, dec0], astro_bkgnd=False,
-                         instr_bkgnd=False, prng=prng)
+                         "hdxi", [ra0, dec0], bkgnd=False, prng=prng)
 
     inst = get_instrument_from_registry("hdxi")
     arf = AuxiliaryResponseFile(inst["arf"])
@@ -135,8 +133,7 @@ def test_beta_model():
                       e, clobber=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
-                         "hdxi", [ra0, dec0], astro_bkgnd=False,
-                         instr_bkgnd=False, prng=prng)
+                         "hdxi", [ra0, dec0], bkgnd=False, prng=prng)
 
     inst = get_instrument_from_registry("hdxi")
     arf = AuxiliaryResponseFile(inst["arf"])
