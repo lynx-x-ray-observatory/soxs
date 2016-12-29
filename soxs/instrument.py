@@ -434,7 +434,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
 def make_background(simput_prefix, exp_time, instrument, sky_center, clobber=False, 
                     foreground=True, instr_bkgnd=True, dither_shape="square", 
-                    dither_size=16.0, prng=np.random):
+                    dither_size=16.0, roll_angle=0.0, prng=np.random):
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -453,7 +453,7 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, clobber=Fal
                         sky_center, append=append, clobber=clobber, prng=prng)
     events, event_params = generate_events(simput_file, exp_time, instrument, sky_center,
                                            dither_shape=dither_shape, dither_size=dither_size, 
-                                           prng=prng)
+                                           roll_angle=roll_angle, prng=prng)
     if instr_bkgnd:
         rmf_file = check_file_location(instrument_spec["rmf"], "files")
         rmf = RedistributionMatrixFile(rmf_file)
@@ -493,7 +493,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             bkgnd_prefix = out_file.strip("_evt.fits") + "_bkgnd"
             bkg_events, _ = make_background(bkgnd_prefix, exp_time, instrument, sky_center,
                                             foreground=True, instr_bkgnd=True, dither_shape=dither_shape,
-                                            dither_size=dither_size, prng=prng, clobber=clobber)
+                                            dither_size=dither_size, prng=prng, roll_angle=roll_angle,
+                                            clobber=clobber)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
         else:
