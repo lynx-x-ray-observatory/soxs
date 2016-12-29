@@ -19,10 +19,10 @@ athena_xifu_bkgnd = BackgroundSpectrum(xifu_bkgnd_file, "instrumental")
 wfi_bkgnd_file = os.path.join(soxs_files_path, "wfi_bkgnd.dat")
 athena_wfi_bkgnd = BackgroundSpectrum(wfi_bkgnd_file, "instrumental")
 
-instrument_backgrounds = {"acisi": "acisi_particle_bkgnd.dat",
-                          "mucal": "mucal_particle_bkgnd.dat",
-                          "athena_xifu": "xifu_bkgnd.dat",
-                          "athena_wfi": "wfi_bkgnd.dat"}
+instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
+                          "mucal": mucal_particle_bkgnd,
+                          "athena_xifu": athena_xifu_bkgnd,
+                          "athena_wfi": athena_wfi_bkgnd}
 
 def add_instrument_background(name, filename):
     """
