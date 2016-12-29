@@ -431,7 +431,7 @@ def combine_event_files(in_file1, in_file2, out_file, clobber=False):
 
     coldefs = pyfits.ColDefs(cols)
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    tbhdu.update_ext_name("EVENTS")
+    tbhdu.name = "EVENTS"
     tbhdu.header.update(hdu1.header)
 
     hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu, tbhdu_gti])
