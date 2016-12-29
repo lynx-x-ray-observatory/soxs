@@ -10,8 +10,8 @@ from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array
 from soxs.events import write_event_file, combine_event_files
-from soxs.background.instrument import instrument_backgrounds
-from soxs.background.foreground import make_foreground
+from soxs.background import make_instrument_background, \
+    make_foreground
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -194,41 +194,6 @@ class RedistributionMatrixFile(object):
         events[self.header["CHANTYPE"]] = np.concatenate(detectedChannels)
 
         return events
-
-default_f = {"acisi": 10.0, 
-             "mucal": 10.0,
-             "athena_wfi": 12.0,
-             "athena_xifu": 12.0}
-
-def add_particle_background(bkgnd_name, event_params, rot_mat, focal_length, prng=np.random):
-
-    fov = event_params["fov"]
-
-    bkgnd_spec = instrument_backgrounds[bkgnd_name]
-
-    # Generate background events
-
-    bkg_events = {}
-
-    area = (focal_length/default_f[bkgnd_name])**2
-    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                        area, fov, prng=prng)
-
-    n_events = bkg_events["energy"].size
-
-    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                size=n_events))
-    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                size=n_events))
-    bkg_events["detx"] = np.round(bkg_events["chipx"] - event_params['pix_center'][0] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    bkg_events["dety"] = np.round(bkg_events["chipy"] - event_params['pix_center'][1] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
-    bkg_events["xpix"] = pix[0,:] + event_params['pix_center'][0]
-    bkg_events["ypix"] = pix[1,:] + event_params['pix_center'][1]
-
-    return bkg_events
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, dither_shape="square",
@@ -471,8 +436,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
-        bkg_events = add_particle_background(instrument_spec["bkgnd"], event_params, rot_mat,
-                                             prng=prng, focal_length=instrument_spec["focal_length"])
+        bkg_events = make_instrument_background(instrument_spec["bkgnd"], event_params, rot_mat,
+                                                prng=prng, focal_length=instrument_spec["focal_length"])
         for key in bkg_events:
             all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
 
