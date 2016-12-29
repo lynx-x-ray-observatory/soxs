@@ -465,15 +465,16 @@ def make_backgrounds(simput_prefix, out_file, exp_time, instrument, sky_center, 
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     fov = instrument_spec["fov"]
+    simput_file = simput_prefix + "_simput.fits"
     if foreground:
+        append = os.path.exists(simput_file) and not clobber
         phlist_prefix = simput_prefix + "_foreground"
         phlist_file = phlist_prefix + "_phlist.fits"
         if os.path.exists(phlist_file) and not clobber:
             raise IOError("%s exists, but clobber=False!")
-        mylog.info("Making foreground photon list in %s.")
+        mylog.info("Making foreground photon list in %s." % phlist_file)
         make_foreground(simput_prefix, phlist_prefix, exp_time, fov,
-                        sky_center, append=True, clobber=clobber, prng=prng)
-    simput_file = simput_prefix + "_simput.fits"
+                        sky_center, append=append, clobber=clobber, prng=prng)
     instrument_simulator(simput_file, out_file, exp_time, instrument,
                          sky_center, clobber=clobber, dither_shape=dither_shape,
                          dither_size=dither_size, instr_bkgnd=instr_bkgnd, prng=prng)
