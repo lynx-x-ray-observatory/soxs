@@ -41,7 +41,7 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     coldefs = pyfits.ColDefs(cols)
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    tbhdu.update_ext_name("EVENTS")
+    tbhdu.name = "EVENTS"
 
     tbhdu.header["MTYPE1"] = "sky"
     tbhdu.header["MFORM1"] = "x,y"
@@ -100,7 +100,7 @@ def write_event_file(events, parameters, filename, clobber=False):
                          array=np.array([parameters["exposure_time"]]))
 
     tbhdu_gti = pyfits.BinTableHDU.from_columns([start,stop])
-    tbhdu_gti.update_ext_name("STDGTI")
+    tbhdu_gti.name = "STDGTI"
     tbhdu_gti.header["TSTART"] = 0.0
     tbhdu_gti.header["TSTOP"] = parameters["exposure_time"]
     tbhdu_gti.header["HDUCLASS"] = "OGIP"
@@ -152,7 +152,7 @@ def write_spectrum(evtfile, specfile, clobber=False):
     coldefs = pyfits.ColDefs([col1, col2, col3, col4])
 
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    tbhdu.update_ext_name("SPECTRUM")
+    tbhdu.name = "SPECTRUM"
 
     tbhdu.header["DETCHANS"] = spec.size
     tbhdu.header["TOTCTS"] = spec.sum()
@@ -270,7 +270,7 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9, col10])
 
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    tbhdu.update_ext_name("PROFILE")
+    tbhdu.name = "PROFILE"
 
     hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
 

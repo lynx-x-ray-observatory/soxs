@@ -80,7 +80,7 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     coldefs = pyfits.ColDefs(cols)
 
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    tbhdu.update_ext_name("PHLIST")
+    tbhdu.name = "PHLIST"
 
     tbhdu.header["HDUCLASS"] = "HEASARC/SIMPUT"
     tbhdu.header["HDUCLAS1"] = "PHOTONS"
@@ -142,7 +142,7 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9])
 
     wrhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    wrhdu.update_ext_name("SRC_CAT")
+    wrhdu.name = "SRC_CAT"
 
     wrhdu.header["HDUCLASS"] = "HEASARC"
     wrhdu.header["HDUCLAS1"] = "SIMPUT"

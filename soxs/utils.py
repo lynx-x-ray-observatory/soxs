@@ -101,7 +101,7 @@ def convert_rmf(rmffile):
                                                   fchan_new, nchan_new,
                                                   m_new])
 
-    matrix_new.update_ext_name("SPECRESP MATRIX")
+    matrix_new.name = "SPECRESP MATRIX"
 
     new_f.pop(idx)
 
