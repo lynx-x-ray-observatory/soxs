@@ -1,6 +1,6 @@
 import os
-from soxs.utils import soxs_files_path
-from soxs.background.utils import BackgroundSpectrum
+from soxs.utils import soxs_files_path, mylog
+from soxs.background.spectra import BackgroundSpectrum
 import numpy as np
 
 # ACIS-I particle background
@@ -48,7 +48,8 @@ default_f = {"acisi": 10.0,
              "athena_wfi": 12.0,
              "athena_xifu": 12.0}
 
-def make_instrument_background(bkgnd_name, event_params, rot_mat, focal_length, prng=np.random):
+def make_instrument_background(bkgnd_name, event_params, focal_length, rmf, 
+                               prng=np.random):
 
     fov = event_params["fov"]
 
@@ -60,7 +61,7 @@ def make_instrument_background(bkgnd_name, event_params, rot_mat, focal_length, 
 
     area = (focal_length/default_f[bkgnd_name])**2
     bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                        area, fov, prng=prng)
+                                                        area, fov, prng=prng).value
 
     n_events = bkg_events["energy"].size
 
@@ -72,8 +73,16 @@ def make_instrument_background(bkgnd_name, event_params, rot_mat, focal_length, 
                                   prng.uniform(low=-0.5, high=0.5, size=n_events))
     bkg_events["dety"] = np.round(bkg_events["chipy"] - event_params['pix_center'][1] +
                                   prng.uniform(low=-0.5, high=0.5, size=n_events))
-    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
-    bkg_events["xpix"] = pix[0,:] + event_params['pix_center'][0]
-    bkg_events["ypix"] = pix[1,:] + event_params['pix_center'][1]
+    bkg_events["xpix"] = bkg_events["detx"] + event_params['pix_center'][0]
+    bkg_events["ypix"] = bkg_events["dety"] + event_params['pix_center'][1]
+
+    if bkg_events["energy"].size == 0:
+        raise RuntimeError("No instrumental background events were detected!!!")
+
+    mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
+    bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
+
+    bkg_events['time'] = np.random.uniform(size=bkg_events["energy"].size, low=0.0,
+                                           high=event_params["exposure_time"])
 
     return bkg_events

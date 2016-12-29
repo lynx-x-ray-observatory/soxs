@@ -13,8 +13,7 @@ from soxs.instrument import \
     instrument_simulator, \
     AuxiliaryResponseFile, \
     RedistributionMatrixFile, \
-    simulate_observation, \
-    make_backgrounds
+    make_background_file
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \

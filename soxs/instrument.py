@@ -9,9 +9,9 @@ from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array
-from soxs.events import write_event_file, combine_event_files
+from soxs.events import write_event_file
 from soxs.background import make_instrument_background, \
-    make_foreground
+    make_foreground, add_background_from_file
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -195,10 +195,10 @@ class RedistributionMatrixFile(object):
 
         return events
 
-def instrument_simulator(input_events, out_file, exp_time, instrument,
-                         sky_center, clobber=False, dither_shape="square",
-                         dither_size=16.0, roll_angle=0.0, instr_bkgnd=True, 
-                         prng=np.random, **kwargs):
+
+def generate_events(input_events, exp_time, instrument, sky_center, 
+                    dither_shape="square", dither_size=16.0, roll_angle=0.0, 
+                    prng=np.random):
     """
     Take unconvolved events and create an event file from them. This 
     function does the following:
@@ -253,17 +253,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 300000.0, "hdxi_3x10",
     ...                      [30., 45.], clobber=True)
     """
-    if "astro_bkgnd" in kwargs:
-        mylog.warning("'astro_bkgnd' is no longer an 'instrument_simulator' option. No "
-                      "foreground photons will be added here. Please use 'make_foreground' "
-                      "to make the astrophysical foreground.")
-    if input_events is None:
-        if not instr_bkgnd:
-            raise RuntimeError("No background and no sources, so I can't do anything!!")
-        # only doing an instrumental background
-        event_list = []
-        parameters = {}
-    elif isinstance(input_events, dict):
+    if isinstance(input_events, dict):
         event_list = [{k: input_events[k] for k in ["ra", "dec", "energy"]}]
         parameters = {"flux": np.array([input_events["flux"]]),
                       "emin": np.array([input_events["energy"].min()]),
@@ -428,44 +418,30 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             for key in events:
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
-    if input_events is not None:
-        if all_events["energy"].size == 0:
-            mylog.warning("No events from any of the sources in the catalog were detected!")
-
-    # Step 3: Add particle background
-
-    if instr_bkgnd and instrument_spec["bkgnd"] is not None:
-        mylog.info("Adding in instrumental background.")
-        bkg_events = make_instrument_background(instrument_spec["bkgnd"], event_params, rot_mat,
-                                                prng=prng, focal_length=instrument_spec["focal_length"])
-        for key in bkg_events:
-            all_events[key] = np.concatenate([all_events[key], bkg_events[key]])
-
     if all_events["energy"].size == 0:
-        raise RuntimeError("No events were detected!!!")
+        raise RuntimeError("No events from any of the sources in the catalog were detected!")
 
     # Step 4: Scatter energies with RMF
-
-    if all_events["energy"].size > 0:
-        mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
-        all_events = rmf.scatter_energies(all_events, prng=prng)
+    mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
+    all_events = rmf.scatter_energies(all_events, prng=prng)
 
     # Step 5: Add times to events
-
     all_events['time'] = np.random.uniform(size=all_events["energy"].size, low=0.0,
                                            high=event_params["exposure_time"])
 
-    write_event_file(all_events, event_params, out_file, clobber=clobber)
+    return all_events, event_params
 
-def make_backgrounds(simput_prefix, out_file, exp_time, instrument, sky_center, clobber=False, 
-                     foreground=True, instr_bkgnd=True, dither_shape="square",
-                     dither_size=16.0, prng=np.random):
+
+def make_background(simput_prefix, exp_time, instrument, sky_center, clobber=False, 
+                    foreground=True, instr_bkgnd=True, dither_shape="square", 
+                    dither_size=16.0, prng=np.random):
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     fov = instrument_spec["fov"]
     simput_file = simput_prefix + "_simput.fits"
+
     if foreground:
         append = os.path.exists(simput_file) and not clobber
         phlist_prefix = simput_prefix + "_foreground"
@@ -475,21 +451,39 @@ def make_backgrounds(simput_prefix, out_file, exp_time, instrument, sky_center, 
         mylog.info("Making foreground photon list in %s." % phlist_file)
         make_foreground(simput_prefix, phlist_prefix, exp_time, fov,
                         sky_center, append=append, clobber=clobber, prng=prng)
-    instrument_simulator(simput_file, out_file, exp_time, instrument,
-                         sky_center, clobber=clobber, dither_shape=dither_shape,
-                         dither_size=dither_size, instr_bkgnd=instr_bkgnd, prng=prng)
+    events, event_params = generate_events(simput_file, exp_time, instrument, sky_center,
+                                           dither_shape=dither_shape, dither_size=dither_size, 
+                                           prng=prng)
+    if instr_bkgnd:
+        rmf_file = check_file_location(instrument_spec["rmf"], "files")
+        rmf = RedistributionMatrixFile(rmf_file)
+        mylog.info("Adding in instrumental background.")
+        bkg_events = make_instrument_background(instrument_spec["bkgnd"], event_params,
+                                                instrument_spec["focal_length"], rmf, prng=prng)
+        for key in bkg_events:
+            events[key] = np.concatenate([events[key], bkg_events[key]])
 
-def simulate_observation(input_events, out_file, exp_time, instrument,
+    return events, event_params
+
+def make_background_file(simput_prefix, out_file, exp_time, instrument, sky_center, clobber=False,
+                         foreground=True, instr_bkgnd=True, dither_shape="square", dither_size=16.0,
+                         prng=np.random):
+    events, event_params = make_background(simput_prefix, exp_time, instrument, sky_center,
+                                           foreground=foreground, instr_bkgnd=instr_bkgnd, 
+                                           dither_shape=dither_shape, dither_size=dither_size,
+                                           prng=prng, clobber=clobber)
+    write_event_file(events, event_params, out_file, clobber=clobber)
+
+def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, bkgnd=None, dither_shape="square",
                          dither_size=16.0, roll_angle=0.0, prng=np.random):
-    if "_evt.fits" not in out_file:
+    if "evt.fits" not in out_file:
         out_file += "_evt.fits"
     mylog.info("Making observation of source in %s." % out_file)
     # Make the source first
-    instrument_simulator(input_events, out_file, exp_time, instrument, 
-                         sky_center, clobber=clobber, dither_shape=dither_shape,
-                         dither_size=dither_size, roll_angle=roll_angle, 
-                         instr_bkgnd=False, prng=prng)
+    events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
+                                           dither_shape=dither_shape, dither_size=dither_size, 
+                                           roll_angle=roll_angle, prng=prng)
     # If the user wants backgrounds, either make the background or add an already existing
     # background event file. It may be necessary to reproject events to a new coordinate system.
     if bkgnd is False:
@@ -497,15 +491,17 @@ def simulate_observation(input_events, out_file, exp_time, instrument,
     else:
         if bkgnd is None:
             bkgnd_prefix = out_file.strip("_evt.fits") + "_bkgnd"
-            bkgnd_out_file = bkgnd_prefix + "_evt.fits"
-            make_backgrounds(bkgnd_prefix, bkgnd_out_file, exp_time, instrument, 
-                             sky_center, clobber=clobber, foreground=True, instr_bkgnd=True, 
-                             dither_shape=dither_shape, dither_size=dither_size, prng=prng)
+            bkg_events, _ = make_background(bkgnd_prefix, exp_time, instrument, sky_center,
+                                            foreground=True, instr_bkgnd=True, dither_shape=dither_shape,
+                                            dither_size=dither_size, prng=prng, clobber=clobber)
+            for key in events:
+                events[key] = np.concatenate([events[key], bkg_events[key]])
         else:
             if not os.path.exists(bkgnd):
                 raise IOError("Cannot find the background event file %s!" % bkgnd)
             bkgnd_out_file = bkgnd
             mylog.info("Adding the background in the file %s." % bkgnd)
-        combine_event_files(out_file, bkgnd_out_file, out_file, clobber=clobber)
+            add_background_from_file(events, event_params, bkgnd_out_file)
+    write_event_file(events, event_params, out_file, clobber=clobber)
     mylog.info("Observation complete.")
 

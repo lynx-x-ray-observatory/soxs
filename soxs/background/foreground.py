@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from soxs.background.utils import BackgroundSpectrum
+from soxs.background.spectra import BackgroundSpectrum
 from soxs.simput import write_photon_list
 from soxs.spatial import FillFOVModel
 from soxs.utils import soxs_files_path
