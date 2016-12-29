@@ -36,8 +36,8 @@ class BackgroundSpectrum(Spectrum):
             prng = np.random
         rate = area*fov*fov*self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng=prng)
-        flux = np.sum(energy)*erg_per_keV/t_exp/area/(fov*fov)
-        energies = Energies(energy, flux, "erg/(cm**2*arcmin**2*s)")
+        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        energies = Energies(energy, flux)
         return energies
 
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
@@ -63,6 +63,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
             prng = np.random
         rate = fov*fov*self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng=prng)
-        flux = np.sum(energy)*erg_per_keV/t_exp/(fov*fov)
-        energies = Energies(energy, flux, "erg/(arcmin**2*s)")
+        earea = self.arf.interpolate_area(energy).value
+        flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
+        energies = Energies(energy, flux)
         return energies

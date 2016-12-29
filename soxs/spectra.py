@@ -14,9 +14,9 @@ import astropy.io.fits as pyfits
 import astropy.units as u
 
 class Energies(u.Quantity):
-    def __new__(cls, energy, flux, flux_units):
+    def __new__(cls, energy, flux):
         ret = u.Quantity.__new__(cls, energy, unit="keV")
-        ret.flux = u.Quantity(flux, flux_units)
+        ret.flux = u.Quantity(flux, "erg/(cm**2*s)")
         return ret
 
 def _generate_energies(spec, t_exp, rate, prng=None):
@@ -326,7 +326,7 @@ class Spectrum(object):
         rate = area*self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng=prng)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
-        energies = Energies(energy, flux, "erg/(cm**2*s)")
+        energies = Energies(energy, flux)
         return energies
 
 class ApecGenerator(object):
@@ -541,6 +541,7 @@ class ConvolvedSpectrum(Spectrum):
             prng = np.random
         rate = self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng=prng)
-        flux = np.sum(energy)*erg_per_keV/t_exp
-        energies = Energies(energy, flux, "erg/s")
+        earea = self.arf.interpolate_area(energy).value
+        flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
+        energies = Energies(energy, flux)
         return energies
