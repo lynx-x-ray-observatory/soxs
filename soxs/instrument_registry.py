@@ -65,6 +65,26 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "dither": False,
                                       "psf": ["gaussian", 5.0]}
 
+instrument_registry["acis_cy0"] = {"name": "acis_cy0", 
+                                   "arf": "acisi_aimpt_cy0.arf",
+                                   "rmf": "acisi_aimpt_cy0.rmf",
+                                   "bkgnd": "acisi",
+                                   "fov": 19.68,
+                                   "num_pixels": 2400,
+                                   "psf": ["gaussian", 0.5],
+                                   "focal_length": 10.0,
+                                   "dither": True}
+
+instrument_registry["acis_cy18"] = {"name": "acis_cy18",
+                                    "arf": "acisi_aimpt_cy18.arf",
+                                    "rmf": "acisi_aimpt_cy18.rmf",
+                                    "bkgnd": "acisi",
+                                    "fov": 19.68,
+                                    "num_pixels": 2400,
+                                    "psf": ["gaussian", 0.5],
+                                    "focal_length": 10.0,
+                                    "dither": True}
+
 def add_instrument_to_registry(inst_spec):
     """
     Add an instrument specification to the registry, contained
