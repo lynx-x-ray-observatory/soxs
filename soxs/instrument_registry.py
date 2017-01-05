@@ -65,25 +65,25 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "dither": False,
                                       "psf": ["gaussian", 5.0]}
 
-instrument_registry["acis_cy0"] = {"name": "acis_cy0", 
-                                   "arf": "acisi_aimpt_cy0.arf",
-                                   "rmf": "acisi_aimpt_cy0.rmf",
-                                   "bkgnd": "acisi",
-                                   "fov": 19.68,
-                                   "num_pixels": 2400,
-                                   "psf": ["gaussian", 0.5],
-                                   "focal_length": 10.0,
-                                   "dither": True}
-
-instrument_registry["acis_cy18"] = {"name": "acis_cy18",
-                                    "arf": "acisi_aimpt_cy18.arf",
-                                    "rmf": "acisi_aimpt_cy18.rmf",
+instrument_registry["acisi_cy0"] = {"name": "acis_cy0", 
+                                    "arf": "acisi_aimpt_cy0.arf",
+                                    "rmf": "acisi_aimpt_cy0.rmf",
                                     "bkgnd": "acisi",
                                     "fov": 19.68,
                                     "num_pixels": 2400,
                                     "psf": ["gaussian", 0.5],
                                     "focal_length": 10.0,
                                     "dither": True}
+
+instrument_registry["acisi_cy18"] = {"name": "acis_cy18",
+                                     "arf": "acisi_aimpt_cy18.arf",
+                                     "rmf": "acisi_aimpt_cy18.rmf",
+                                     "bkgnd": "acisi",
+                                     "fov": 19.68,
+                                     "num_pixels": 2400,
+                                     "psf": ["gaussian", 0.5],
+                                     "focal_length": 10.0,
+                                     "dither": True}
 
 def add_instrument_to_registry(inst_spec):
     """
@@ -97,8 +97,8 @@ def add_instrument_to_registry(inst_spec):
     >>> {
     ...     "name": "hdxi_3x10", # The short name of the instrument
     ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
-    ...     "rmf": "xrs_hdxi.rmf" # The file containing the RMF
-    ...     "bkgnd": "acisi" # The name of the particle background
+    ...     "rmf": "xrs_hdxi.rmf", # The file containing the RMF
+    ...     "bkgnd": "acisi", # The name of the particle background
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
