@@ -443,6 +443,23 @@ class ApecGenerator(object):
         coco_fields = {el: coco_data.field(el) for el in coco_fields}
         return line_fields, coco_fields
 
+    def _get_table(self, indices, redshift, velocity):
+        numi = len(indices)
+        scale_factor = 1./(1.+redshift)
+        cspec = np.zeros((numi, self.nbins))
+        mspec = np.zeros((numi, self.nbins))
+        for i, ikT in enumerate(indices):
+            line_fields, coco_fields = self._preload_data(ikT)
+            # First do H,He, and trace elements
+            for elem in cosmic_elem:
+                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
+                                                  coco_fields, scale_factor)
+            # Next do the metals
+            for elem in metal_elem:
+                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
+                                                  coco_fields, scale_factor)
+        return cspec, mspec
+
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0):
         """
         Get a thermal emission spectrum.
@@ -465,20 +482,8 @@ class ApecGenerator(object):
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
-        cspec = np.zeros((2, self.nbins))
-        mspec = np.zeros((2, self.nbins))
-        scale_factor = 1./(1.+redshift)
         dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
-        for i, ikT in enumerate([tindex, tindex+1]):
-            line_fields, coco_fields = self._preload_data(ikT)
-            # First do H,He, and trace elements
-            for elem in cosmic_elem:
-                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
-                                                  coco_fields, scale_factor)
-            # Next do the metals
-            for elem in metal_elem:
-                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
-                                                  coco_fields, scale_factor)
+        cspec, mspec = self._get_table([tindex, tindex+1], redshift, v)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
         spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)/self.de
