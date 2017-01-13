@@ -39,8 +39,8 @@ def Tx(M_mean, z_mean):
 
 def flux2lum(kT, z):
     lum_table = h5py.File(lum_table_file, "r")
-    kT_idxs = np.searchsorted(lum_table["kT"], kT)-1
-    z_idxs = np.searchsorted(lum_table["redshift"], z)-1
+    kT_idxs = np.round((kT-0.1)/0.1).astype('int')
+    z_idxs = np.round(z/0.05).astype('int')
     flux2lum = lum_table["Lx"].value[kT_idxs, z_idxs]
     lum_table.close()
     return flux2lum
