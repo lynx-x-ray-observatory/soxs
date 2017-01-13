@@ -8,10 +8,11 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array
+    ensure_numpy_array, issue_deprecation_warning
 from soxs.events import write_event_file
 from soxs.background import make_instrument_background, \
-    make_foreground, add_background_from_file
+    make_foreground, add_background_from_file, \
+    make_cosmo_background
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -432,9 +433,10 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     return all_events, event_params
 
 
-def make_background(simput_prefix, exp_time, instrument, sky_center, clobber=False, 
-                    foreground=True, instr_bkgnd=True, dither_shape="square", 
-                    dither_size=16.0, roll_angle=0.0, prng=np.random):
+def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
+                    clobber=False, foreground=True, cosmo_bkgnd=True, instr_bkgnd=True, 
+                    dither_shape="square", dither_size=16.0, roll_angle=0.0, 
+                    prng=np.random):
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -451,6 +453,16 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, clobber=Fal
         mylog.info("Making foreground photon list in %s." % phlist_file)
         make_foreground(simput_prefix, phlist_prefix, exp_time, fov,
                         sky_center, append=append, clobber=clobber, prng=prng)
+    if cosmo_bkgnd:
+        append = os.path.exists(simput_file) and not clobber
+        phlist_prefix = simput_prefix + "_cosmo_bkgnd"
+        phlist_file = phlist_prefix + "_phlist.fits"
+        if os.path.exists(phlist_file) and not clobber:
+            raise IOError("%s exists, but clobber=False!")
+        mylog.info("Making cosmological background photon list in %s." % phlist_file)
+        make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
+                              nH=nH, append=append, clobber=clobber, prng=prng)
+
     events, event_params = generate_events(simput_file, exp_time, instrument, sky_center,
                                            dither_shape=dither_shape, dither_size=dither_size, 
                                            roll_angle=roll_angle, prng=prng)
@@ -476,7 +488,23 @@ def make_background_file(simput_prefix, out_file, exp_time, instrument, sky_cent
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, bkgnd=None, dither_shape="square",
-                         dither_size=16.0, roll_angle=0.0, prng=np.random):
+                         dither_size=16.0, roll_angle=0.0, prng=np.random, **kwargs):
+    if "instr_bkgnd" in kwargs:
+        issue_deprecation_warning("The \"instr_bkgnd\" keyword is deprecated and will be "
+                                  "removed in a future release. If you need to turn off "
+                                  "the instrumental background, create your own background "
+                                  "file without it using \"make_background_file\". It will "
+                                  "be turned off for this simulation.")
+    if "astro_bkgnd" in kwargs:
+        issue_deprecation_warning("The \"astro_bkgnd\" keyword is deprecated and will be "
+                                  "removed in a future release. If you need to turn off "
+                                  "the astrophysical background, create your own background "
+                                  "file without it using \"make_background_file\". It will "
+                                  "be turned off for this simulation.")
+    instr_bkgnd = kwargs.get("instr_bkgnd", True)
+    foreground = kwargs.get("astro_bkgnd", True)
+    cosmo_bkgnd = kwargs.get("astro_bkgnd", True)
+
     if "evt.fits" not in out_file:
         out_file += "_evt.fits"
     mylog.info("Making observation of source in %s." % out_file)
@@ -492,7 +520,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         if bkgnd is None:
             bkgnd_prefix = out_file.strip("_evt.fits") + "_bkgnd"
             bkg_events, _ = make_background(bkgnd_prefix, exp_time, instrument, sky_center,
-                                            foreground=True, instr_bkgnd=True, dither_shape=dither_shape,
+                                            foreground=foreground, instr_bkgnd=instr_bkgnd, 
+                                            cosmo_bkgnd=cosmo_bkgnd, dither_shape=dither_shape,
                                             dither_size=dither_size, prng=prng, roll_angle=roll_angle,
                                             clobber=clobber)
             for key in events:

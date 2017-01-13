@@ -45,9 +45,9 @@ def flux2lum(kT, z):
     lum_table.close()
     return flux2lum
 
-def make_cosmological_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                                 nH=0.05, area=40000.0, append=False, clobber=False, 
-                                 prng=np.random):
+def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
+                          nH=0.05, area=40000.0, append=False, clobber=False, 
+                          prng=np.random):
 
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
     agen = ApecGenerator(0.1, 10.0, 10000)
