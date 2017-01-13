@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import h5py
 
 from astropy.cosmology import FlatLambdaCDM
 
@@ -17,13 +18,13 @@ h0 = 0.7
 
 # Parameters for the halo fluxes
 # SHOULD NOT BE ALTERED
-emin = 0.5 
+emin = 0.5
 emax = 2.0
 abund = 0.3
 conc = 10.0
 
 lum_file = os.path.join(soxs_files_path, "lum_table.txt")
-halos_cat_file = os.path.join(soxs_files_path, "halo_catalog.dat")
+halos_cat_file = os.path.join(soxs_files_path, "halo_catalog.h5")
 
 def lum(M_mean, z_mean): 
     # Alexey's cosmology II paper, eq. 22
@@ -51,42 +52,41 @@ def make_cosmological_background(simput_prefix, phlist_prefix, exp_time, fov, sk
     agen = ApecGenerator(0.1, 10.0, 10000)
 
     mylog.info("Loading halo data from catalog: %s" % halos_cat_file)
-    halo_data = np.loadtxt(halos_cat_file)
+    halo_data = h5py.File(halos_cat_file, "r")
 
     scale = cosmo.kpc_proper_per_arcmin(halo_data[:,0]).to("Mpc/arcmin")
-
-    # Scaling masses and transverse distances by hubble parameter,
-    # converting transverse distances to arcmin
-    halo_data[:,1:] /= h0
-    halo_data[:,2:] /= scale.value
 
     # 600. arcmin = 10 degrees (total FOV of catalog = 100 deg^2)
     fov_cat = 10.0*60.0
     w = construct_wcs(*sky_center)
 
     xc, yc = prng.uniform(low=0.5*(fov-fov_cat), high=0.5*(fov_cat-fov), size=2)
-    xlo = xc-1.1*0.5*fov
-    xhi = xc+1.1*0.5*fov
-    ylo = yc-1.1*0.5*fov
-    yhi = yc+1.1*0.5*fov
+    xlo = (xc-1.1*0.5*fov)*scale.value*h0
+    xhi = (xc+1.1*0.5*fov)*scale.value*h0
+    ylo = (yc-1.1*0.5*fov)*scale.value*h0
+    yhi = (yc+1.1*0.5*fov)*scale.value*h0
 
     mylog.info("Selecting halos in the FOV.")
 
-    fov_idxs = (halo_data[:,2] >= xlo) & (halo_data[:,2] <= xhi)
-    fov_idxs = (halo_data[:,3] >= ylo) & (halo_data[:,3] <= yhi) & fov_idxs
+    fov_idxs = (halo_data["x"] >= xlo) & (halo_data["x"] <= xhi)
+    fov_idxs = (halo_data["y"] >= ylo) & (halo_data["y"] <= yhi) & fov_idxs
 
     n_halos = fov_idxs.sum()
 
     mylog.info("Number of halos in the field of view: %d" % n_halos)
 
     # Now select the specific halos which are in the FOV
-    z = halo_data[fov_idxs,0]
-    m = halo_data[fov_idxs,1]
-    s = scale[fov_idxs].to("kpc/arcsec").value
-    ra0, dec0 = w.wcs_pix2world(halo_data[fov_idxs,2], halo_data[fov_idxs,3], 1)
+    z = halo_data["redshift"][fov_idxs]
+    m = halo_data["M500c"][fov_idxs,1]/h0
+    s = scale[fov_idxs].to("Mpc/arcsec").value
+    ra0, dec0 = w.wcs_pix2world(halo_data["x"][fov_idxs]/(h0*s.value),
+                                halo_data["y"][fov_idxs]/(h0*s.value), 1)
+
+    # Close the halo catalog file
+    halo_data.close()
 
     # Some cosmological stuff
-    rho_crit = cosmo.critical_density(z).to("Msun/kpc**3").value
+    rho_crit = cosmo.critical_density(z).to("Msun/Mpc**3").value
 
     # halo temperature and k-corrected flux
     kT = Tx(m, z)
