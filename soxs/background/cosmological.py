@@ -23,7 +23,7 @@ emax = 2.0
 abund = 0.3
 conc = 10.0
 
-lum_file = os.path.join(soxs_files_path, "lum_table.txt")
+lum_table_file = os.path.join(soxs_files_path, "lum_table.h5")
 halos_cat_file = os.path.join(soxs_files_path, "halo_catalog.h5")
 
 def lum(M_mean, z_mean): 
@@ -37,11 +37,12 @@ def Tx(M_mean, z_mean):
     E_z = np.sqrt(omega_m * (1 + z_mean) ** 3 + omega_k * (1 + z_mean) ** 2 + omega_l)
     return 5.0 * (M_mean*E_z*h0/3.02e14)**(1.0/1.53)
 
-def flux2lum(kT,z):
-    if kT > 15.0: kT = 15.0 ## to prevent the program from crashing in case a very massive halo happens to be on the FOV
-    line = round((kT-0.1)/0.1)
-    column = round(z/0.05)
-    flux2lum = lum_table[line][column]
+def flux2lum(kT, z):
+    lum_table = h5py.File(lum_table_file, "r")
+    kT_idxs = np.searchsorted(lum_table["kT"], kT)-1
+    z_idxs = np.searchsorted(lum_table["redshift"], z)-1
+    flux2lum = lum_table["Lx"].value[kT_idxs, z_idxs]
+    lum_table.close()
     return flux2lum
 
 def make_cosmological_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
