@@ -55,7 +55,7 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     mylog.info("Loading halo data from catalog: %s" % halos_cat_file)
     halo_data = h5py.File(halos_cat_file, "r")
 
-    scale = cosmo.kpc_proper_per_arcmin(halo_data[:,0]).to("Mpc/arcmin")
+    scale = cosmo.kpc_proper_per_arcmin(halo_data["redshift"]).to("Mpc/arcmin")
 
     # 600. arcmin = 10 degrees (total FOV of catalog = 100 deg^2)
     fov_cat = 10.0*60.0
@@ -78,10 +78,10 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
 
     # Now select the specific halos which are in the FOV
     z = halo_data["redshift"][fov_idxs]
-    m = halo_data["M500c"][fov_idxs,1]/h0
+    m = halo_data["M500c"][fov_idxs]/h0
     s = scale[fov_idxs].to("Mpc/arcsec").value
-    ra0, dec0 = w.wcs_pix2world(halo_data["x"][fov_idxs]/(h0*s.value),
-                                halo_data["y"][fov_idxs]/(h0*s.value), 1)
+    ra0, dec0 = w.wcs_pix2world(halo_data["x"][fov_idxs]/(h0*s),
+                                halo_data["y"][fov_idxs]/(h0*s), 1)
 
     # Close the halo catalog file
     halo_data.close()
