@@ -419,7 +419,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             for key in events:
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
-    if all_events["energy"].size == 0:
+    if len(all_events["energy"]) == 0:
         raise RuntimeError("No events from any of the sources in the catalog were detected!")
 
     # Step 4: Scatter energies with RMF
@@ -449,7 +449,7 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
         phlist_prefix = simput_prefix + "_foreground"
         phlist_file = phlist_prefix + "_phlist.fits"
         if os.path.exists(phlist_file) and not clobber:
-            raise IOError("%s exists, but clobber=False!")
+            raise IOError("%s exists, but clobber=False!" % phlist_file)
         mylog.info("Making foreground photon list in %s." % phlist_file)
         make_foreground(simput_prefix, phlist_prefix, exp_time, fov,
                         sky_center, append=append, clobber=clobber, prng=prng)
@@ -458,7 +458,7 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
         phlist_prefix = simput_prefix + "_cosmo_bkgnd"
         phlist_file = phlist_prefix + "_phlist.fits"
         if os.path.exists(phlist_file) and not clobber:
-            raise IOError("%s exists, but clobber=False!")
+            raise IOError("%s exists, but clobber=False!" % phlist_file)
         mylog.info("Making cosmological background photon list in %s." % phlist_file)
         make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
                               nH=nH, append=append, clobber=clobber, prng=prng)
