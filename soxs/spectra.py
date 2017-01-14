@@ -24,10 +24,13 @@ def _generate_energies(spec, t_exp, rate, prng=None, quiet=False):
     n_ph = np.modf(t_exp*rate)
     n_ph = np.int64(n_ph[1]) + np.int64(n_ph[0] >= prng.uniform())
     if not quiet:
-        mylog.info("Creating %d events from this spectrum." % n_ph)
+        mylog.info("Creating %d energies from this spectrum." % n_ph)
     randvec = prng.uniform(size=n_ph)
     randvec.sort()
-    return np.interp(randvec, cumspec, spec.ebins.value)
+    e = np.interp(randvec, cumspec, spec.ebins.value)
+    if not quiet:
+        mylog.info("Finished creating energies.")
+    return e
 
 class Spectrum(object):
     _units = "photon/(cm**2*s*keV)"
