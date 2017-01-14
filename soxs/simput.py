@@ -4,8 +4,8 @@ import os
 
 def read_simput_catalog(simput_file):
     r"""
-    Read events from a SIMPUT catalog. This will read all of the sources
-    in the catalog.
+    Read events from a SIMPUT catalog. This will read 
+    all of the sources in the catalog.
 
     Parameters
     ----------
@@ -40,8 +40,8 @@ def read_simput_catalog(simput_file):
 def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
                       append=False, clobber=False):
     r"""
-    Write events to a new SIMPUT photon list. It can be associated
-    with a new or existing SIMPUT catalog. 
+    Write events to a new SIMPUT photon list. It can be 
+    associated with a new or existing SIMPUT catalog. 
 
     Parameters
     ----------
@@ -50,7 +50,8 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     phlist_prefix : string
         The filename prefix for the photon list file.
     flux : float
-        The energy flux of all the photons, in units of erg/cm**2/s.
+        The energy flux of all the photons, in units of 
+        erg/cm**2/s.
     ra : NumPy array
         The right ascension of the photons, in degrees.
     dec : NumPy array
@@ -58,7 +59,8 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     energy : NumPy array or array-like thing
         The energy of the photons, in keV.
     append : boolean, optional
-        If True, append a new source an existing SIMPUT catalog. Default: False
+        If True, append a new source an existing SIMPUT 
+        catalog. Default: False
     clobber : boolean, optional
         Set to True to overwrite previous files. Default: False
     """

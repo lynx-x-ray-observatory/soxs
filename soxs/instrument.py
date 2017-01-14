@@ -47,17 +47,19 @@ class AuxiliaryResponseFile(object):
 
     def interpolate_area(self, energy):
         """
-        Interpolate the effective area to the energies provided by the supplied *energy* array.
+        Interpolate the effective area to the energies 
+        provided  by the supplied *energy* array.
         """
         earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
         return u.Quantity(earea, "cm**2")
 
     def detect_events(self, events, exp_time, flux, refband, prng=None):
         """
-        Use the ARF to determine a subset of photons which will be
-        detected. Returns a boolean NumPy array which is the same
-        is the same size as the number of photons, wherever it is
-        "true" means those photons have been detected.
+        Use the ARF to determine a subset of photons which 
+        will be detected. Returns a boolean NumPy array 
+        which is the same is the same size as the number 
+        of photons, wherever it is "true" means those photons 
+        have been detected.
 
         Parameters
         ----------
@@ -68,12 +70,13 @@ class AuxiliaryResponseFile(object):
         flux : float
             The total flux of the photons in erg/s/cm^2. 
         refband : array_like
-            A two-element array or list containing the limits of the energy band
-            which the flux was computed in. 
+            A two-element array or list containing the limits 
+            of the energy band which the flux was computed in. 
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will only be specified
-            if you have a reason to generate the same set of random numbers, such as for a
-            test. Default is the :mod:`~numpy.random` module.
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is 
+            the :mod:`~numpy.random` module.
         """
         if prng is None:
             prng = np.random
@@ -151,9 +154,10 @@ class RedistributionMatrixFile(object):
         events : dict of np.ndarrays
             The energies and positions of the photons. 
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will only be specified
-            if you have a reason to generate the same set of random numbers, such as for a
-            test. Default is the :mod:`~numpy.random` module.
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is 
+            the :mod:`~numpy.random` module.
         """
         eidxs = np.argsort(events["energy"])
         sorted_e = events["energy"][eidxs]
@@ -243,11 +247,13 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
     instr_bkgnd : boolean, optional
-        Whether or not to include instrumental/particle background. Default: True
+        Whether or not to include instrumental/particle background. 
+        Default: True
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is 
+        the :mod:`~numpy.random` module.
 
     Examples
     --------

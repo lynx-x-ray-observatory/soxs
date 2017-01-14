@@ -48,7 +48,8 @@ class SpatialModel(object):
 
 class PointSourceModel(SpatialModel):
     """
-    Create positions for a photons emanating from a point source.
+    Create positions for a photons emanating from 
+    a point source.
 
     Parameters
     ----------
@@ -59,9 +60,11 @@ class PointSourceModel(SpatialModel):
     num_events : integer
         The number of events to generate. 
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+        A pseudo-random number generator. Typically 
+        will only be specified if you have a reason to 
+        generate the same set of random numbers, such as 
+        for a test. Default is the :mod:`numpy.random`
+        module.
     """
 
     def __init__(self, ra0, dec0, num_events):
@@ -74,8 +77,9 @@ class PointSourceModel(SpatialModel):
 
 class RadialFunctionModel(SpatialModel):
     """
-    Create positions for photons using a generic surface brightness
-    profile as a function of radius.
+    Create positions for photons using a generic 
+    surface brightness profile as a function of 
+    radius.
 
     Parameters
     ----------
@@ -84,21 +88,25 @@ class RadialFunctionModel(SpatialModel):
     dec0 : float
         The center Dec of the source in degrees.
     func : function or function-like, something callable.
-        A function that takes an array of radii and generates a radial
-        surface brightness profile. 
+        A function that takes an array of radii 
+        and generates a radial surface brightness profile. 
     num_events : integer
         The number of events to generate. 
     theta : float, optional
-        The angle through which to rotate the beta model in degrees. Only makes
-        sense if ellipticity is added. Default: 0.0
+        The angle through which to rotate the beta model 
+        in degrees. Only makes sense if ellipticity is 
+        added. Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed as the ratio between the length
-        scales of the x and y coordinates. The value of this parameter will shrink
-        or expand the profile in the direction of the "y" coordinate, so you may need 
-        to rotate to get the shape you want. Default: 1.0
+        The ellipticity of the radial profile, expressed 
+        as the ratio between the length scales of the x 
+        and y coordinates. The value of this parameter 
+        will shrink or expand the profile in the direction 
+        of the "y" coordinate, so you may need to rotate 
+        to get the shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
+        A pseudo-random number generator. Typically will 
+        only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, func, num_events, theta=0.0, 
@@ -130,16 +138,20 @@ class RadialArrayModel(RadialFunctionModel):
     num_events : integer
         The number of events to generate. 
     theta : float, optional
-        The angle through which to rotate the beta model in degrees. Only makes
-        sense if ellipticity is added. Default: 0.0
+        The angle through which to rotate the beta model 
+        in degrees. Only makes sense if ellipticity is 
+        added. Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed as the ratio between the length
-        scales of the x and y coordinates. The value of this parameter will shrink
-        or expand the profile in the direction of the "y" coordinate, so you may need 
-        to rotate to get the shape you want. Default: 1.0
+        The ellipticity of the radial profile, expressed 
+        as the ratio between the length scales of the x 
+        and y coordinates. The value of this parameter will 
+        shrink or expand the profile in the direction of the 
+        "y" coordinate, so you may need to rotate to get the 
+        shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
+        A pseudo-random number generator. Typically will 
+        only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r, S_r, num_events, theta=0.0, 
@@ -167,16 +179,20 @@ class RadialFileModel(RadialArrayModel):
     num_events : integer
         The number of events to generate. 
     theta : float, optional
-        The angle through which to rotate the beta model in degrees. Only makes
-        sense if ellipticity is added. Default: 0.0
+        The angle through which to rotate the beta model in 
+        degrees. Only makes sense if ellipticity is added. 
+        Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed as the ratio between the length
-        scales of the x and y coordinates. The value of this parameter will shrink
-        or expand the profile in the direction of the "y" coordinate, so you may need 
-        to rotate to get the shape you want. Default: 1.0
+        The ellipticity of the radial profile, expressed 
+        as the ratio between the length scales of the x 
+        and y coordinates. The value of this parameter will 
+        shrink or expand the profile in the direction of the 
+        "y" coordinate, so you may need to rotate to get the 
+        shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
+        A pseudo-random number generator. Typically will 
+        only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, radfile, num_events, theta=0.0, 
@@ -203,16 +219,20 @@ class BetaModel(RadialFunctionModel):
     num_events : integer
         The number of events to generate. 
     theta : float, optional
-        The angle through which to rotate the beta model in degrees. Only makes
-        sense if ellipticity is added. Default: 0.0
+        The angle through which to rotate the beta model in 
+        degrees. Only makes sense if ellipticity is added. 
+        Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed as the ratio between the length
-        scales of the x and y coordinates. The value of this parameter will shrink
-        or expand the profile in the direction of the "y" coordinate, so you may need 
-        to rotate to get the shape you want. Default: 1.0
+        The ellipticity of the radial profile, expressed 
+        as the ratio between the length scales of the x 
+        and y coordinates. The value of this parameter will 
+        shrink or expand the profile in the direction of the 
+        "y" coordinate, so you may need to rotate to get the 
+        shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
+        A pseudo-random number generator. Typically will 
+        only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r_c, beta, num_events,
@@ -224,7 +244,8 @@ class BetaModel(RadialFunctionModel):
 
 class AnnulusModel(RadialFunctionModel):
     """
-    Create positions for photons within an annulus shape with uniform surface brightness.
+    Create positions for photons within an annulus shape 
+    with uniform surface brightness.
 
     Parameters
     ----------
@@ -239,16 +260,20 @@ class AnnulusModel(RadialFunctionModel):
     num_events : integer
         The number of events to generate. 
     theta : float, optional
-        The angle through which to rotate the beta model in degrees. Only makes
-        sense if ellipticity is added. Default: 0.0
+        The angle through which to rotate the beta model in 
+        degrees. Only makes sense if ellipticity is added. 
+        Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed as the ratio between the length
-        scales of the x and y coordinates. The value of this parameter will shrink
-        or expand the profile in the direction of the "y" coordinate, so you may need 
-        to rotate to get the shape you want. Default: 1.0
+        The ellipticity of the radial profile, expressed 
+        as the ratio between the length scales of the x 
+        and y coordinates. The value of this parameter will 
+        shrink or expand the profile in the direction of the 
+        "y" coordinate, so you may need to rotate to get the 
+        shape you want. Default: 1.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
+        A pseudo-random number generator. Typically will 
+        only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r_in, r_out, num_events,
@@ -265,7 +290,8 @@ class AnnulusModel(RadialFunctionModel):
 
 class RectangleModel(SpatialModel):
     """
-    Create positions for photons within a rectangle or line shape.
+    Create positions for photons within a rectangle 
+    or line shape.
 
     Parameters
     ----------
@@ -280,10 +306,12 @@ class RectangleModel(SpatialModel):
     num_events : integer
         The number of events to generate.
     theta : float, optional
-        The angle through which to rotate the rectangle in degrees. Default: 0.0
+        The angle through which to rotate the rectangle 
+        in degrees. Default: 0.0
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
+        A pseudo-random number generator. Typically will 
+        only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, width, height, num_events, theta=0.0, prng=np.random):
@@ -309,8 +337,9 @@ class FillFOVModel(RectangleModel):
     num_events : integer
         The number of events to generate. 
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
+        A pseudo-random number generator. Typically will 
+        only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, fov, num_events, prng=np.random):

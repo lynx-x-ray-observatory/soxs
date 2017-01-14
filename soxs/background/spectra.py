@@ -14,22 +14,26 @@ class BackgroundSpectrum(Spectrum):
 
     def generate_energies(self, t_exp, area, fov, prng=None):
         """
-        Generate photon energies from this background spectrum given an
-        exposure time, effective area, and field of view.
+        Generate photon energies from this background 
+        spectrum given an exposure time, effective area, 
+        and field of view.
 
         Parameters
         ----------
         t_exp : float
             The exposure time in seconds.
         area : float
-            The effective area in cm**2. If one is creating events for a SIMPUT file,
-            a constant should be used and it must be large enough so that a sufficiently
-            large sample is drawn for the ARF.
+            The effective area in cm**2. If one is creating 
+            events for a SIMPUT file, a constant should be 
+            used and it must be large enough so that a 
+            sufficiently large sample is drawn for the ARF.
         fov : float
-            The width of the field of view on a side in arcminutes.
+            The width of the field of view on a side in 
+            arcminutes.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will only be specified
-            if you have a reason to generate the same set of random numbers, such as for a
+            A pseudo-random number generator. Typically will 
+            only be specified if you have a reason to generate 
+            the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
         if prng is None:
@@ -45,19 +49,23 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
 
     def generate_energies(self, t_exp, fov, prng=None):
         """
-        Generate photon energies from this convolved background spectrum given an
-        exposure time and field of view.
+        Generate photon energies from this convolved 
+        background spectrum given an exposure time and 
+        field of view.
 
         Parameters
         ----------
         t_exp : float
             The exposure time in seconds.
         fov : float
-            The width of the field of view on a side in arcminutes.
+            The width of the field of view on a side 
+            in arcminutes.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will only be specified
-            if you have a reason to generate the same set of random numbers, such as for a
-            test. Default is the :mod:`numpy.random` module.
+            A pseudo-random number generator. Typically 
+            will only be specified if you have a reason to 
+            generate the same set of random numbers, such as 
+            for a test. Default is the :mod:`numpy.random` 
+            module.
         """
         if prng is None:
             prng = np.random

@@ -27,20 +27,21 @@ instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
 
 def add_instrument_background(name, filename):
     """
-    Add a particle/instrument background to the list of known
-    backgrounds.
+    Add a particle/instrument background to the list 
+    of known backgrounds.
 
     Parameters
     ----------
     name : string
-        The short name of the background, which will be the key in the 
-        registry.
+        The short name of the background, which will 
+        be the key in the registry.
     filename : string
-        The file containing the background. It must have two columns: 
-        energy in keV, and background intensity in units of
-        photons/s/cm**2/arcmin**2/keV.
+        The file containing the background. It must 
+        have two columns: energy in keV, and background 
+        intensity in units of photons/s/cm**2/arcmin**2/keV.
     bkgnd_type : string
-        The type of background, either "instrumental" or "astrophysical".
+        The type of background, either "instrumental" 
+        or "astrophysical".
     """
     instrument_backgrounds[name] = BackgroundSpectrum(filename, "instrumental")
 

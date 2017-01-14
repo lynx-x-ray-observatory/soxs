@@ -75,7 +75,8 @@ class Spectrum(object):
 
     def get_flux_in_band(self, emin, emax):
         """
-        Determine the total flux within a band specified by an energy range. 
+        Determine the total flux within a band specified 
+        by an energy range. 
 
         Parameters
         ----------
@@ -86,8 +87,9 @@ class Spectrum(object):
 
         Returns
         -------
-        A tuple of values for the flux/intensity in the band: the first value is in
-        terms of the photon rate, the second value is in terms of the energy rate. 
+        A tuple of values for the flux/intensity in the 
+        band: the first value is in terms of the photon 
+        rate, the second value is in terms of the energy rate. 
         """
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         pflux = self.flux[range].sum()*self.de
@@ -97,16 +99,19 @@ class Spectrum(object):
     @classmethod
     def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         """
-        Create a model spectrum using a script file as input to XSPEC.
+        Create a model spectrum using a script file as 
+        input to XSPEC.
 
         Parameters
         ----------
         infile : string
             Path to the script file to use. 
         emin : float, optional
-            The minimum energy of the spectrum in keV. Default: 0.01
+            The minimum energy of the spectrum in keV. 
+            Default: 0.01
         emax : float, optional
-            The maximum energy of the spectrum in keV. Default: 50.0
+            The maximum energy of the spectrum in keV. 
+            Default: 50.0
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
         """
@@ -193,11 +198,14 @@ class Spectrum(object):
             The redshift of the source.
         norm : float
             The normalization of the source in units of
-            photons/s/cm**2/keV at 1 keV in the source frame.
+            photons/s/cm**2/keV at 1 keV in the source 
+            frame.
         emin : float, optional
-            The minimum energy of the spectrum in keV. Default: 0.01
+            The minimum energy of the spectrum in keV. 
+            Default: 0.01
         emax : float, optional
-            The maximum energy of the spectrum in keV. Default: 50.0
+            The maximum energy of the spectrum in keV. 
+            Default: 50.0
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
         """
@@ -227,16 +235,20 @@ class Spectrum(object):
     @classmethod
     def from_constant(cls, const_flux, emin=0.01, emax=50.0, nbins=10000):
         """
-        Create a spectrum from a constant model using XSPEC.
+        Create a spectrum from a constant model using 
+        XSPEC.
 
         Parameters
         ----------
         const_flux : float
-            The value of the constant flux in the units of the spectrum. 
+            The value of the constant flux in the units 
+            of the spectrum. 
         emin : float, optional
-            The minimum energy of the spectrum in keV. Default: 0.01
+            The minimum energy of the spectrum in keV. 
+            Default: 0.01
         emax : float, optional
-            The maximum energy of the spectrum in keV. Default: 50.0
+            The maximum energy of the spectrum in keV. 
+            Default: 50.0
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
         """
@@ -246,19 +258,21 @@ class Spectrum(object):
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
         """
-        Rescale the flux of the spectrum, optionally using a
-        specific energy band.
+        Rescale the flux of the spectrum, optionally using 
+        a specific energy band.
 
         Parameters
         ----------
         new_flux : float
             The new flux in units of photons/s/cm**2.
         emin : float, optional
-            The minimum energy of the band to consider, in keV.
-            Default: Use the minimum energy of the entire spectrum.
+            The minimum energy of the band to consider, 
+            in keV. Default: Use the minimum energy of 
+            the entire spectrum.
         emax : float, optional
-            The maximum energy of the band to consider, in keV.
-            Default: Use the maximum energy of the entire spectrum.
+            The maximum energy of the band to consider, 
+            in keV. Default: Use the maximum energy of 
+            the entire spectrum.
         flux_type : string, optional
             The units of the flux to use in the rescaling:
                 "photons": photons/s/cm**2
@@ -285,7 +299,8 @@ class Spectrum(object):
         specfile : string
             The filename to write the file to.
         clobber : boolean, optional
-            Whether or not to overwrite an existing file. Default: False
+            Whether or not to overwrite an existing 
+            file. Default: False
         """
         if os.path.exists(specfile) and not clobber:
             raise IOError("File %s exists and clobber=False!" % specfile)
@@ -309,25 +324,27 @@ class Spectrum(object):
 
     def generate_energies(self, t_exp, area, prng=None, quiet=False):
         """
-        Generate photon energies from this spectrum given an
-        exposure time and effective area.
+        Generate photon energies from this spectrum 
+        given an exposure time and effective area.
 
         Parameters
         ----------
         t_exp : float
             The exposure time in seconds.
         area : float
-            The effective area in cm**2. If one is creating events for a SIMPUT file, 
-            a constant should be used and it must be large enough  so that a sufficiently 
-            large sample is drawn for the ARF.
+            The effective area in cm**2. If one is creating 
+            events for a SIMPUT file, a constant should be 
+            used and it must be large enough so that a 
+            sufficiently large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will only be specified
-            if you have a reason to generate the same set of random numbers, such as for a
-            test. Default is the :mod:`numpy.random` module.
+            A pseudo-random number generator. Typically will 
+            only be specified if you have a reason to generate 
+            the same set of random numbers, such as for a test. 
+            Default is the :mod:`numpy.random` module.
         quiet : boolean, optional
-            If True, log messages will not be displayed when creating
-            energies. Useful if you have to loop over a lot of spectra.
-            Default: False
+            If True, log messages will not be displayed when 
+            creating energies. Useful if you have to loop over 
+            a lot of spectra. Default: False
         """
         if prng is None:
             prng = np.random
@@ -339,9 +356,10 @@ class Spectrum(object):
 
 class ApecGenerator(object):
     r"""
-    Initialize a thermal gas emission model from the AtomDB APEC tables
-    available at http://www.atomdb.org. This code borrows heavily from Python
-    routines used to read the APEC tables developed by Adam Foster at the
+    Initialize a thermal gas emission model from the 
+    AtomDB APEC tables available at http://www.atomdb.org. 
+    This code borrows heavily from Python routines used to 
+    read the APEC tables developed by Adam Foster at the
     CfA (afoster@cfa.harvard.edu).
 
     Parameters
@@ -353,15 +371,15 @@ class ApecGenerator(object):
     nbins : integer
         The number of bins in the spectral model.
     apec_root : string, optional
-        The directory root where the APEC model files are stored. If 
-        not provided, the default is to grab them from the tables stored
-        with SOX.
+        The directory root where the APEC model files 
+        are stored. If not provided, the default is to 
+        grab them from the tables stored with SOXS.
     apec_vers : string, optional
-        The version identifier string for the APEC files, e.g.
-        "2.0.2"
+        The version identifier string for the APEC files, 
+        e.g. "2.0.2"
     broadening : boolean, optional
-        Whether or not the spectral lines should be thermally
-        and velocity broadened.
+        Whether or not the spectral lines should be 
+        thermally and velocity broadened.
 
     Examples
     --------
@@ -464,10 +482,11 @@ class ApecGenerator(object):
         redshift : float
             The redshift.
         norm : float
-            The normalization of the model, in the standard Xspec units of
-            1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
+            The normalization of the model, in the standard
+            Xspec units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
         velocity : float, optional
-            The velocity broadening parameter, in units of km/s. Default: 0.0
+            The velocity broadening parameter, in units of 
+            km/s. Default: 0.0
         """
         v = velocity*1.0e5
         tindex = np.searchsorted(self.Tvals, kT)-1
@@ -541,8 +560,9 @@ class ConvolvedSpectrum(Spectrum):
         t_exp : float
             The exposure time in seconds.
         prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will only be specified
-            if you have a reason to generate the same set of random numbers, such as for a
+            A pseudo-random number generator. Typically will
+            only be specified if you have a reason to generate 
+            the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
         if prng is None:
