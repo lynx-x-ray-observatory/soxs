@@ -19,11 +19,12 @@ class Energies(u.Quantity):
         ret.flux = u.Quantity(flux, "erg/(cm**2*s)")
         return ret
 
-def _generate_energies(spec, t_exp, rate, prng=None):
+def _generate_energies(spec, t_exp, rate, prng=None, quiet=False):
     cumspec = spec.cumspec
     n_ph = np.modf(t_exp*rate)
     n_ph = np.int64(n_ph[1]) + np.int64(n_ph[0] >= prng.uniform())
-    mylog.info("Creating %d events from this spectrum." % n_ph)
+    if not quiet:
+        mylog.info("Creating %d events from this spectrum." % n_ph)
     randvec = prng.uniform(size=n_ph)
     randvec.sort()
     return np.interp(randvec, cumspec, spec.ebins.value)
@@ -303,7 +304,7 @@ class Spectrum(object):
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()
 
-    def generate_energies(self, t_exp, area, prng=None):
+    def generate_energies(self, t_exp, area, prng=None, quiet=False):
         """
         Generate photon energies from this spectrum given an
         exposure time and effective area.
@@ -320,11 +321,15 @@ class Spectrum(object):
             A pseudo-random number generator. Typically will only be specified
             if you have a reason to generate the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
+        quiet : boolean, optional
+            If True, log messages will not be displayed when creating
+            energies. Useful if you have to loop over a lot of spectra.
+            Default: False
         """
         if prng is None:
             prng = np.random
         rate = area*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        energy = _generate_energies(self, t_exp, rate, prng=prng, quiet=quiet)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
         energies = Energies(energy, flux)
         return energies
