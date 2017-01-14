@@ -52,7 +52,7 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
                           prng=np.random):
 
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
-    agen = ApecGenerator(0.1, 10.0, 10000)
+    agen = ApecGenerator(0.1, 10.0, 10000, broadening=False)
 
     mylog.info("Loading halo data from catalog: %s" % halos_cat_file)
     halo_data = h5py.File(halos_cat_file, "r")
