@@ -1,6 +1,7 @@
 import os
 from soxs.utils import soxs_files_path, mylog
 from soxs.background.spectra import BackgroundSpectrum
+from soxs.background.events import make_uniform_background
 import numpy as np
 
 # ACIS-I particle background
@@ -57,32 +58,11 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
 
     # Generate background events
 
-    bkg_events = {}
-
     area = (focal_length/default_f[bkgnd_name])**2
-    bkg_events["energy"] = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                                        area, fov, prng=prng).value
+    energy = bkgnd_spec.generate_energies(event_params["exposure_time"], area, fov, 
+                                          prng=prng).value
 
-    n_events = bkg_events["energy"].size
-
-    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                size=n_events))
-    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                size=n_events))
-    bkg_events["detx"] = np.round(bkg_events["chipx"] - event_params['pix_center'][0] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    bkg_events["dety"] = np.round(bkg_events["chipy"] - event_params['pix_center'][1] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    bkg_events["xpix"] = bkg_events["detx"] + event_params['pix_center'][0]
-    bkg_events["ypix"] = bkg_events["dety"] + event_params['pix_center'][1]
-
-    if bkg_events["energy"].size == 0:
+    if energy.size == 0:
         raise RuntimeError("No instrumental background events were detected!!!")
 
-    mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
-    bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
-
-    bkg_events['time'] = np.random.uniform(size=bkg_events["energy"].size, low=0.0,
-                                           high=event_params["exposure_time"])
-
-    return bkg_events
+    return make_uniform_background(energy, event_params, rmf, prng=prng)

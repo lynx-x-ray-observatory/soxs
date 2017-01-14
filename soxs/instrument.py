@@ -444,15 +444,6 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
     fov = instrument_spec["fov"]
     simput_file = simput_prefix + "_simput.fits"
 
-    if foreground:
-        append = os.path.exists(simput_file) and not clobber
-        phlist_prefix = simput_prefix + "_foreground"
-        phlist_file = phlist_prefix + "_phlist.fits"
-        if os.path.exists(phlist_file) and not clobber:
-            raise IOError("%s exists, but clobber=False!" % phlist_file)
-        mylog.info("Making foreground photon list in %s." % phlist_file)
-        make_foreground(simput_prefix, phlist_prefix, exp_time, fov,
-                        sky_center, append=append, clobber=clobber, prng=prng)
     if cosmo_bkgnd:
         append = os.path.exists(simput_file) and not clobber
         phlist_prefix = simput_prefix + "_cosmo_bkgnd"
@@ -466,9 +457,17 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
     events, event_params = generate_events(simput_file, exp_time, instrument, sky_center,
                                            dither_shape=dither_shape, dither_size=dither_size, 
                                            roll_angle=roll_angle, prng=prng)
+
+    arf_file = check_file_location(instrument_spec["arf"], "files")
+    arf = AuxiliaryResponseFile(arf_file)
+    rmf_file = check_file_location(instrument_spec["rmf"], "files")
+    rmf = RedistributionMatrixFile(rmf_file)
+    if foreground:
+        mylog.info("Adding in astrophysical foreground.")
+        bkg_events = make_foreground(event_params, arf, rmf, prng=prng)
+        for key in bkg_events:
+            events[key] = np.concatenate([events[key], bkg_events[key]])
     if instr_bkgnd:
-        rmf_file = check_file_location(instrument_spec["rmf"], "files")
-        rmf = RedistributionMatrixFile(rmf_file)
         mylog.info("Adding in instrumental background.")
         bkg_events = make_instrument_background(instrument_spec["bkgnd"], event_params,
                                                 instrument_spec["focal_length"], rmf, prng=prng)
@@ -478,12 +477,12 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
     return events, event_params
 
 def make_background_file(simput_prefix, out_file, exp_time, instrument, sky_center, clobber=False,
-                         foreground=True, instr_bkgnd=True, dither_shape="square", dither_size=16.0,
-                         prng=np.random):
+                         foreground=True, cosmo_bkgnd=True, instr_bkgnd=True, dither_shape="square", 
+                         dither_size=16.0, prng=np.random):
     events, event_params = make_background(simput_prefix, exp_time, instrument, sky_center,
-                                           foreground=foreground, instr_bkgnd=instr_bkgnd, 
-                                           dither_shape=dither_shape, dither_size=dither_size,
-                                           prng=prng, clobber=clobber)
+                                           foreground=foreground, cosmo_bkgnd=cosmo_bkgnd,
+                                           instr_bkgnd=instr_bkgnd, dither_shape=dither_shape, 
+                                           dither_size=dither_size, prng=prng, clobber=clobber)
     write_event_file(events, event_params, out_file, clobber=clobber)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,

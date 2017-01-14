@@ -58,3 +58,30 @@ def add_background_from_file(events, event_params, bkg_file):
     f.close()
 
     return all_events
+
+def make_uniform_background(energy, event_params, rmf, prng=np.random):
+
+    bkg_events = {}
+
+    n_events = energy.size
+
+    bkg_events['energy'] = energy
+
+    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
+                                                size=n_events))
+    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
+                                                size=n_events))
+    bkg_events["detx"] = np.round(bkg_events["chipx"] - event_params['pix_center'][0] +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    bkg_events["dety"] = np.round(bkg_events["chipy"] - event_params['pix_center'][1] +
+                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    bkg_events["xpix"] = bkg_events["detx"] + event_params['pix_center'][0]
+    bkg_events["ypix"] = bkg_events["dety"] + event_params['pix_center'][1]
+
+    mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
+    bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
+
+    bkg_events['time'] = np.random.uniform(size=bkg_events["energy"].size, low=0.0,
+                                           high=event_params["exposure_time"])
+
+    return bkg_events

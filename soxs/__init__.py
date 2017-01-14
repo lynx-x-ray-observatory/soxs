@@ -37,4 +37,4 @@ from soxs.events import \
     write_radial_profile
 
 from soxs.background import \
-    make_foreground
+    make_cosmo_background
