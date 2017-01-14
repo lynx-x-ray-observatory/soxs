@@ -2,6 +2,8 @@ import os
 import numpy as np
 import h5py
 
+from tqdm import tqdm
+
 from astropy.cosmology import FlatLambdaCDM
 
 from soxs.simput import write_photon_list
@@ -77,11 +79,11 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     mylog.info("Number of halos in the field of view: %d" % n_halos)
 
     # Now select the specific halos which are in the FOV
-    z = halo_data["redshift"][fov_idxs]
-    m = halo_data["M500c"][fov_idxs]/h0
+    z = halo_data["redshift"][fov_idxs].astype("float64")
+    m = halo_data["M500c"][fov_idxs].astype("float64")/h0
     s = scale[fov_idxs].to("Mpc/arcsec").value
-    ra0, dec0 = w.wcs_pix2world(halo_data["x"][fov_idxs]/(h0*s),
-                                halo_data["y"][fov_idxs]/(h0*s), 1)
+    ra0, dec0 = w.wcs_pix2world(halo_data["x"][fov_idxs]/(h0*s)-xc*60.0,
+                                halo_data["y"][fov_idxs]/(h0*s)-yc*60.0, 1)
 
     # Close the halo catalog file
     halo_data.close()
@@ -113,21 +115,26 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     ra = []
     dec = []
 
+    pbar = tqdm(leave=True, total=n_halos, desc="Generating photons from halos ")
     for halo in range(n_halos):
         spec = agen.get_spectrum(kT[halo], abund, z[halo], 1.0)
         spec.rescale_flux(flux_kcorr[halo], emin=emin, emax=emax, flux_type="energy")
         spec.apply_foreground_absorption(nH)
-        e = spec.generate_energies(exp_time, area, prng=prng)
+        e = spec.generate_energies(exp_time, area, prng=prng, quiet=True)
         beta_model = BetaModel(ra0[halo], dec0[halo], rc[halo], beta[halo], e.size, 
                                ellipticity=ellip[halo], theta=theta[halo])
         tot_flux += e.flux
         ee.append(e.value)
         ra.append(beta_model.ra.value)
-        ra.append(beta_model.dec.value)
+        dec.append(beta_model.dec.value)
+        pbar.update()
+    pbar.close()
 
     ra = np.concatenate(ra)
     dec = np.concatenate(dec)
     ee = np.concatenate(ee)
+
+    mylog.info("Created %d photons from halos." % ee.size)
 
     write_photon_list(simput_prefix, phlist_prefix, tot_flux, ra, dec, ee, 
                       append=append, clobber=clobber)
