@@ -119,5 +119,6 @@ def convert_rmf(rmffile):
     new_f.writeto(os.path.split(rmffile)[-1], clobber=True)
 
 def issue_deprecation_warning(msg):
+    import warnings
     from numpy import VisibleDeprecationWarning
     warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
