@@ -1,7 +1,8 @@
-# Draw point sources from a logN-logS distribution and generate 
-# simulated events from them. Flux units are 10^-14 erg/cm^2/s.  
-# Author: Scott Randall (srandall@cfa.harvard.edu)
-
+"""
+Draw point sources from a logN-logS distribution and generate 
+simulated events from them. Flux units are 10^-14 erg/cm^2/s.  
+Author: Scott Randall (srandall@cfa.harvard.edu)
+"""
 import numpy as np
 from soxs import write_photon_list
 from soxs.constants import keV_per_erg, erg_per_keV
@@ -63,7 +64,7 @@ def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
 
 def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
                           nH=0.05, nH_int=None, area=40000.0, append=False, 
-                          clobber=False, prng=np.random):
+                          clobber=False, cdf_type="av", prng=np.random):
 
     sources = []
     src_types = ['agn', 'gal']
@@ -81,12 +82,10 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     gal_ind = 1.2 # galaxy photon index
     gal_z = 0.8 # galaxy redshift
 
-    av_cdf = True # Use Alexey's modification to Lehmer+12's AGN population 
-                  # synthesis model
-    if av_cdf:
+    if cdf_type == "av":
         cdf_nagn = av_nagn
     else:
-        cdf_nagn = bl12_nagn
+        cdf_nagn = bl_nagn
 
     n_gal = np.rint(cdf_ngal[0])
     n_agn = np.rint(cdf_nagn[0])
@@ -208,4 +207,3 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
 
     write_photon_list(simput_prefix, phlist_prefix, all_flux, all_ra, all_dec, 
                       all_energies, clobber=clobber, append=append)
-    mylog.info("Running instrument simulator...")
