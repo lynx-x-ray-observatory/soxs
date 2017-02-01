@@ -37,4 +37,5 @@ from soxs.events import \
     write_radial_profile
 
 from soxs.background import \
-    make_cosmo_background
+    make_cosmo_background, \
+    make_ptsrc_background
