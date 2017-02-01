@@ -12,7 +12,7 @@ from soxs.utils import mylog, check_file_location, \
 from soxs.events import write_event_file
 from soxs.background import make_instrument_background, \
     make_foreground, add_background_from_file, \
-    make_cosmo_background
+    make_cosmo_background, make_ptsrc_background
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -440,15 +440,25 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
 
 def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
-                    clobber=False, foreground=True, cosmo_bkgnd=True, instr_bkgnd=True, 
-                    dither_shape="square", dither_size=16.0, roll_angle=0.0, 
-                    prng=np.random):
+                    clobber=False, foreground=True, cosmo_bkgnd=True, ptsrc_bkgnd=True,
+                    instr_bkgnd=True, dither_shape="square", dither_size=16.0, 
+                    roll_angle=0.0, prng=np.random):
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     fov = instrument_spec["fov"]
     simput_file = simput_prefix + "_simput.fits"
+
+    if ptsrc_bkgnd:
+        append = os.path.exists(simput_file) and not clobber
+        phlist_prefix = simput_prefix + "_ptsrc_bkgnd"
+        phlist_file = phlist_prefix + "_phlist.fits"
+        if os.path.exists(phlist_file) and not clobber:
+            raise IOError("%s exists, but clobber=False!" % phlist_file)
+        mylog.info("Making point-source background photon list in %s." % phlist_file)
+        make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
+                              nH=nH, append=append, clobber=clobber, prng=prng)
 
     if cosmo_bkgnd:
         append = os.path.exists(simput_file) and not clobber
