@@ -111,8 +111,8 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
                 "one photon during exposure." % S_min_obs)
     fov_area = fov**2
 
-    n_gal = np.rint(n_gal*fov_area/3600.0)
-    n_agn = np.rint(n_agn*fov_area/3600.0)
+    n_gal = int(n_gal*fov_area/3600.0)
+    n_agn = int(n_agn*fov_area/3600.0)
     num_sources = n_gal + n_agn
     mylog.info("%d AGN, %d galaxies in the FOV." % (n_agn, n_gal))
 
