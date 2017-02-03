@@ -329,7 +329,7 @@ class Spectrum(object):
         energies = Energies(energy, flux, "erg/(cm**2*s)")
         return energies
 
-class ApecGenerator(object):
+class ThermalSpectrumGenerator(object):
     r"""
     Initialize a thermal gas emission model from the AtomDB APEC tables
     available at http://www.atomdb.org. This code borrows heavily from Python
@@ -488,6 +488,10 @@ class ApecGenerator(object):
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
         spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)/self.de
         return Spectrum(self.ebins, spec)
+
+# This is for backwards-compat
+class ApecGenerator(ThermalSpectrumGenerator):
+    pass
 
 def wabs_cross_section(E):
     emax = np.array([0.0, 0.1, 0.284, 0.4, 0.532, 0.707, 0.867, 1.303, 1.840, 

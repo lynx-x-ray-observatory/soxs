@@ -6,6 +6,7 @@ from soxs.simput import \
 
 from soxs.spectra import \
     Spectrum, \
+    ThermalSpectrumGenerator, \
     ApecGenerator, \
     ConvolvedSpectrum
 
