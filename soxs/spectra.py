@@ -556,3 +556,28 @@ class ConvolvedSpectrum(Spectrum):
         flux = np.sum(energy)*erg_per_keV/t_exp
         energies = Energies(energy, flux, "erg/s")
         return energies
+
+def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
+                      prng=None):
+    from soxs.events import write_spectrum
+    from soxs.instrument import RedistributionMatrixFile, \
+        AuxiliaryResponseFile
+    if prng is None:
+        prng = np.random
+    if not isinstance(arf, AuxiliaryResponseFile):
+        arf = AuxiliaryResponseFile(arf)
+    if not isinstance(rmf, RedistributionMatrixFile):
+        rmf = RedistributionMatrixFile(rmf)
+    cspec = ConvolvedSpectrum(spec, arf)
+    events = {}
+    events["energy"] = cspec.generate_energies(t_exp, prng=prng).value
+    events = rmf.scatter_energies(events, prng=prng)
+    events["arf"] = arf.filename
+    events["rmf"] = rmf.filename
+    events["exposure_time"] = t_exp
+    events["channel_type"] = rmf.header["CHANTYPE"]
+    events["telescope"] = rmf.header["TELESCOP"]
+    events["instrument"] = rmf.header["INSTRUME"]
+    events["mission"] = rmf.header.get("MISSION", "")
+    write_spectrum(events, filename, clobber=clobber)
+

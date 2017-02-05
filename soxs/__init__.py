@@ -8,7 +8,8 @@ from soxs.spectra import \
     Spectrum, \
     ThermalSpectrumGenerator, \
     ApecGenerator, \
-    ConvolvedSpectrum
+    ConvolvedSpectrum, \
+    simulate_spectrum
 
 from soxs.instrument import \
     instrument_simulator, \
