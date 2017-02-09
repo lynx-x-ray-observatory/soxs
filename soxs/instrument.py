@@ -520,6 +520,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     foreground = kwargs.get("astro_bkgnd", True)
     cosmo_bkgnd = kwargs.get("astro_bkgnd", True)
     ptsrc_bkgnd = kwargs.get("astro_bkgnd", True)
+    if not instr_bkgnd and not foreground and not cosmo_bkgnd and not ptsrc_bkgnd:
+        bkgnd = False
 
     if not out_file.endswith(".fits"):
         out_file += ".fits"
