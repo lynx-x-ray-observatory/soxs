@@ -177,8 +177,8 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
                 energies = energies[randvec < absorb]
             new_nph = energies.size
             # Assign positions for this source
-            ra = prng.random()*np.ones(new_nph)*fov/(60.0*dec_scal) + ra_min
-            dec = prng.random()*np.ones(new_nph)*fov/60.0 + dec_min
+            ra = prng.uniform()*np.ones(new_nph)*fov/(60.0*dec_scal) + ra_min
+            dec = prng.uniform()*np.ones(new_nph)*fov/60.0 + dec_min
 
             all_energies.append(energies)
             all_ra.append(ra)

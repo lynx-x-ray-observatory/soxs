@@ -519,9 +519,10 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     instr_bkgnd = kwargs.get("instr_bkgnd", True)
     foreground = kwargs.get("astro_bkgnd", True)
     cosmo_bkgnd = kwargs.get("astro_bkgnd", True)
+    ptsrc_bkgnd = kwargs.get("astro_bkgnd", True)
 
-    if "evt.fits" not in out_file:
-        out_file += "_evt.fits"
+    if not out_file.endswith(".fits"):
+        out_file += ".fits"
     mylog.info("Making observation of source in %s." % out_file)
     # Make the source first
     events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
@@ -533,12 +534,12 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         mylog.info("No backgrounds will be added to this observation.")
     else:
         if bkgnd is None:
-            bkgnd_prefix = out_file.strip("_evt.fits") + "_bkgnd"
+            bkgnd_prefix = out_file[:-5] + "_bkgnd"
             bkg_events, _ = make_background(bkgnd_prefix, exp_time, instrument, sky_center,
                                             foreground=foreground, instr_bkgnd=instr_bkgnd, 
                                             cosmo_bkgnd=cosmo_bkgnd, dither_shape=dither_shape,
-                                            dither_size=dither_size, prng=prng, roll_angle=roll_angle,
-                                            clobber=clobber)
+                                            dither_size=dither_size, ptsrc_bkgnd=ptsrc_bkgnd,
+                                            prng=prng, roll_angle=roll_angle, clobber=clobber)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
         else:
