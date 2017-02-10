@@ -512,20 +512,24 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         issue_deprecation_warning("The \"instr_bkgnd\" keyword is deprecated and will be "
                                   "removed in a future release. If you need to turn off "
                                   "the instrumental background, create your own background "
-                                  "file without it using \"make_background_file\". It will "
-                                  "be turned off for this simulation.")
+                                  "file without it using \"make_background_file\". "
+                                  "Instrumental background will be turned off for this "
+                                  "simulation.")
     if "astro_bkgnd" in kwargs:
         issue_deprecation_warning("The \"astro_bkgnd\" keyword is deprecated and will be "
                                   "removed in a future release. If you need to turn off "
                                   "the astrophysical background, create your own background "
-                                  "file without it using \"make_background_file\". It will "
-                                  "be turned off for this simulation.")
+                                  "file without it using \"make_background_file\". "
+                                  "Astrophysical background will be turned off for this "
+                                  "simulation.")
     instr_bkgnd = kwargs.get("instr_bkgnd", True)
-    foreground = kwargs.get("astro_bkgnd", True)
-    cosmo_bkgnd = kwargs.get("astro_bkgnd", True)
-    ptsrc_bkgnd = kwargs.get("astro_bkgnd", True)
+    foreground = kwargs.get("astro_bkgnd", foreground)
+    cosmo_bkgnd = kwargs.get("astro_bkgnd", cosmo_bkgnd)
+    ptsrc_bkgnd = kwargs.get("astro_bkgnd", ptsrc_bkgnd)
     if not instr_bkgnd and not foreground and not cosmo_bkgnd and not ptsrc_bkgnd:
         bkgnd = False
+    else:
+        bkgnd = True
 
     if not out_file.endswith(".fits"):
         out_file += ".fits"
@@ -536,10 +540,11 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                                            roll_angle=roll_angle, prng=prng)
     # If the user wants backgrounds, either make the background or add an already existing
     # background event file. It may be necessary to reproject events to a new coordinate system.
-    if bkgnd is False:
-        mylog.info("No backgrounds will be added to this observation.")
-    else:
-        if bkgnd is None:
+    if bkgnd_file is None:
+        if bkgnd is False:
+            mylog.info("No backgrounds will be added to this observation.")
+        else:
+            mylog.info("Adding background events.")
             bkg_events, _ = make_background(exp_time, instrument, sky_center,
                                             foreground=foreground, instr_bkgnd=instr_bkgnd, 
                                             cosmo_bkgnd=cosmo_bkgnd, dither_shape=dither_shape,
@@ -547,12 +552,11 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                                             prng=prng, roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
-        else:
-            if not os.path.exists(bkgnd):
-                raise IOError("Cannot find the background event file %s!" % bkgnd)
-            bkgnd_out_file = bkgnd
-            mylog.info("Adding the background in the file %s." % bkgnd)
-            add_background_from_file(events, event_params, bkgnd_out_file)
+    else:
+        mylog.info("Adding background events from the file %s." % bkgnd_file)
+        if not os.path.exists(bkgnd_file):
+            raise IOError("Cannot find the background event file %s!" % bkgnd_file)
+        add_background_from_file(events, event_params, bkgnd_file)
     write_event_file(events, event_params, out_file, clobber=clobber)
     mylog.info("Observation complete.")
 
