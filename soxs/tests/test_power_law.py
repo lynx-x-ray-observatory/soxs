@@ -53,7 +53,8 @@ def plaw_fit(alpha_sim):
                       e, clobber=True)
 
     instrument_simulator("plaw_model_simput.fits", "plaw_model_evt.fits", exp_time, 
-                         inst_name, [30.0, 45.0], bkgnd=False, prng=prng)
+                         inst_name, [30.0, 45.0], instr_bkgnd=False, astro_bkgnd=False,
+                         prng=prng)
 
     inst = get_instrument_from_registry(inst_name)
     arf = AuxiliaryResponseFile(inst["arf"])
