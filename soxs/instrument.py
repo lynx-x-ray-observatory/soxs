@@ -456,14 +456,14 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, prng=prng)
         for key in ["ra", "dec", "energy"]:
-            input_events[key] = np.concatenate(input_events[key], ptsrc_events[key])
+            input_events[key] = np.concatenate([input_events[key], ptsrc_events[key]])
         input_events["flux"] += ptsrc_events["flux"]
 
     if cosmo_bkgnd:
         mylog.info("Adding in cosmological background.")
         cosmo_events = make_cosmo_background(exp_time, fov, sky_center, prng=prng)
         for key in ["ra", "dec", "energy"]:
-            input_events[key] = np.concatenate(input_events[key], cosmo_events[key])
+            input_events[key] = np.concatenate([input_events[key], cosmo_events[key]])
         input_events["flux"] += cosmo_events["flux"]
 
     if input_events["ra"].size > 0:

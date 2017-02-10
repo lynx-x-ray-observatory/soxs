@@ -161,7 +161,7 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     mylog.debug("Created %d photons from halos." % ee.size)
 
     output_events = {"ra": ra, "dec": dec, "energy": ee, 
-                     "flux": tot_flux}
+                     "flux": tot_flux.value}
 
     return output_events 
 
