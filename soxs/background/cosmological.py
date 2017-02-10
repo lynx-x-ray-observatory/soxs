@@ -47,20 +47,14 @@ def flux2lum(kT, z):
     lum_table.close()
     return flux2lum
 
-def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                          nH=0.05, area=40000.0, append=False, clobber=False, 
+def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
                           prng=np.random):
     r"""
-    Make a SIMPUT file corresponding to an X-ray background 
-    made up of contributions from galaxy clusters, galaxy 
-    groups, and galaxies. 
+    Make an X-ray background  made up of contributions 
+    from galaxy clusters, galaxy groups, and galaxies. 
 
     Parameters
     ----------
-    simput_prefix : string
-        The filename prefix for the SIMPUT file.
-    phlist_prefix : string
-        The filename prefix for the photon list file.
     exp_time : float
         The exposure time of the observation in seconds.
     fov : float
@@ -74,11 +68,6 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
-    append : boolean, optional
-        If True, append a new source an existing SIMPUT catalog. 
-        Default: False
-    clobber : boolean, optional
-        Set to True to overwrite previous files. Default: False
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only be 
         specified if you have a reason to generate the same set 
@@ -171,6 +160,8 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
 
     mylog.debug("Created %d photons from halos." % ee.size)
 
-    write_photon_list(simput_prefix, phlist_prefix, tot_flux, ra, dec, ee, 
-                      append=append, clobber=clobber)
+    output_events = {"ra": ra, "dec": dec, "energy": ee, 
+                     "flux": tot_flux}
+
+    return output_events 
 

@@ -439,40 +439,43 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     return all_events, event_params
 
 
-def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
-                    clobber=False, foreground=True, cosmo_bkgnd=True, ptsrc_bkgnd=True,
-                    instr_bkgnd=True, dither_shape="square", dither_size=16.0, 
-                    roll_angle=0.0, prng=np.random):
+def make_background(exp_time, instrument, sky_center, foreground=True, 
+                    cosmo_bkgnd=True, ptsrc_bkgnd=True, instr_bkgnd=True, 
+                    dither_shape="square", dither_size=16.0, roll_angle=0.0, 
+                    prng=np.random):
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     fov = instrument_spec["fov"]
-    simput_file = simput_prefix + "_simput.fits"
+
+    input_events = {"ra": np.array([]), "dec": np.array([]),
+                    "energy": np.array([]), "flux": 0.0}
 
     if ptsrc_bkgnd:
-        append = os.path.exists(simput_file) and not clobber
-        phlist_prefix = simput_prefix + "_ptsrc_bkgnd"
-        phlist_file = phlist_prefix + "_phlist.fits"
-        if os.path.exists(phlist_file) and not clobber:
-            raise IOError("%s exists, but clobber=False!" % phlist_file)
-        mylog.info("Making point-source background photon list in %s." % phlist_file)
-        make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                              nH=nH, append=append, clobber=clobber, prng=prng)
+        mylog.info("Adding in point-source background.")
+        ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, prng=prng)
+        for key in ["ra", "dec", "energy"]:
+            input_events[key] = np.concatenate(input_events[key], ptsrc_events[key])
+        input_events["flux"] += ptsrc_events["flux"]
 
     if cosmo_bkgnd:
-        append = os.path.exists(simput_file) and not clobber
-        phlist_prefix = simput_prefix + "_cosmo_bkgnd"
-        phlist_file = phlist_prefix + "_phlist.fits"
-        if os.path.exists(phlist_file) and not clobber:
-            raise IOError("%s exists, but clobber=False!" % phlist_file)
-        mylog.info("Making cosmological background photon list in %s." % phlist_file)
-        make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                              nH=nH, append=append, clobber=clobber, prng=prng)
+        mylog.info("Adding in cosmological background.")
+        cosmo_events = make_cosmo_background(exp_time, fov, sky_center, prng=prng)
+        for key in ["ra", "dec", "energy"]:
+            input_events[key] = np.concatenate(input_events[key], cosmo_events[key])
+        input_events["flux"] += cosmo_events["flux"]
 
-    events, event_params = generate_events(simput_file, exp_time, instrument, sky_center,
-                                           dither_shape=dither_shape, dither_size=dither_size, 
-                                           roll_angle=roll_angle, prng=prng)
+    if input_events["ra"].size > 0:
+        events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
+                                               dither_shape=dither_shape, dither_size=dither_size, 
+                                               roll_angle=roll_angle, prng=prng)
+    else:
+        events = defaultdict(list)
+        event_params = {"exposure_time": exp_time, 
+                        "fov": instrument_spec["fov"],
+                        "num_pixels": instrument_spec["num_pixels"],
+                        "pix_center": np.array([0.5*(instrument_spec["num_pixels"]+1)]*2)}
 
     arf_file = check_file_location(instrument_spec["arf"], "files")
     arf = AuxiliaryResponseFile(arf_file)
@@ -492,13 +495,14 @@ def make_background(simput_prefix, exp_time, instrument, sky_center, nH=0.05,
 
     return events, event_params
 
-def make_background_file(simput_prefix, out_file, exp_time, instrument, sky_center, clobber=False,
-                         foreground=True, cosmo_bkgnd=True, instr_bkgnd=True, dither_shape="square", 
-                         dither_size=16.0, prng=np.random):
-    events, event_params = make_background(simput_prefix, exp_time, instrument, sky_center,
-                                           foreground=foreground, cosmo_bkgnd=cosmo_bkgnd,
-                                           instr_bkgnd=instr_bkgnd, dither_shape=dither_shape, 
-                                           dither_size=dither_size, prng=prng, clobber=clobber)
+def make_background_file(out_file, exp_time, instrument, sky_center, clobber=False,
+                         foreground=True, cosmo_bkgnd=True, instr_bkgnd=True, ptsrc_bkgnd=True,
+                         dither_shape="square", dither_size=16.0, prng=np.random):
+    events, event_params = make_background(exp_time, instrument, sky_center, 
+                                           ptsrc_bkgnd=ptsrc_bkgnd, foreground=foreground, 
+                                           cosmo_bkgnd=cosmo_bkgnd, instr_bkgnd=instr_bkgnd, 
+                                           dither_shape=dither_shape, dither_size=dither_size, 
+                                           prng=prng)
     write_event_file(events, event_params, out_file, clobber=clobber)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
@@ -536,12 +540,11 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         mylog.info("No backgrounds will be added to this observation.")
     else:
         if bkgnd is None:
-            bkgnd_prefix = out_file[:-5] + "_bkgnd"
-            bkg_events, _ = make_background(bkgnd_prefix, exp_time, instrument, sky_center,
+            bkg_events, _ = make_background(exp_time, instrument, sky_center,
                                             foreground=foreground, instr_bkgnd=instr_bkgnd, 
                                             cosmo_bkgnd=cosmo_bkgnd, dither_shape=dither_shape,
                                             dither_size=dither_size, ptsrc_bkgnd=ptsrc_bkgnd,
-                                            prng=prng, roll_angle=roll_angle, clobber=clobber)
+                                            prng=prng, roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
         else:

@@ -28,9 +28,8 @@ def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
     fscale = f_g/f_E
     return fscale
 
-def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                          nH=0.05, nH_int=None, area=40000.0, append=False, 
-                          clobber=False, cdf_type="av", prng=np.random):
+def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, nH_int=None, 
+                          area=40000.0, cdf_type="av", prng=np.random):
 
     sources = []
     src_types = ['agn', 'gal']
@@ -219,5 +218,7 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
 
-    write_photon_list(simput_prefix, phlist_prefix, all_flux, all_ra, all_dec, 
-                      all_energies, clobber=clobber, append=append)
+    output_events = {"ra": all_ra, "dec": all_dec, 
+                     "energy": all_energies, "flux": all_flux}
+
+    return output_events
