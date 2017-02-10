@@ -222,3 +222,11 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, nH_int=None,
                      "energy": all_energies, "flux": all_flux}
 
     return output_events
+
+def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
+                               nH=0.05, area=40000.0, nH_int=None, cdf_type="av", 
+                               prng=np.random, append=False, clobber=False):
+    events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, nH_int=nH_int,
+                                   cdf_type=cdf_type, prng=prng)
+    write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], events["dec"],
+                      events["energy"], append=append, clobber=clobber)

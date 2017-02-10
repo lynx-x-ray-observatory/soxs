@@ -163,5 +163,11 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     output_events = {"ra": ra, "dec": dec, "energy": ee, 
                      "flux": tot_flux.value}
 
-    return output_events 
+    return output_events
 
+def make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center, 
+                               nH=0.05, area=40000.0, prng=np.random, append=False,
+                               clobber=False):
+    events = make_cosmo_background(exp_time, fov, sky_center, nH=nH, area=area, prng=prng)
+    write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], events["dec"],
+                      events["energy"], append=append, clobber=clobber)
