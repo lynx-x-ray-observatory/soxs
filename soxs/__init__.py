@@ -14,7 +14,7 @@ from soxs.instrument import \
     instrument_simulator, \
     AuxiliaryResponseFile, \
     RedistributionMatrixFile, \
-    make_background_file
+    make_background_file, \
     FlatResponse
 
 from soxs.instrument_registry import \
