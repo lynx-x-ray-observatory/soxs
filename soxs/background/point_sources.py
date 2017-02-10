@@ -208,13 +208,14 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     # Remove some of the photons due to Galactic foreground absorption.
     # We will throw a lot of stuff away, but this is more general and still
     # faster. 
-    absorb = get_wabs_absorb(all_energies, nH)
-    randvec = prng.uniform(size=all_energies.size)
-    all_energies = all_energies[randvec < absorb]
-    all_ra = all_ra[randvec < absorb]
-    all_dec = all_dec[randvec < absorb]
-    all_nph = all_energies.size
-    mylog.info("%d photons remain after foreground galactic absorption." % all_nph)
+    if nH is not None:
+        absorb = get_wabs_absorb(all_energies, nH)
+        randvec = prng.uniform(size=all_energies.size)
+        all_energies = all_energies[randvec < absorb]
+        all_ra = all_ra[randvec < absorb]
+        all_dec = all_dec[randvec < absorb]
+        all_nph = all_energies.size
+        mylog.info("%d photons remain after foreground galactic absorption." % all_nph)
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
 
