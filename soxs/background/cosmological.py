@@ -153,7 +153,8 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     for halo in range(n_halos):
         spec = agen.get_spectrum(kT[halo], abund, z[halo], 1.0)
         spec.rescale_flux(flux_kcorr[halo], emin=emin, emax=emax, flux_type="energy")
-        spec.apply_foreground_absorption(nH)
+        if nH is not None:
+            spec.apply_foreground_absorption(nH)
         e = spec.generate_energies(exp_time, area, prng=prng, quiet=True)
         beta_model = BetaModel(ra0[halo], dec0[halo], rc[halo], beta[halo], e.size, 
                                ellipticity=ellip[halo], theta=theta[halo])
