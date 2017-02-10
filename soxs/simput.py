@@ -25,6 +25,7 @@ def read_simput_catalog(simput_file):
     parameters["flux"] = f_simput["src_cat"].data["flux"]
     parameters["emin"] = f_simput["src_cat"].data["e_min"]
     parameters["emax"] = f_simput["src_cat"].data["e_max"]
+    parameters["sources"] = f_simput["src_cat"].data["src_name"]
     phlist_files = [file.split("[")[0] for file in 
                     f_simput["src_cat"].data["spectrum"]]
     f_simput.close()
@@ -38,7 +39,7 @@ def read_simput_catalog(simput_file):
     return events, parameters
 
 def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
-                      append=False, clobber=False):
+                      src_name=None, append=False, clobber=False):
     r"""
     Write events to a new SIMPUT photon list. It can be 
     associated with a new or existing SIMPUT catalog. 
@@ -58,6 +59,10 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
         The declination of the photons, in degrees.
     energy : NumPy array or array-like thing
         The energy of the photons, in keV.
+    src_name : string, optional
+        The name of the source in the catalog. If not given,
+        the source will be assigned the name "soxs_src_n" where
+        "n" is the nth source in the catalog. 
     append : boolean, optional
         If True, append a new source an existing SIMPUT 
         catalog. Default: False
@@ -118,7 +123,9 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
         flx = np.append(f["SRC_CAT"].data["FLUX"][:], flux)
         spectrum = np.append(spec_files, ph_ext)
         image = np.append(img_files, ph_ext)
-        src_name = np.append(f["SRC_CAT"].data["SRC_NAME"][:], "soxs_src_%d" % id)
+        if src_name is None:
+            src_name = "soxs_src_%d" % id
+        src_name = np.append(f["SRC_CAT"].data["SRC_NAME"][:], src_name)
         f.close()
     else:
         src_id = np.array([1]).astype("int32")
@@ -129,7 +136,9 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
         flx = np.array([flux])
         spectrum = np.array([ph_ext])
         image = spectrum
-        src_name = np.array(["soxs_src_1"])
+        if src_name is None:
+            src_name = "soxs_src_1"
+        src_name = np.array([src_name])
 
     col1 = pyfits.Column(name='SRC_ID', format='J', array=src_id)
     col2 = pyfits.Column(name='RA', format='D', array=ra)

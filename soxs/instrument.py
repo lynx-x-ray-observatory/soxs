@@ -233,14 +233,15 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                     dither_shape="square", dither_size=16.0, roll_angle=0.0, 
                     prng=np.random):
     """
-    Take unconvolved events and create an event file from them. This 
+    Take unconvolved events and convolve them with instrumental responses. This 
     function does the following:
 
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
-    3. Adds instrumental background events
-    4. Determines energy channels using the RMF
-    5. Writes the events to a file
+    3. Determines energy channels using the RMF
+
+    This function is not meant to be called by the end-user but is used by
+    the :func:`~soxs.instrument.instrument_simulator` function.
 
     Parameters
     ----------
@@ -263,9 +264,6 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         specification from the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
-    clobber : boolean, optional
-        Whether or not to clobber an existing file with the same name.
-        Default: False
     dither_shape : string
         The shape of the dither. Currently "circle" or "square" 
         Default: "square"
@@ -274,25 +272,22 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
-    instr_bkgnd : boolean, optional
-        Whether or not to include instrumental/particle background. 
-        Default: True
     prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
         set of random numbers, such as for a test. Default is 
         the :mod:`~numpy.random` module.
-
-    Examples
-    --------
-    >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 300000.0, "hdxi_3x10",
-    ...                      [30., 45.], clobber=True)
     """
     if isinstance(input_events, dict):
-        event_list = [{k: input_events[k] for k in ["ra", "dec", "energy"]}]
-        parameters = {"flux": np.array([input_events["flux"]]),
-                      "emin": np.array([input_events["energy"].min()]),
-                      "emax": np.array([input_events["energy"].max()])}
+        parameters = {}
+        for key in ["flux", "emin", "emax", "sources"]:
+            parameters[key] = input_events[key]
+        event_list = []
+        for i in range(len(parameters["flux"])):
+            edict = {}
+            for key in ["ra", "dec", "energy"]:
+                edict[key] = input_events[key][i]
+            event_list.append(edict)
     elif isinstance(input_events, string_types):
         # Assume this is a SIMPUT catalog
         event_list, parameters = read_simput_catalog(input_events)
@@ -349,7 +344,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
     for i, evts in enumerate(event_list):
 
-        mylog.info("Detecting events from source %d" % (i+1))
+        mylog.info("Detecting events from source %s." % parameters["sources"][i])
 
         # Step 1: Use ARF to determine which photons are observed
 
@@ -477,24 +472,29 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     fov = instrument_spec["fov"]
 
-    input_events = {"ra": np.array([]), "dec": np.array([]),
-                    "energy": np.array([]), "flux": 0.0}
+    input_events = defaultdict(list)
 
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, prng=prng)
         for key in ["ra", "dec", "energy"]:
-            input_events[key] = np.concatenate([input_events[key], ptsrc_events[key]])
-        input_events["flux"] += ptsrc_events["flux"]
+            input_events[key].append(ptsrc_events[key])
+        input_events["flux"].append(ptsrc_events["flux"])
+        input_events["emin"].append(ptsrc_events["energy"].min())
+        input_events["emax"].append(ptsrc_events["energy"].max())
+        input_events["sources"].append("ptsrc_bkgnd")
 
     if cosmo_bkgnd:
         mylog.info("Adding in cosmological background.")
         cosmo_events = make_cosmo_background(exp_time, fov, sky_center, prng=prng)
         for key in ["ra", "dec", "energy"]:
-            input_events[key] = np.concatenate([input_events[key], cosmo_events[key]])
-        input_events["flux"] += cosmo_events["flux"]
+            input_events[key].append(cosmo_events[key])
+        input_events["flux"].append(cosmo_events["flux"])
+        input_events["emin"].append(cosmo_events["energy"].min())
+        input_events["emax"].append(cosmo_events["energy"].max())
+        input_events["sources"].append("cosmo_bkgnd")
 
-    if input_events["ra"].size > 0:
+    if len(input_events["ra"]) > 0:
         events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
                                                dither_shape=dither_shape, dither_size=dither_size, 
                                                roll_angle=roll_angle, prng=prng)
@@ -539,14 +539,17 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                          dither_shape="square", dither_size=16.0, 
                          roll_angle=0.0, prng=np.random):
     """
-    Take unconvolved events and create an event file from them. This 
-    function does the following:
+    Take unconvolved events and create an event file from them. This
+    function calls generate_events to do the following:
 
     1. Determines which events are observed using the ARF
     2. Pixelizes the events, applying PSF effects and dithering
-    3. Adds instrumental background events
-    4. Determines energy channels using the RMF
-    5. Writes the events to a file
+    3. Determines energy channels using the RMF
+
+    and then calls make_background to add instrumental and astrophysical
+    backgrounds, unless a background file is provided, in which case
+    the background events are read from this file. The events are
+    then written out to a file.
 
     Parameters
     ----------
