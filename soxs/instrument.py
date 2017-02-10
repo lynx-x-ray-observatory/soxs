@@ -99,6 +99,34 @@ class AuxiliaryResponseFile(object):
             events[key] = events[key][eidxs]
         return events
 
+class FlatResponse(AuxiliaryResponseFile):
+    """
+    A flat effective area response. 
+
+    Parameters
+    ----------
+    emin : float
+        The minimum energy of the response in keV.
+    emax : float
+        The maximum energy of the response in keV. 
+    area : float
+        The effective area in cm**2. 
+    nbins : integer
+        The number of bins in the response file. 
+
+    Examples
+    --------
+    >>> arf = FlatResponse(0.1, 10.0, 3000.0, 10000)
+    """
+    def __init__(self, emin, emax, area, nbins):
+        self.filename = "flat_response"
+        de = (emax-emin)/nbins
+        self.elo = np.arange(nbins)*de + emin
+        self.ehi = self.elo + de
+        self.emid = 0.5*(self.elo+self.ehi)
+        self.eff_area = area
+        self.max_area = area
+
 class RedistributionMatrixFile(object):
     r"""
     A class for redistribution matrix files (RMFs).

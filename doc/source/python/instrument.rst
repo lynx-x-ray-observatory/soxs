@@ -63,10 +63,21 @@ Athena
 ~~~~~~
 
 For simulating *Athena* observations, two instrument specifications are available, for the WFI (Wide-Field 
-Imager) and the X-IFU (X-ray Integral Field Unit). For both of these specifications, a 12 meter focal length
+Imager) and the X-IFU (X-ray Integral Field Unit). For both of these specifications, a 12-meter focal length
 is assumed, along with a 5-arcsecond Gaussian PSF, and observations are not dithered. For more information
 about the specification of the *Athena* instruments assumed here, consult 
 `the Athena simulation tools web portal <http://www.the-athena-x-ray-observatory.eu/resources/simulation-tools.html>`_.
+
+Chandra
+~~~~~~~
+
+For simulating *Chandra* observations, two instrument specifications are available, both for the ACIS-I instrument.
+These specifications are almost identical with a 10-meter focal length, 0.5-arcsecond Gaussian PSF, dithering, 
+0.492-arcsecond pixels, and roughly 16.9 arcminute field of view. However, The two separate specifications, 
+``"acisi_cy0"`` and ``"acisi_cy18"``, use the instrumental responses from shortly after launch ("Cycle 0") and from
+more recently ("Cycle 18"), respectively. The main effect is that the effective area at low energies for ``"acisi_cy18"``
+is much lower due to the buildup of contamination on the ACIS optical blocking filters compared to the ``"acisi_cy0"``
+responses.
 
 .. _other-mods:
 

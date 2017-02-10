@@ -1,4 +1,4 @@
-__version__ = "0.5.1"
+__version__ = "0.6-dev"
 
 from soxs.simput import \
     write_photon_list, \
@@ -7,13 +7,15 @@ from soxs.simput import \
 from soxs.spectra import \
     Spectrum, \
     ApecGenerator, \
-    ConvolvedSpectrum
+    ConvolvedSpectrum, \
+    simulate_spectrum
 
 from soxs.instrument import \
     instrument_simulator, \
     AuxiliaryResponseFile, \
     RedistributionMatrixFile, \
     make_background_file
+    FlatResponse
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \

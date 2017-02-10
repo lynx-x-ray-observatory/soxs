@@ -2,6 +2,7 @@ import numpy as np
 import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import os
+from six import string_types
 
 def wcs_from_event_file(f):
     h = f["EVENTS"].header
@@ -133,13 +134,32 @@ def write_spectrum(evtfile, specfile, clobber=False):
         the same name. Default: False
     """
     from soxs.instrument import RedistributionMatrixFile
-    f = pyfits.open(evtfile)
-    spectype = f["EVENTS"].header["CHANTYPE"]
-    rmf = RedistributionMatrixFile(f["EVENTS"].header["RESPFILE"])
+    parameters = {}
+    if isinstance(evtfile, string_types):
+        f = pyfits.open(evtfile)
+        spectype = f["EVENTS"].header["CHANTYPE"]
+        rmf = f["EVENTS"].header["RESPFILE"]
+        p = f["EVENTS"].data[spectype]
+        exp_time = f["EVENTS"].header["EXPOSURE"]
+        for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
+            parameters[key] = f["EVENTS"].header[key]
+        f.close()
+    else:
+        rmf = evtfile["rmf"]
+        spectype = evtfile["channel_type"]
+        p = evtfile[spectype]
+        parameters["RESPFILE"] = os.path.split(rmf)[-1]
+        parameters["ANCRFILE"] = os.path.split(evtfile["arf"])[-1]
+        parameters["TELESCOP"] = evtfile["telescope"] 
+        parameters["INSTRUME"] = evtfile["instrument"]
+        parameters["MISSION"] = evtfile["mission"] 
+        exp_time = evtfile["exposure_time"]
+
+    rmf = RedistributionMatrixFile(rmf)
     minlength = rmf.n_ch
     if rmf.cmin == 1:
         minlength += 1
-    spec = np.bincount(f["EVENTS"].data[spectype], minlength=minlength)
+    spec = np.bincount(p, minlength=minlength)
     if rmf.cmin == 1:
         spec = spec[1:]
     bins = (np.arange(rmf.n_ch)+rmf.cmin).astype("int32")
@@ -147,7 +167,7 @@ def write_spectrum(evtfile, specfile, clobber=False):
     col1 = pyfits.Column(name='CHANNEL', format='1J', array=bins)
     col2 = pyfits.Column(name=spectype.upper(), format='1D', array=bins.astype("float64"))
     col3 = pyfits.Column(name='COUNTS', format='1J', array=spec.astype("int32"))
-    col4 = pyfits.Column(name='COUNT_RATE', format='1D', array=spec/f["EVENTS"].header["EXPOSURE"])
+    col4 = pyfits.Column(name='COUNT_RATE', format='1D', array=spec/exp_time)
 
     coldefs = pyfits.ColDefs([col1, col2, col3, col4])
 
@@ -156,8 +176,8 @@ def write_spectrum(evtfile, specfile, clobber=False):
 
     tbhdu.header["DETCHANS"] = spec.size
     tbhdu.header["TOTCTS"] = spec.sum()
-    tbhdu.header["EXPOSURE"] = f["EVENTS"].header["EXPOSURE"]
-    tbhdu.header["LIVETIME"] = f["EVENTS"].header["EXPOSURE"]
+    tbhdu.header["EXPOSURE"] = exp_time
+    tbhdu.header["LIVETIME"] = exp_time
     tbhdu.header["CONTENT"] = spectype
     tbhdu.header["HDUCLASS"] = "OGIP"
     tbhdu.header["HDUCLAS1"] = "SPECTRUM"
@@ -171,12 +191,10 @@ def write_spectrum(evtfile, specfile, clobber=False):
     tbhdu.header["CORRFILE"] = "none"
     tbhdu.header["POISSERR"] = True
     for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
-        tbhdu.header[key] = f["EVENTS"].header[key]
+        tbhdu.header[key] = parameters[key]
     tbhdu.header["AREASCAL"] = 1.0
     tbhdu.header["CORRSCAL"] = 0.0
     tbhdu.header["BACKSCAL"] = 1.0
-
-    f.close()
 
     hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
 

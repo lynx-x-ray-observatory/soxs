@@ -469,6 +469,23 @@ class ApecGenerator(object):
         coco_fields = {el: coco_data.field(el) for el in coco_fields}
         return line_fields, coco_fields
 
+    def _get_table(self, indices, redshift, velocity):
+        numi = len(indices)
+        scale_factor = 1./(1.+redshift)
+        cspec = np.zeros((numi, self.nbins))
+        mspec = np.zeros((numi, self.nbins))
+        for i, ikT in enumerate(indices):
+            line_fields, coco_fields = self._preload_data(ikT)
+            # First do H,He, and trace elements
+            for elem in cosmic_elem:
+                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
+                                                  coco_fields, scale_factor)
+            # Next do the metals
+            for elem in metal_elem:
+                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
+                                                  coco_fields, scale_factor)
+        return cspec, mspec
+
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0):
         """
         Get a thermal emission spectrum.
@@ -492,20 +509,8 @@ class ApecGenerator(object):
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
-        cspec = np.zeros((2, self.nbins))
-        mspec = np.zeros((2, self.nbins))
-        scale_factor = 1./(1.+redshift)
         dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
-        for i, ikT in enumerate([tindex, tindex+1]):
-            line_fields, coco_fields = self._preload_data(ikT)
-            # First do H,He, and trace elements
-            for elem in cosmic_elem:
-                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
-                                                  coco_fields, scale_factor)
-            # Next do the metals
-            for elem in metal_elem:
-                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, v, line_fields, 
-                                                  coco_fields, scale_factor)
+        cspec, mspec = self._get_table([tindex, tindex+1], redshift, v)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
         spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)/self.de
@@ -573,3 +578,59 @@ class ConvolvedSpectrum(Spectrum):
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)
         return energies
+
+def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
+                      prng=None):
+    """
+    Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
+    by convolving it with responses. To be used if one wants to 
+    create a spectrum without worrying about spatial response. Similar
+    to XSPEC's "fakeit". 
+
+    Parameters
+    ----------
+    spec : :class:`~soxs.spectra.Spectrum`
+        The spectrum to be convolved.
+    arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
+        The ARF to be used in the convolution. 
+    rmf : string or :class:`~soxs.instrument.RedistributionMatrixFile`
+        The RMF to be used in the convolution.
+    t_exp : float
+        The exposure time in seconds.
+    filename : string
+        The file to write the spectrum to.
+    clobber : boolean, optional
+        Whether or not to overwrite an existing file. Default: False
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only be specified
+        if you have a reason to generate the same set of random numbers, such as for a
+        test. Default is the :mod:`numpy.random` module.
+
+    Examples
+    --------
+    >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
+    >>> soxs.simulate_spectrum(spec, "xrs_mucal_3x10.arf", "xrs_mucal.rmf",
+    ...                        100000.0, "my_spec.pi", clobber=True)
+    """
+    from soxs.events import write_spectrum
+    from soxs.instrument import RedistributionMatrixFile, \
+        AuxiliaryResponseFile
+    if prng is None:
+        prng = np.random
+    if not isinstance(arf, AuxiliaryResponseFile):
+        arf = AuxiliaryResponseFile(arf)
+    if not isinstance(rmf, RedistributionMatrixFile):
+        rmf = RedistributionMatrixFile(rmf)
+    cspec = ConvolvedSpectrum(spec, arf)
+    events = {}
+    events["energy"] = cspec.generate_energies(t_exp, prng=prng).value
+    events = rmf.scatter_energies(events, prng=prng)
+    events["arf"] = arf.filename
+    events["rmf"] = rmf.filename
+    events["exposure_time"] = t_exp
+    events["channel_type"] = rmf.header["CHANTYPE"]
+    events["telescope"] = rmf.header["TELESCOP"]
+    events["instrument"] = rmf.header["INSTRUME"]
+    events["mission"] = rmf.header.get("MISSION", "")
+    write_spectrum(events, filename, clobber=clobber)
+
