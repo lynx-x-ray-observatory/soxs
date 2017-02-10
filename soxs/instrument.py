@@ -506,31 +506,72 @@ def make_background_file(out_file, exp_time, instrument, sky_center, clobber=Fal
     write_event_file(events, event_params, out_file, clobber=clobber)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
-                         sky_center, clobber=False, bkgnd=None, dither_shape="square",
-                         dither_size=16.0, roll_angle=0.0, prng=np.random, **kwargs):
-    if "instr_bkgnd" in kwargs:
-        issue_deprecation_warning("The \"instr_bkgnd\" keyword is deprecated and will be "
-                                  "removed in a future release. If you need to turn off "
-                                  "the instrumental background, create your own background "
-                                  "file without it using \"make_background_file\". "
-                                  "Instrumental background will be turned off for this "
-                                  "simulation.")
-    if "astro_bkgnd" in kwargs:
-        issue_deprecation_warning("The \"astro_bkgnd\" keyword is deprecated and will be "
-                                  "removed in a future release. If you need to turn off "
-                                  "the astrophysical background, create your own background "
-                                  "file without it using \"make_background_file\". "
-                                  "Astrophysical background will be turned off for this "
-                                  "simulation.")
-    instr_bkgnd = kwargs.get("instr_bkgnd", True)
-    foreground = kwargs.get("astro_bkgnd", foreground)
-    cosmo_bkgnd = kwargs.get("astro_bkgnd", cosmo_bkgnd)
-    ptsrc_bkgnd = kwargs.get("astro_bkgnd", ptsrc_bkgnd)
-    if not instr_bkgnd and not foreground and not cosmo_bkgnd and not ptsrc_bkgnd:
-        bkgnd = False
-    else:
-        bkgnd = True
+                         sky_center, clobber=False, instr_bkgnd=True, 
+                         astro_bkgnd=True, bkgnd_file=None, 
+                         dither_shape="square", dither_size=16.0, 
+                         roll_angle=0.0, prng=np.random):
+    """
+    Take unconvolved events and create an event file from them. This 
+    function does the following:
 
+    1. Determines which events are observed using the ARF
+    2. Pixelizes the events, applying PSF effects and dithering
+    3. Adds instrumental background events
+    4. Determines energy channels using the RMF
+    5. Writes the events to a file
+
+    Parameters
+    ----------
+    input_events : string, dict, or None
+        The unconvolved events to be used as input. Can be one of the
+        following:
+        1. The name of a SIMPUT catalog file.
+        2. A Python dictionary containing the following items:
+            "ra": A NumPy array of right ascension values in degrees.
+            "dec": A NumPy array of declination values in degrees.
+            "energy": A NumPy array of energy values in keV.
+            "flux": The flux of the entire source, in units of erg/cm**2/s.
+        3. None if you only want to simulate the instrumental background.
+    out_file : string
+        The name of the event file to be written.
+    exp_time : float
+        The exposure time to use, in seconds. 
+    instrument : string
+        The name of the instrument to use, which picks an instrument
+        specification from the instrument registry. 
+    sky_center : array, tuple, or list
+        The center RA, Dec coordinates of the observation, in degrees.
+    clobber : boolean, optional
+        Whether or not to clobber an existing file with the same name.
+        Default: False
+    instr_bkgnd : boolean, optional
+        Whether or not to include instrumental/particle background. 
+        Default: True
+    astro_bkgnd : boolean, optional
+        Whether or not to include astrophysical backgrounds. 
+        Default: True
+    bkgnd_file : string, optional
+        If set, backgrounds will be loaded from this file and not generated
+        on the fly. Default: None
+    dither_shape : string
+        The shape of the dither. Currently "circle" or "square" 
+        Default: "square"
+    dither_size : float
+        The size of the dither in arcseconds. Width of square or radius
+        of circle. Default: 16.0
+    roll_angle : float
+        The roll angle of the observation in degrees. Default: 0.0
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is 
+        the :mod:`~numpy.random` module.
+
+    Examples
+    --------
+    >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 
+    ...                      300000.0, "hdxi_3x10", [30., 45.], clobber=True)
+    """
     if not out_file.endswith(".fits"):
         out_file += ".fits"
     mylog.info("Making observation of source in %s." % out_file)
@@ -541,14 +582,14 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     # If the user wants backgrounds, either make the background or add an already existing
     # background event file. It may be necessary to reproject events to a new coordinate system.
     if bkgnd_file is None:
-        if bkgnd is False:
+        if not instr_bkgnd and not astro_bkgnd:
             mylog.info("No backgrounds will be added to this observation.")
         else:
             mylog.info("Adding background events.")
             bkg_events, _ = make_background(exp_time, instrument, sky_center,
-                                            foreground=foreground, instr_bkgnd=instr_bkgnd, 
-                                            cosmo_bkgnd=cosmo_bkgnd, dither_shape=dither_shape,
-                                            dither_size=dither_size, ptsrc_bkgnd=ptsrc_bkgnd,
+                                            foreground=astro_bkgnd, instr_bkgnd=instr_bkgnd, 
+                                            cosmo_bkgnd=astro_bkgnd, dither_shape=dither_shape,
+                                            dither_size=dither_size, ptsrc_bkgnd=astro_bkgnd,
                                             prng=prng, roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
