@@ -559,6 +559,37 @@ class ConvolvedSpectrum(Spectrum):
 
 def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
                       prng=None):
+    """
+    Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
+    by convolving it with responses. To be used if one wants to 
+    create a spectrum without worrying about spatial response. Similar
+    to XSPEC's "fakeit". 
+
+    Parameters
+    ----------
+    spec : :class:`~soxs.spectra.Spectrum`
+        The spectrum to be convolved.
+    arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
+        The ARF to be used in the convolution. 
+    rmf : string or :class:`~soxs.instrument.RedistributionMatrixFile`
+        The RMF to be used in the convolution.
+    t_exp : float
+        The exposure time in seconds.
+    filename : string
+        The file to write the spectrum to.
+    clobber : boolean, optional
+        Whether or not to overwrite an existing file. Default: False
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only be specified
+        if you have a reason to generate the same set of random numbers, such as for a
+        test. Default is the :mod:`numpy.random` module.
+
+    Examples
+    --------
+    >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
+    >>> soxs.simulate_spectrum(spec, "xrs_mucal_3x10.arf", "xrs_mucal.rmf",
+    ...                        100000.0, "my_spec.pi", clobber=True)
+    """
     from soxs.events import write_spectrum
     from soxs.instrument import RedistributionMatrixFile, \
         AuxiliaryResponseFile
