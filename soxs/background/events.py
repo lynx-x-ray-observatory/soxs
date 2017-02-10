@@ -71,10 +71,10 @@ def make_uniform_background(energy, event_params, rmf, prng=np.random):
                                                 size=n_events))
     bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
                                                 size=n_events))
-    bkg_events["detx"] = np.round(bkg_events["chipx"] - event_params['pix_center'][0] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
-    bkg_events["dety"] = np.round(bkg_events["chipy"] - event_params['pix_center'][1] +
-                                  prng.uniform(low=-0.5, high=0.5, size=n_events))
+    bkg_events["detx"] = bkg_events["chipx"] - event_params['pix_center'][0] + \
+        prng.uniform(low=-0.5, high=0.5, size=n_events)
+    bkg_events["dety"] = bkg_events["chipy"] - event_params['pix_center'][1] + \
+        prng.uniform(low=-0.5, high=0.5, size=n_events)
     bkg_events["xpix"] = bkg_events["detx"] + event_params['pix_center'][0]
     bkg_events["ypix"] = bkg_events["dety"] + event_params['pix_center'][1]
 

@@ -409,10 +409,10 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
                 # Convert chip coordinates back to detector coordinates
 
-                events["detx"] = np.round(events["chipx"] - event_params['pix_center'][0] +
-                                          prng.uniform(low=-0.5, high=0.5, size=n_evt))
-                events["dety"] = np.round(events["chipy"] - event_params['pix_center'][1] +
-                                          prng.uniform(low=-0.5, high=0.5, size=n_evt))
+                events["detx"] = events["chipx"] - event_params['pix_center'][0] + \
+                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                events["dety"] = events["chipy"] - event_params['pix_center'][1] + \
+                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
                 # Convert detector coordinates back to pixel coordinates
 
