@@ -88,7 +88,7 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
     agen = ApecGenerator(0.1, 10.0, 10000, broadening=False)
 
-    mylog.info("Loading halo data from catalog: %s" % halos_cat_file)
+    mylog.debug("Loading halo data from catalog: %s" % halos_cat_file)
     halo_data = h5py.File(halos_cat_file, "r")
 
     scale = cosmo.kpc_proper_per_arcmin(halo_data["redshift"]).to("Mpc/arcmin")
@@ -103,14 +103,14 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     ylo = (yc-1.1*0.5*fov)*scale.value*h0
     yhi = (yc+1.1*0.5*fov)*scale.value*h0
 
-    mylog.info("Selecting halos in the FOV.")
+    mylog.debug("Selecting halos in the FOV.")
 
     fov_idxs = (halo_data["x"] >= xlo) & (halo_data["x"] <= xhi)
     fov_idxs = (halo_data["y"] >= ylo) & (halo_data["y"] <= yhi) & fov_idxs
 
     n_halos = fov_idxs.sum()
 
-    mylog.info("Number of halos in the field of view: %d" % n_halos)
+    mylog.debug("Number of halos in the field of view: %d" % n_halos)
 
     # Now select the specific halos which are in the FOV
     z = halo_data["redshift"][fov_idxs].astype("float64")
@@ -169,7 +169,7 @@ def make_cosmo_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     dec = np.concatenate(dec)
     ee = np.concatenate(ee)
 
-    mylog.info("Created %d photons from halos." % ee.size)
+    mylog.debug("Created %d photons from halos." % ee.size)
 
     write_photon_list(simput_prefix, phlist_prefix, tot_flux, ra, dec, ee, 
                       append=append, clobber=clobber)

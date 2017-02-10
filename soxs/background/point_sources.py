@@ -127,7 +127,7 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
     n_gal = int(n_gal*fov_area/3600.0)
     n_agn = int(n_agn*fov_area/3600.0)
     num_sources = n_gal + n_agn
-    mylog.info("%d AGN, %d galaxies in the FOV." % (n_agn, n_gal))
+    mylog.debug("%d AGN, %d galaxies in the FOV." % (n_agn, n_gal))
 
     randvec1 = prng.uniform(size=n_agn)
     agn_fluxes = np.interp(randvec1, cdf_nagn, cdf_fluxes)
@@ -142,7 +142,7 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
         thissrc = Bgsrc("gal", S, redshifts["gal"], indices["gal"])
         sources.append(thissrc)
 
-    mylog.info("Generating spectra from %d sources." % len(sources))
+    mylog.debug("Generating spectra from %d sources." % len(sources))
     dec_scal = np.fabs(np.cos(sky_center[1]*np.pi/180))
     ra_min = sky_center[0] - fov/(2.0*60.0*dec_scal)
     dec_min = sky_center[1] - fov/(2.0*60.0)
@@ -195,7 +195,7 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
             all_ra.append(ra)
             all_dec.append(dec)
 
-    mylog.info("Finished generating spectra.")
+    mylog.debug("Finished generating spectra.")
 
     all_energies = np.concatenate(all_energies)
     all_ra = np.concatenate(all_ra)
@@ -203,7 +203,7 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
 
     all_nph = all_energies.size
 
-    mylog.info("Generated %d photons from point sources." % all_nph)
+    mylog.debug("Generated %d photons from point sources." % all_nph)
 
     # Remove some of the photons due to Galactic foreground absorption.
     # We will throw a lot of stuff away, but this is more general and still
@@ -215,7 +215,7 @@ def make_ptsrc_background(simput_prefix, phlist_prefix, exp_time, fov, sky_cente
         all_ra = all_ra[randvec < absorb]
         all_dec = all_dec[randvec < absorb]
         all_nph = all_energies.size
-        mylog.info("%d photons remain after foreground galactic absorption." % all_nph)
+        mylog.debug("%d photons remain after foreground galactic absorption." % all_nph)
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
 
