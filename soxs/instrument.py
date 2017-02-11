@@ -79,6 +79,8 @@ class AuxiliaryResponseFile(object):
             the :mod:`~numpy.random` module.
         """
         energy = events["energy"]
+        if energy.size == 0:
+            return events
         earea = self.interpolate_area(energy).value
         idxs = np.logical_and(energy >= refband[0], energy <= refband[1])
         rate = flux/(energy[idxs].sum()*erg_per_keV)*earea[idxs].sum()
@@ -447,11 +449,13 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
     if len(all_events["energy"]) == 0:
-        raise RuntimeError("No events from any of the sources in the catalog were detected!")
-
-    # Step 4: Scatter energies with RMF
-    mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
-    all_events = rmf.scatter_energies(all_events, prng=prng)
+        mylog.warning("No events from any of the sources in the catalog were detected!")
+        all_events["time"] = np.array([])
+        all_events[event_params["channel_type"]] = np.array([])
+    else:
+        # Step 4: Scatter energies with RMF
+        mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
+        all_events = rmf.scatter_energies(all_events, prng=prng)
 
         # Step 5: Add times to events
         all_events['time'] = prng.uniform(size=all_events["energy"].size, low=0.0,
@@ -627,6 +631,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         if not os.path.exists(bkgnd_file):
             raise IOError("Cannot find the background event file %s!" % bkgnd_file)
         add_background_from_file(events, event_params, bkgnd_file)
+        print(events['energy'])
     write_event_file(events, event_params, out_file, clobber=clobber)
     mylog.info("Observation complete.")
 
