@@ -124,7 +124,7 @@ class FlatResponse(AuxiliaryResponseFile):
         self.elo = np.arange(nbins)*de + emin
         self.ehi = self.elo + de
         self.emid = 0.5*(self.elo+self.ehi)
-        self.eff_area = area
+        self.eff_area = area*np.ones(nbins)
         self.max_area = area
 
 class RedistributionMatrixFile(object):
