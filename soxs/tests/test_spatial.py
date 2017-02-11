@@ -25,7 +25,7 @@ nH = 0.04
 exp_time = 5.0e4
 area = 30000.0
 
-prng = RandomState(23)
+prng = RandomState(31)
 
 agen = ApecGenerator(0.05, 12.0, 10000, broadening=True)
 spec = agen.get_spectrum(kT, Z, redshift, norm)
