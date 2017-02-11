@@ -27,6 +27,6 @@ def test_uniform_bkgnd_scale():
     i_sum = instr_bkgnd.get_flux_in_band(0.7, 2.0)[0]
     b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
     assert np.abs(S-b_sum) < dS
-
+    
 if __name__ == "__main__":
     test_uniform_bkgnd_scale()

@@ -129,7 +129,7 @@ def test_beta_model():
 
     e = spec.generate_energies(exp_time, area, prng=prng)
 
-    beta_src = BetaModel(30.0, 45.0, r_c, beta, e.size, prng=prng)
+    beta_src = BetaModel(ra0, dec0, r_c, beta, e.size, prng=prng)
 
     write_photon_list("beta", "beta", e.flux, beta_src.ra, beta_src.dec,
                       e, clobber=True)
