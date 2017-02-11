@@ -81,7 +81,7 @@ def make_uniform_background(energy, event_params, rmf, prng=np.random):
     mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
     bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
 
-    bkg_events['time'] = np.random.uniform(size=bkg_events["energy"].size, low=0.0,
-                                           high=event_params["exposure_time"])
+    bkg_events['time'] = prng.uniform(size=bkg_events["energy"].size, low=0.0,
+                                      high=event_params["exposure_time"])
 
     return bkg_events

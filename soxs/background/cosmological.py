@@ -146,7 +146,7 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
             spec.apply_foreground_absorption(nH)
         e = spec.generate_energies(exp_time, area, prng=prng, quiet=True)
         beta_model = BetaModel(ra0[halo], dec0[halo], rc[halo], beta[halo], e.size, 
-                               ellipticity=ellip[halo], theta=theta[halo])
+                               ellipticity=ellip[halo], theta=theta[halo], prng=prng)
         tot_flux += e.flux
         ee.append(e.value)
         ra.append(beta_model.ra.value)

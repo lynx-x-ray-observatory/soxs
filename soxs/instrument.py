@@ -53,7 +53,7 @@ class AuxiliaryResponseFile(object):
         earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
         return u.Quantity(earea, "cm**2")
 
-    def detect_events(self, events, exp_time, flux, refband, prng=None):
+    def detect_events(self, events, exp_time, flux, refband, prng=np.random):
         """
         Use the ARF to determine a subset of photons which 
         will be detected. Returns a boolean NumPy array 
@@ -78,8 +78,6 @@ class AuxiliaryResponseFile(object):
             set of random numbers, such as for a test. Default is 
             the :mod:`~numpy.random` module.
         """
-        if prng is None:
-            prng = np.random
         energy = events["energy"]
         earea = self.interpolate_area(energy).value
         idxs = np.logical_and(energy >= refband[0], energy <= refband[1])
@@ -455,9 +453,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
     all_events = rmf.scatter_energies(all_events, prng=prng)
 
-    # Step 5: Add times to events
-    all_events['time'] = np.random.uniform(size=all_events["energy"].size, low=0.0,
-                                           high=event_params["exposure_time"])
+        # Step 5: Add times to events
+        all_events['time'] = prng.uniform(size=all_events["energy"].size, low=0.0,
+                                          high=event_params["exposure_time"])
 
     return all_events, event_params
 
