@@ -630,8 +630,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         mylog.info("Adding background events from the file %s." % bkgnd_file)
         if not os.path.exists(bkgnd_file):
             raise IOError("Cannot find the background event file %s!" % bkgnd_file)
-        add_background_from_file(events, event_params, bkgnd_file)
-        print(events['energy'])
+        events = add_background_from_file(events, event_params, bkgnd_file)
     write_event_file(events, event_params, out_file, clobber=clobber)
     mylog.info("Observation complete.")
 
