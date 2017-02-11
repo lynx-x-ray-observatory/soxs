@@ -50,10 +50,11 @@ def add_background_from_file(events, event_params, bkg_file):
         ypix += hdu.header["TCRPX3"]
 
     all_events = {}
-    for key in ["chipx", "chipy", "detx", "dety", "energy", "time", event_params["channel_type"]]:
+    for key in ["chipx", "chipy", "detx", "dety", "time", event_params["channel_type"]]:
         all_events[key] = np.concatenate([events[key], hdu.data[key.upper()][idxs]])
     all_events["xpix"] = np.concatenate([events["xpix"], xpix])
     all_events["ypix"] = np.concatenate([events["ypix"], ypix])
+    all_events["energy"] = np.concatenate([events["energy"], hdu.data["ENERGY"][idxs]/1000.0])
 
     f.close()
 
