@@ -32,6 +32,8 @@ parser.add_argument("--no_astro_bkgnd", action='store_true',
                     help='Turn the astrophysical background off.')
 parser.add_argument("--no_instr_bkgnd", action='store_true', 
                     help='Turn the instrumental background off.')
+parser.add_argument("--bkgnd_file", type=str,
+                    help='Use background stored in a file instead of generating one.')
 
 args = parser.parse_args()
 
@@ -59,4 +61,4 @@ instrument_simulator(simput_file, args.out_file, args.exp_time,
                      instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
                      roll_angle=args.roll_angle, instr_bkgnd=instr_bkgnd,
-                     astro_bkgnd=astro_bkgnd)
+                     astro_bkgnd=astro_bkgnd, bkgnd_file=args.bkgnd_file)
