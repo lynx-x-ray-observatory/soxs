@@ -450,7 +450,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
     if len(all_events["energy"]) == 0:
         mylog.warning("No events from any of the sources in the catalog were detected!")
-        for key in ["chipx", "chipy", "detx", "dety", "time", event_params["channel_type"]]:
+        for key in ["xpix", "ypix", "chipx", "chipy", "detx", "dety", "time", 
+                    event_params["channel_type"]]:
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
@@ -626,7 +627,6 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                                             prng=prng, roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
-            print(list(events.keys()))
     else:
         mylog.info("Adding background events from the file %s." % bkgnd_file)
         if not os.path.exists(bkgnd_file):
