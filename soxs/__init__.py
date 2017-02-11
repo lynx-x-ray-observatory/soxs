@@ -7,15 +7,14 @@ from soxs.simput import \
 from soxs.spectra import \
     Spectrum, \
     ApecGenerator, \
-    ConvolvedSpectrum, \
-    simulate_spectrum
+    ConvolvedSpectrum
 
 from soxs.instrument import \
     instrument_simulator, \
     AuxiliaryResponseFile, \
     RedistributionMatrixFile, \
     make_background_file, \
-    FlatResponse
+    FlatResponse, simulate_spectrum
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \

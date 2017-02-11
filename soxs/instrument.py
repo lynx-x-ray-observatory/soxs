@@ -635,3 +635,59 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     write_event_file(events, event_params, out_file, clobber=clobber)
     mylog.info("Observation complete.")
 
+def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
+                      prng=None):
+    """
+    Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
+    by convolving it with responses. To be used if one wants to 
+    create a spectrum without worrying about spatial response. Similar
+    to XSPEC's "fakeit". 
+
+    Parameters
+    ----------
+    spec : :class:`~soxs.spectra.Spectrum`
+        The spectrum to be convolved.
+    arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
+        The ARF to be used in the convolution. 
+    rmf : string or :class:`~soxs.instrument.RedistributionMatrixFile`
+        The RMF to be used in the convolution.
+    t_exp : float
+        The exposure time in seconds.
+    filename : string
+        The file to write the spectrum to.
+    clobber : boolean, optional
+        Whether or not to overwrite an existing file. Default: False
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only be specified
+        if you have a reason to generate the same set of random numbers, such as for a
+        test. Default is the :mod:`numpy.random` module.
+
+    Examples
+    --------
+    >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
+    >>> soxs.simulate_spectrum(spec, "xrs_mucal_3x10.arf", "xrs_mucal.rmf",
+    ...                        100000.0, "my_spec.pi", clobber=True)
+    """
+    from soxs.events import write_spectrum
+    from soxs.instrument import RedistributionMatrixFile, \
+        AuxiliaryResponseFile
+    from soxs.spectra import ConvolvedSpectrum
+    if prng is None:
+        prng = np.random
+    if not isinstance(arf, AuxiliaryResponseFile):
+        arf = AuxiliaryResponseFile(arf)
+    if not isinstance(rmf, RedistributionMatrixFile):
+        rmf = RedistributionMatrixFile(rmf)
+    cspec = ConvolvedSpectrum(spec, arf)
+    events = {}
+    events["energy"] = cspec.generate_energies(t_exp, prng=prng).value
+    events = rmf.scatter_energies(events, prng=prng)
+    events["arf"] = arf.filename
+    events["rmf"] = rmf.filename
+    events["exposure_time"] = t_exp
+    events["channel_type"] = rmf.header["CHANTYPE"]
+    events["telescope"] = rmf.header["TELESCOP"]
+    events["instrument"] = rmf.header["INSTRUME"]
+    events["mission"] = rmf.header.get("MISSION", "")
+    write_spectrum(events, filename, clobber=clobber)
+
