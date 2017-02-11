@@ -119,9 +119,9 @@ def write_event_file(events, parameters, filename, clobber=False):
 
 def write_spectrum(evtfile, specfile, clobber=False):
     r"""
-    Bin event energies into a spectrum and write it to a FITS binary table.
-    Does not do any grouping of channels, and will automatically determine
-    PI or PHA. 
+    Bin event energies into a spectrum and write it to 
+    a FITS binary table. Does not do any grouping of 
+    channels, and will automatically determine PI or PHA. 
 
     Parameters
     ----------
@@ -130,8 +130,8 @@ def write_spectrum(evtfile, specfile, clobber=False):
     specfile : string
         The name of the spectrum file to be written.
     clobber : boolean, optional
-        Whether or not to clobber an existing file with the same name.
-        Default: False
+        Whether or not to clobber an existing file with 
+        the same name. Default: False
     """
     from soxs.instrument import RedistributionMatrixFile
     parameters = {}
@@ -225,17 +225,18 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     nbins : integer
         The number of bins in the profile.
     ctr_type : string, optional
-        The type of center coordinate. Either "celestial" for (RA, Dec)
-        coordinates (the default), or "physical" for pixel coordinates.
+        The type of center coordinate. Either "celestial" for 
+        (RA, Dec) coordinates (the default), or "physical" for 
+        pixel coordinates.
     emin : float
-        The minimum energy of the events to be binned in keV. Default
-        is the lowest energy available.
+        The minimum energy of the events to be binned in keV. 
+        Default is the lowest energy available.
     emax : float
-        The maximum energy of the events to be binned in keV. Default
-        is the highest energy available.
+        The maximum energy of the events to be binned in keV. 
+        Default is the highest energy available.
     clobber : boolean, optional
-        Whether or not to clobber an existing file with the same name.
-        Default: False
+        Whether or not to clobber an existing file with the 
+        same name. Default: False
     """
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]
@@ -301,7 +302,8 @@ coord_types = {"sky": ("X", "Y", 2, 3),
 def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None, 
                 clobber=False):
     r"""
-    Generate a image by binning X-ray counts and write it to a FITS file.
+    Generate a image by binning X-ray counts and write 
+    it to a FITS file.
 
     Parameters
     ----------
@@ -310,15 +312,17 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     out_file : string
         The name of the image file to write.
     coord_type : string, optional
-        The type of coordinate to bin into an image. Can be "sky", "det",
-        or "chip". Default: "sky"
+        The type of coordinate to bin into an image. 
+        Can be "sky", "det", or "chip". Default: "sky"
     emin : float, optional
-        The minimum energy of the photons to put in the image, in keV.
+        The minimum energy of the photons to put in the 
+        image, in keV.
     emax : float, optional
-        The maximum energy of the photons to put in the image, in keV.
+        The maximum energy of the photons to put in the 
+        image, in keV.
     clobber : boolean, optional
-        Whether or not to clobber an existing file with the same name.
-        Default: False
+        Whether or not to clobber an existing file with 
+        the same name. Default: False
     """
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]

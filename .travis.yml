@@ -4,15 +4,17 @@ env:
     global:
         # Set defaults to avoid repeating in most cases
         - NUMPY_VERSION=1.10
-
+        - CMD='py.test soxs/tests'
 matrix:
     include:
 
         # Try all python versions with the latest numpy
         - python: 2.7
-          env: CMD='py.test soxs/tests'; PYTHON='python'
+          env: PYTHON='python'
         - python: 3.5
-          env: CMD='py.test soxs/tests'; PYTHON='python3'
+          env: PYTHON='python3'
+        - python: 3.6
+          env: PYTHON='python3'; NUMPY_VERSION=1.11
         - python: 2.7
           env: CMD='coverage run --source soxs -m py.test'; PYTHON='python'
 
@@ -38,7 +40,7 @@ install:
 
     # CORE DEPENDENCIES
     - conda config --add channels https://conda.anaconda.org/sherpa
-    - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy sherpa cython
+    - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy sherpa scipy cython h5py
     - pip install tqdm
 
     # COVERAGE DEPENDENCIES

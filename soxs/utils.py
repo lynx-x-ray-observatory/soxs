@@ -36,8 +36,8 @@ def check_file_location(fn, subdir):
 
 def iterable(obj):
     """
-    Grabbed from Python Cookbook / matploblib.cbook.  Returns true/false for
-    *obj* iterable.
+    Grabbed from Python Cookbook / matploblib.cbook.
+    Returns true/false for *obj* iterable.
     """
     try: len(obj)
     except: return False
@@ -57,8 +57,9 @@ def ensure_list(obj):
 
 def ensure_numpy_array(obj):
     """
-    This function ensures that *obj* is a numpy array. Typically used to
-    convert scalar, list or tuple argument passed to functions using Cython.
+    This function ensures that *obj* is a numpy array. 
+    Typically used to convert scalar, list or tuple 
+    argument passed to functions using Cython.
     """
     if isinstance(obj, np.ndarray):
         if obj.shape == ():
@@ -116,3 +117,8 @@ def convert_rmf(rmffile):
             matrix_new.header[key] = matrix.header[key]
 
     new_f.writeto(os.path.split(rmffile)[-1], clobber=True)
+
+def issue_deprecation_warning(msg):
+    import warnings
+    from numpy import VisibleDeprecationWarning
+    warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)

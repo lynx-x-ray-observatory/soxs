@@ -7,24 +7,20 @@ from soxs.simput import \
 from soxs.spectra import \
     Spectrum, \
     ApecGenerator, \
-    ConvolvedSpectrum, \
-    simulate_spectrum
+    ConvolvedSpectrum
 
 from soxs.instrument import \
     instrument_simulator, \
     AuxiliaryResponseFile, \
     RedistributionMatrixFile, \
-    FlatResponse
+    make_background_file, \
+    FlatResponse, simulate_spectrum
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \
     show_instrument_registry, \
     write_instrument_json, \
     get_instrument_from_registry
-
-from soxs.background import \
-    show_background_registry, \
-    add_background_to_registry
 
 from soxs.spatial import \
     PointSourceModel, \
@@ -40,3 +36,7 @@ from soxs.events import \
     write_spectrum, \
     write_image, \
     write_radial_profile
+
+from soxs.background import \
+    make_cosmo_background_file, \
+    make_ptsrc_background_file

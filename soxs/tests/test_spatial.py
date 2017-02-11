@@ -25,7 +25,7 @@ nH = 0.04
 exp_time = 5.0e4
 area = 30000.0
 
-prng = RandomState(23)
+prng = RandomState(31)
 
 agen = ApecGenerator(0.05, 12.0, 10000, broadening=True)
 spec = agen.get_spectrum(kT, Z, redshift, norm)
@@ -53,7 +53,7 @@ def test_point_source():
     add_instrument_to_registry(inst)
 
     instrument_simulator("pt_src_simput.fits", "pt_src_evt.fits", exp_time,
-                         "hdxi_big_psf", [ra0, dec0], astro_bkgnd=False,
+                         "hdxi_big_psf", [ra0, dec0], astro_bkgnd=False, 
                          instr_bkgnd=False, prng=prng)
 
     psf_scale = inst["psf"][1]
@@ -90,7 +90,7 @@ def test_annulus():
                       e, clobber=True)
 
     instrument_simulator("ann_simput.fits", "ann_evt.fits", exp_time,
-                         "hdxi", [ra0, dec0], astro_bkgnd=False,
+                         "hdxi", [ra0, dec0], astro_bkgnd=False, 
                          instr_bkgnd=False, prng=prng)
 
     inst = get_instrument_from_registry("hdxi")
@@ -129,13 +129,13 @@ def test_beta_model():
 
     e = spec.generate_energies(exp_time, area, prng=prng)
 
-    beta_src = BetaModel(30.0, 45.0, r_c, beta, e.size, prng=prng)
+    beta_src = BetaModel(ra0, dec0, r_c, beta, e.size, prng=prng)
 
     write_photon_list("beta", "beta", e.flux, beta_src.ra, beta_src.dec,
                       e, clobber=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
-                         "hdxi", [ra0, dec0], astro_bkgnd=False,
+                         "hdxi", [ra0, dec0], astro_bkgnd=False, 
                          instr_bkgnd=False, prng=prng)
 
     inst = get_instrument_from_registry("hdxi")
