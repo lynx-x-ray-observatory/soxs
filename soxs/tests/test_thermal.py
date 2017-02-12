@@ -17,8 +17,6 @@ from sherpa.astro.ui import load_user_model, add_user_pars, \
     covar, get_covar_results, set_covar_opt
 from numpy.random import RandomState
 
-prng = RandomState(70)
-
 inst_name = "mucal"
 
 rmf = RedistributionMatrixFile("xrs_%s.rmf" % inst_name)
@@ -44,6 +42,8 @@ spec = agen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
 spec.apply_foreground_absorption(nH_sim)
 
 def test_thermal():
+
+    prng = RandomState(70)
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
@@ -94,6 +94,8 @@ def test_thermal():
     shutil.rmtree(tmpdir)
 
 def test_thermal_from_spectrum():
+
+    prng = RandomState(65)
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
