@@ -101,8 +101,9 @@ def test_thermal_from_spectrum():
 
     inst = get_instrument_from_registry(inst_name)
 
-    simulate_spectrum(spec, inst["arf"], inst["rmf"], 
-                      exp_time, "thermal_model_evt.pha")
+    simulate_spectrum(spec, inst["arf"], inst["rmf"],
+                      exp_time, "thermal_model_evt.pha",
+                      prng=prng)
 
     arf = AuxiliaryResponseFile(inst["arf"])
     rmf = RedistributionMatrixFile(inst["rmf"])
@@ -135,5 +136,5 @@ def test_thermal_from_spectrum():
     shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":
-    #test_thermal()
+    test_thermal()
     test_thermal_from_spectrum()
