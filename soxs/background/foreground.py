@@ -8,7 +8,7 @@ from soxs.utils import soxs_files_path
 
 # X-ray foreground from Hickox & Markevitch 2007 (http://adsabs.harvard.edu/abs/2007ApJ...661L.117H)
 hm_bkgnd_file = os.path.join(soxs_files_path, "hm_cxb_bkgnd.dat")
-hm_astro_bkgnd = BackgroundSpectrum(hm_bkgnd_file, "astrophysical")
+hm_astro_bkgnd = BackgroundSpectrum(hm_bkgnd_file)
 
 def make_foreground(event_params, arf, rmf, prng=np.random):
     fov = event_params["fov"]
