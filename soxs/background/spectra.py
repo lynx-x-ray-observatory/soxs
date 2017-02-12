@@ -5,8 +5,7 @@ from soxs.constants import erg_per_keV
 
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
-    def __init__(self, filename, bkgnd_type):
-        self.bkgnd_type = bkgnd_type
+    def __init__(self, filename):
         emid, flux = np.loadtxt(filename, unpack=True)
         de = np.diff(emid)[0]
         ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
