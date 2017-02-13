@@ -3,21 +3,22 @@
 Working with SIMPUT Files
 =========================
 
-The default storage format for unconvolved events in SOXS is SIMPUT, which is fast becoming
-a standard for making mock X-ray observations. There are two functions to read and write SIMPUT
-files in SOXS.
+The default storage format for unconvolved events in SOXS is SIMPUT, which is 
+fast becoming a standard for making mock X-ray observations. There are two 
+functions to read and write SIMPUT files in SOXS.
 
 Writing SIMPUT Files
 --------------------
 
-If you have created a set of simulated events which you wish to convolve with the instrument
-simulator or with some other tool, you can write them to a SIMPUT file using
-:func:`~soxs.simput.write_photon_list`. This will produce two files: the SIMPUT file
-containing the parameters for the source, and a photon list file linked to the SIMPUT file which
-contains the actual event energies and positions. For example, say we have created a 
-:class:`~soxs.spectra.Spectrum` object named ``spec`` which we've generated energies 
-from, and that we're going to assign these energies to a point source. We can then create 
-the SIMPUT file and photon list file like this:
+If you have created a set of simulated events which you wish to convolve with 
+the instrument simulator or with some other tool, you can write them to a SIMPUT 
+file using :func:`~soxs.simput.write_photon_list`. This will produce two files: 
+the SIMPUT filecontaining the parameters for the source, and a photon list file 
+linked to the SIMPUT file which contains the actual event energies and 
+positions. For example, say we have created a :class:`~soxs.spectra.Spectrum` 
+object named ``spec`` which we've generated energies from, and that we're going 
+to assign these energies to a point source. We can then create the SIMPUT file 
+and photon list file like this:
 
 .. code-block:: python
 
@@ -32,18 +33,31 @@ the SIMPUT file and photon list file like this:
     write_photon_list("point_source", "source1", energies.flux,
                       pt_src.ra, pt_src.dec, energies, clobber=True)
                          
-The ``energies`` returned by :meth:`~soxs.spectra.Spectrum.generate_energies` is an augmented NumPy array with unit
-information and the value of the flux for that set of energies. This flux needs to be passed to :func:`~soxs.simput.write_photon_list`
-as the third argument.
+The ``energies`` returned by :meth:`~soxs.spectra.Spectrum.generate_energies` 
+is an augmented NumPy array with unit information and the value of the flux 
+for that set of energies. This flux needs to be passed to 
+:func:`~soxs.simput.write_photon_list` as the third argument.
 
-Alternatively, you may already have a SIMPUT file associated with a photon list file, but want to 
-add another source to the same SIMPUT catalog. You can accomplish this by making the same call to
+Alternatively, you may already have a SIMPUT file associated with a photon 
+list file, but want to add another source to the same SIMPUT catalog. You can
+accomplish this by making the same call to 
 :func:`~soxs.simput.write_photon_list` but setting ``append=True``:
 
 .. code-block:: python
 
     write_photon_list("point_source", "source2" energies2.flux,
                       pt2.ra, pt2.dec, energies2, append=True) 
+
+SOXS will give each photon list source a name in the catalog, determined by the
+scheme ``"soxs_src_n"`` where ``n`` is the n-th source in the file, but you can 
+supply an alternative name for the source in the call to 
+:func:`~soxs.simput.write_photon_list` using the ``src_name`` keyword argument: 
+
+.. code-block:: python
+
+    write_photon_list("point_source", "source2" energies2.flux,
+                      pt2.ra, pt2.dec, energies2, append=True, 
+                      src_name="my_point_source") 
 
 Reading SIMPUT Files
 --------------------
@@ -56,9 +70,9 @@ A SIMPUT catalog can be read using :func:`~soxs.simput.read_simput_catalog`:
     events, parameters = read_simput_catalog("point_source_simput.fits")
     
 It returns two arguments, ``events`` and ``parameters``. ``events`` is a list of 
-Python dictionaries, one for each source in the file. Each dictionary contains NumPy
-arrays for the positions and energies of the events. For example, for a catalog which 
-only has one source they would look like this:
+Python dictionaries, one for each source in the file. Each dictionary contains 
+NumPy arrays for the positions and energies of the events. For example, for a 
+catalog which only has one source they would look like this:
 
 .. code-block:: python
 
@@ -79,8 +93,10 @@ only has one source they would look like this:
     
 .. code-block:: pycon
 
-    {'emax': array([ 10.99995703]), 'flux': array([  1.12239243e-11]), 'emin': array([ 0.12598762])}
+    {'emax': array([ 10.99995703]), 
+     'flux': array([  1.12239243e-11]), 
+     'emin': array([ 0.12598762])}
 
-Energies are in keV, flux is in :math:`{\rm erg~s^{-1}~cm^{-2}}`, and sky coordinates
-are in degrees. :func:`~soxs.simput.read_simput_catalog` is used by the instrument 
-simulator to read sources from a SIMPUT catalog. 
+Energies are in keV, flux is in :math:`{\rm erg~s^{-1}~cm^{-2}}`, and sky 
+coordinates are in degrees. :func:`~soxs.simput.read_simput_catalog` is used by
+the instrument simulator to read sources from a SIMPUT catalog. 
