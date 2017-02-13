@@ -168,6 +168,41 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 def make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center, 
                                nH=0.05, area=40000.0, prng=np.random, append=False,
                                clobber=False):
+    r"""
+    Make an X-ray background made up of contributions 
+    from galaxy clusters, galaxy groups, and galaxies, and
+    write it to a SIMPUT catalog. 
+
+    Parameters
+    ----------
+    simput_prefix : string
+        The filename prefix for the SIMPUT file.
+    phlist_prefix : string
+        The filename prefix for the photon list file.
+    exp_time : float
+        The exposure time of the observation in seconds.
+    fov : float
+        The field of view in arcminutes.
+    sky_center : array-like
+        The center RA, Dec of the field of view in degrees.
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
+    area : float, optional
+        The effective area in cm**2. It must be large enough 
+        so that a sufficiently large sample is drawn for the 
+        ARF. Default: 40000.
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only be 
+        specified if you have a reason to generate the same set 
+        of random numbers, such as for a test. Default is the 
+        :mod:`numpy.random` module.
+    append : boolean, optional
+        If True, append a new source an existing SIMPUT 
+        catalog. Default: False
+    clobber : boolean, optional
+        Set to True to overwrite previous files. Default: False
+    """
     events = make_cosmo_background(exp_time, fov, sky_center, nH=nH, area=area, prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], events["dec"],
                       events["energy"], append=append, clobber=clobber)
