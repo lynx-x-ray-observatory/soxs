@@ -4,9 +4,7 @@ import argparse
 import os
 import numpy as np
 from soxs import instrument_simulator, \
-    add_instrument_to_registry, \
-    add_background_to_registry
-from soxs.background import background_registry
+    add_instrument_to_registry
 from soxs.instrument import instrument_registry
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated event file.')
 parser.add_argument("simput_file", type=str, 
