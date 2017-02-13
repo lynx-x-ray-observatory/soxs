@@ -635,7 +635,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     write_event_file(events, event_params, out_file, clobber=clobber)
     mylog.info("Observation complete.")
 
-def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
+def simulate_spectrum(spec, instrument, exp_time, out_file, clobber=False,
                       prng=None):
     """
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
@@ -647,13 +647,12 @@ def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
     ----------
     spec : :class:`~soxs.spectra.Spectrum`
         The spectrum to be convolved.
-    arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
-        The ARF to be used in the convolution. 
-    rmf : string or :class:`~soxs.instrument.RedistributionMatrixFile`
-        The RMF to be used in the convolution.
-    t_exp : float
+    instrument : string
+        The name of the instrument to use, which picks an instrument
+        specification from the instrument registry. 
+    exp_time : float
         The exposure time in seconds.
-    filename : string
+    out_file : string
         The file to write the spectrum to.
     clobber : boolean, optional
         Whether or not to overwrite an existing file. Default: False
@@ -665,8 +664,8 @@ def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
     Examples
     --------
     >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
-    >>> soxs.simulate_spectrum(spec, "xrs_mucal_3x10.arf", "xrs_mucal.rmf",
-    ...                        100000.0, "my_spec.pi", clobber=True)
+    >>> soxs.simulate_spectrum(spec, "mucal", 100000.0, 
+    ...                        "my_spec.pi", clobber=True)
     """
     from soxs.events import write_spectrum
     from soxs.instrument import RedistributionMatrixFile, \
@@ -674,20 +673,24 @@ def simulate_spectrum(spec, arf, rmf, t_exp, filename, clobber=False,
     from soxs.spectra import ConvolvedSpectrum
     if prng is None:
         prng = np.random
-    if not isinstance(arf, AuxiliaryResponseFile):
-        arf = AuxiliaryResponseFile(arf)
-    if not isinstance(rmf, RedistributionMatrixFile):
-        rmf = RedistributionMatrixFile(rmf)
+    try:
+        instrument_spec = instrument_registry[instrument]
+    except KeyError:
+        raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
+    arf_file = check_file_location(instrument_spec["arf"], "files")
+    rmf_file = check_file_location(instrument_spec["rmf"], "files")
+    arf = AuxiliaryResponseFile(arf_file)
+    rmf = RedistributionMatrixFile(rmf_file)
     cspec = ConvolvedSpectrum(spec, arf)
     events = {}
-    events["energy"] = cspec.generate_energies(t_exp, prng=prng).value
+    events["energy"] = cspec.generate_energies(exp_time, prng=prng).value
     events = rmf.scatter_energies(events, prng=prng)
     events["arf"] = arf.filename
     events["rmf"] = rmf.filename
-    events["exposure_time"] = t_exp
+    events["exposure_time"] = exp_time
     events["channel_type"] = rmf.header["CHANTYPE"]
     events["telescope"] = rmf.header["TELESCOP"]
     events["instrument"] = rmf.header["INSTRUME"]
     events["mission"] = rmf.header.get("MISSION", "")
-    write_spectrum(events, filename, clobber=clobber)
+    write_spectrum(events, out_file, clobber=clobber)
 
