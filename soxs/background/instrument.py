@@ -32,7 +32,7 @@ instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
                           "athena_xifu": athena_xifu_bkgnd,
                           "athena_wfi": athena_wfi_bkgnd}
 
-def add_instrument_background(name, filename, default_focal_length):
+def add_instrumental_background(name, filename, default_focal_length):
     """
     Add a particle/instrument background to the list 
     of known backgrounds.

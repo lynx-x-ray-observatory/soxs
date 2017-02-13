@@ -40,4 +40,4 @@ from soxs.events import \
 from soxs.background import \
     make_cosmo_background_file, \
     make_ptsrc_background_file, \
-    add_instrument_background
+    add_instrumental_background
