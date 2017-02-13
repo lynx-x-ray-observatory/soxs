@@ -3,8 +3,9 @@
 Response Files
 ==============
 
-Here you can download the response files you will need to fit spectra that you make with SOXS. For ARFs,
-:math:`d` is the diameter of the outermost mirror shell, and :math:`f` is the focal length.
+Here you can download the response files you will need to fit spectra that you 
+make with SOXS. For ARFs, :math:`d` is the diameter of the outermost mirror 
+shell, and :math:`f` is the focal length. 
 
 Lynx
 ----
@@ -46,3 +47,18 @@ X-ray Integral Field Unit
 
 * RMF: `athena_xifu_rmf_v20160401.rmf <athena_xifu_rmf_v20160401.rmf>`_
 * ARF: `athena_xifu_1469_onaxis_pitch249um_v20160401.arf <athena_xifu_1469_onaxis_pitch249um_v20160401.arf>`_
+
+Chandra
+-------
+
+ACIS-I Cycle 0
+++++++++++++++
+
+* RMF: `acisi_aimpt_cy0.rmf <acisi_aimpt_cy0.rmf>`_
+* ARF: `acisi_aimpt_cy0.arf <acisi_aimpt_cy0.arf>`_
+
+ACIS-I Cycle 18
++++++++++++++++
+
+* RMF: `acisi_aimpt_cy18.rmf <acisi_aimpt_cy18.rmf>`_
+* ARF: `acisi_aimpt_cy18.arf <acisi_aimpt_cy18.arf>`_
