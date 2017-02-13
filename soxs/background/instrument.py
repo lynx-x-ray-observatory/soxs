@@ -13,11 +13,13 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
 acisi_particle_bkgnd = InstrumentalBackgroundSpectrum(acisi_bkgnd_file, 10.0)
 
-# Athena-like microcalorimeter background (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
+# Athena-like microcalorimeter background 
+# (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
 mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.dat")
 mucal_particle_bkgnd = InstrumentalBackgroundSpectrum(mucal_bkgnd_file, 10.0)
 
-# Athena microcalorimeter background (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
+# Athena microcalorimeter background 
+# (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
 xifu_bkgnd_file = os.path.join(soxs_files_path, "xifu_bkgnd.dat")
 athena_xifu_bkgnd = InstrumentalBackgroundSpectrum(xifu_bkgnd_file, 12.0)
 
@@ -50,8 +52,8 @@ def add_instrument_background(name, filename, default_focal_length):
         alternative focal length is provided in an instrument
         specification.
     """
-    instrument_backgrounds[name] = InstrumentalBackgroundSpectrum(filename, 
-                                                                  default_focal_length)
+    spec = InstrumentalBackgroundSpectrum(filename, default_focal_length)
+    instrument_backgrounds[name] = spec
 
 def make_instrument_background(bkgnd_name, event_params, focal_length, rmf, 
                                prng=np.random):
@@ -63,8 +65,8 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
     # Generate background events
 
     area = (focal_length / bkgnd_spec.default_focal_length) ** 2
-    energy = bkgnd_spec.generate_energies(event_params["exposure_time"], area, fov, 
-                                          prng=prng).value
+    energy = bkgnd_spec.generate_energies(event_params["exposure_time"], area, 
+                                          fov, prng=prng).value
 
     if energy.size == 0:
         raise RuntimeError("No instrumental background events were detected!!!")
