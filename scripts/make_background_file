@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+import numpy as np
+from soxs import make_background_file, \
+    instrument_registry, add_instrument_to_registry
+
+parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated background event file.')
+parser.add_argument("simput_file", type=str,
+                    help='The SIMPUT file to be used as input, or "None" if you only want to simulate backgrounds.')
+parser.add_argument("out_file", type=str, help='The name of the event file to be written.')
+parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("instrument", type=str, help='The name of the instrument to use, '+
+                                                 'or alternatively the name of a JSON file which contains an instrument '+
+                                                 'specification.')
+parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the '+
+                                                 'observation, in degrees, comma-separated')
+parser.add_argument("--clobber", action='store_true',
+                    help='Whether or not to clobber an existing file with the same name.')
+parser.add_argument("--no_ptsrc_bkgnd", action='store_true',
+                    help='Turn the point-source background off.')
+parser.add_argument("--no_instr_bkgnd", action='store_true',
+                    help='Turn the instrumental background off.')
+parser.add_argument("--no_cosmo_bkgnd", action='store_true',
+                    help='Turn the cosmological background off.')
+parser.add_argument("--no_foreground", action='store_true',
+                    help='Turn the galactic foreground off.')
+parser.add_argument("--dither_shape", type=str, default='square',
+                    help='The shape of the dither pattern: square, circle, or None. '+
+                         'Default: square')
+parser.add_argument("--dither_size", type=float, default=16.0,
+                    help='The size of the dither pattern in arcseconds. For a circle, the'+
+                         'size is the radius; for a square, the size is the width. Default: 16.0')
+
+args = parser.parse_args()
+
+sky_center = np.array(args.sky_center.split(',')).astype("float64")
+
+if args.instrument not in instrument_registry and os.path.exists(args.instrument):
+    instrument = add_instrument_to_registry(args.instrument)
+else:
+    instrument = args.instrument
+
+if args.dither_shape == "None":
+    dither_shape = None
+else:
+    dither_shape = args.dither_shape
+
+ptsrc_bkgnd = not args.no_ptsrc_bkgnd
+instr_bkgnd = not args.no_instr_bkgnd
+foreground = not args.no_foreground
+cosmo_bkgnd = not args.no_cosmo_bkgnd
+
+make_background_file(args.out_file, args.exp_time, sky_center, args.clobber,
+                     foreground=foreground, cosmo_bkgnd=cosmo_bkgnd,
+                     instr_bkgnd=instr_bkgnd, ptsrc_bkgnd=ptsrc_bkgnd,
+                     dither_shape=dither_shape, dither_size=args.dither_size)
