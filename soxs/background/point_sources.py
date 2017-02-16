@@ -168,8 +168,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, nH_int=None,
         # Using the energy flux, determine the photon flux by simple scaling
         ref_ph_flux = source.flux*fluxscale[source.src_type]*keV_per_erg
         # Now determine the number of photons we will generate
-        nph = np.modf(ref_ph_flux*exp_time*area)
-        nph = np.int64(nph[1]) + np.int64(nph[0] >= u_src[i])
+        nph = prng.poisson(ref_ph_flux*exp_time*area)
 
         if nph > 0:
             # Generate the energies in the source frame

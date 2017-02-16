@@ -21,8 +21,7 @@ class Energies(u.Quantity):
 
 def _generate_energies(spec, t_exp, rate, prng=None, quiet=False):
     cumspec = spec.cumspec
-    n_ph = np.modf(t_exp*rate)
-    n_ph = np.int64(n_ph[1]) + np.int64(n_ph[0] >= prng.uniform())
+    n_ph = prng.poisson(t_exp*rate)
     if not quiet:
         mylog.info("Creating %d energies from this spectrum." % n_ph)
     randvec = prng.uniform(size=n_ph)
