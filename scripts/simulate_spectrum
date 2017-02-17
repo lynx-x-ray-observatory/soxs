@@ -6,6 +6,7 @@ from soxs.instrument import simulate_spectrum
 from soxs.spectra import Spectrum
 from soxs.instrument_registry import \
     add_instrument_to_registry, instrument_registry
+from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a '
                                  'simulated event file.')
@@ -17,8 +18,15 @@ parser.add_argument("exp_time", type=float, help='The exposure time to use, in s
 parser.add_argument("out_file", type=str, help="The file to write the convolved spectrum to.")
 parser.add_argument("--clobber", action='store_true',
                     help='Whether or not to clobber an existing file with the same name.')
+parser.add_argument("--random_seed", type=int,
+                    help="A constant integer random seed to produce a consistent set of random numbers.")
 
 args = parser.parse_args()
+
+if args.random_seed is None:
+    prng = None
+else:
+    prng = RandomState(args.random_seed)
 
 if args.instrument not in instrument_registry and os.path.exists(args.instrument):
     instrument = add_instrument_to_registry(args.instrument)
@@ -26,4 +34,5 @@ else:
     instrument = args.instrument
 
 spec = Spectrum.from_file(args.spec_file)
-simulate_spectrum(spec, instrument, args.exp_time, args.out_file, clobber=args.clobber)
+simulate_spectrum(spec, instrument, args.exp_time, args.out_file, 
+                  clobber=args.clobber, prng=prng)

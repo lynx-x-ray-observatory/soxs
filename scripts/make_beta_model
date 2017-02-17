@@ -2,6 +2,7 @@
 
 import argparse
 from soxs import Spectrum, write_photon_list, BetaModel
+from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a beta-model source.')
 parser.add_argument("simput_prefix", type=str, 
@@ -30,15 +31,23 @@ parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
+parser.add_argument("--random_seed", type=int,
+                    help="A constant integer random seed to produce a consistent set of random numbers.")
 
 args = parser.parse_args()
 
+if args.random_seed is None:
+    prng = None
+else:
+    prng = RandomState(args.random_seed)
+
 spec = Spectrum.from_file(args.specfile)
-energy = spec.generate_energies(args.exp_time, args.area)
+energy = spec.generate_energies(args.exp_time, args.area, prng=prng)
 n_evt = energy.size
 
 beta_src = BetaModel(args.ra0, args.dec0, args.r_c, args.beta, n_evt,
-                     theta=args.theta, ellipticity=args.ellipticity)
+                     theta=args.theta, ellipticity=args.ellipticity, 
+                     prng=prng)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
                   beta_src.ra, beta_src.dec, energy, append=args.append,

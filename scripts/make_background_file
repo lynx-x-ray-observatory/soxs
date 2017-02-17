@@ -5,6 +5,7 @@ import os
 import numpy as np
 from soxs import make_background_file, \
     instrument_registry, add_instrument_to_registry
+from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated background event file.')
 parser.add_argument("simput_file", type=str,
@@ -32,6 +33,8 @@ parser.add_argument("--dither_shape", type=str, default='square',
 parser.add_argument("--dither_size", type=float, default=16.0,
                     help='The size of the dither pattern in arcseconds. For a circle, the'+
                          'size is the radius; for a square, the size is the width. Default: 16.0')
+parser.add_argument("--random_seed", type=int,
+                    help="A constant integer random seed to produce a consistent set of random numbers.")
 
 args = parser.parse_args()
 
@@ -52,7 +55,13 @@ instr_bkgnd = not args.no_instr_bkgnd
 foreground = not args.no_foreground
 cosmo_bkgnd = not args.no_cosmo_bkgnd
 
+if args.random_seed is None:
+    prng = None
+else:
+    prng = RandomState(args.random_seed)
+
 make_background_file(args.out_file, args.exp_time, sky_center, args.clobber,
                      foreground=foreground, cosmo_bkgnd=cosmo_bkgnd,
                      instr_bkgnd=instr_bkgnd, ptsrc_bkgnd=ptsrc_bkgnd,
-                     dither_shape=dither_shape, dither_size=args.dither_size)
+                     dither_shape=dither_shape, dither_size=args.dither_size,
+                     prng=prng)

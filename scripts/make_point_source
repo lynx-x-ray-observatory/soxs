@@ -2,6 +2,7 @@
 
 import argparse
 from soxs import Spectrum, write_photon_list, PointSourceModel
+from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a point source from '+
                                              'a spectrum supplied in a file.')
@@ -20,11 +21,18 @@ parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
+parser.add_argument("--random_seed", type=int,
+                    help="A constant integer random seed to produce a consistent set of random numbers.")
 
 args = parser.parse_args()
 
+if args.random_seed is None:
+    prng = None
+else:
+    prng = RandomState(args.random_seed)
+
 spec = Spectrum.from_file(args.specfile)
-energy = spec.generate_energies(args.exp_time, args.area)
+energy = spec.generate_energies(args.exp_time, args.area, prng=prng)
 n_evt = energy.size
 pt_src = PointSourceModel(args.ra0, args.dec0, n_evt)
 

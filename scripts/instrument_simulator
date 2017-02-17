@@ -6,6 +6,8 @@ import numpy as np
 from soxs import instrument_simulator, \
     add_instrument_to_registry
 from soxs.instrument import instrument_registry
+from numpy.random import RandomState
+
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated event file.')
 parser.add_argument("out_file", type=str, help='The name of the event file to be written.')
 parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
@@ -30,7 +32,8 @@ parser.add_argument("--no_instr_bkgnd", action='store_true',
                     help='Turn the instrumental background off.')
 parser.add_argument("--bkgnd_file", type=str,
                     help='Use background stored in a file instead of generating one.')
-
+parser.add_argument("--random_seed", type=int,
+                    help="A constant integer random seed to produce a consistent set of random numbers.")
 args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
@@ -48,8 +51,14 @@ else:
 astro_bkgnd = not args.no_astro_bkgnd
 instr_bkgnd = not args.no_instr_bkgnd
 
+if args.random_seed is None:
+    prng = None
+else:
+    prng = RandomState(args.random_seed)
+
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
                      roll_angle=args.roll_angle, instr_bkgnd=instr_bkgnd,
-                     astro_bkgnd=astro_bkgnd, bkgnd_file=args.bkgnd_file)
+                     astro_bkgnd=astro_bkgnd, bkgnd_file=args.bkgnd_file,
+                     prng=prng)
