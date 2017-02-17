@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+import argparse
+import numpy as np
+from soxs.background import make_ptsrc_background_file
+from numpy.random import RandomState
+
+parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a '
+                                             'point-source background.')
+parser.add_argument("simput_prefix", type=str,
+                    help='The prefix of the SIMPUT file to be used as the root of the ' +
+                         'catalog. If it does not exist, it will be created.')
+parser.add_argument("phlist_prefix", type=str,
+                    help='The prefix of the photon list file to be written.')
+parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("fov", type=float, help="The field of view on a side in arcminutes.")
+parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the ' +
+                                                 'observation, in degrees, comma-separated.')
+parser.add_argument("--nh", type=float, default=0.05,
+                    help='The galactic hydrogen column in units of 10**22 atoms/cm**2. '
+                         'Default: 0.05')
+parser.add_argument("--nh_int", type=float,
+                    help='The hydrogen column internal to sources in units of 10**22 '
+                         'atoms/cm**2. Default: None')
+parser.add_argument("--area", type=float, default=30000.0,
+                    help='The collecting area to use, in cm^2. Default: 30000.0')
+parser.add_argument("--append", action='store_true',
+                    help='If set, append a new source an existing SIMPUT catalog. ')
+parser.add_argument("--clobber", action='store_true',
+                    help='Whether or not to clobber an existing file with the same name.')
+parser.add_argument("--agn_cdf_type", type=str, 
+                    help='The flux distribution function to assume for the AGN. Options '
+                         'are \"av\" or \"bl\". Default: \"av\"')
+parser.add_argument("--random_seed", type=int,
+                    help="A constant integer random seed to produce a consistent set of random numbers.")
+
+args = parser.parse_args()
+
+if args.random_seed is None:
+    prng = None
+else:
+    prng = RandomState(args.random_seed)
+
+sky_center = np.array(args.sky_center.split(',')).astype("float64")
+
+make_ptsrc_background_file(args.simput_prefix, args.phlist_prefix, args.exp_time,
+                           args.fov, sky_center, nH=args.nh, nH_int=args.nh_int,
+                           agn_cdf_type=args.agn_cdf_type, area=args.area, 
+                           append=args.append, clobber=args.clobber, prng=prng)
