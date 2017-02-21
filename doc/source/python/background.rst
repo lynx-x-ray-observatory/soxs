@@ -75,7 +75,48 @@ Creating SIMPUT Catalogs for Point Source and Cosmological Background Events
 
 If you want to create a SIMPUT catalog of either a point-source or a 
 cosmological background, there are two functions provided by pyXSIM that 
-allow one to do so. 
+allow one to do so. It is not necessary to do this for simulating background
+in SOXS, as this will be done automatically, but it may be useful if you would
+like to tweak parameters of the sources or create a SIMPUT catalog for use in
+another simulation program such as MARX or SIMX. 
+
+:func:`~soxs.background.point_sources.make_ptsrc_background_file` generates a
+photon list file for a SIMPUT catalog using the point-source background model
+described above:
+
+.. code-block:: python
+
+    simput_prefix = "my_bkgnd"
+    phlist_prefix = "pt_src"
+    exp_time = 500000.0 # seconds
+    fov = 20.0 # arcmin
+    sky_center = [30.0, 45.0] # RA, Dec in degrees
+    nH = 0.05 # Foreground galactic absorption, optional
+    area = 40000.0 # Flat collecting area to generate photon sample
+    nH_int = 0.02 # Galactic absorption intrinsic to sources
+    make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
+                               nH=nH, area=area, nH_int=nH_int, append=True)
+
+:func:`~soxs.background.cosmological.make_cosmo_background_file` generates a
+photon list for a SIMPUT catalog using the cosmological halo background model
+described above:
+
+.. code-block:: python
+
+    simput_prefix = "my_bkgnd"
+    phlist_prefix = "cosmo"
+    exp_time = 500000.0 # seconds
+    fov = 20.0 # arcmin
+    sky_center = [30.0, 45.0] # RA, Dec in degrees
+    nH = 0.05 # Foreground galactic absorption, optional
+    area = 40000.0 # Flat collecting area to generate photon sample
+    make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
+                               nH=nH, area=area, nH_int=nH_int, append=True)
+
+As with other SIMPUT catalogs, if you supply a value for ``simput_prefix`` to
+either of these functions that refers to an existing catalog and set 
+``append=True``, the photon list file will be appended to an existing SIMPUT 
+catalog.
 
 Instrumental Background
 -----------------------
