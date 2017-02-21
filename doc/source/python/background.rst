@@ -215,4 +215,34 @@ file as input to :func:`~soxs.instrument.instrument_simulator`. The
 
 .. code-block:: python
 
-    make_background_file()
+    out_file = 'bkgnd_evt.fits'
+    exp_time = 1000000.0 # seconds
+    instrument = "hdxi"
+    sky_center = [24., 12.] # degrees
+    make_background_file(out_file, exp_time, instrument, sky_center, 
+                         clobber=True, foreground=True, cosmo_bkgnd=False,
+                         instr_bkgnd=True, ptsrc_bkgnd=True)
+
+As can be noted from this example, :func:`~soxs.instrument.make_background_file`
+allows one to turn any of the four background components on or off using the
+four boolean arguments ``foreground``, ``cosmo_bkgnd``, ``instr_bkgnd``, or 
+``ptsrc_bkgnd``. 
+
+:func:`~soxs.instrument.instrument_simulator` can use this background file when
+it is supplied with the ``bkgnd_file`` argument, provided that the same
+instrument is used and the exposure time of the source observation is not longer
+than the exposure time that the background was run with:
+
+.. code-block:: python
+
+    exp_time = 500000.0 # seconds
+    instrument = "hdxi"
+    simput_file = "beta_model_simput.fits"
+    out_file = "evt.fits"
+    sky_center = [30., 45.]
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, bkgnd_file="bkgnd_evt.fits") 
+
+Note that the pointing of the background event file does not to be the same as
+the source pointing--the background events will be re-projected to match the
+pointing of the source. 
