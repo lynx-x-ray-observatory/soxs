@@ -75,6 +75,36 @@ def test_add_background():
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
+def test_ptsrc_source_numbers():
+    from soxs.background.point_sources import generate_sources
+    from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
+    prng = RandomState(33)
+    fov = 20.0 # arcmin
+    exp_time = 500000.0 # seconds
+    area = 30000.0 # cm**2
+    f_agn = np.zeros((cdf_fluxes.size-1, 100))
+    f_gal = np.zeros((cdf_fluxes.size-1, 100))
+    for k in range(100):
+        agn_sources, gal_sources = generate_sources(exp_time, area, fov, 
+                                                    prng=prng)
+        agn_fluxes = np.array([agn.flux for agn in agn_sources])
+        gal_fluxes = np.array([gal.flux for gal in gal_sources])
+        f_agn[:,k] = np.histogram(agn_fluxes, bins=cdf_fluxes)[0]
+        f_gal[:,k] = np.histogram(gal_fluxes, bins=cdf_fluxes)[0]
+    mu_agn = np.mean(f_agn, axis=1)
+    sigma_agn = np.std(f_agn, axis=1)
+    mu_gal = np.mean(f_gal, axis=1)
+    sigma_gal = np.std(f_gal, axis=1)
+    f_agn0 = np.diff(cdf_agn)*(fov/60.0)**2
+    f_gal0 = np.diff(cdf_gal)*(fov/60.0)**2
+    err_agn = np.abs(mu_agn-f_agn0)/sigma_agn
+    err_gal = np.abs(mu_gal-f_gal0)/sigma_gal
+    err_agn[sigma_agn == 0.0] = 0.0
+    err_gal[sigma_gal == 0.0] = 0.0
+    assert np.all(err_agn < 1.0)
+    assert np.all(err_gal < 1.0)
+
 if __name__ == "__main__":
     test_add_background()
     test_uniform_bkgnd_scale()
+    test_ptsrc_source_numbers()
