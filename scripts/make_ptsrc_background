@@ -19,9 +19,6 @@ parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates
 parser.add_argument("--nh", type=float, default=0.05,
                     help='The galactic hydrogen column in units of 10**22 atoms/cm**2. '
                          'Default: 0.05')
-parser.add_argument("--nh_int", type=float,
-                    help='The hydrogen column internal to sources in units of 10**22 '
-                         'atoms/cm**2. Default: None')
 parser.add_argument("--area", type=float, default=30000.0,
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
@@ -41,6 +38,5 @@ else:
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
 make_ptsrc_background_file(args.simput_prefix, args.phlist_prefix, args.exp_time,
-                           args.fov, sky_center, nH=args.nh, nH_int=args.nh_int,
-                           area=args.area, append=args.append, clobber=args.clobber, 
-                           prng=prng)
+                           args.fov, sky_center, nH=args.nh, area=args.area, 
+                           append=args.append, clobber=args.clobber, prng=prng)

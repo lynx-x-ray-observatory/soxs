@@ -14,11 +14,8 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 # for now, we're leaving these not user-configurable
 
 agn_ind = 1.2  # AGN photon index
-agn_z = 2.0  # AGN redshift
 gal_ind = 1.2  # galaxy photon index
-gal_z = 0.8  # galaxy redshift
 
-redshifts = {"agn": agn_z, "gal": gal_z}
 indices = {"agn": agn_ind, "gal": gal_ind}
 
 fb_emin = 0.5  # keV, low energy bound for the logN-logS flux band
@@ -30,10 +27,9 @@ spec_emax = 10.0  # keV, max energy of mock spectrum
 src_types = ['agn', 'gal']
 
 class Bgsrc:
-    def __init__(self, src_type, flux, z, ind):
+    def __init__(self, src_type, flux, ind):
         self.src_type = src_type
         self.flux = flux
-        self.z = z
         self.ind = ind
 
 def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
@@ -77,16 +73,13 @@ def generate_sources(exp_time, area, fov, prng=np.random):
     randvec2 = prng.uniform(size=n_gal)
     gal_fluxes = 10**f_gal(randvec2)
 
-    agn_sources = [Bgsrc("agn", S, redshifts["agn"], indices["agn"])
-                   for S in agn_fluxes]
-
-    gal_sources = [Bgsrc("gal", S, redshifts["gal"], indices["gal"])
-                   for S in gal_fluxes]
+    agn_sources = [Bgsrc("agn", S, indices["agn"]) for S in agn_fluxes]
+    gal_sources = [Bgsrc("gal", S, indices["gal"]) for S in gal_fluxes]
 
     return agn_sources, gal_sources
 
-def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, nH_int=None,
-                          area=40000.0, prng=np.random):
+def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
+                          prng=np.random):
 
     agn_sources, gal_sources = generate_sources(exp_time, area, fov,
                                                 prng=prng)
@@ -133,16 +126,9 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, nH_int=None,
             else:
                 energies = fac1[source.src_type] + u*fac2[source.src_type]
                 energies **= invoma[source.src_type]
-            # Here is where we apply intrinsic absorption for galaxies and agn.
-            # Local galactic absorption is done at the end.
-            if nH_int is not None and source.src_type in ["agn", "gal"]:
-                absorb = get_wabs_absorb(energies*(1.0+source.z), nH_int)
-                randvec = prng.uniform(size=energies.size)
-                energies = energies[randvec < absorb]
-            new_nph = energies.size
             # Assign positions for this source
-            ra = prng.uniform()*np.ones(new_nph)*fov/(60.0*dec_scal) + ra_min
-            dec = prng.uniform()*np.ones(new_nph)*fov/60.0 + dec_min
+            ra = prng.uniform()*np.ones(nph)*fov/(60.0*dec_scal) + ra_min
+            dec = prng.uniform()*np.ones(nph)*fov/60.0 + dec_min
 
             all_energies.append(energies)
             all_ra.append(ra)
@@ -178,9 +164,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, nH_int=None,
     return output_events
 
 def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                               nH=0.05, area=40000.0, nH_int=None, prng=np.random, 
-                               append=False, clobber=False):
-    events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, nH_int=nH_int,
+                               nH=0.05, area=40000.0, prng=np.random, append=False, 
+                               clobber=False):
+    events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
                                    prng=prng)
-    write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], events["dec"],
-                      events["energy"], append=append, clobber=clobber)
+    write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
+                      events["dec"], events["energy"], append=append, 
+                      clobber=clobber)
