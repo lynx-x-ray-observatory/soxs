@@ -470,6 +470,42 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                     cosmo_bkgnd=True, ptsrc_bkgnd=True, instr_bkgnd=True, 
                     dither_shape="square", dither_size=16.0, roll_angle=0.0, 
                     prng=np.random):
+    """
+    Make background events. 
+
+    Parameters
+    ----------
+    exp_time : float
+        The exposure time to use, in seconds. 
+    instrument : string
+        The name of the instrument to use, which picks an instrument
+        specification from the instrument registry. 
+    sky_center : array, tuple, or list
+        The center RA, Dec coordinates of the observation, in degrees.
+    foreground : boolean, optional
+        Whether or not to include the Galactic foreground. Default: True
+    cosmo_bkgnd : boolean, optional
+        Whether or not to include the cosmological halo background. Default:
+        True
+    instr_bkgnd : boolean, optional
+        Whether or not to include the instrumental background. Default: True
+    ptsrc_bkgnd : boolean, optional
+        Whether or not to include the point-source background. Default: True
+    dither_shape : string
+        The shape of the dither. Currently "circle" or "square" 
+        Default: "square"
+    dither_size : float
+        The size of the dither in arcseconds. Width of square or radius
+        of circle. Default: 16.0
+    roll_angle : float
+        The roll angle of the observation in degrees. Default: 0.0
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is 
+        the :mod:`~numpy.random` module.
+    """
+
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -480,7 +516,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
-        ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, prng=prng)
+        ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, 
+                                             prng=prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(ptsrc_events[key])
         input_events["flux"].append(ptsrc_events["flux"])
@@ -490,7 +527,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     if cosmo_bkgnd:
         mylog.info("Adding in cosmological background.")
-        cosmo_events = make_cosmo_background(exp_time, fov, sky_center, prng=prng)
+        cosmo_events = make_cosmo_background(exp_time, fov, sky_center, 
+                                             prng=prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(cosmo_events[key])
         input_events["flux"].append(cosmo_events["flux"])
@@ -499,8 +537,10 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         input_events["sources"].append("cosmo_bkgnd")
 
     if len(input_events["ra"]) > 0:
-        events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
-                                               dither_shape=dither_shape, dither_size=dither_size, 
+        events, event_params = generate_events(input_events, exp_time, 
+                                               instrument, sky_center,
+                                               dither_shape=dither_shape, 
+                                               dither_size=dither_size, 
                                                roll_angle=roll_angle, prng=prng)
     else:
         events = defaultdict(list)
@@ -520,21 +560,64 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
             events[key] = np.concatenate([events[key], bkg_events[key]])
     if instr_bkgnd:
         mylog.info("Adding in instrumental background.")
-        bkg_events = make_instrument_background(instrument_spec["bkgnd"], event_params,
-                                                instrument_spec["focal_length"], rmf, prng=prng)
+        bkg_events = make_instrument_background(instrument_spec["bkgnd"], 
+                                                event_params,
+                                                instrument_spec["focal_length"], 
+                                                rmf, prng=prng)
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
 
     return events, event_params
 
-def make_background_file(out_file, exp_time, instrument, sky_center, clobber=False,
-                         foreground=True, cosmo_bkgnd=True, instr_bkgnd=True, ptsrc_bkgnd=True,
-                         dither_shape="square", dither_size=16.0, prng=np.random):
+def make_background_file(out_file, exp_time, instrument, sky_center, 
+                         clobber=False, foreground=True, cosmo_bkgnd=True,
+                         instr_bkgnd=True, ptsrc_bkgnd=True, 
+                         dither_shape="square", dither_size=16.0, 
+                         prng=np.random):
+    """
+    Make an event file consisting entirely of background events. This will be 
+    useful for creating backgrounds that can be added to simulations of sources.
+
+    Parameters
+    ----------
+    exp_time : float
+        The exposure time to use, in seconds. 
+    instrument : string
+        The name of the instrument to use, which picks an instrument
+        specification from the instrument registry. 
+    sky_center : array, tuple, or list
+        The center RA, Dec coordinates of the observation, in degrees.
+    clobber : boolean, optional
+        Whether or not to overwrite an existing file with the same name.
+        Default: False
+    foreground : boolean, optional
+        Whether or not to include the Galactic foreground. Default: True
+    cosmo_bkgnd : boolean, optional
+        Whether or not to include the cosmological halo background. Default:
+        True
+    instr_bkgnd : boolean, optional
+        Whether or not to include the instrumental background. Default: True
+    ptsrc_bkgnd : boolean, optional
+        Whether or not to include the point-source background. Default: True
+    dither_shape : string
+        The shape of the dither. Currently "circle" or "square" 
+        Default: "square"
+    dither_size : float
+        The size of the dither in arcseconds. Width of square or radius
+        of circle. Default: 16.0
+    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is 
+        the :mod:`~numpy.random` module.
+    """
     events, event_params = make_background(exp_time, instrument, sky_center, 
-                                           ptsrc_bkgnd=ptsrc_bkgnd, foreground=foreground, 
-                                           cosmo_bkgnd=cosmo_bkgnd, instr_bkgnd=instr_bkgnd, 
-                                           dither_shape=dither_shape, dither_size=dither_size, 
-                                           prng=prng)
+                                           ptsrc_bkgnd=ptsrc_bkgnd, 
+                                           foreground=foreground, 
+                                           cosmo_bkgnd=cosmo_bkgnd, 
+                                           instr_bkgnd=instr_bkgnd, 
+                                           dither_shape=dither_shape, 
+                                           dither_size=dither_size, prng=prng)
     write_event_file(events, event_params, out_file, clobber=clobber)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,

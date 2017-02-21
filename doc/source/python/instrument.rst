@@ -90,6 +90,48 @@ at low energies for ``"acisi_cy18"`` is much lower due to the buildup of
 contamination on the ACIS optical blocking filters compared to the 
 ``"acisi_cy0"`` responses.
 
+.. _bkgnds:
+
+Backgrounds
++++++++++++
+
+The instrument simulator simulates background events as well as the source
+events provided by the user. There are two main background components, the
+"astrophysical" and the "instrumental" background. The former is comprised of
+three separate components: galactic foreground, point sources, and cosmological
+structure. Complete information about these components can be found in 
+:ref:`background`, but here the keyword arguments pertaining to backgrounds for
+:func:`~soxs.instrument.instrument_simulator` will be detailed. 
+
+The astrophysical and instrumental backgrounds can be turned on and off using 
+the ``astro_bkgnd`` and ``instr_bkgnd`` arguments. They are both on by default,
+but can be turned on or off individually:
+
+.. code-block:: python
+
+    # turns off the astrophysical background but leaves in the instrumental
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, instr_bkgnd=False,
+                         astro_bkgnd=True) 
+
+For long exposures, backgrounds may take a long time to generate. For this
+reason, SOXS provides a way to add a background stored in a previously
+generated event file to the simulation of a source, via the ``bkgnd_file``
+argument:
+
+.. code-block:: python
+
+    # loads the background from a file
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, bkgnd_file="my_bkgnd.fits") 
+
+In this case the values of ``instr_bkgnd`` and ``astro_bkgnd`` are ignored
+regardless of their value. The required background event file can be generated
+using :func:`~soxs.instrument.make_background_file`, and is documented at
+:ref:`make-bkgnd`. The background event file must be for the same instrument as
+the one that is being simulated for the source and must have an exposure time
+at least as long as the source exposure. 
+
 .. _other-mods:
 
 Other Modifications
@@ -127,26 +169,6 @@ You can also specify a non-zero roll angle:
 
     Dithering will only be enabled if the instrument specification allows for 
     it. For *Lynx*, dithering is on by default, but for *Athena* it is off. 
-
-The astrophysical and instrumental backgrounds can be turned on and off using 
-the ``astro_bkgnd`` and ``instr_bkgnd`` arguments:
-
-.. code-block:: python
-
-    # decreases the particle background intensity by half
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, instr_bkgnd=False,
-                         astro_bkgnd=True) 
-
-Finally, to simulate an observation of backgrounds only without a source, simply 
-run :func:`~soxs.instrument.instrument_simulator` with ``None`` as the argument 
-for the ``simput_file``:
-
-.. code-block:: python
-
-    # simulates backgrounds only
-    instrument_simulator(None, "bkg_evt.fits", exp_time, instrument, 
-                         sky_center, clobber=True)
 
 .. _instrument-registry:
 

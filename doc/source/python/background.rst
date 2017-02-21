@@ -73,6 +73,10 @@ Cosmological Background Model
 Creating SIMPUT Catalogs for Point Source and Cosmological Background Events
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+If you want to create a SIMPUT catalog of either a point-source or a 
+cosmological background, there are two functions provided by pyXSIM that 
+allow one to do so. 
+
 Instrumental Background
 -----------------------
 
@@ -157,6 +161,8 @@ create one from scratch):
     new_hdxi["bkgnd"] = "my_particle_bkg"
     name = add_instrument_to_registry(new_hdxi)
 
+.. _make-bkgnd:
+
 Using a Background From an Event File
 -------------------------------------
 
@@ -166,3 +172,6 @@ particular instrument, save them to a standard event file, and then use this
 file as input to :func:`~soxs.instrument.instrument_simulator`. The
 :func:`~soxs.instrument.make_background_file` allows for this:
 
+.. code-block:: python
+
+    make_background_file()
