@@ -112,7 +112,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
                                              fb_emax, spec_emin, spec_emax)
 
     for i, source in enumerate(sources):
-
         # Using the energy flux, determine the photon flux by simple scaling
         ref_ph_flux = source.flux*fluxscale[source.src_type]*keV_per_erg
         # Now determine the number of photons we will generate
@@ -163,9 +162,9 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 
     return output_events
 
-def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                               nH=0.05, area=40000.0, prng=np.random, append=False, 
-                               clobber=False):
+def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, 
+                               sky_center, nH=0.05, area=40000.0, 
+                               prng=np.random, append=False, clobber=False):
     events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
                                    prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
