@@ -44,6 +44,8 @@ def test_add_background():
 
     ra0 = 30.0
     dec0 = 45.0
+    ra1 = 22.0
+    dec1 = 22.0
     exp_time = 50000.0
 
     ra = np.array([])
@@ -61,7 +63,7 @@ def test_add_background():
                          prng=prng2, clobber=True)
 
     instrument_simulator(empty_cat, "evt2.fits", exp_time, "hdxi",
-                         [ra0, dec0], bkgnd_file="bkg_evt.fits",
+                         [ra1, dec1], bkgnd_file="bkg_evt.fits",
                          prng=prng2, clobber=True)
 
     f1 = pyfits.open("evt1.fits")
