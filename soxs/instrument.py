@@ -468,8 +468,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
 def make_background(exp_time, instrument, sky_center, foreground=True, 
                     cosmo_bkgnd=True, ptsrc_bkgnd=True, instr_bkgnd=True, 
-                    dither_shape="square", dither_size=16.0, roll_angle=0.0, 
-                    prng=np.random):
+                    nH=0.05, dither_shape="square", dither_size=16.0, 
+                    roll_angle=0.0, prng=np.random):
     """
     Make background events. 
 
@@ -491,6 +491,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         Whether or not to include the instrumental background. Default: True
     ptsrc_bkgnd : boolean, optional
         Whether or not to include the point-source background. Default: True
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
     dither_shape : string
         The shape of the dither. Currently "circle" or "square" 
         Default: "square"
@@ -517,7 +520,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, 
-                                             prng=prng)
+                                             nH=nH, prng=prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(ptsrc_events[key])
         input_events["flux"].append(ptsrc_events["flux"])
@@ -528,7 +531,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if cosmo_bkgnd:
         mylog.info("Adding in cosmological background.")
         cosmo_events = make_cosmo_background(exp_time, fov, sky_center, 
-                                             prng=prng)
+                                             nH=nH, prng=prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(cosmo_events[key])
         input_events["flux"].append(cosmo_events["flux"])
@@ -571,7 +574,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
 def make_background_file(out_file, exp_time, instrument, sky_center, 
                          clobber=False, foreground=True, cosmo_bkgnd=True,
-                         instr_bkgnd=True, ptsrc_bkgnd=True, 
+                         instr_bkgnd=True, ptsrc_bkgnd=True, nH=0.05,
                          dither_shape="square", dither_size=16.0, 
                          prng=np.random):
     """
@@ -599,6 +602,9 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         Whether or not to include the instrumental background. Default: True
     ptsrc_bkgnd : boolean, optional
         Whether or not to include the point-source background. Default: True
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
     dither_shape : string
         The shape of the dither. Currently "circle" or "square" 
         Default: "square"
@@ -615,7 +621,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            ptsrc_bkgnd=ptsrc_bkgnd, 
                                            foreground=foreground, 
                                            cosmo_bkgnd=cosmo_bkgnd, 
-                                           instr_bkgnd=instr_bkgnd, 
+                                           instr_bkgnd=instr_bkgnd, nH=nH,
                                            dither_shape=dither_shape, 
                                            dither_size=dither_size, prng=prng)
     write_event_file(events, event_params, out_file, clobber=clobber)

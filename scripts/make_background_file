@@ -27,6 +27,8 @@ parser.add_argument("--no_cosmo_bkgnd", action='store_true',
                     help='Turn the cosmological background off.')
 parser.add_argument("--no_foreground", action='store_true',
                     help='Turn the galactic foreground off.')
+parser.add_argument("--nh", type=float, default=0.05,
+                    help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.05')
 parser.add_argument("--dither_shape", type=str, default='square',
                     help='The shape of the dither pattern: square, circle, or None. '+
                          'Default: square')
@@ -60,8 +62,9 @@ if args.random_seed is None:
 else:
     prng = RandomState(args.random_seed)
 
-make_background_file(args.out_file, args.exp_time, sky_center, args.clobber,
-                     foreground=foreground, cosmo_bkgnd=cosmo_bkgnd,
-                     instr_bkgnd=instr_bkgnd, ptsrc_bkgnd=ptsrc_bkgnd,
+make_background_file(args.out_file, args.exp_time, args.instrument, 
+                     sky_center, args.clobber, foreground=foreground, 
+                     cosmo_bkgnd=cosmo_bkgnd, instr_bkgnd=instr_bkgnd, 
+                     ptsrc_bkgnd=ptsrc_bkgnd, nH=args.nh, 
                      dither_shape=dither_shape, dither_size=args.dither_size,
                      prng=prng)
