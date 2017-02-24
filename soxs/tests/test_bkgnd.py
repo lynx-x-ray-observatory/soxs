@@ -3,6 +3,7 @@ from soxs.instrument import make_background, AuxiliaryResponseFile, \
 from soxs.background.foreground import hm_astro_bkgnd
 from soxs.background.instrument import acisi_particle_bkgnd
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
+from soxs.constants import erg_per_keV
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
 import astropy.io.fits as pyfits
@@ -75,9 +76,11 @@ def test_add_background():
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
-def test_ptsrc_source_numbers():
-    from soxs.background.point_sources import generate_sources
+def test_ptsrc():
+    from soxs.background.point_sources import generate_sources, \
+        make_ptsrc_background
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
+    from soxs.spectra import Spectrum
     prng = RandomState(33)
     fov = 20.0 # arcmin
     exp_time = 500000.0 # seconds
@@ -103,11 +106,6 @@ def test_ptsrc_source_numbers():
     err_gal[sigma_gal == 0.0] = 0.0
     assert np.all(err_agn < 1.0)
     assert np.all(err_gal < 1.0)
-
-def test_ptsrc_flux():
-    from soxs.background.point_sources import make_ptsrc_background, \
-        generate_sources
-    from soxs.spectra import Spectrum
     exp_time = 500000.0 # seconds
     fov = 20.0 # arcmin
     area = 30000.0 # cm**2
@@ -118,19 +116,16 @@ def test_ptsrc_flux():
                                                 prng=prng2)
     fluxes = np.array([src.flux for src in agn_sources+gal_sources])
     events = make_ptsrc_background(exp_time, fov, sky_center, area=area, 
-                                   prng=prng1)
+                                   prng=prng1, nH=None)
     idxs = np.logical_and(events["energy"] > 0.5, events["energy"] < 2.0)
     n1 = idxs.sum()
     spec = Spectrum.from_powerlaw(1.2, 0.0, 1.0)
     norm = spec.get_flux_in_band(0.5, 2.0)[1].value
-    spec.apply_foreground_absorption(0.05)
     norm = spec.get_flux_in_band(0.5, 2.0)[0].value / norm
     n2 = norm*fluxes.sum()*exp_time*area
     dn = np.sqrt(n2)
-    assert np.abs(n1-n2) < dn
+    assert np.abs(n1-n2) < 1.645*dn
 
-if __name__ == "__main__":
-    test_add_background()
+if __name__ == "__main__":    #test_add_background()
     test_uniform_bkgnd_scale()
-    test_ptsrc_source_numbers()
-    test_ptsrc_flux()
+    test_ptsrc()
