@@ -170,6 +170,28 @@ You can also specify a non-zero roll angle:
     Dithering will only be enabled if the instrument specification allows for 
     it. For *Lynx*, dithering is on by default, but for *Athena* it is off. 
 
+.. _simulate-spectrum:
+
+Simulating Spectra Only 
+-----------------------
+
+If you would like to use an instrument specification and a 
+:class:`~soxs.spectra.Spectrum` object to generate a spectrum file only (without
+including spatial effects), SOXS provides a function 
+:func:`~soxs.instrument.simulate_spectrum` which can take an unconvolved
+spectrum and generate a convolved one from it. This is similar to what the XSPEC
+command "fakeit" does. 
+
+.. code-block:: python
+    
+    spec = Spectrum.from_file("lots_of_lines.dat")
+    instrument = "mucal"
+    out_file = "lots_of_lines.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file, clobber=True)
+
+This spectrum file then can be read in and analyzed by standard software such as
+XSPEC, Sherpa, ISIS, etc.
+
 .. _instrument-registry:
 
 Creating New Instrument Specifications
