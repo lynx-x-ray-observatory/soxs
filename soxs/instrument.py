@@ -72,11 +72,11 @@ class AuxiliaryResponseFile(object):
         refband : array_like
             A two-element array or list containing the limits 
             of the energy band which the flux was computed in. 
-        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
             A pseudo-random number generator. Typically will only 
             be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is 
-            the :mod:`~numpy.random` module.
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
         """
         prng = parse_prng(prng)
         energy = events["energy"]
@@ -183,11 +183,11 @@ class RedistributionMatrixFile(object):
         ----------
         events : dict of np.ndarrays
             The energies and positions of the photons. 
-        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
             A pseudo-random number generator. Typically will only 
             be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is 
-            the :mod:`~numpy.random` module.
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
         """
         prng = parse_prng(prng)
         eidxs = np.argsort(events["energy"])
@@ -275,11 +275,11 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is 
-        the :mod:`~numpy.random` module.
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     prng = parse_prng(prng)
     if isinstance(input_events, dict):
@@ -505,11 +505,11 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is 
-        the :mod:`~numpy.random` module.
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     prng = parse_prng(prng)
     try:
@@ -614,11 +614,11 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
     dither_size : float
         The size of the dither in arcseconds. Width of square or radius
         of circle. Default: 16.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is 
-        the :mod:`~numpy.random` module.
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     prng = parse_prng(prng)
     events, event_params = make_background(exp_time, instrument, sky_center, 
@@ -689,11 +689,11 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is 
-        the :mod:`~numpy.random` module.
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
 
     Examples
     --------
@@ -750,10 +750,11 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, clobber=False,
         The file to write the spectrum to.
     clobber : boolean, optional
         Whether or not to overwrite an existing file. Default: False
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be specified
-        if you have a reason to generate the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
 
     Examples
     --------

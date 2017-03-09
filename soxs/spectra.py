@@ -335,11 +335,11 @@ class Spectrum(object):
             events for a SIMPUT file, a constant should be 
             used and it must be large enough so that a 
             sufficiently large sample is drawn for the ARF.
-        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will 
-            only be specified if you have a reason to generate 
-            the same set of random numbers, such as for a test. 
-            Default is the :mod:`numpy.random` module.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
         quiet : boolean, optional
             If True, log messages will not be displayed when 
             creating energies. Useful if you have to loop over 
@@ -562,11 +562,11 @@ class ConvolvedSpectrum(Spectrum):
         ----------
         t_exp : float
             The exposure time in seconds.
-        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will
-            only be specified if you have a reason to generate 
-            the same set of random numbers, such as for a
-            test. Default is the :mod:`numpy.random` module.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
         """
         prng = parse_prng(prng)
         rate = self.total_flux.value

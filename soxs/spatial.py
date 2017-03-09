@@ -96,11 +96,11 @@ class RadialFunctionModel(SpatialModel):
         will shrink or expand the profile in the direction 
         of the "y" coordinate, so you may need to rotate 
         to get the shape you want. Default: 1.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will 
-        only be specified if you have a reason to generate 
-        the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, func, num_events, theta=0.0, 
                  ellipticity=1.0, prng=None):
@@ -141,11 +141,11 @@ class RadialArrayModel(RadialFunctionModel):
         shrink or expand the profile in the direction of the 
         "y" coordinate, so you may need to rotate to get the 
         shape you want. Default: 1.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will 
-        only be specified if you have a reason to generate 
-        the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, r, S_r, num_events, theta=0.0, 
                  ellipticity=1.0, prng=None):
@@ -182,11 +182,11 @@ class RadialFileModel(RadialArrayModel):
         shrink or expand the profile in the direction of the 
         "y" coordinate, so you may need to rotate to get the 
         shape you want. Default: 1.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will 
-        only be specified if you have a reason to generate 
-        the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, radfile, num_events, theta=0.0, 
                  ellipticity=1.0, prng=None):
@@ -222,11 +222,11 @@ class BetaModel(RadialFunctionModel):
         shrink or expand the profile in the direction of the 
         "y" coordinate, so you may need to rotate to get the 
         shape you want. Default: 1.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will 
-        only be specified if you have a reason to generate 
-        the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, r_c, beta, num_events,
                  theta=0.0, ellipticity=1.0, prng=None):
@@ -264,11 +264,11 @@ class AnnulusModel(RadialFunctionModel):
         shrink or expand the profile in the direction of the 
         "y" coordinate, so you may need to rotate to get the 
         shape you want. Default: 1.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will 
-        only be specified if you have a reason to generate 
-        the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, r_in, r_out, num_events,
                  theta=0.0, ellipticity=1.0, prng=None):
@@ -302,11 +302,11 @@ class RectangleModel(SpatialModel):
     theta : float, optional
         The angle through which to rotate the rectangle 
         in degrees. Default: 0.0
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will 
-        only be specified if you have a reason to generate 
-        the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, width, height, num_events, theta=0.0, prng=None):
         prng = parse_prng(prng)
@@ -331,11 +331,11 @@ class FillFOVModel(RectangleModel):
         The width of the field of view in arcminutes.
     num_events : integer
         The number of events to generate. 
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will 
-        only be specified if you have a reason to generate 
-        the same set of random numbers, such as for a
-        test. Default is the :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, fov, num_events, prng=None):
         width = fov*60.0

@@ -30,11 +30,11 @@ class BackgroundSpectrum(Spectrum):
         fov : float
             The width of the field of view on a side in 
             arcminutes.
-        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically will 
-            only be specified if you have a reason to generate 
-            the same set of random numbers, such as for a
-            test. Default is the :mod:`numpy.random` module.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
         """
         prng = parse_prng(prng)
         rate = area*fov*fov*self.total_flux.value
@@ -59,12 +59,11 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         fov : float
             The width of the field of view on a side 
             in arcminutes.
-        prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-            A pseudo-random number generator. Typically 
-            will only be specified if you have a reason to 
-            generate the same set of random numbers, such as 
-            for a test. Default is the :mod:`numpy.random` 
-            module.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
         """
         if prng is None:
             prng = np.random

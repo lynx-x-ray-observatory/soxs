@@ -68,11 +68,11 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be 
-        specified if you have a reason to generate the same set 
-        of random numbers, such as for a test. Default is the 
-        :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     prng = parse_prng(prng)
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
@@ -193,11 +193,11 @@ def make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically will only be 
-        specified if you have a reason to generate the same set 
-        of random numbers, such as for a test. Default is the 
-        :mod:`numpy.random` module.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     append : boolean, optional
         If True, append a new source an existing SIMPUT 
         catalog. Default: False
