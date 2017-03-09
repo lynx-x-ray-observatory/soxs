@@ -31,11 +31,7 @@ args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
-if args.random_seed is None:
-    prng = None
-else:
-    prng = RandomState(args.random_seed)
-
 make_cosmo_background_file(args.simput_prefix, args.phlist_prefix, args.exp_time, 
                            args.fov, sky_center, nH=args.nH, area=args.area, 
-                           append=args.append, clobber=args.clobber, prng=prng)
+                           append=args.append, clobber=args.clobber, 
+                           prng=args.random_seed)

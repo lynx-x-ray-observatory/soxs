@@ -30,13 +30,9 @@ parser.add_argument("--random_seed", type=int,
 
 args = parser.parse_args()
 
-if args.random_seed is None:
-    prng = None
-else:
-    prng = RandomState(args.random_seed)
-
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
 make_ptsrc_background_file(args.simput_prefix, args.phlist_prefix, args.exp_time,
                            args.fov, sky_center, nH=args.nh, area=args.area, 
-                           append=args.append, clobber=args.clobber, prng=prng)
+                           append=args.append, clobber=args.clobber, 
+                           prng=args.random_seed)

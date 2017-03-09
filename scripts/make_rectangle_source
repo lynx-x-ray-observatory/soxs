@@ -30,16 +30,12 @@ parser.add_argument("--random_seed", type=int,
 
 args = parser.parse_args()
 
-if args.random_seed is None:
-    prng = None
-else:
-    prng = RandomState(args.random_seed)
-
 spec = Spectrum.from_file(args.specfile)
-energy = spec.generate_energies(args.exp_time, args.area, prng=prng)
+energy = spec.generate_energies(args.exp_time, args.area, 
+                                prng=args.random_seed)
 n_evt = energy.size
 rect_src = RectangleModel(args.ra0, args.dec0, args.width, args.height, 
-                          n_evt, theta=args.theta, prng=prng)
+                          n_evt, theta=args.theta, prng=args.random_seed)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
                   rect_src.ra, rect_src.dec, energy, append=args.append,

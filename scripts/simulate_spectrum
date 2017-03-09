@@ -23,11 +23,6 @@ parser.add_argument("--random_seed", type=int,
 
 args = parser.parse_args()
 
-if args.random_seed is None:
-    prng = None
-else:
-    prng = RandomState(args.random_seed)
-
 if args.instrument not in instrument_registry and os.path.exists(args.instrument):
     instrument = add_instrument_to_registry(args.instrument)
 else:
@@ -35,4 +30,4 @@ else:
 
 spec = Spectrum.from_file(args.spec_file)
 simulate_spectrum(spec, instrument, args.exp_time, args.out_file, 
-                  clobber=args.clobber, prng=prng)
+                  clobber=args.clobber, prng=args.random_seed)

@@ -51,14 +51,9 @@ else:
 astro_bkgnd = not args.no_astro_bkgnd
 instr_bkgnd = not args.no_instr_bkgnd
 
-if args.random_seed is None:
-    prng = None
-else:
-    prng = RandomState(args.random_seed)
-
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
                      roll_angle=args.roll_angle, instr_bkgnd=instr_bkgnd,
                      astro_bkgnd=astro_bkgnd, bkgnd_file=args.bkgnd_file,
-                     prng=prng)
+                     prng=args.random_seed)
