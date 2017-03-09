@@ -90,8 +90,7 @@ def test_ptsrc():
     f_agn = np.zeros((cdf_fluxes.size-1, 100))
     f_gal = np.zeros((cdf_fluxes.size-1, 100))
     for k in range(100):
-        agn_sources, gal_sources = generate_sources(exp_time, area, fov, 
-                                                    prng=prng)
+        agn_sources, gal_sources = generate_sources(exp_time, area, fov, prng)
         agn_fluxes = np.array([agn.flux for agn in agn_sources])
         gal_fluxes = np.array([gal.flux for gal in gal_sources])
         f_agn[:,k] = np.histogram(agn_fluxes, bins=cdf_fluxes)[0]
@@ -114,8 +113,7 @@ def test_ptsrc():
     sky_center = [20., 17.]
     prng1 = RandomState(21)
     prng2 = RandomState(21)
-    agn_sources, gal_sources = generate_sources(exp_time, area, fov,
-                                                prng=prng2)
+    agn_sources, gal_sources = generate_sources(exp_time, area, fov, prng2)
     fluxes = np.array([src.flux for src in agn_sources+gal_sources])
     events = make_ptsrc_background(exp_time, fov, sky_center, area=area, 
                                    prng=prng1, nH=None)
