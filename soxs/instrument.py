@@ -472,7 +472,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True, 
                     cosmo_bkgnd=True, ptsrc_bkgnd=True, instr_bkgnd=True, 
                     nH=0.05, dither_shape="square", dither_size=16.0, 
-                    roll_angle=0.0, prng=None):
+                    roll_angle=0.0, prng=None, cosmo_prng=None, 
+                    ptsrc_prng=None):
     """
     Make background events. 
 
@@ -510,8 +511,26 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         be specified if you have a reason to generate the same 
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
+    cosmo_prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator for the cosmological background. 
+        Typically will only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a test. Default is None, 
+        which sets ``cosmo_prng`` equal to ``prng``.
+    ptsrc_prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator for the point-source background. 
+        Typically will only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a test. Default is None, 
+        which sets ``ptsrc_prng`` equal to ``prng``.
     """
     prng = parse_prng(prng)
+    if cosmo_prng is None:
+        cosmo_prng = prng
+    else:
+        cosmo_prng = parse_prng(cosmo_prng)
+    if ptsrc_prng is None:
+        ptsrc_prng = prng
+    else:
+        ptsrc_prng = parse_prng(ptsrc_prng)
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -523,7 +542,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, 
-                                             nH=nH, prng=prng)
+                                             nH=nH, prng=ptsrc_prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(ptsrc_events[key])
         input_events["flux"].append(ptsrc_events["flux"])
@@ -534,7 +553,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if cosmo_bkgnd:
         mylog.info("Adding in cosmological background.")
         cosmo_events = make_cosmo_background(exp_time, fov, sky_center, 
-                                             nH=nH, prng=prng)
+                                             nH=nH, prng=cosmo_prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(cosmo_events[key])
         input_events["flux"].append(cosmo_events["flux"])
@@ -579,7 +598,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                          clobber=False, foreground=True, cosmo_bkgnd=True,
                          instr_bkgnd=True, ptsrc_bkgnd=True, nH=0.05,
                          dither_shape="square", dither_size=16.0, 
-                         prng=None):
+                         prng=None, cosmo_prng=None, ptsrc_prng=None):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -619,6 +638,16 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         be specified if you have a reason to generate the same 
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
+    cosmo_prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator for the cosmological background. 
+        Typically will only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a test. Default is None, 
+        which sets ``cosmo_prng`` equal to ``prng``.
+    ptsrc_prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator for the point-source background. 
+        Typically will only be specified if you have a reason to generate 
+        the same set of random numbers, such as for a test. Default is None, 
+        which sets ``ptsrc_prng`` equal to ``prng``.
     """
     prng = parse_prng(prng)
     events, event_params = make_background(exp_time, instrument, sky_center, 
@@ -627,7 +656,9 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            cosmo_bkgnd=cosmo_bkgnd, 
                                            instr_bkgnd=instr_bkgnd, nH=nH,
                                            dither_shape=dither_shape, 
-                                           dither_size=dither_size, prng=prng)
+                                           dither_size=dither_size, prng=prng,
+                                           cosmo_prng=cosmo_prng, 
+                                           ptsrc_prng=ptsrc_prng)
     write_event_file(events, event_params, out_file, clobber=clobber)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
