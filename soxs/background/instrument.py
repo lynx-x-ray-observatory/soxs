@@ -1,8 +1,7 @@
 import os
-from soxs.utils import soxs_files_path
+from soxs.utils import soxs_files_path, parse_prng
 from soxs.background.spectra import BackgroundSpectrum
 from soxs.background.events import make_uniform_background
-import numpy as np
 
 class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
     def __init__(self, filename, default_focal_length):
@@ -56,8 +55,8 @@ def add_instrumental_background(name, filename, default_focal_length):
     instrument_backgrounds[name] = spec
 
 def make_instrument_background(bkgnd_name, event_params, focal_length, rmf, 
-                               prng=np.random):
-
+                               prng=None):
+    prng = parse_prng(prng)
     fov = event_params["fov"]
 
     bkgnd_spec = instrument_backgrounds[bkgnd_name]

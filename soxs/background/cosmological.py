@@ -9,7 +9,7 @@ from astropy.cosmology import FlatLambdaCDM
 from soxs.simput import write_photon_list
 from soxs.spatial import BetaModel, construct_wcs
 from soxs.spectra import ApecGenerator
-from soxs.utils import soxs_files_path, mylog
+from soxs.utils import soxs_files_path, mylog, parse_prng
 
 # Cosmological parameters for the catalog 
 # SHOULD NOT BE ALTERED
@@ -48,7 +48,7 @@ def flux2lum(kT, z):
     return flux2lum
 
 def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
-                          prng=np.random):
+                          prng=None):
     r"""
     Make an X-ray background  made up of contributions 
     from galaxy clusters, galaxy groups, and galaxies. 
@@ -74,6 +74,7 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         of random numbers, such as for a test. Default is the 
         :mod:`numpy.random` module.
     """
+    prng = parse_prng(prng)
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
     agen = ApecGenerator(0.1, 10.0, 10000, broadening=False)
 
@@ -166,7 +167,7 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     return output_events
 
 def make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center, 
-                               nH=0.05, area=40000.0, prng=np.random, append=False,
+                               nH=0.05, area=40000.0, prng=None, append=False,
                                clobber=False):
     r"""
     Make an X-ray background made up of contributions 

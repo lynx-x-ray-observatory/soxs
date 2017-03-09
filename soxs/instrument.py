@@ -8,7 +8,7 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array, issue_deprecation_warning
+    ensure_numpy_array, parse_prng
 from soxs.events import write_event_file
 from soxs.background import make_instrument_background, \
     make_foreground, add_background_from_file, \
@@ -53,7 +53,7 @@ class AuxiliaryResponseFile(object):
         earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
         return u.Quantity(earea, "cm**2")
 
-    def detect_events(self, events, exp_time, flux, refband, prng=np.random):
+    def detect_events(self, events, exp_time, flux, refband, prng=None):
         """
         Use the ARF to determine a subset of photons which 
         will be detected. Returns a boolean NumPy array 
@@ -78,6 +78,7 @@ class AuxiliaryResponseFile(object):
             set of random numbers, such as for a test. Default is 
             the :mod:`~numpy.random` module.
         """
+        prng = parse_prng(prng)
         energy = events["energy"]
         if energy.size == 0:
             return events
@@ -173,7 +174,7 @@ class RedistributionMatrixFile(object):
     def __str__(self):
         return self.filename
 
-    def scatter_energies(self, events, prng=np.random):
+    def scatter_energies(self, events, prng=None):
         """
         Scatter photon energies with the RMF and produce the 
         corresponding channel values.
@@ -188,6 +189,7 @@ class RedistributionMatrixFile(object):
             set of random numbers, such as for a test. Default is 
             the :mod:`~numpy.random` module.
         """
+        prng = parse_prng(prng)
         eidxs = np.argsort(events["energy"])
         sorted_e = events["energy"][eidxs]
 
@@ -232,7 +234,7 @@ class RedistributionMatrixFile(object):
 
 def generate_events(input_events, exp_time, instrument, sky_center, 
                     dither_shape="square", dither_size=16.0, roll_angle=0.0, 
-                    prng=np.random):
+                    prng=None):
     """
     Take unconvolved events and convolve them with instrumental responses. This 
     function does the following:
@@ -279,6 +281,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         set of random numbers, such as for a test. Default is 
         the :mod:`~numpy.random` module.
     """
+    prng = parse_prng(prng)
     if isinstance(input_events, dict):
         parameters = {}
         for key in ["flux", "emin", "emax", "sources"]:
@@ -469,7 +472,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True, 
                     cosmo_bkgnd=True, ptsrc_bkgnd=True, instr_bkgnd=True, 
                     nH=0.05, dither_shape="square", dither_size=16.0, 
-                    roll_angle=0.0, prng=np.random):
+                    roll_angle=0.0, prng=None):
     """
     Make background events. 
 
@@ -508,7 +511,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         set of random numbers, such as for a test. Default is 
         the :mod:`~numpy.random` module.
     """
-
+    prng = parse_prng(prng)
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -576,7 +579,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                          clobber=False, foreground=True, cosmo_bkgnd=True,
                          instr_bkgnd=True, ptsrc_bkgnd=True, nH=0.05,
                          dither_shape="square", dither_size=16.0, 
-                         prng=np.random):
+                         prng=None):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -617,6 +620,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         set of random numbers, such as for a test. Default is 
         the :mod:`~numpy.random` module.
     """
+    prng = parse_prng(prng)
     events, event_params = make_background(exp_time, instrument, sky_center, 
                                            ptsrc_bkgnd=ptsrc_bkgnd, 
                                            foreground=foreground, 
@@ -630,7 +634,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, clobber=False, instr_bkgnd=True, 
                          astro_bkgnd=True, bkgnd_file=None, 
                          dither_shape="square", dither_size=16.0, 
-                         roll_angle=0.0, prng=np.random):
+                         roll_angle=0.0, prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -761,8 +765,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, clobber=False,
     from soxs.instrument import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
-    if prng is None:
-        prng = np.random
+    prng = parse_prng(prng)
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:

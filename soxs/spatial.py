@@ -1,5 +1,6 @@
 import numpy as np
 from soxs.constants import one_arcsec
+from soxs.utils import parse_prng
 import astropy.units as u
 import astropy.wcs as pywcs
 
@@ -12,8 +13,7 @@ def construct_wcs(ra0, dec0):
     w.wcs.cunit = ["deg"]*2
     return w
 
-def generate_radial_events(num_events, func, ellipticity=1.0, 
-                           prng=np.random):
+def generate_radial_events(num_events, func, prng, ellipticity=1.0):
     rbins = np.linspace(0.0, 3000.0, 100000)
     rmid = 0.5*(rbins[1:]+rbins[:-1])
     pdf = func(rmid)*rmid
@@ -59,21 +59,14 @@ class PointSourceModel(SpatialModel):
         The Dec of the source in degrees.
     num_events : integer
         The number of events to generate. 
-    prng : :class:`~numpy.random.RandomState` object or :mod:`~numpy.random`, optional
-        A pseudo-random number generator. Typically 
-        will only be specified if you have a reason to 
-        generate the same set of random numbers, such as 
-        for a test. Default is the :mod:`numpy.random`
-        module.
     """
-
     def __init__(self, ra0, dec0, num_events):
         ra = ra0*np.ones(num_events)
         dec = dec0*np.ones(num_events)
         w = construct_wcs(ra0, dec0)
-        super(PointSourceModel, self).__init__(ra, dec, 
-                                               np.zeros(num_events),
-                                               np.zeros(num_events), w)
+        zero_pos = np.zeros(num_events)
+        super(PointSourceModel, self).__init__(ra, dec, zero_pos,
+                                               zero_pos, w)
 
 class RadialFunctionModel(SpatialModel):
     """
@@ -110,10 +103,10 @@ class RadialFunctionModel(SpatialModel):
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, func, num_events, theta=0.0, 
-                 ellipticity=1.0, prng=np.random):
-        x, y = generate_radial_events(num_events, func,
-                                      ellipticity=ellipticity, 
-                                      prng=prng)
+                 ellipticity=1.0, prng=None):
+        prng = parse_prng(prng)
+        x, y = generate_radial_events(num_events, func, prng,
+                                      ellipticity=ellipticity)
         w = construct_wcs(ra0, dec0)
         coords = rotate_xy(theta, x, y)
         ra, dec = w.wcs_pix2world(coords[0,:], coords[1,:], 1)
@@ -155,7 +148,7 @@ class RadialArrayModel(RadialFunctionModel):
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r, S_r, num_events, theta=0.0, 
-                 ellipticity=1.0, prng=np.random):
+                 ellipticity=1.0, prng=None):
         func = lambda rr: np.interp(rr, r, S_r, left=0.0, right=0.0)
         super(RadialArrayModel, self).__init__(ra0, dec0, func, num_events,
                                                theta=theta, ellipticity=ellipticity,
@@ -196,11 +189,11 @@ class RadialFileModel(RadialArrayModel):
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, radfile, num_events, theta=0.0, 
-                 ellipticity=1.0, prng=np.random):
+                 ellipticity=1.0, prng=None):
         r, S_r = np.loadtxt(radfile, unpack=True)
-        super(RadialFileModel, self).__init__(ra0, dec0, r, S_r, 
-                                              num_events, theta=theta,
-                                              ellipticity=ellipticity, prng=prng)
+        super(RadialFileModel, self).__init__(ra0, dec0, r, S_r, num_events, 
+                                              theta=theta, ellipticity=ellipticity, 
+                                              prng=prng)
 
 class BetaModel(RadialFunctionModel):
     """
@@ -236,11 +229,12 @@ class BetaModel(RadialFunctionModel):
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r_c, beta, num_events,
-                 theta=0.0, ellipticity=1.0, prng=np.random):
+                 theta=0.0, ellipticity=1.0, prng=None):
         func = lambda r: (1.0+(r/r_c)**2)**(-3*beta+0.5)
         super(BetaModel, self).__init__(ra0, dec0, func,
                                         num_events, theta=theta, 
-                                        ellipticity=ellipticity, prng=prng)
+                                        ellipticity=ellipticity, 
+                                        prng=prng)
 
 class AnnulusModel(RadialFunctionModel):
     """
@@ -277,7 +271,7 @@ class AnnulusModel(RadialFunctionModel):
         test. Default is the :mod:`numpy.random` module.
     """
     def __init__(self, ra0, dec0, r_in, r_out, num_events,
-                 theta=0.0, ellipticity=1.0, prng=np.random):
+                 theta=0.0, ellipticity=1.0, prng=None):
         def func(r):
             f = np.zeros(r.size)
             idxs = np.logical_and(r >= r_in, r < r_out)
@@ -314,7 +308,8 @@ class RectangleModel(SpatialModel):
         the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
-    def __init__(self, ra0, dec0, width, height, num_events, theta=0.0, prng=np.random):
+    def __init__(self, ra0, dec0, width, height, num_events, theta=0.0, prng=None):
+        prng = parse_prng(prng)
         w = construct_wcs(ra0, dec0)
         x = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
         y = prng.uniform(low=-0.5*height, high=0.5*height, size=num_events)
@@ -342,7 +337,8 @@ class FillFOVModel(RectangleModel):
         the same set of random numbers, such as for a
         test. Default is the :mod:`numpy.random` module.
     """
-    def __init__(self, ra0, dec0, fov, num_events, prng=np.random):
+    def __init__(self, ra0, dec0, fov, num_events, prng=None):
         width = fov*60.0
         height = fov*60.0
-        super(FillFOVModel, self).__init__(ra0, dec0, width, height, num_events, prng=prng)
+        super(FillFOVModel, self).__init__(ra0, dec0, width, height, 
+                                           num_events, prng=prng)

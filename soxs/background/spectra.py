@@ -2,6 +2,7 @@ import numpy as np
 from soxs.spectra import Spectrum, ConvolvedSpectrum, \
     _generate_energies, Energies
 from soxs.constants import erg_per_keV
+from soxs.utils import parse_prng
 
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
@@ -35,10 +36,9 @@ class BackgroundSpectrum(Spectrum):
             the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
-        if prng is None:
-            prng = np.random
+        prng = parse_prng(prng)
         rate = area*fov*fov*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        energy = _generate_energies(self, t_exp, rate, prng)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
         energies = Energies(energy, flux)
         return energies
@@ -69,7 +69,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         if prng is None:
             prng = np.random
         rate = fov*fov*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        energy = _generate_energies(self, t_exp, rate, prng)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)

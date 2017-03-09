@@ -7,7 +7,7 @@ import numpy as np
 from soxs import write_photon_list
 from soxs.constants import keV_per_erg, erg_per_keV
 from soxs.spectra import get_wabs_absorb
-from soxs.utils import mylog
+from soxs.utils import mylog, parse_prng
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 # parameters for making event file
@@ -44,7 +44,7 @@ def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
     fscale = f_g/f_E
     return fscale
 
-def generate_sources(exp_time, area, fov, prng=np.random):
+def generate_sources(exp_time, area, fov, prng):
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
 
     logf = np.log10(cdf_fluxes)
@@ -79,10 +79,10 @@ def generate_sources(exp_time, area, fov, prng=np.random):
     return agn_sources, gal_sources
 
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
-                          prng=np.random):
+                          prng=None):
 
-    agn_sources, gal_sources = generate_sources(exp_time, area, fov,
-                                                prng=prng)
+    prng = parse_prng(prng)
+    agn_sources, gal_sources = generate_sources(exp_time, area, fov, prng)
 
     sources = agn_sources + gal_sources
 
@@ -164,7 +164,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 
 def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, 
                                sky_center, nH=0.05, area=40000.0, 
-                               prng=np.random, append=False, clobber=False):
+                               prng=None, append=False, clobber=False):
     events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
                                    prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 

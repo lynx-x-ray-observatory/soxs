@@ -3,6 +3,7 @@ import logging
 import astropy.io.fits as pyfits
 import numpy as np
 from copy import copy
+from numpy.random import RandomState
 
 soxsLogger = logging.getLogger("soxs")
 
@@ -33,6 +34,12 @@ def check_file_location(fn, subdir):
         if os.path.exists(sto_fn):
             return sto_fn
     raise IOError("Could not find file %s!" % fn)
+
+def parse_prng(prng):
+    if isinstance(prng, RandomState):
+        return prng
+    else:
+        return RandomState(prng)
 
 def iterable(obj):
     """

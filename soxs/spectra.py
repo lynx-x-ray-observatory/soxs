@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 import shutil
 import os
-from soxs.utils import soxs_files_path, mylog
+from soxs.utils import soxs_files_path, mylog, parse_prng
 from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -19,7 +19,7 @@ class Energies(u.Quantity):
         ret.flux = u.Quantity(flux, "erg/(cm**2*s)")
         return ret
 
-def _generate_energies(spec, t_exp, rate, prng=None, quiet=False):
+def _generate_energies(spec, t_exp, rate, prng, quiet=False):
     cumspec = spec.cumspec
     n_ph = prng.poisson(t_exp*rate)
     if not quiet:
@@ -345,10 +345,9 @@ class Spectrum(object):
             creating energies. Useful if you have to loop over 
             a lot of spectra. Default: False
         """
-        if prng is None:
-            prng = np.random
+        prng = parse_prng(prng)
         rate = area*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng=prng, quiet=quiet)
+        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
         energies = Energies(energy, flux)
         return energies
@@ -569,10 +568,9 @@ class ConvolvedSpectrum(Spectrum):
             the same set of random numbers, such as for a
             test. Default is the :mod:`numpy.random` module.
         """
-        if prng is None:
-            prng = np.random
+        prng = parse_prng(prng)
         rate = self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng=prng)
+        energy = _generate_energies(self, t_exp, rate, prng)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)

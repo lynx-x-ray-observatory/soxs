@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import astropy.io.fits as pyfits
-from soxs.utils import mylog
+from soxs.utils import mylog, parse_prng
 
 key_map = {"telescope": "TELESCOP",
            "mission": "MISSION",
@@ -60,7 +60,9 @@ def add_background_from_file(events, event_params, bkg_file):
 
     return all_events
 
-def make_uniform_background(energy, event_params, rmf, prng=np.random):
+def make_uniform_background(energy, event_params, rmf, prng=None):
+
+    prng = parse_prng(prng)
 
     bkg_events = {}
 
