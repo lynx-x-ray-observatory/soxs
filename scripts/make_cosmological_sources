@@ -2,7 +2,7 @@
 
 import argparse
 import numpy as np
-from soxs.background import make_cosmo_background_file
+from soxs.cosmology import make_cosmological_source_file
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a '
                                              'cosmological background.')
@@ -20,7 +20,7 @@ parser.add_argument("--nh", type=float, default=0.05,
 parser.add_argument("--area", type=float, default=30000.0,
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
-                    help='If set, append a new source an existing SIMPUT catalog. ')
+                    help='If set, append a new source an existing SIMPUT catalog.')
 parser.add_argument("--clobber", action='store_true',
                     help='Whether or not to clobber an existing file with the same name.')
 parser.add_argument("--random_seed", type=int,
@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
-make_cosmo_background_file(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                           args.fov, sky_center, nH=args.nH, area=args.area, 
-                           append=args.append, clobber=args.clobber, 
-                           prng=args.random_seed)
+make_cosmological_source_file(args.simput_prefix, args.phlist_prefix, args.exp_time, 
+                              args.fov, sky_center, nH=args.nh, area=args.area, 
+                              append=args.append, clobber=args.clobber, 
+                              prng=args.random_seed)
