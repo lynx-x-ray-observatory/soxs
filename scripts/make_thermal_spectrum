@@ -21,21 +21,23 @@ parser.add_argument("--nbins", type=int, default=10000,
                     help='The number of bins in the spectrum. Default: 10000')
 parser.add_argument("--apec_vers", type=str, default="2.0.2", 
                     help='The version of the AtomDB tables to use. Default: 2.0.2')
-parser.add_argument("--no_broadening", action='store_true',
-                    help='Set this to turn off thermal and velocity broadening.')
 parser.add_argument("--absorb", action='store_true', 
-                    help='Whether or not to apply foreground galactic absorption.')
+                    help='Apply foreground galactic absorption.')
 parser.add_argument("--nh", type=float, default=0.02, 
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
 parser.add_argument("--clobber", action='store_true', 
                     help='Whether or not to clobber an existing file with the same name.')
+feature_parser = parser.add_mutually_exclusive_group(required=False)
+feature_parser.add_argument("--broadening", dest='broadening', action='store_true',
+                            help='Turn thermal and velocity broadening on.')
+feature_parser.add_argument("--no_broadening", dest='broadening', action='store_false',
+                            help='Turn thermal and velocity broadening off.')
+parser.set_defaults(broadening=True)
 
 args = parser.parse_args()
 
-broadening = not args.no_broadening
-
 agen = ApecGenerator(args.emin, args.emax, args.nbins, apec_vers=args.apec_vers, 
-                     broadening=broadening)
+                     broadening=args.broadening)
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
                          velocity=args.velocity)
 

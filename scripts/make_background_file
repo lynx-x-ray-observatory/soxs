@@ -18,12 +18,6 @@ parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates
                                                  'observation, in degrees, comma-separated')
 parser.add_argument("--clobber", action='store_true',
                     help='Whether or not to clobber an existing file with the same name.')
-parser.add_argument("--no_ptsrc_bkgnd", action='store_true',
-                    help='Turn the point-source background off.')
-parser.add_argument("--no_instr_bkgnd", action='store_true',
-                    help='Turn the instrumental background off.')
-parser.add_argument("--no_foreground", action='store_true',
-                    help='Turn the galactic foreground off.')
 parser.add_argument("--nh", type=float, default=0.05,
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.05')
 parser.add_argument("--dither_shape", type=str, default='square',
@@ -34,6 +28,20 @@ parser.add_argument("--dither_size", type=float, default=16.0,
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
+feature_parser = parser.add_mutually_exclusive_group(required=False)
+feature_parser.add_argument("--ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_true',
+                            help='Turn the point-source background on.')
+feature_parser.add_argument("--instr_bkgnd", dest='instr_bkgnd', action='store_true',
+                            help='Turn the instrumental background on.')
+feature_parser.add_argument("--foreground", dest='foreground', action='store_true',
+                            help='Turn the galactic foreground on.')
+feature_parser.add_argument("--no_ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_false',
+                            help='Turn the point-source background off.')
+feature_parser.add_argument("--no_instr_bkgnd", dest='instr_bkgnd', action='store_false',
+                            help='Turn the instrumental background off.')
+feature_parser.add_argument("--no_foreground", dest='foreground', action='store_false',
+                            help='Turn the galactic foreground off.')
+parser.set_defaults(foreground=True, ptsrc_bkgnd=True, instr_bkgnd=True)
 
 args = parser.parse_args()
 
@@ -49,12 +57,8 @@ if args.dither_shape == "None":
 else:
     dither_shape = args.dither_shape
 
-ptsrc_bkgnd = not args.no_ptsrc_bkgnd
-instr_bkgnd = not args.no_instr_bkgnd
-foreground = not args.no_foreground
-
 make_background_file(args.out_file, args.exp_time, args.instrument, 
-                     sky_center, args.clobber, foreground=foreground, 
-                     instr_bkgnd=instr_bkgnd, ptsrc_bkgnd=ptsrc_bkgnd, 
+                     sky_center, args.clobber, foreground=args.foreground, 
+                     instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd, 
                      nH=args.nh, dither_shape=dither_shape, 
                      dither_size=args.dither_size, prng=args.random_seed)

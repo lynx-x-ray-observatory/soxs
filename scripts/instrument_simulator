@@ -25,16 +25,25 @@ parser.add_argument("--dither_size", type=float, default=16.0,
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--roll_angle", type=float, default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
-parser.add_argument("--no_ptsrc_bkgnd", action='store_true',
-                    help='Turn the point-source background off.')
-parser.add_argument("--no_instr_bkgnd", action='store_true',
-                    help='Turn the instrumental background off.')
-parser.add_argument("--no_foreground", action='store_true',
-                    help='Turn the galactic foreground off.')
 parser.add_argument("--bkgnd_file", type=str,
                     help='Use background stored in a file instead of generating one.')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
+feature_parser = parser.add_mutually_exclusive_group(required=False)
+feature_parser.add_argument("--ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_true',
+                            help='Turn the point-source background on.')
+feature_parser.add_argument("--instr_bkgnd", dest='instr_bkgnd', action='store_true',
+                            help='Turn the instrumental background on.')
+feature_parser.add_argument("--foreground", dest='foreground', action='store_true',
+                            help='Turn the galactic foreground on.')
+feature_parser.add_argument("--no_ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_false',
+                            help='Turn the point-source background off.')
+feature_parser.add_argument("--no_instr_bkgnd", dest='instr_bkgnd', action='store_false',
+                            help='Turn the instrumental background off.')
+feature_parser.add_argument("--no_foreground", dest='foreground', action='store_false',
+                            help='Turn the galactic foreground off.')
+parser.set_defaults(foreground=True, ptsrc_bkgnd=True, instr_bkgnd=True)
+
 args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
@@ -49,13 +58,9 @@ if args.dither_shape == "None":
 else:
     dither_shape = args.dither_shape
 
-ptsrc_bkgnd = not args.no_ptsrc_bkgnd
-instr_bkgnd = not args.no_instr_bkgnd
-foreground = not args.no_foreground
-
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      instrument, sky_center, dither_size=args.dither_size,
                      dither_shape=dither_shape, clobber=args.clobber,
-                     roll_angle=args.roll_angle, instr_bkgnd=instr_bkgnd,
-                     ptsrc_bkgnd=ptsrc_bkgnd, foreground=foreground,
+                     roll_angle=args.roll_angle, instr_bkgnd=args.instr_bkgnd,
+                     ptsrc_bkgnd=args.ptsrc_bkgnd, foreground=args.foreground,
                      bkgnd_file=args.bkgnd_file, prng=args.random_seed)
