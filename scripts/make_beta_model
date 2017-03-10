@@ -2,7 +2,6 @@
 
 import argparse
 from soxs import Spectrum, write_photon_list, BetaModel
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a beta-model source.')
 parser.add_argument("simput_prefix", type=str, 

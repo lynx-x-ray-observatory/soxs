@@ -6,7 +6,6 @@ import numpy as np
 from soxs import instrument_simulator, \
     add_instrument_to_registry
 from soxs.instrument import instrument_registry
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated event file.')
 parser.add_argument("out_file", type=str, help='The name of the event file to be written.')

@@ -38,6 +38,8 @@ from soxs.events import \
     write_radial_profile
 
 from soxs.background import \
-    make_cosmo_background_file, \
     make_ptsrc_background_file, \
     add_instrumental_background
+
+from soxs.cosmology import \
+    make_cosmological_source_file

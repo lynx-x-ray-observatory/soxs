@@ -2,7 +2,6 @@
 
 import argparse
 from soxs import Spectrum, write_photon_list, FillFOVModel
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a uniformly filled '+
                                              'field of view source from a spectrum supplied in a file.')

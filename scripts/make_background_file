@@ -5,7 +5,6 @@ import os
 import numpy as np
 from soxs import make_background_file, \
     instrument_registry, add_instrument_to_registry
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated background event file.')
 parser.add_argument("simput_file", type=str,

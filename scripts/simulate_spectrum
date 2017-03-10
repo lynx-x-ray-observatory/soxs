@@ -6,7 +6,6 @@ from soxs.instrument import simulate_spectrum
 from soxs.spectra import Spectrum
 from soxs.instrument_registry import \
     add_instrument_to_registry, instrument_registry
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a '
                                  'simulated event file.')

@@ -47,8 +47,8 @@ def flux2lum(kT, z):
     lum_table.close()
     return flux2lum
 
-def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
-                          prng=None):
+def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
+                              nH=0.05, area=40000.0, prng=None):
     r"""
     Make an X-ray background  made up of contributions 
     from galaxy clusters, galaxy groups, and galaxies. 
@@ -78,7 +78,9 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
     agen = ApecGenerator(0.1, 10.0, 10000, broadening=False)
 
-    mylog.debug("Loading halo data from catalog: %s" % halos_cat_file)
+    mylog.info("Creating photons from cosmological sources.")
+
+    mylog.info("Loading halo data from catalog: %s" % halos_cat_file)
     halo_data = h5py.File(halos_cat_file, "r")
 
     scale = cosmo.kpc_proper_per_arcmin(halo_data["redshift"]).to("Mpc/arcmin")
@@ -87,20 +89,23 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     fov_cat = 10.0*60.0
     w = construct_wcs(*sky_center)
 
-    xc, yc = prng.uniform(low=0.5*(fov-fov_cat), high=0.5*(fov_cat-fov), size=2)
+    if cat_center is None:
+        xc, yc = prng.uniform(low=0.5*(fov-fov_cat), high=0.5*(fov_cat-fov), size=2)
+    else:
+        xc, yc = cat_center
     xlo = (xc-1.1*0.5*fov)*scale.value*h0
     xhi = (xc+1.1*0.5*fov)*scale.value*h0
     ylo = (yc-1.1*0.5*fov)*scale.value*h0
     yhi = (yc+1.1*0.5*fov)*scale.value*h0
 
-    mylog.debug("Selecting halos in the FOV.")
+    mylog.info("Selecting halos in the FOV.")
 
     fov_idxs = (halo_data["x"] >= xlo) & (halo_data["x"] <= xhi)
     fov_idxs = (halo_data["y"] >= ylo) & (halo_data["y"] <= yhi) & fov_idxs
 
     n_halos = fov_idxs.sum()
 
-    mylog.debug("Number of halos in the field of view: %d" % n_halos)
+    mylog.info("Number of halos in the field of view: %d" % n_halos)
 
     # Now select the specific halos which are in the FOV
     z = halo_data["redshift"][fov_idxs].astype("float64")
@@ -159,16 +164,17 @@ def make_cosmo_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     dec = np.concatenate(dec)
     ee = np.concatenate(ee)
 
-    mylog.debug("Created %d photons from halos." % ee.size)
+    mylog.info("Created %d photons from cosmological sources." % ee.size)
 
     output_events = {"ra": ra, "dec": dec, "energy": ee, 
                      "flux": tot_flux.value}
 
     return output_events
 
-def make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center, 
-                               nH=0.05, area=40000.0, prng=None, append=False,
-                               clobber=False):
+def make_cosmological_source_file(simput_prefix, phlist_prefix, exp_time, fov, 
+                                  sky_center, cat_center=None, nH=0.05, 
+                                  area=40000.0, prng=None, append=False,
+                                  clobber=False):
     r"""
     Make an X-ray background made up of contributions 
     from galaxy clusters, galaxy groups, and galaxies, and
@@ -204,6 +210,7 @@ def make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_
     clobber : boolean, optional
         Set to True to overwrite previous files. Default: False
     """
-    events = make_cosmo_background(exp_time, fov, sky_center, nH=nH, area=area, prng=prng)
-    write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], events["dec"],
-                      events["energy"], append=append, clobber=clobber)
+    events = make_cosmological_sources(exp_time, fov, sky_center, cat_center=cat_center,
+                                       nH=nH, area=area, prng=prng)
+    write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
+                      events["dec"], events["energy"], append=append, clobber=clobber)

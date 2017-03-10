@@ -2,7 +2,6 @@
 
 import argparse
 from soxs import Spectrum, write_photon_list, AnnulusModel
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an annulus source with '+
                                              'uniform surface brightness from a spectrum supplied in a file.')

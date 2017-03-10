@@ -2,7 +2,6 @@
 
 import argparse
 from soxs import Spectrum, write_photon_list, RectangleModel
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a uniformly filled '+
                                              'rectangle source from a spectrum supplied in a file.')

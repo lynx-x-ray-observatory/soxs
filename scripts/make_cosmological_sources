@@ -3,7 +3,6 @@
 import argparse
 import numpy as np
 from soxs.background import make_cosmo_background_file
-from numpy.random import RandomState
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a '
                                              'cosmological background.')
