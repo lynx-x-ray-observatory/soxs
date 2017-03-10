@@ -81,6 +81,8 @@ def generate_sources(exp_time, area, fov, prng):
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
                           prng=None):
 
+    mylog.info("Creating photons from the point-source background.")
+
     prng = parse_prng(prng)
     agn_sources, gal_sources = generate_sources(exp_time, area, fov, prng)
 
@@ -141,8 +143,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 
     all_nph = all_energies.size
 
-    mylog.debug("Generated %d photons from point sources." % all_nph)
-
     # Remove some of the photons due to Galactic foreground absorption.
     # We will throw a lot of stuff away, but this is more general and still
     # faster. 
@@ -156,6 +156,8 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         mylog.debug("%d photons remain after foreground galactic absorption." % all_nph)
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
+
+    mylog.info("Generated %d photons from the point-source background." % all_nph)
 
     output_events = {"ra": all_ra, "dec": all_dec, 
                      "energy": all_energies, "flux": all_flux}

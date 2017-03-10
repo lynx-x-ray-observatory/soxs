@@ -23,8 +23,6 @@ parser.add_argument("--no_ptsrc_bkgnd", action='store_true',
                     help='Turn the point-source background off.')
 parser.add_argument("--no_instr_bkgnd", action='store_true',
                     help='Turn the instrumental background off.')
-parser.add_argument("--no_cosmo_bkgnd", action='store_true',
-                    help='Turn the cosmological background off.')
 parser.add_argument("--no_foreground", action='store_true',
                     help='Turn the galactic foreground off.')
 parser.add_argument("--nh", type=float, default=0.05,
@@ -37,11 +35,6 @@ parser.add_argument("--dither_size", type=float, default=16.0,
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
-parser.add_argument("--cosmo_seed", type=int,
-                    help="A constant integer random seed to produce a consistent set of random numbers for the cosmological background.")
-parser.add_argument("--ptsrc_seed", type=int,
-                    help="A constant integer random seed to produce a consistent set of random numbers for the point-source background.")
-
 
 args = parser.parse_args()
 
@@ -60,12 +53,9 @@ else:
 ptsrc_bkgnd = not args.no_ptsrc_bkgnd
 instr_bkgnd = not args.no_instr_bkgnd
 foreground = not args.no_foreground
-cosmo_bkgnd = not args.no_cosmo_bkgnd
 
 make_background_file(args.out_file, args.exp_time, args.instrument, 
                      sky_center, args.clobber, foreground=foreground, 
-                     cosmo_bkgnd=cosmo_bkgnd, instr_bkgnd=instr_bkgnd, 
-                     ptsrc_bkgnd=ptsrc_bkgnd, nH=args.nh, 
-                     dither_shape=dither_shape, dither_size=args.dither_size,
-                     prng=args.random_seed, cosmo_prng=args.cosmo_seed,
-                     ptsrc_prng=args.ptsrc_seed)
+                     instr_bkgnd=instr_bkgnd, ptsrc_bkgnd=ptsrc_bkgnd, 
+                     nH=args.nh, dither_shape=dither_shape, 
+                     dither_size=args.dither_size, prng=args.random_seed)

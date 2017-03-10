@@ -20,8 +20,7 @@ def test_uniform_bkgnd_scale():
                             hdxi_arf.emid.size)
     events, event_params = make_background(50000.0, "hdxi", [30., 45.], 
                                            foreground=True, instr_bkgnd=True,
-                                           ptsrc_bkgnd=False, cosmo_bkgnd=False,
-                                           prng=prng)
+                                           ptsrc_bkgnd=False, prng=prng)
     ncts = np.logical_and(events["energy"] >= 0.7, events["energy"] <= 2.0).sum()
     t_exp = event_params["exposure_time"]
     fov = (event_params["fov"]*60.0)**2
@@ -126,6 +125,7 @@ def test_ptsrc():
     dn = np.sqrt(n2)
     assert np.abs(n1-n2) < 1.645*dn
 
-if __name__ == "__main__":    #test_add_background()
+if __name__ == "__main__":
+    test_add_background()
     test_uniform_bkgnd_scale()
     test_ptsrc()

@@ -57,7 +57,7 @@ def test_thermal():
                       e, clobber=True)
 
     instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", exp_time, 
-                         inst_name, [30.0, 45.0], astro_bkgnd=False, 
+                         inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
                          instr_bkgnd=False, prng=prng)
 
     inst = get_instrument_from_registry(inst_name)
