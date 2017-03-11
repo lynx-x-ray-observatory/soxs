@@ -137,7 +137,7 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     ellip[ellip < 0.0] = 1.0e-3
 
     # Halo orientation
-    theta = 2.0*np.pi*prng.uniform(size=n_halos)
+    theta = 360.0*prng.uniform(size=n_halos)
 
     tot_flux = 0.0
     ee = []
