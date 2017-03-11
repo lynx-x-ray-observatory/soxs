@@ -80,7 +80,30 @@ def generate_sources(exp_time, area, fov, prng):
 
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
                           prng=None):
+    r"""
+    Make a point-source background.
 
+    Parameters
+    ----------
+    exp_time : float
+        The exposure time of the observation in seconds.
+    fov : float
+        The field of view in arcminutes.
+    sky_center : array-like
+        The center RA, Dec of the field of view in degrees.
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
+    area : float, optional
+        The effective area in cm**2. It must be large enough 
+        so that a sufficiently large sample is drawn for the 
+        ARF. Default: 40000.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
+    """
     mylog.info("Creating photons from the point-source background.")
 
     prng = parse_prng(prng)
@@ -167,6 +190,40 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, 
                                sky_center, nH=0.05, area=40000.0, 
                                prng=None, append=False, clobber=False):
+    """
+    Make a SIMPUT catalog made up of contributions from
+    point sources.
+
+    Parameters
+    ----------
+    simput_prefix : string
+        The filename prefix for the SIMPUT file.
+    phlist_prefix : string
+        The filename prefix for the photon list file.
+    exp_time : float
+        The exposure time of the observation in seconds.
+    fov : float
+        The field of view in arcminutes.
+    sky_center : array-like
+        The center RA, Dec of the field of view in degrees.
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
+    area : float, optional
+        The effective area in cm**2. It must be large enough 
+        so that a sufficiently large sample is drawn for the 
+        ARF. Default: 40000.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
+    append : boolean, optional
+        If True, append a new source an existing SIMPUT 
+        catalog. Default: False
+    clobber : boolean, optional
+        Set to True to overwrite previous files. Default: False
+    """
     events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
                                    prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 

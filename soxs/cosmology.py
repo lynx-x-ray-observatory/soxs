@@ -50,8 +50,8 @@ def flux2lum(kT, z):
 def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
                               nH=0.05, area=40000.0, prng=None):
     r"""
-    Make an X-ray background  made up of contributions 
-    from galaxy clusters, galaxy groups, and galaxies. 
+    Make an X-ray source made up of contributions from
+    galaxy clusters, galaxy groups, and galaxies. 
 
     Parameters
     ----------
@@ -61,6 +61,11 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
+    cat_center : array-like
+        The center of the field in the coordinates of the
+        halo catalog, which range from -5.0 to 5.0 in 
+        degrees in both directions. If none is given one will
+        be chosen randomly. 
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
@@ -176,9 +181,8 @@ def make_cosmological_source_file(simput_prefix, phlist_prefix, exp_time, fov,
                                   area=40000.0, prng=None, append=False,
                                   clobber=False):
     r"""
-    Make an X-ray background made up of contributions 
-    from galaxy clusters, galaxy groups, and galaxies, and
-    write it to a SIMPUT catalog. 
+    Make a SIMPUT catalog made up of contributions from
+    galaxy clusters, galaxy groups, and galaxies.
 
     Parameters
     ----------
@@ -192,6 +196,10 @@ def make_cosmological_source_file(simput_prefix, phlist_prefix, exp_time, fov,
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
+    cat_center : array-like
+        The center of the field in the coordinates of the
+        halo catalog, which range from -5.0 to 5.0 in 
+        degrees in both directions.
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
