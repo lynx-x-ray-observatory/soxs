@@ -64,8 +64,8 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     cat_center : array-like
         The center of the field in the coordinates of the
         halo catalog, which range from -5.0 to 5.0 in 
-        degrees in both directions. If none is given one will
-        be chosen randomly. 
+        degrees in both directions. If None is given, a 
+        center will be randomly chosen.
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
@@ -198,8 +198,9 @@ def make_cosmological_source_file(simput_prefix, phlist_prefix, exp_time, fov,
         The center RA, Dec of the field of view in degrees.
     cat_center : array-like
         The center of the field in the coordinates of the
-        halo catalog, which range from -5.0 to 5.0 in 
-        degrees in both directions.
+        halo catalog, which range from -5.0 to 5.0 degrees
+        along both axes. If None is given, a center will be
+        randomly chosen.
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
