@@ -15,10 +15,10 @@ parser.add_argument("exp_time", type=float, help='The exposure time to use, in s
 parser.add_argument("fov", type=float, help="The field of view on a side in arcminutes.")
 parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the ' +
                                                  'observation, in degrees, comma-separated')
-parser.add_argument("cat_center", type=str, help='The center of the field in the coordinates '
-                                                 'of the halo catalog, which range from -5.0 '
-                                                 'to 5.0 degrees in both directions. If not '
-                                                 'set, a center will be randomly chosen.')
+parser.add_argument("--cat_center", type=str, help='The center of the field in the coordinates '
+                                                   'of the halo catalog, which range from -5.0 '
+                                                   'to 5.0 degrees in both directions. If not '
+                                                   'set, a center will be randomly chosen.')
 parser.add_argument("--nh", type=float, default=0.05,
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.05')
 parser.add_argument("--area", type=float, default=30000.0,
@@ -33,7 +33,10 @@ parser.add_argument("--random_seed", type=int,
 args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
-cat_center = np.array(args.cat_center.split(',')).astype("float64")
+if args.cat_center is None:
+    cat_center = None
+else:
+    cat_center = np.array(args.cat_center.split(',')).astype("float64")
 
 make_cosmological_source_file(args.simput_prefix, args.phlist_prefix, args.exp_time, 
                               args.fov, sky_center, cat_center=cat_center, nH=args.nh, 

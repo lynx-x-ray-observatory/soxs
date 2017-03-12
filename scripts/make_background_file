@@ -28,19 +28,21 @@ parser.add_argument("--dither_size", type=float, default=16.0,
                          'size is the radius; for a square, the size is the width. Default: 16.0')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
-feature_parser = parser.add_mutually_exclusive_group(required=False)
-feature_parser.add_argument("--ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_true',
-                            help='Turn the point-source background on.')
-feature_parser.add_argument("--instr_bkgnd", dest='instr_bkgnd', action='store_true',
-                            help='Turn the instrumental background on.')
-feature_parser.add_argument("--foreground", dest='foreground', action='store_true',
-                            help='Turn the galactic foreground on.')
-feature_parser.add_argument("--no_ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_false',
-                            help='Turn the point-source background off.')
-feature_parser.add_argument("--no_instr_bkgnd", dest='instr_bkgnd', action='store_false',
-                            help='Turn the instrumental background off.')
-feature_parser.add_argument("--no_foreground", dest='foreground', action='store_false',
-                            help='Turn the galactic foreground off.')
+ptsrc_parser = parser.add_mutually_exclusive_group(required=False)
+ptsrc_parser.add_argument("--ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_true',
+                          help='Turn the point-source background on.')
+ptsrc_parser.add_argument("--no_ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_false',
+                          help='Turn the point-source background off.')
+instr_parser = parser.add_mutually_exclusive_group(required=False)
+instr_parser.add_argument("--instr_bkgnd", dest='instr_bkgnd', action='store_true',
+                          help='Turn the instrumental background on.')
+instr_parser.add_argument("--no_instr_bkgnd", dest='instr_bkgnd', action='store_false',
+                          help='Turn the instrumental background off.')
+frgnd_parser = parser.add_mutually_exclusive_group(required=False)
+frgnd_parser.add_argument("--foreground", dest='foreground', action='store_true',
+                          help='Turn the galactic foreground on.')
+frgnd_parser.add_argument("--no_foreground", dest='foreground', action='store_false',
+                          help='Turn the galactic foreground off.')
 parser.set_defaults(foreground=True, ptsrc_bkgnd=True, instr_bkgnd=True)
 
 args = parser.parse_args()
