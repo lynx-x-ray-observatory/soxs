@@ -94,12 +94,17 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     fov_cat = 10.0*60.0
     w = construct_wcs(*sky_center)
 
+    cat_min = -0.5*fov_cat
+    cat_max = 0.5*fov_cat
+
     if cat_center is None:
-        xc, yc = prng.uniform(low=0.5*(fov-fov_cat), high=0.5*(fov_cat-fov), size=2)
+        xc, yc = prng.uniform(low=cat_min+0.5*fov, high=cat_max-0.5*fov, size=2)
     else:
         xc, yc = cat_center
         xc *= 60.0
         yc *= 60.0
+        xc, yc = np.clip([xc, yc], cat_min+0.5*fov, cat_max-0.5*fov)
+
     xlo = (xc-1.1*0.5*fov)*scale.value*h0
     xhi = (xc+1.1*0.5*fov)*scale.value*h0
     ylo = (yc-1.1*0.5*fov)*scale.value*h0
