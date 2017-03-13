@@ -3,6 +3,7 @@ import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import os
 from six import string_types
+from soxs.utils import mylog
 
 def wcs_from_event_file(f):
     h = f["EVENTS"].header
@@ -16,6 +17,7 @@ def wcs_from_event_file(f):
 
 def write_event_file(events, parameters, filename, clobber=False):
     from astropy.time import Time, TimeDelta
+    mylog.info("Writing events to file %s." % filename)
 
     t_begin = Time.now()
     dt = TimeDelta(parameters["exposure_time"], format='sec')
