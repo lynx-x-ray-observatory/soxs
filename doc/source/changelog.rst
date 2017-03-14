@@ -3,22 +3,32 @@
 ChangeLog
 =========
 
-Version 0.6.0
+Version 1.0.0
 -------------
 
 This version is a major new release with a complete revamp of the way that
-SOXS handles backgrounds, as well as a number of other new featuers and 
+SOXS handles backgrounds, as well as a number of other new features and 
 bugfixes.
 
-* 
+* Backgrounds will now either be added when running the instrument simulator
+  or can be created separately for a particular instrument, saved to an event
+  file, and then used for multiple observations. This enables one to avoid having 
+  to create a background for every observation, which can be prohibitive for 
+  long exposures. 
 * Added a point-source component to the astrophysical background. 
-* Added a cosmological component (consisting of a halo population drawn from
-  a cosmological simulation) to the astrophysical background. 
+* Added the capability to create a source composed of cosmological halos drawn
+  from a cosmological simulation. 
 * Instrument specifications for *Chandra*/ACIS-I have been added, with responses
   from Cycle 0 and Cycle 18. 
 * Added the ability to specify a name for a source in a SIMPUT catalog when
   writing a photon list file.
 * Test coverage has been improved, especially for backgrounds. 
+* Tests are now performed on Python versions 2.7, 3.5, and 3.6.
+* In the Python interface, integers may now be provided for random seeds as
+  arguments to functions. 
+* An argument to provide a random seed to generate a consistent set of random
+  numbers has been added to all of the command line scripts which make use of
+  random numbers. 
 * Fixed a bug in determining the detector and chip coordinates of events when
   creating an event file. 
 
