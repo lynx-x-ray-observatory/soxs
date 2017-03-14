@@ -3,44 +3,15 @@
 Simulating Background in SOXS
 =============================
 
-SOXS contains support for including models of astrophysical and 
-instrumental/particle backgrounds (or foregrounds) in a simulation of an 
-observation. 
-
-Backgrounds are turned on in the instrument simulator by default. Either the
-astrophysical background or the instrumental background can be turned off
-entirely in the call to :func:`~soxs.instrument.instrument_simulator` by setting
-``astro_bkgnd`` and/or ``instr_bkgnd`` to ``True`` or ``False``:
-
-.. code-block:: python
-
-    # turn off the astrophysical background
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, astro_bkgnd=False)
-
-.. code-block:: python
-
-    # turn off the instrumental background
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, instr_bkgnd=False)
-
-.. code-block:: python
-
-    # turn off both backgrounds
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, astro_bkgnd=False,
-                         instr_bkgnd=False)
-
-Astrophysical Background
-------------------------
-
-The astrophysical background in SOXS is comprised of three components: a 
-galactic foreground, a point-source background, and a cosmological background.
-The astrophysical background is not tied to any particular instrument 
-specification.
+SOXS simulates background for every observation. The background in SOXS is
+comprised of three components: a uniform galactic foreground, a point-source 
+background, and an instrumental/particle background. The former two components
+are not tied to any particular instrument specification, whereas the latter 
+depends on the instrument being simulated. We will describe each of these
+background components in turn. 
 
 Galactic Foreground Model
-+++++++++++++++++++++++++
+-------------------------
 
 The galactic foreground component is modeled as a sum of two thermal models, 
 ``apec+apec``, with parameters:
@@ -67,18 +38,17 @@ instrument you choose to simulate.
 Point Source Background Model
 +++++++++++++++++++++++++++++
 
-Cosmological Background Model
-+++++++++++++++++++++++++++++
+Each point source is given a power-law spectrum with a spectral index 
+:math:`\alpha = -1.2`, and foreground Galactic absorption is also applied to 
+these spectra assuming a neutral hydrogen column of 
+:math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}`. The position of each point source
+is uniformly randomly distributed within the field of view. 
 
-Creating SIMPUT Catalogs for Point Source and Cosmological Background Events
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-If you want to create a SIMPUT catalog of either a point-source or a 
-cosmological background, there are two functions provided by pyXSIM that 
-allow one to do so. It is not necessary to do this for simulating background
-in SOXS, as this will be done automatically, but it may be useful if you would
-like to tweak parameters of the sources or create a SIMPUT catalog for use in
-another simulation program such as MARX or SIMX. 
+SOXS also provides a function to create a SIMPUT catalog of a point-source 
+background. It is not necessary to do this for simulating background in SOXS,
+as this will be done automatically, but it may be useful if you would like to
+tweak parameters of the sources or create a SIMPUT catalog for use in another 
+simulation program such as MARX or SIMX. 
 
 :func:`~soxs.background.point_sources.make_ptsrc_background_file` generates a
 photon list file for a SIMPUT catalog using the point-source background model
@@ -97,26 +67,9 @@ described above:
     make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
                                nH=nH, area=area, nH_int=nH_int, append=True)
 
-:func:`~soxs.background.cosmological.make_cosmo_background_file` generates a
-photon list for a SIMPUT catalog using the cosmological halo background model
-described above:
-
-.. code-block:: python
-
-    simput_prefix = "my_bkgnd"
-    phlist_prefix = "cosmo"
-    exp_time = 500000.0 # seconds
-    fov = 20.0 # arcmin
-    sky_center = [30.0, 45.0] # RA, Dec in degrees
-    nH = 0.05 # Foreground galactic absorption, optional
-    area = 40000.0 # Flat collecting area to generate photon sample
-    make_cosmo_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                               nH=nH, area=area, nH_int=nH_int, append=True)
-
 As with other SIMPUT catalogs, if you supply a value for ``simput_prefix`` to
-either of these functions that refers to an existing catalog and set 
-``append=True``, the photon list file will be appended to an existing SIMPUT 
-catalog.
+this function that refers to an existing catalog and set ``append=True``, the 
+photon list file will be appended to an existing SIMPUT catalog.
 
 Instrumental Background
 -----------------------
@@ -202,6 +155,34 @@ create one from scratch):
     new_hdxi["bkgnd"] = "my_particle_bkg"
     name = add_instrument_to_registry(new_hdxi)
 
+Turning Background Components On and Off
+----------------------------------------
+
+All components of the background are turned on in the instrument simulator by
+default. The various components of the background can be turned on or off 
+entirely in the call to :func:`~soxs.instrument.instrument_simulator` by setting
+the parameters ``ptsrc_bkgnd``, ``foreground``, and/or ``instr_bkgnd`` to 
+``True`` or ``False``:
+
+.. code-block:: python
+
+    # turn off the astrophysical foreground
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, foreground=False)
+
+.. code-block:: python
+
+    # turn off the instrumental background
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, instr_bkgnd=False)
+
+.. code-block:: python
+
+    # turn off all backgrounds
+    instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                         sky_center, clobber=True, ptsrc_bkgnd=False,
+                         instr_bkgnd=False, foreground=False)
+
 .. _make-bkgnd:
 
 Using a Background From an Event File
@@ -220,13 +201,12 @@ file as input to :func:`~soxs.instrument.instrument_simulator`. The
     instrument = "hdxi"
     sky_center = [24., 12.] # degrees
     make_background_file(out_file, exp_time, instrument, sky_center, 
-                         clobber=True, foreground=True, cosmo_bkgnd=False,
-                         instr_bkgnd=True, ptsrc_bkgnd=True)
+                         clobber=True, foreground=True, instr_bkgnd=False,
+                         ptsrc_bkgnd=True)
 
 As can be noted from this example, :func:`~soxs.instrument.make_background_file`
-allows one to turn any of the four background components on or off using the
-four boolean arguments ``foreground``, ``cosmo_bkgnd``, ``instr_bkgnd``, or 
-``ptsrc_bkgnd``. 
+allows one to turn any of the three background components on or off using the
+boolean arguments ``foreground``, ``instr_bkgnd``, or ``ptsrc_bkgnd``. 
 
 :func:`~soxs.instrument.instrument_simulator` can use this background file when
 it is supplied with the ``bkgnd_file`` argument, provided that the same

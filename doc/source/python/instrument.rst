@@ -18,7 +18,7 @@ creates a standard event file using the instrument simulator.
    detected.
 2. Projects these events onto the detector plane and perform PSF blurring and 
    dithering of their positions.
-3. Add particle/instrumental and astrophysical background events.
+3. Add background events.
 4. Convolves the event energies with the response matrix to produce channels.
 5. Writes everything to an event file.
 
@@ -96,23 +96,22 @@ Backgrounds
 +++++++++++
 
 The instrument simulator simulates background events as well as the source
-events provided by the user. There are two main background components, the
-"astrophysical" and the "instrumental" background. The former is comprised of
-three separate components: galactic foreground, point sources, and cosmological
-structure. Complete information about these components can be found in 
-:ref:`background`, but here the keyword arguments pertaining to backgrounds for
-:func:`~soxs.instrument.instrument_simulator` will be detailed. 
+events provided by the user. There are three background components: the 
+Galactic foreground, a background comprised of discrete point sources, and the 
+instrumental/particle background. Complete information about these components 
+can be found in :ref:`background`, but here the keyword arguments pertaining to
+backgrounds for :func:`~soxs.instrument.instrument_simulator` will be detailed. 
 
-The astrophysical and instrumental backgrounds can be turned on and off using 
-the ``astro_bkgnd`` and ``instr_bkgnd`` arguments. They are both on by default,
-but can be turned on or off individually:
+The various background components can be turned on and off using 
+the ``ptsrc_bkgnd``, ``instr_bkgnd``, and ``foreground`` arguments. They are all
+on by default, but can be turned on or off individually:
 
 .. code-block:: python
 
     # turns off the astrophysical background but leaves in the instrumental
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
                          sky_center, clobber=True, instr_bkgnd=False,
-                         astro_bkgnd=True) 
+                         foreground=True) # ptsrc_bkgnd True by default
 
 For long exposures, backgrounds may take a long time to generate. For this
 reason, SOXS provides a way to add a background stored in a previously
@@ -125,11 +124,11 @@ argument:
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
                          sky_center, clobber=True, bkgnd_file="my_bkgnd.fits") 
 
-In this case the values of ``instr_bkgnd`` and ``astro_bkgnd`` are ignored
-regardless of their value. The required background event file can be generated
-using :func:`~soxs.instrument.make_background_file`, and is documented at
-:ref:`make-bkgnd`. The background event file must be for the same instrument as
-the one that is being simulated for the source and must have an exposure time
+In this case the values of ``instr_bkgnd``, ``ptsrc_bkgnd``, and ``foreground``
+are ignored regardless of their value. The required background event file can be
+generated using :func:`~soxs.instrument.make_background_file`, and is documented
+at :ref:`make-bkgnd`. The background event file must be for the same instrument 
+as the one that is being simulated for the source and must have an exposure time
 at least as long as the source exposure. 
 
 .. _other-mods:
@@ -168,7 +167,8 @@ You can also specify a non-zero roll angle:
 .. note:: 
 
     Dithering will only be enabled if the instrument specification allows for 
-    it. For *Lynx*, dithering is on by default, but for *Athena* it is off. 
+    it. For example, for *Lynx*, dithering is on by default, but for *Athena* 
+    it is off. 
 
 .. _simulate-spectrum:
 
