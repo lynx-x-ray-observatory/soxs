@@ -7,8 +7,8 @@ from soxs.spectra import Spectrum
 from soxs.instrument_registry import \
     add_instrument_to_registry, instrument_registry
 
-parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a '
-                                 'simulated event file.')
+parser = argparse.ArgumentParser(description='Convolve a spectrum with an ARF and RMF and '
+                                             'produce a PHA or PI spectrum.')
 parser.add_argument("spec_file", type=str, help="The file containing the spectrum to be used.")
 parser.add_argument("instrument", type=str, help='The name of the instrument to use, '
                                                  'or alternatively the name of a JSON file '
@@ -16,7 +16,7 @@ parser.add_argument("instrument", type=str, help='The name of the instrument to 
 parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
 parser.add_argument("out_file", type=str, help="The file to write the convolved spectrum to.")
 parser.add_argument("--clobber", action='store_true',
-                    help='Whether or not to clobber an existing file with the same name.')
+                    help='Overwrite an existing file with the same name.')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
 

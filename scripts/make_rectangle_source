@@ -23,7 +23,7 @@ parser.add_argument("--area", type=float, default=30000.0,
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--clobber", action='store_true',
-                    help='Whether or not to clobber an existing file with the same name.')
+                    help='Overwrite an existing file with the same name.')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
 

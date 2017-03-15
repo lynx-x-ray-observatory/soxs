@@ -26,7 +26,7 @@ HEATOOLS, XSPEC, etc.
                                 simput_file out_file exp_time instrument
                                 sky_center
     
-    Run the instrument simulator and produce a simulated event file.
+    Convolve a spectrum with an ARF and RMF and produce a PHA or PI spectrum.
     
     positional arguments:
       simput_file           The SIMPUT file to be used as input, or "None" if you
@@ -41,8 +41,7 @@ HEATOOLS, XSPEC, etc.
     
     optional arguments:
       -h, --help            show this help message and exit
-      --clobber             Whether or not to clobber an existing file with the
-                            same name.
+      --clobber             Overwrite an existing file with the same name.
       --dither_shape DITHER_SHAPE
                             The shape of the dither pattern: square, circle, or
                             None. Default: square
@@ -178,8 +177,7 @@ worrying about spatial response. Similar to XSPEC's "fakeit".
     
     optional arguments:
       -h, --help            show this help message and exit
-      --clobber             Whether or not to clobber an existing file with the
-                            same name.
+      --clobber             Overwrite an existing file with the same name.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.

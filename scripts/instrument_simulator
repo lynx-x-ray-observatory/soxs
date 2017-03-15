@@ -19,7 +19,7 @@ parser.add_argument("instrument", type=str, help='The name of the instrument to 
 parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the '+
                     'observation, in degrees, comma-separated')
 parser.add_argument("--clobber", action='store_true', 
-                    help='Whether or not to clobber an existing file with the same name.')
+                    help='Overwrite an existing file with the same name.')
 parser.add_argument("--dither_shape", type=str, default='square',
                     help='The shape of the dither pattern: square, circle, or None. '+
                     'Default: square')

@@ -18,11 +18,11 @@ parser.add_argument("--emax", type=float, default=50.0,
 parser.add_argument("--nbins", type=int, default=10000, 
                     help='The number of bins in the spectrum. Default: 10000')
 parser.add_argument("--absorb", action='store_true', 
-                    help='Whether or not to apply foreground galactic absorption.')
+                    help='Apply foreground Galactic absorption.')
 parser.add_argument("--nh", type=float, default=0.02, 
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
 parser.add_argument("--clobber", action='store_true', 
-                    help='Whether or not to clobber an existing file with the same name.')
+                    help='Overwrite an existing file with the same name.')
 
 args = parser.parse_args()
 

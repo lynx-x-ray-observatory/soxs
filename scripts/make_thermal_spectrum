@@ -22,16 +22,16 @@ parser.add_argument("--nbins", type=int, default=10000,
 parser.add_argument("--apec_vers", type=str, default="2.0.2", 
                     help='The version of the AtomDB tables to use. Default: 2.0.2')
 parser.add_argument("--absorb", action='store_true', 
-                    help='Apply foreground galactic absorption.')
+                    help='Apply foreground Galactic absorption.')
 parser.add_argument("--nh", type=float, default=0.02, 
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
 parser.add_argument("--clobber", action='store_true', 
-                    help='Whether or not to clobber an existing file with the same name.')
+                    help='Overwrite an existing file with the same name.')
 feature_parser = parser.add_mutually_exclusive_group(required=False)
 feature_parser.add_argument("--broadening", dest='broadening', action='store_true',
-                            help='Turn thermal and velocity broadening on.')
+                            help='Turn thermal and velocity broadening on. On by default.')
 feature_parser.add_argument("--no_broadening", dest='broadening', action='store_false',
-                            help='Turn thermal and velocity broadening off.')
+                            help='Turn thermal and velocity broadening off. On by default.')
 parser.set_defaults(broadening=True)
 
 args = parser.parse_args()

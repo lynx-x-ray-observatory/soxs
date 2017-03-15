@@ -41,8 +41,7 @@ file.
       -h, --help     show this help message and exit
       --area AREA    The collecting area to use, in cm^2. Default: 30000.0
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Whether or not to clobber an existing file with the same
-                     name.
+      --clobber      Overwrite an existing file with the same name.
                      
 Examples
 ++++++++
@@ -111,8 +110,10 @@ file. The functional form of the :math:`\beta`-model for a surface brightness pr
                             you want. Default: 1.0
       --append              If set, append a new source an existing SIMPUT
                             catalog.
-      --clobber             Whether or not to clobber an existing file with the
-                            same name.
+      --clobber             Overwrite an existing file with the same name.
+      --random_seed RANDOM_SEED
+                            A constant integer random seed to produce a consistent
+                            set of random numbers.
                      
 Examples
 ++++++++
@@ -184,8 +185,10 @@ from a spectrum supplied in a file.
       --area AREA           The collecting area to use, in cm^2. Default: 30000.0
       --append              If set, append a new source an existing SIMPUT
                             catalog.
-      --clobber             Whether or not to clobber an existing file with the
-                            same name.
+      --clobber             Overwrite an existing file with the same name.
+      --random_seed RANDOM_SEED
+                            A constant integer random seed to produce a consistent
+                            set of random numbers.
 
 Examples
 ++++++++
@@ -247,8 +250,10 @@ from a spectrum supplied in a file.
                      Default: 0.0
       --area AREA    The collecting area to use, in cm^2. Default: 30000.0
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Whether or not to clobber an existing file with the same
-                     name.
+      --clobber      Overwrite an existing file with the same name.
+      --random_seed RANDOM_SEED
+                     A constant integer random seed to produce a consistent
+                     set of random numbers.
 
 Examples
 ++++++++
@@ -312,8 +317,10 @@ from a spectrum supplied in a file.
       -h, --help     show this help message and exit
       --area AREA    The collecting area to use, in cm^2. Default: 30000.0
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Whether or not to clobber an existing file with the same
-                     name.
+      --clobber      Overwrite an existing file with the same name.
+      --random_seed RANDOM_SEED
+                     A constant integer random seed to produce a consistent
+                     set of random numbers.
 
 Examples
 ++++++++
@@ -371,4 +378,4 @@ to a new SIMPUT photon list file.
     optional arguments:
       -h, --help     show this help message and exit
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Whether or not to clobber an existing file with the same name.
+      --clobber      Overwrite an existing file with the same name.

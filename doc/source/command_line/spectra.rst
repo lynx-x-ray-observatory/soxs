@@ -16,8 +16,9 @@ using the AtomDB tables.
 
     usage: make_thermal_spectrum [-h] [--velocity VELOCITY] [--emin EMIN]
                                  [--emax EMAX] [--nbins NBINS]
-                                 [--apec_vers APEC_VERS] [--no_broadening]
-                                 [--absorb] [--nh NH] [--clobber]
+                                 [--apec_vers APEC_VERS] [--absorb] [--nh NH]
+                                 [--clobber] [--broadening | --no_broadening]
+
                                  kT abund redshift norm specfile
     
     Create a thermal spectrum and write it to a file.
@@ -38,16 +39,14 @@ using the AtomDB tables.
       --emax EMAX           The maximum energy in keV. Default: 50.0
       --nbins NBINS         The number of bins in the spectrum. Default: 10000
       --apec_vers APEC_VERS
-                            The version of the AtomDB tables to use. Default:
-                            3.0.3
-      --no_broadening       Set this to turn off thermal and velocity broadening.
-      --absorb              Whether or not to apply foreground galactic
-                            absorption.
+                            The version of the AtomDB tables to use. Default: 3.0.3
+      --absorb              Apply foreground Galactic absorption.
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
                             Default: 0.02
-      --clobber             Whether or not to clobber an existing file with the
-                            same name.
-                            
+      --clobber             Overwrite an existing file with the same name.
+      --broadening          Turn thermal and velocity broadening on. On by default.
+      --no_broadening       Turn thermal and velocity broadening off. On by default.
+
 Examples
 ++++++++
 
@@ -117,11 +116,10 @@ form:
       --emin EMIN    The minimum energy in keV. Default: 0.01
       --emax EMAX    The maximum energy in keV. Default: 50.0
       --nbins NBINS  The number of bins in the spectrum. Default: 10000
-      --absorb       Whether or not to apply foreground galactic absorption.
+      --absorb       Apply foreground Galactic absorption.
       --nh NH        The hydrogen column in units of 10**22 atoms/cm**2. Default:
                      0.02
-      --clobber      Whether or not to clobber an existing file with the same
-                     name.
+      --clobber      Overwrite an existing file with the same name.
                  
 Examples
 ++++++++
