@@ -9,7 +9,8 @@ modules in SOXS. For details on what's going on under the hood, see :ref:`spectr
 ``make_thermal_spectrum``
 -------------------------
 
-This script creates an ASCII table of an optionally absorbed thermal spectrum using the AtomDB tables.
+This script creates an ASCII table of an optionally absorbed thermal spectrum 
+using the AtomDB tables.
 
 .. code-block:: text
 
