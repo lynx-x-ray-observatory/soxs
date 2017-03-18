@@ -158,9 +158,9 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     # If requested, output the source properties to a file
     if output_sources is not None:
-        t = Table([ra0, dec0, rc, beta, ellip, theta, m, kT, z, flux_kcorr],
+        t = Table([ra0, dec0, rc, beta, ellip, theta, m, r500, kT, z, flux_kcorr],
                   names=('RA', 'Dec', 'r_c', 'beta', 'ellipticity',
-                         'theta', 'M500c', 'kT', 'redshift', 'flux'))
+                         'theta', 'M500c', 'r500', 'kT', 'redshift', 'flux'))
         t.write(output_sources, format='ascii')
 
     tot_flux = 0.0
