@@ -6,6 +6,9 @@ Command Line Scripts for Cosmological Sources
 This section documents command-line scripts for generating a SIMPUT catalog
 of photons from a halo catalog drawn from a cosmological simulation. 
 
+For more information about how the cosmological source generation is implemented
+in SOXS, see :ref:`cosmology`. 
+
 ``make_cosmological_sources``
 -----------------------------
 

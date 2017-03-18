@@ -3,15 +3,15 @@
 Command Line Scripts for the Instrument Simulator
 =================================================
 
-These command-line scripts allow one to run and modify the instrument simulator. For details on
-what's going on under the hood, see :ref:`instrument`.
+These command-line scripts allow one to run and modify the instrument simulator.
+For details on what's going on under the hood, see :ref:`instrument`.
 
 ``instrument_simulator``
 ------------------------
 
-The ``instrument_simulator`` script takes a SIMPUT catalog and generates a simulated observation
-in a standard event file format which can then be processed by standard tools such as CIAO, 
-HEATOOLS, XSPEC, etc. 
+The ``instrument_simulator`` script takes a SIMPUT catalog and generates a 
+simulated observation in a standard event file format which can then be 
+processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc. 
 
 .. code-block:: text
 
