@@ -5,6 +5,7 @@ import h5py
 from tqdm import tqdm
 
 from astropy.cosmology import FlatLambdaCDM
+from astropy.table import Table
 
 from soxs.simput import write_photon_list
 from soxs.spatial import BetaModel, construct_wcs
@@ -48,7 +49,8 @@ def flux2lum(kT, z):
     return flux2lum
 
 def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
-                              nH=0.05, area=40000.0, prng=None):
+                              nH=0.05, area=40000.0, output_sources=None,
+                              prng=None):
     r"""
     Make an X-ray source made up of contributions from
     galaxy clusters, galaxy groups, and galaxies. 
@@ -73,11 +75,14 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
+    output_sources : string, optional
+        If set to a filename, output the properties of the sources
+        within the field of view to a file. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
         set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        which sets the seed based on the system time.
     """
     prng = parse_prng(prng)
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
@@ -151,6 +156,13 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     # Halo orientation
     theta = 360.0*prng.uniform(size=n_halos)
 
+    # If requested, output the source properties to a file
+    if output_sources is not None:
+        t = Table([ra0, dec0, rc, beta, ellip, theta, m, kT, z, flux_kcorr],
+                  names=('RA', 'Dec', 'r_c', 'beta', 'ellipticity',
+                         'theta', 'M500c', 'kT', 'redshift', 'flux'))
+        t.write(output_sources, format='ascii')
+
     tot_flux = 0.0
     ee = []
     ra = []
@@ -185,8 +197,8 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
 def make_cosmological_source_file(simput_prefix, phlist_prefix, exp_time, fov, 
                                   sky_center, cat_center=None, nH=0.05, 
-                                  area=40000.0, prng=None, append=False,
-                                  clobber=False):
+                                  area=40000.0, append=False, clobber=False, 
+                                  output_sources=None, prng=None):
     r"""
     Make a SIMPUT catalog made up of contributions from
     galaxy clusters, galaxy groups, and galaxies.
@@ -215,18 +227,22 @@ def make_cosmological_source_file(simput_prefix, phlist_prefix, exp_time, fov,
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
-    prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
     append : boolean, optional
         If True, append a new source an existing SIMPUT 
         catalog. Default: False
     clobber : boolean, optional
         Set to True to overwrite previous files. Default: False
+    output_sources : string, optional
+        If set to a filename, output the properties of the sources
+        within the field of view to a file. Default: None
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
     """
     events = make_cosmological_sources(exp_time, fov, sky_center, cat_center=cat_center,
-                                       nH=nH, area=area, prng=prng)
+                                       nH=nH, area=area, output_sources=output_sources,
+                                       prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
                       events["dec"], events["energy"], append=append, clobber=clobber)
