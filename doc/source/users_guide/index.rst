@@ -1,7 +1,7 @@
 .. _python:
 
-SOXS Python Interface
-=====================
+SOXS Users' Guide
+=================
 
 This section documents the Python interface to SOXS.
 

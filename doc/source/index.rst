@@ -80,7 +80,7 @@ Documentation Contents
    overview
    responses
    command_line/index
-   python/index
+   users_guide/index
    cookbook/index
    getting_help
    api/index
@@ -88,13 +88,13 @@ Documentation Contents
 Contributors
 ------------
 
-John ZuHone (CfA)
-Scott Randall (CfA)
-Felipe Santos (CfA)
-Herve Bourdin (CfA)
-Alexey Vikhlinin (CfA)
-Reinout Van Weeren (CfA)
-Akos Bogdan (CfA)
+* John ZuHone (CfA)
+* Scott Randall (CfA)
+* Felipe Santos (CfA)
+* Herve Bourdin (CfA)
+* Alexey Vikhlinin (CfA)
+* Reinout Van Weeren (CfA)
+* Akos Bogdan (CfA)
 
 Indices and tables
 ==================
