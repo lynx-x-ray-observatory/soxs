@@ -2,7 +2,7 @@
 
 import argparse
 import numpy as np
-from soxs.background import make_ptsrc_background_file
+from soxs.background import make_point_sources_file
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a '
                                              'point-source background.')
@@ -31,7 +31,7 @@ args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
-make_ptsrc_background_file(args.simput_prefix, args.phlist_prefix, args.exp_time,
-                           args.fov, sky_center, nH=args.nh, area=args.area, 
-                           append=args.append, clobber=args.clobber, 
-                           prng=args.random_seed)
+make_point_sources_file(args.simput_prefix, args.phlist_prefix, args.exp_time,
+                        args.fov, sky_center, nH=args.nh, area=args.area, 
+                        append=args.append, clobber=args.clobber, 
+                        prng=args.random_seed)

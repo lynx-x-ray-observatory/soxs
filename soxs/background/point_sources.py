@@ -9,6 +9,7 @@ from soxs.constants import keV_per_erg, erg_per_keV
 from soxs.spectra import get_wabs_absorb
 from soxs.utils import mylog, parse_prng
 from scipy.interpolate import InterpolatedUnivariateSpline
+from astropy.table import Table
 
 # parameters for making event file
 # for now, we're leaving these not user-configurable
@@ -79,7 +80,7 @@ def generate_sources(exp_time, area, fov, prng):
     return agn_sources, gal_sources
 
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
-                          prng=None):
+                          output_sources=None, prng=None):
     r"""
     Make a point-source background.
 
@@ -98,6 +99,9 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
+    output_sources : string, optional
+        If set to a filename, output the properties of the sources
+        within the field of view to a file. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -111,7 +115,8 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 
     sources = agn_sources + gal_sources
 
-    mylog.debug("Generating spectra from %d sources." % len(sources))
+    num_sources = len(sources)
+    mylog.debug("Generating spectra from %d sources." % num_sources)
     dec_scal = np.fabs(np.cos(sky_center[1]*np.pi/180))
     ra_min = sky_center[0] - fov/(2.0*60.0*dec_scal)
     dec_min = sky_center[1] - fov/(2.0*60.0)
@@ -136,6 +141,15 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         fluxscale[src_type] = get_flux_scale(indices[src_type], fb_emin,
                                              fb_emax, spec_emin, spec_emax)
 
+    ra0 = prng.uniform(size=num_sources)*fov/(60.0*dec_scal) + ra_min
+    dec0 = prng.uniform(size=num_sources)*fov/60.0 + dec_min
+
+    # If requested, output the source properties to a file
+    if output_sources is not None:
+        t = Table([ra0, dec0, [s.flux for s in sources]],
+                  names=('RA', 'Dec', 'flux'))
+        t.write(output_sources, format='ascii')
+
     for i, source in enumerate(sources):
         # Using the energy flux, determine the photon flux by simple scaling
         ref_ph_flux = source.flux*fluxscale[source.src_type]*keV_per_erg
@@ -151,8 +165,8 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
                 energies = fac1[source.src_type] + u*fac2[source.src_type]
                 energies **= invoma[source.src_type]
             # Assign positions for this source
-            ra = prng.uniform()*np.ones(nph)*fov/(60.0*dec_scal) + ra_min
-            dec = prng.uniform()*np.ones(nph)*fov/60.0 + dec_min
+            ra = ra0[i]*np.ones(nph)
+            dec = dec0[i]*np.ones(nph)
 
             all_energies.append(energies)
             all_ra.append(ra)
@@ -187,9 +201,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 
     return output_events
 
-def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                               sky_center, nH=0.05, area=40000.0, 
-                               prng=None, append=False, clobber=False):
+def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+                            sky_center, nH=0.05, area=40000.0, 
+                            prng=None, append=False, clobber=False,
+                            output_sources=None):
     """
     Make a SIMPUT catalog made up of contributions from
     point sources.
@@ -223,9 +238,12 @@ def make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov,
         catalog. Default: False
     clobber : boolean, optional
         Set to True to overwrite previous files. Default: False
+    output_sources : string, optional
+        If set to a filename, output the properties of the sources
+        within the field of view to a file. Default: None
     """
     events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
-                                   prng=prng)
+                                   output_sources=output_sources, prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
                       events["dec"], events["energy"], append=append, 
                       clobber=clobber)

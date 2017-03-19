@@ -195,10 +195,10 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     return output_events
 
-def make_cosmological_source_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                                  sky_center, cat_center=None, nH=0.05, 
-                                  area=40000.0, append=False, clobber=False, 
-                                  output_sources=None, prng=None):
+def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+                                   sky_center, cat_center=None, nH=0.05, 
+                                   area=40000.0, append=False, clobber=False, 
+                                   output_sources=None, prng=None):
     r"""
     Make a SIMPUT catalog made up of contributions from
     galaxy clusters, galaxy groups, and galaxies.
