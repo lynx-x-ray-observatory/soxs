@@ -65,8 +65,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
-        if prng is None:
-            prng = np.random
+        prng = parse_prng(prng)
         rate = fov*fov*self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng)
         earea = self.arf.interpolate_area(energy).value
