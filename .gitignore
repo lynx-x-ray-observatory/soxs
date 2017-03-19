@@ -2,6 +2,7 @@ doc/build/doctrees
 doc/build/html
 doc/source/files/*.rmf
 doc/source/files/*.arf
+doc/source/cookbook/*.fits
 soxs.egg-info
 .eggs
 *.pyc
