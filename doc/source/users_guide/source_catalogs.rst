@@ -24,7 +24,7 @@ halo mass. The halos are then given random ellipticities and orientations.
 
 The cosmological parameters for this halo catalog are:
 
-* :math:`H_0 = 0.7`
+* :math:`h = 0.7`
 * :math:`\Omega_m = 0.279`
 * :math:`\Omega_\Lambda = 0.721`
 * :math:`\Omega_b = 0.0463`
