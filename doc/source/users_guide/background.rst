@@ -35,41 +35,21 @@ For more details on how this model was derived see
 This background is diffuse and uniformly fills the entire field of view of the
 instrument you choose to simulate. 
 
+.. _ptsrc-bkgnd:
+
 Point Source Background Model
-+++++++++++++++++++++++++++++
+-----------------------------
 
 Each point source is given a power-law spectrum with a spectral index 
 :math:`\alpha = -1.2`, and foreground Galactic absorption is also applied to 
 these spectra assuming a neutral hydrogen column of 
 :math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}`. The position of each point source
-is uniformly randomly distributed within the field of view. 
+is then uniformly randomly distributed within the field of view. 
 
-SOXS also provides a function to create a SIMPUT catalog of a point-source 
-background. It is not necessary to do this for simulating background in SOXS,
-as this will be done automatically, but it may be useful if you would like to
-tweak parameters of the sources or create a SIMPUT catalog for use in another 
-simulation program such as MARX or SIMX. 
-
-:func:`~soxs.background.point_sources.make_ptsrc_background_file` generates a
-photon list file for a SIMPUT catalog using the point-source background model
-described above:
-
-.. code-block:: python
-
-    simput_prefix = "my_bkgnd"
-    phlist_prefix = "pt_src"
-    exp_time = 500000.0 # seconds
-    fov = 20.0 # arcmin
-    sky_center = [30.0, 45.0] # RA, Dec in degrees
-    nH = 0.05 # Foreground galactic absorption, optional
-    area = 40000.0 # Flat collecting area to generate photon sample
-    nH_int = 0.02 # Galactic absorption intrinsic to sources
-    make_ptsrc_background_file(simput_prefix, phlist_prefix, exp_time, fov, sky_center,
-                               nH=nH, area=area, nH_int=nH_int, append=True)
-
-As with other SIMPUT catalogs, if you supply a value for ``simput_prefix`` to
-this function that refers to an existing catalog and set ``append=True``, the 
-photon list file will be appended to an existing SIMPUT catalog.
+Though a point-source population is automatically created as a background 
+component when an observation is simulated, one can also create a SIMPUT catalog
+of point sources using the same machinery. For more information, see
+:ref:`point-source-catalog`.
 
 Instrumental Background
 -----------------------
