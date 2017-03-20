@@ -13,4 +13,5 @@ This section documents the Python interface to SOXS.
    simput
    instrument
    background
+   source_catalogs
    event_tools
