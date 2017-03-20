@@ -27,4 +27,5 @@ Command Line Scripts
    change_instrument_spec
    change_dither
    point_source_catalog_cmd
+   cosmo_source_catalog_cmd
 
