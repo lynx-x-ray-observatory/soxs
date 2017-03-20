@@ -15,7 +15,8 @@ Python Notebooks
 
    two_clusters
    pyxsim_example
-   
+   point_source_catalog
+
 Command Line Scripts
 --------------------
 
