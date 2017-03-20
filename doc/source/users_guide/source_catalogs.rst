@@ -31,6 +31,24 @@ The cosmological parameters for this halo catalog are:
 * :math:`w_{\rm DE} = -1`
 * :math:`\sigma_8 = 0.823`
 
+Flat-Field Map of Structure
++++++++++++++++++++++++++++
+
+Below is a map showing an image of the full flat-field :math:`10 \times 10` degree
+sky map of the X-ray halos in the catalog. 
+
+.. image:: ../images/full_map.png
+    :width: 1000px
+
+.. note::
+
+    In the observations you create, the ellipticities and orientations of the
+    halos will be different from those in this map. This map is provided as a
+    convenience to locate which regions may show interesting structure. 
+
+``make_cosmological_sources_file``
+++++++++++++++++++++++++++++++++++
+
 :func:`~soxs.cosmology.make_cosmological_sources_file` generates a photon list
 file for a SIMPUT catalog using the cosmological sources model:
 
