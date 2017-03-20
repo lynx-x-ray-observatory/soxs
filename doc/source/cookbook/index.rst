@@ -26,4 +26,5 @@ Command Line Scripts
    make_multiple_sources
    change_instrument_spec
    change_dither
+   point_source_catalog_cmd
 
