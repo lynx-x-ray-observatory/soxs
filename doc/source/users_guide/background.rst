@@ -148,19 +148,19 @@ the parameters ``ptsrc_bkgnd``, ``foreground``, and/or ``instr_bkgnd`` to
 
     # turn off the astrophysical foreground
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, foreground=False)
+                         sky_center, overwrite=True, foreground=False)
 
 .. code-block:: python
 
     # turn off the instrumental background
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, instr_bkgnd=False)
+                         sky_center, overwrite=True, instr_bkgnd=False)
 
 .. code-block:: python
 
     # turn off all backgrounds
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, ptsrc_bkgnd=False,
+                         sky_center, overwrite=True, ptsrc_bkgnd=False,
                          instr_bkgnd=False, foreground=False)
 
 .. _make-bkgnd:
@@ -181,7 +181,7 @@ file as input to :func:`~soxs.instrument.instrument_simulator`. The
     instrument = "hdxi"
     sky_center = [24., 12.] # degrees
     make_background_file(out_file, exp_time, instrument, sky_center, 
-                         clobber=True, foreground=True, instr_bkgnd=False,
+                         overwrite=True, foreground=True, instr_bkgnd=False,
                          ptsrc_bkgnd=True)
 
 As can be noted from this example, :func:`~soxs.instrument.make_background_file`
@@ -201,7 +201,7 @@ than the exposure time that the background was run with:
     out_file = "evt.fits"
     sky_center = [30., 45.]
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, bkgnd_file="bkgnd_evt.fits") 
+                         sky_center, overwrite=True, bkgnd_file="bkgnd_evt.fits") 
 
 Note that the pointing of the background event file does not to be the same as
 the source pointing--the background events will be re-projected to match the

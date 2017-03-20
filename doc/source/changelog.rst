@@ -31,6 +31,8 @@ bugfixes.
   random numbers. 
 * Fixed a bug in determining the detector and chip coordinates of events when
   creating an event file. 
+* The ``clobber`` argument for overwriting files has been replaced by 
+``overwrite``. This is a backwards-incompatible change.
 
 Version 0.5.1
 -------------

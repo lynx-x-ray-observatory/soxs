@@ -8,7 +8,7 @@ Command Line Scripts for Generating Backgrounds
 
 .. code-block:: text
 
-    usage: make_background_file [-h] [--clobber]
+    usage: make_background_file [-h] [--overwrite]
                                 [--dither_shape DITHER_SHAPE]
                                 [--dither_size DITHER_SIZE]
                                 [--random_seed RANDOM_SEED]
@@ -33,7 +33,7 @@ Command Line Scripts for Generating Backgrounds
     
     optional arguments:
       -h, --help            show this help message and exit
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --dither_shape DITHER_SHAPE
                             The shape of the dither pattern: square, circle, or
                             None. Default: square

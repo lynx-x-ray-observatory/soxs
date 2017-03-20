@@ -17,7 +17,7 @@ using the AtomDB tables.
     usage: make_thermal_spectrum [-h] [--velocity VELOCITY] [--emin EMIN]
                                  [--emax EMAX] [--nbins NBINS]
                                  [--apec_vers APEC_VERS] [--absorb] [--nh NH]
-                                 [--clobber] [--broadening | --no_broadening]
+                                 [--overwrite] [--broadening | --no_broadening]
 
                                  kT abund redshift norm specfile
     
@@ -43,7 +43,7 @@ using the AtomDB tables.
       --absorb              Apply foreground Galactic absorption.
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
                             Default: 0.02
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --broadening          Turn thermal and velocity broadening on. On by default.
       --no_broadening       Turn thermal and velocity broadening off. On by default.
 
@@ -54,37 +54,37 @@ Make a basic spectrum for a thermal plasma.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --clobber
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --overwrite
 
 The same spectrum, but with velocity broadening.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --velocity=200.0 --clobber
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --velocity=200.0 --overwrite
 
 The same spectrum, but with velocity and thermal broadening turned off.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --no_broadening --clobber
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --no_broadening --overwrite
 
 The same spectrum, but with foreground galactic absorption with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --absorb --nh 0.04 --clobber
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --absorb --nh 0.04 --overwrite
 
 The same spectrum, but with different binning.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --emin=0.1 --emax=10.0 --nbins=20000 --clobber
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --emin=0.1 --emax=10.0 --nbins=20000 --overwrite
 
 The same spectrum, but with a different APEC version.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --apec_vers=2.0.2 --clobber
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --apec_vers=2.0.2 --overwrite
 
 ``make_powerlaw_spectrum``
 --------------------------
@@ -99,7 +99,7 @@ form:
 .. code-block:: text
 
     usage: make_powerlaw_spectrum [-h] [--emin EMIN] [--emax EMAX] [--nbins NBINS]
-                                  [--absorb] [--nh NH] [--clobber]
+                                  [--absorb] [--nh NH] [--overwrite]
                                   photon_index redshift norm specfile
     
     Create a power-law spectrum and write it to a file.
@@ -119,7 +119,7 @@ form:
       --absorb       Apply foreground Galactic absorption.
       --nh NH        The hydrogen column in units of 10**22 atoms/cm**2. Default:
                      0.02
-      --clobber      Overwrite an existing file with the same name.
+      --overwrite    Overwrite an existing file with the same name.
                  
 Examples
 ++++++++
@@ -128,16 +128,16 @@ Make a basic power-law spectrum.
 
 .. code-block:: bash
 
-    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --clobber
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --overwrite
 
 The same spectrum, but with foreground galactic absorption with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
-    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --absorb --nh 0.04 --clobber
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --absorb --nh 0.04 --overwrite
 
 The same spectrum, but with different binning.
 
 .. code-block:: bash
 
-    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --emin=0.1 --emax=10.0 --nbins=20000 --clobber
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --emin=0.1 --emax=10.0 --nbins=20000 --overwrite

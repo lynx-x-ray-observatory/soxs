@@ -53,7 +53,7 @@ are binned by a specific energy band. An example execution:
     emin = 0.5 # keV
     emax = 2.0 # keV
     write_radial_profile("my_evt.fits", "my_radial_profile.fits", ctr, rmin,
-                         rmax, nbins, emin=emin, emax=emax, clobber=True)
+                         rmax, nbins, emin=emin, emax=emax, overwrite=True)
 
 If one wants to specify a center in physical pixel coordinates, you can use the same execution but
 set the ``ctr_type`` keyword to "physical" and use physical pixel coordinates as the ``ctr`` argument:
@@ -69,7 +69,7 @@ set the ``ctr_type`` keyword to "physical" and use physical pixel coordinates as
     emax = 2.0 # keV
     write_radial_profile("my_evt.fits", "my_radial_profile.fits", ctr, rmin,
                          rmax, nbins, ctr_type="physical", emin=emin, emax=emax, 
-                         clobber=True)
+                         overwrite=True)
 
 ``write_spectrum``
 ------------------
@@ -80,7 +80,7 @@ to a FITS file:
 .. code-block:: python
 
     from soxs import write_spectrum
-    write_spectrum("my_evt.fits", "my_spec.pha", clobber=True)
+    write_spectrum("my_evt.fits", "my_spec.pha", overwrite=True)
 
 This spectrum file can be read and fit with standard X-ray analysis software such as 
 `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_, `ISIS <http://space.mit.edu/CXC/ISIS/>`_, 

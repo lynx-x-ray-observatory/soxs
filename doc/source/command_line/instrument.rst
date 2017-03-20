@@ -15,7 +15,7 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
 
 .. code-block:: text
 
-    usage: instrument_simulator [-h] [--clobber] [--dither_shape DITHER_SHAPE]
+    usage: instrument_simulator [-h] [--overwrite] [--dither_shape DITHER_SHAPE]
                                 [--dither_size DITHER_SIZE]
                                 [--roll_angle ROLL_ANGLE]
                                 [--bkgnd_file BKGND_FILE]
@@ -41,7 +41,7 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
     
     optional arguments:
       -h, --help            show this help message and exit
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --dither_shape DITHER_SHAPE
                             The shape of the dither pattern: square, circle, or
                             None. Default: square
@@ -75,14 +75,14 @@ with the pointing (RA, Dec) = (30, 45) degrees.
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --overwrite
 
 The same, but use the HDXI specification with mirror diameter of :math:`d` = 3 m and focal length of
 :math:`f` = 20 m:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi_3x20 30.,45. --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi_3x20 30.,45. --overwrite
 
 See :ref:`instrument-arg` for details on the options for the ``instrument`` argument.
 
@@ -91,7 +91,7 @@ This example uses a JSON file created by the user, which contains a custom instr
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --overwrite
 
 The following details how to change the other options, for more info see :ref:`other-mods`.
 
@@ -102,19 +102,19 @@ Change the roll angle to 45 degrees:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --roll_angle=45.0 --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --roll_angle=45.0 --overwrite
 
 Change the dither shape to a circle and make the dither radius 32 arcsec:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --overwrite
 
 Turn dithering off entirely:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=None --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=None --overwrite
 
 Customizing Backgrounds
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,19 +123,19 @@ Turn off the instrumental background:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_instr_bkgnd --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_instr_bkgnd --overwrite
 
 Turn off the Galactic foreground:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_foreground --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_foreground --overwrite
 
 Turn off the point-source background:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_ptsrc_bkgnd --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_ptsrc_bkgnd --overwrite
 
 Any combination of these may be used to turn multiple components off or all 
 of them. 
@@ -144,7 +144,7 @@ To use a background stored in an event file:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --bkgnd_file="bkg_evt.fits" --clobber
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --bkgnd_file="bkg_evt.fits" --overwrite
 
 .. note::
 
@@ -162,7 +162,7 @@ worrying about spatial response. Similar to XSPEC's "fakeit".
 
 .. code-block:: bash
 
-    usage: simulate_spectrum [-h] [--clobber] [--random_seed RANDOM_SEED]
+    usage: simulate_spectrum [-h] [--overwrite] [--random_seed RANDOM_SEED]
                              spec_file instrument exp_time out_file
     
     Run the instrument simulator and produce a simulated event file.
@@ -177,7 +177,7 @@ worrying about spatial response. Similar to XSPEC's "fakeit".
     
     optional arguments:
       -h, --help            show this help message and exit
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.

@@ -35,9 +35,9 @@ following:
     instrument = "mucal" # short name for instrument to be used
     sky_center = [30., 45.] # RA, Dec of pointing in degrees
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True)
+                         sky_center, overwrite=True)
  
-The ``clobber`` argument allows an existing file to be overwritten.
+The ``overwrite`` argument allows an existing file to be overwritten.
 
 .. _instrument-arg:
 
@@ -110,7 +110,7 @@ on by default, but can be turned on or off individually:
 
     # turns off the astrophysical background but leaves in the instrumental
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, instr_bkgnd=False,
+                         sky_center, overwrite=True, instr_bkgnd=False,
                          foreground=True) # ptsrc_bkgnd True by default
 
 For long exposures, backgrounds may take a long time to generate. For this
@@ -122,7 +122,7 @@ argument:
 
     # loads the background from a file
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, bkgnd_file="my_bkgnd.fits") 
+                         sky_center, overwrite=True, bkgnd_file="my_bkgnd.fits") 
 
 In this case the values of ``instr_bkgnd``, ``ptsrc_bkgnd``, and ``foreground``
 are ignored regardless of their value. The required background event file can be
@@ -147,14 +147,14 @@ or turn off dithering entirely:
     # this invocation makes the dither shape a circle and 
     # sets the radius to 8 arcsec
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, dither_shape="circle", 
+                         sky_center, overwrite=True, dither_shape="circle", 
                          dither_size=8.0)
     
 .. code-block:: python
 
     # this invocation turns off dithering entirely
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, dither_shape=None) 
+                         sky_center, overwrite=True, dither_shape=None) 
 
 You can also specify a non-zero roll angle:
 
@@ -162,7 +162,7 @@ You can also specify a non-zero roll angle:
 
     # adds a roll of 45.0 degrees
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, clobber=True, roll_angle=45.0) 
+                         sky_center, overwrite=True, roll_angle=45.0) 
 
 .. note:: 
 
@@ -187,7 +187,7 @@ command "fakeit" does.
     spec = Spectrum.from_file("lots_of_lines.dat")
     instrument = "mucal"
     out_file = "lots_of_lines.pha"
-    simulate_spectrum(spec, instrument, exp_time, out_file, clobber=True)
+    simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=True)
 
 This spectrum file then can be read in and analyzed by standard software such as
 XSPEC, Sherpa, ISIS, etc.

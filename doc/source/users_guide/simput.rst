@@ -31,7 +31,7 @@ and photon list file like this:
     pt_src = PointSource(30.0, 45.0)
     
     write_photon_list("point_source", "source1", energies.flux,
-                      pt_src.ra, pt_src.dec, energies, clobber=True)
+                      pt_src.ra, pt_src.dec, energies, overwrite=True)
                          
 The ``energies`` returned by :meth:`~soxs.spectra.Spectrum.generate_energies` 
 is an augmented NumPy array with unit information and the value of the flux 

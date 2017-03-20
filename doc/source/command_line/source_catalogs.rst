@@ -15,7 +15,7 @@ in SOXS, see :ref:`source-catalogs`.
 .. code-block:: text
 
     usage: make_cosmological_sources [-h] [--cat_center CAT_CENTER] [--nh NH]
-                                     [--area AREA] [--append] [--clobber]
+                                     [--area AREA] [--append] [--overwrite]
                                      [--output_sources OUTPUT_SOURCES]
                                      [--random_seed RANDOM_SEED]
                                      simput_prefix phlist_prefix exp_time fov
@@ -45,7 +45,7 @@ in SOXS, see :ref:`source-catalogs`.
       --area AREA           The collecting area to use, in cm^2. Default: 30000.0
       --append              If set, append a new source an existing SIMPUT
                             catalog.
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --output_sources OUTPUT_SOURCES
                             Output the source properties to the specified file.
       --random_seed RANDOM_SEED
@@ -61,13 +61,13 @@ be chosen:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --clobber
+    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --overwrite
 
 The same as before, but choose a particular location in the halo catalog:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --cat_center=-0.1,2.0 --clobber
+    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --cat_center=-0.1,2.0 --overwrite
 
 Append the halo photons to an existing SIMPUT catalog, "my_cat":
 
@@ -79,13 +79,13 @@ Change the Galactic hydrogen column to :math:`2 \times 10^{20}~cm^{-2}`:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --nh=0.02 --clobber
+    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --nh=0.02 --overwrite
 
 Write the source properties to an ASCII text file:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --output_sources=my_halos.txt --clobber
+    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --output_sources=my_halos.txt --overwrite
 
 ``make_point_sources``
 ----------------------
@@ -93,7 +93,7 @@ Write the source properties to an ASCII text file:
 .. code-block:: text
 
     usage: make_point_sources [-h] [--nh NH] [--area AREA] [--append]
-                              [--clobber] [--random_seed RANDOM_SEED]
+                              [--overwrite] [--random_seed RANDOM_SEED]
                               [--output_sources OUTPUT_SOURCES]
                               simput_prefix phlist_prefix exp_time fov
                               sky_center
@@ -117,7 +117,7 @@ Write the source properties to an ASCII text file:
       --area AREA           The collecting area to use, in cm^2. Default: 30000.0
       --append              If set, append a new source an existing SIMPUT
                             catalog.
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --output_sources OUTPUT_SOURCES
                             Output the source properties to the specified file.
       --random_seed RANDOM_SEED
@@ -132,7 +132,7 @@ catalog, with an exposure time of 75 ks:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --clobber
+    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --overwrite
 
 Append the point source photons to an existing SIMPUT catalog, "my_cat":
 
@@ -144,10 +144,10 @@ Change the Galactic hydrogen column to :math:`3.5 \times 10^{20}~cm^{-2}`:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --nh=0.035 --clobber
+    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --nh=0.035 --overwrite
 
 Write the source properties to an ASCII text file:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --output_sources=my_ptsrc.txt --clobber
+    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --output_sources=my_ptsrc.txt --overwrite

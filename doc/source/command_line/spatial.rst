@@ -21,7 +21,7 @@ file.
 
 .. code-block:: text
 
-    usage: make_point_source [-h] [--area AREA] [--append] [--clobber]
+    usage: make_point_source [-h] [--area AREA] [--append] [--overwrite]
                              simput_prefix phlist_prefix ra0 dec0 specfile
                              exp_time
     
@@ -41,7 +41,7 @@ file.
       -h, --help     show this help message and exit
       --area AREA    The collecting area to use, in cm^2. Default: 30000.0
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Overwrite an existing file with the same name.
+      --overwrite    Overwrite an existing file with the same name.
                      
 Examples
 ++++++++
@@ -50,19 +50,19 @@ Make a brand-new SIMPUT catalog for a point source photon list, assuming 100 ks 
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100000. --clobber
+    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100000. --overwrite
 
 Add a new point source to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src2 19.0 -31.0 pt_src_spectrum.dat 50000. --append --clobber
+    [~]$ make_point_source pt_src src2 19.0 -31.0 pt_src_spectrum.dat 50000. --append --overwrite
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100000. --area=40000. --clobber
+    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100000. --area=40000. --overwrite
 
 ``make_beta_model``
 -------------------
@@ -77,7 +77,7 @@ file. The functional form of the :math:`\beta`-model for a surface brightness pr
 .. code-block:: text
 
     usage: make_beta_model [-h] [--area AREA] [--theta THETA]
-                           [--ellipticity ELLIPTICITY] [--append] [--clobber]
+                           [--ellipticity ELLIPTICITY] [--append] [--overwrite]
                            simput_prefix phlist_prefix ra0 dec0 r_c beta specfile
                            exp_time
     
@@ -110,7 +110,7 @@ file. The functional form of the :math:`\beta`-model for a surface brightness pr
                             you want. Default: 1.0
       --append              If set, append a new source an existing SIMPUT
                             catalog.
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.
@@ -122,25 +122,25 @@ Make a brand-new SIMPUT catalog for a :math:`\beta`-model photon list, assuming 
 
 .. code-block:: bash
 
-    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --clobber
+    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --overwrite
 
 Add a new :math:`\beta`-model to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_beta_model my_srcs beta_src2 19.0 -31.0 10.0 1.0 my_spectrum.dat 50000. --append --clobber
+    [~]$ make_beta_model my_srcs beta_src2 19.0 -31.0 10.0 1.0 my_spectrum.dat 50000. --append --overwrite
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --area=50000. --clobber
+    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --area=50000. --overwrite
 
 Add ellipticity and tilt the model:
 
 .. code-block:: bash
 
-    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --ellipticity=0.5 --theta=45.0 --clobber
+    [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100000. --ellipticity=0.5 --theta=45.0 --overwrite
 
 ``make_annulus_source``
 -----------------------
@@ -151,7 +151,7 @@ from a spectrum supplied in a file.
 .. code-block:: text
 
     usage: make_annulus_source [-h] [--theta THETA] [--ellipticity ELLIPTICITY]
-                               [--area AREA] [--append] [--clobber]
+                               [--area AREA] [--append] [--overwrite]
                                simput_prefix phlist_prefix ra0 dec0 r_in r_out
                                specfile exp_time
     
@@ -185,7 +185,7 @@ from a spectrum supplied in a file.
       --area AREA           The collecting area to use, in cm^2. Default: 30000.0
       --append              If set, append a new source an existing SIMPUT
                             catalog.
-      --clobber             Overwrite an existing file with the same name.
+      --overwrite           Overwrite an existing file with the same name.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.
@@ -197,25 +197,25 @@ Make a brand-new SIMPUT catalog for an annulus photon list, assuming 100 ks expo
 
 .. code-block:: bash
 
-    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --clobber
+    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --overwrite
 
 Add a new annulus model to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_annulus_source my_srcs ann_src2 19.0 -31.0 0.0 30.0 my_spectrum.dat 50000. --append --clobber
+    [~]$ make_annulus_source my_srcs ann_src2 19.0 -31.0 0.0 30.0 my_spectrum.dat 50000. --append --overwrite
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --area=50000. --clobber
+    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --area=50000. --overwrite
 
 Add ellipticity and tilt the model:
 
 .. code-block:: bash
 
-    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --ellipticity=2.0 --theta=30.0 --clobber
+    [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100000. --ellipticity=2.0 --theta=30.0 --overwrite
 
 ``make_rectangle_source``
 -------------------------
@@ -226,7 +226,7 @@ from a spectrum supplied in a file.
 .. code-block:: text
 
     usage: make_rectangle_source [-h] [--theta THETA] [--area AREA] [--append]
-                                 [--clobber]
+                                 [--overwrite]
                                  simput_prefix phlist_prefix ra0 dec0 width height
                                  specfile exp_time
 
@@ -250,7 +250,7 @@ from a spectrum supplied in a file.
                      Default: 0.0
       --area AREA    The collecting area to use, in cm^2. Default: 30000.0
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Overwrite an existing file with the same name.
+      --overwrite    Overwrite an existing file with the same name.
       --random_seed RANDOM_SEED
                      A constant integer random seed to produce a consistent
                      set of random numbers.
@@ -262,31 +262,31 @@ Make a brand-new SIMPUT catalog for a rectangle photon list, assuming 100 ks exp
 
 .. code-block:: bash
 
-    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --clobber
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --overwrite
 
 Make the same rectangle, but rotate it by 30.0 degrees.
 
 .. code-block:: bash
 
-    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --theta=30.0 --clobber
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --theta=30.0 --overwrite
 
 Create a line source with the same width and rotation angle.
 
 .. code-block:: bash
 
-    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 0.0 my_spectrum.dat 100000. --theta=30.0 --clobber
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 0.0 my_spectrum.dat 100000. --theta=30.0 --overwrite
 
 Add a new rectangle model to an existing SIMPUT catalog, assuming 50 ks exposure.
 
 .. code-block:: bash
 
-    [~]$ make_rectangle_source my_srcs rect_src2 19.0 -31.0 20.0 10.0 my_spectrum.dat 50000. --append --clobber
+    [~]$ make_rectangle_source my_srcs rect_src2 19.0 -31.0 20.0 10.0 my_spectrum.dat 50000. --append --overwrite
 
 Specify a different collecting area for the photons.
 
 .. code-block:: bash
 
-    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --area=50000. --clobber
+    [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100000. --area=50000. --overwrite
 
 ``make_fov_source``
 -------------------
@@ -296,7 +296,7 @@ from a spectrum supplied in a file.
 
 .. code-block:: text
 
-    usage: make_fov_source [-h] [--area AREA] [--append] [--clobber]
+    usage: make_fov_source [-h] [--area AREA] [--append] [--overwrite]
                            simput_prefix phlist_prefix ra0 dec0 fov specfile
                            exp_time
     
@@ -317,7 +317,7 @@ from a spectrum supplied in a file.
       -h, --help     show this help message and exit
       --area AREA    The collecting area to use, in cm^2. Default: 30000.0
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Overwrite an existing file with the same name.
+      --overwrite    Overwrite an existing file with the same name.
       --random_seed RANDOM_SEED
                      A constant integer random seed to produce a consistent
                      set of random numbers.
@@ -329,19 +329,19 @@ Make a brand-new SIMPUT catalog for a field-of-view photon list, assuming 100 ks
 
 .. code-block:: bash
 
-    [~]$ make_fov_source my_srcs fov_src1 20.0 -32.0 20.0 my_spectrum.dat 100000. --clobber
+    [~]$ make_fov_source my_srcs fov_src1 20.0 -32.0 20.0 my_spectrum.dat 100000. --overwrite
 
 Add a new field-of-view model to an existing SIMPUT catalog, assuming 50 ks exposure. 
 
 .. code-block:: bash
 
-    [~]$ make_fov_source my_srcs fov_src2 19.0 -31.0 20.0 my_spectrum.dat 50000. --append --clobber
+    [~]$ make_fov_source my_srcs fov_src2 19.0 -31.0 20.0 my_spectrum.dat 50000. --append --overwrite
 
 Specify a different collecting area for the photons. 
 
 .. code-block:: bash
 
-    [~]$ make_fov_source my_srcs fov_src1 20.0 -32.0 20.0 my_spectrum.dat 100000. --area=50000. --clobber
+    [~]$ make_fov_source my_srcs fov_src1 20.0 -32.0 20.0 my_spectrum.dat 100000. --area=50000. --overwrite
 
 ``make_phlist_from_ascii``
 --------------------------
@@ -351,7 +351,7 @@ to a new SIMPUT photon list file.
 
 .. code-block:: text
 
-    usage: make_phlist_from_ascii [-h] [--append] [--clobber]
+    usage: make_phlist_from_ascii [-h] [--append] [--overwrite]
                                   simput_prefix phlist_prefix infile
 
     Create a SIMPUT photon list from an ASCII table of positions and energies. The file must contain
@@ -378,4 +378,4 @@ to a new SIMPUT photon list file.
     optional arguments:
       -h, --help     show this help message and exit
       --append       If set, append a new source an existing SIMPUT catalog.
-      --clobber      Overwrite an existing file with the same name.
+      --overwrite    Overwrite an existing file with the same name.
