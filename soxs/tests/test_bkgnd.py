@@ -109,8 +109,8 @@ def test_ptsrc():
     fov = 20.0 # arcmin
     area = 30000.0 # cm**2
     sky_center = [20., 17.]
-    prng1 = RandomState(21)
-    prng2 = RandomState(21)
+    prng1 = RandomState(33)
+    prng2 = RandomState(33)
     agn_sources, gal_sources = generate_sources(exp_time, area, fov, prng2)
     fluxes = np.array([src.flux for src in agn_sources+gal_sources])
     events = make_ptsrc_background(exp_time, fov, sky_center, area=area, 
