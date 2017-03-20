@@ -12,43 +12,45 @@ in SOXS, see :ref:`source-catalogs`.
 ``make_cosmological_sources``
 -----------------------------
 
-usage: make_cosmological_sources [-h] [--cat_center CAT_CENTER] [--nh NH]
-                                 [--area AREA] [--append] [--clobber]
-                                 [--output_sources OUTPUT_SOURCES]
-                                 [--random_seed RANDOM_SEED]
-                                 simput_prefix phlist_prefix exp_time fov
-                                 sky_center
+.. code-block:: text
 
-Create a SIMPUT photon list of a cosmological background.
-
-positional arguments:
-  simput_prefix         The prefix of the SIMPUT file to be used as the root
-                        of the catalog. If it does not exist, it will be
-                        created.
-  phlist_prefix         The prefix of the photon list file to be written.
-  exp_time              The exposure time to use, in seconds.
-  fov                   The field of view on a side in arcminutes.
-  sky_center            The center RA, Dec coordinates of the observation, in
-                        degrees, comma-separated
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --cat_center CAT_CENTER
-                        The center of the field in the coordinates of the halo
-                        catalog, which range from -5.0 to 5.0 degrees in both
-                        directions. If not set, a center will be randomly
-                        chosen.
-  --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
-                        Default: 0.05
-  --area AREA           The collecting area to use, in cm^2. Default: 30000.0
-  --append              If set, append a new source an existing SIMPUT
-                        catalog.
-  --clobber             Overwrite an existing file with the same name.
-  --output_sources OUTPUT_SOURCES
-                        Output the source properties to the specified file.
-  --random_seed RANDOM_SEED
-                        A constant integer random seed to produce a consistent
-                        set of random numbers.
+    usage: make_cosmological_sources [-h] [--cat_center CAT_CENTER] [--nh NH]
+                                     [--area AREA] [--append] [--clobber]
+                                     [--output_sources OUTPUT_SOURCES]
+                                     [--random_seed RANDOM_SEED]
+                                     simput_prefix phlist_prefix exp_time fov
+                                     sky_center
+    
+    Create a SIMPUT photon list of a cosmological background.
+    
+    positional arguments:
+      simput_prefix         The prefix of the SIMPUT file to be used as the root
+                            of the catalog. If it does not exist, it will be
+                            created.
+      phlist_prefix         The prefix of the photon list file to be written.
+      exp_time              The exposure time to use, in seconds.
+      fov                   The field of view on a side in arcminutes.
+      sky_center            The center RA, Dec coordinates of the observation, in
+                            degrees, comma-separated
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --cat_center CAT_CENTER
+                            The center of the field in the coordinates of the halo
+                            catalog, which range from -5.0 to 5.0 degrees in both
+                            directions. If not set, a center will be randomly
+                            chosen.
+      --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
+                            Default: 0.05
+      --area AREA           The collecting area to use, in cm^2. Default: 30000.0
+      --append              If set, append a new source an existing SIMPUT
+                            catalog.
+      --clobber             Overwrite an existing file with the same name.
+      --output_sources OUTPUT_SOURCES
+                            Output the source properties to the specified file.
+      --random_seed RANDOM_SEED
+                            A constant integer random seed to produce a consistent
+                            set of random numbers.
 
 Examples
 ++++++++
@@ -88,34 +90,36 @@ Write the source properties to an ASCII text file:
 ``make_point_sources``
 ----------------------
 
-usage: make_point_sources [-h] [--nh NH] [--area AREA] [--append]
-                          [--clobber] [--random_seed RANDOM_SEED]
-                          simput_prefix phlist_prefix exp_time fov
-                          sky_center
+.. code-block:: text
 
-Create a SIMPUT photon list of a point-source background.
-
-positional arguments:
-  simput_prefix         The prefix of the SIMPUT file to be used as the root
-                        of the catalog. If it does not exist, it will be
-                        created.
-  phlist_prefix         The prefix of the photon list file to be written.
-  exp_time              The exposure time to use, in seconds.
-  fov                   The field of view on a side in arcminutes.
-  sky_center            The center RA, Dec coordinates of the observation, in
-                        degrees, comma-separated.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --nh NH               The galactic hydrogen column in units of 10**22
-                        atoms/cm**2. Default: 0.05
-  --area AREA           The collecting area to use, in cm^2. Default: 30000.0
-  --append              If set, append a new source an existing SIMPUT
-                        catalog.
-  --clobber             Overwrite an existing file with the same name.
-  --random_seed RANDOM_SEED
-                        A constant integer random seed to produce a consistent
-                        set of random numbers.
+    usage: make_point_sources [-h] [--nh NH] [--area AREA] [--append]
+                              [--clobber] [--random_seed RANDOM_SEED]
+                              simput_prefix phlist_prefix exp_time fov
+                              sky_center
+    
+    Create a SIMPUT photon list of a point-source background.
+    
+    positional arguments:
+      simput_prefix         The prefix of the SIMPUT file to be used as the root
+                            of the catalog. If it does not exist, it will be
+                            created.
+      phlist_prefix         The prefix of the photon list file to be written.
+      exp_time              The exposure time to use, in seconds.
+      fov                   The field of view on a side in arcminutes.
+      sky_center            The center RA, Dec coordinates of the observation, in
+                            degrees, comma-separated.
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --nh NH               The galactic hydrogen column in units of 10**22
+                            atoms/cm**2. Default: 0.05
+      --area AREA           The collecting area to use, in cm^2. Default: 30000.0
+      --append              If set, append a new source an existing SIMPUT
+                            catalog.
+      --clobber             Overwrite an existing file with the same name.
+      --random_seed RANDOM_SEED
+                            A constant integer random seed to produce a consistent
+                            set of random numbers.
 
 Examples
 ++++++++
