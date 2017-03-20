@@ -35,7 +35,8 @@ from soxs.spatial import \
 from soxs.events import \
     write_spectrum, \
     write_image, \
-    write_radial_profile
+    write_radial_profile, \
+    plot_spectrum
 
 from soxs.background import \
     add_instrumental_background

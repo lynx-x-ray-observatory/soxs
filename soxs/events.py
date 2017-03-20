@@ -384,3 +384,49 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     hdu.header["EXPOSURE"] = exp_time
 
     hdu.writeto(out_file, clobber=clobber)
+
+def plot_spectrum(specfile, figsize=(10,10), plot_energy=True):
+    """
+    Make a quick Matplotlib plot of a convolved spectrum
+    from a file. A Matplotlib figure is returned.
+
+    Parameters
+    ----------
+    specfile : string
+        The file to be opened for plotting.
+    figsize : tuple of integers, optional
+        The size of the figure on both sides in inches.
+        Default: (10,10)
+    plot_energy : boolean, optional
+        Whether to plot in energy or channel space. Default is
+        to plot in energy, unless the RMF for the spectrum
+        cannot be found. 
+    """
+    import matplotlib.pyplot as plt
+    from soxs.instrument import RedistributionMatrixFile
+    f = pyfits.open(specfile)
+    hdu = f["SPECTRUM"]
+    chantype = hdu.header["CHANTYPE"]
+    rmf = hdu.header.get("RESPFILE", None)
+    xerr = None
+    if plot_energy:
+        if rmf is not None:
+            rmf = RedistributionMatrixFile(rmf)
+            x = rmf.emid
+            xerr = rmf.de
+            xlabel = "E (keV)"
+        else:
+            raise RuntimeError("Cannot find the RMF associated with this "
+                               "spectrum, so I cannot plot in energy!")
+    else:
+        x = hdu.data[chantype]
+        xlabel = "Channel (%s)" % chantype
+    y = hdu.data["COUNT_RATE"]
+    yerr = np.sqrt(hdu.data["COUNTS"])/hdu.header["EXPOSURE"]
+    f.close()
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111)
+    ax.errorbar(x, y, yerr=yerr, xerr=xerr)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Count Rate (counts/s)")
+    return fig

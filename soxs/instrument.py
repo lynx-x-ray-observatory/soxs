@@ -161,6 +161,8 @@ class RedistributionMatrixFile(object):
         self.weights = np.array([w.sum() for w in self.data["MATRIX"]])
         self.elo = self.data["ENERG_LO"]
         self.ehi = self.data["ENERG_HI"]
+        self.emid = 0.5*(self.elo+self.ehi)
+        self.de = self.ehi-self.elo
         self.n_de = self.elo.size
         self.n_ch = len(self.ebounds["CHANNEL"])
         num = 0
