@@ -110,6 +110,9 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         yc *= 60.0
         xc, yc = np.clip([xc, yc], cat_min+0.5*fov, cat_max-0.5*fov)
 
+    mylog.info("Coordinates of the FOV within the catalog are (%g, %g) deg." %
+               (xc/60.0, yc/60.0))
+
     xlo = (xc-1.1*0.5*fov)*scale.value*h0
     xhi = (xc+1.1*0.5*fov)*scale.value*h0
     ylo = (yc-1.1*0.5*fov)*scale.value*h0
