@@ -21,7 +21,7 @@ parser.add_argument("--absorb", action='store_true',
                     help='Apply foreground Galactic absorption.')
 parser.add_argument("--nh", type=float, default=0.02, 
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
-parser.add_argument("--clobber", action='store_true', 
+parser.add_argument("--overwrite", action='store_true', 
                     help='Overwrite an existing file with the same name.')
 
 args = parser.parse_args()
@@ -32,4 +32,4 @@ spec = Spectrum.from_powerlaw(args.photon_index, args.redshift, args.norm,
 if args.absorb:
     spec.apply_foreground_absorption(args.nh)
 
-spec.write_file(args.specfile, clobber=args.clobber)
+spec.write_file(args.specfile, overwrite=args.overwrite)

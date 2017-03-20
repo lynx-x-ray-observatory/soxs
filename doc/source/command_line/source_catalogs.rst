@@ -94,6 +94,7 @@ Write the source properties to an ASCII text file:
 
     usage: make_point_sources [-h] [--nh NH] [--area AREA] [--append]
                               [--clobber] [--random_seed RANDOM_SEED]
+                              [--output_sources OUTPUT_SOURCES]
                               simput_prefix phlist_prefix exp_time fov
                               sky_center
     
@@ -117,6 +118,8 @@ Write the source properties to an ASCII text file:
       --append              If set, append a new source an existing SIMPUT
                             catalog.
       --clobber             Overwrite an existing file with the same name.
+      --output_sources OUTPUT_SOURCES
+                            Output the source properties to the specified file.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.

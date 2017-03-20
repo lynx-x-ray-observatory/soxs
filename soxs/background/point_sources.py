@@ -203,7 +203,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 
 def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
                             sky_center, nH=0.05, area=40000.0, 
-                            prng=None, append=False, clobber=False,
+                            prng=None, append=False, overwrite=False,
                             output_sources=None):
     """
     Make a SIMPUT catalog made up of contributions from
@@ -236,7 +236,7 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
     append : boolean, optional
         If True, append a new source an existing SIMPUT 
         catalog. Default: False
-    clobber : boolean, optional
+    overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
     output_sources : string, optional
         If set to a filename, output the properties of the sources
@@ -246,4 +246,4 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
                                    output_sources=output_sources, prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
                       events["dec"], events["energy"], append=append, 
-                      clobber=clobber)
+                      overwrite=overwrite)

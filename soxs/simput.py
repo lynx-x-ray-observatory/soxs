@@ -39,7 +39,7 @@ def read_simput_catalog(simput_file):
     return events, parameters
 
 def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
-                      src_name=None, append=False, clobber=False):
+                      src_name=None, append=False, overwrite=False):
     r"""
     Write events to a new SIMPUT photon list. It can be 
     associated with a new or existing SIMPUT catalog. 
@@ -66,7 +66,7 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     append : boolean, optional
         If True, append a new source an existing SIMPUT 
         catalog. Default: False
-    clobber : boolean, optional
+    overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
     """
     # Make sure these are arrays
@@ -101,7 +101,7 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
 
     phfile = phlist_prefix+"_phlist.fits"
 
-    tbhdu.writeto(phfile, clobber=clobber)
+    tbhdu.writeto(phfile, overwrite=overwrite)
 
     simputfile = simput_prefix+"_simput.fits"
 
@@ -167,4 +167,4 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     wrhdu.header["TUNIT5"] = "keV"
     wrhdu.header["TUNIT6"] = "erg/s/cm**2"
 
-    wrhdu.writeto(simputfile, clobber=(clobber or append))
+    wrhdu.writeto(simputfile, overwrite=(overwrite or append))

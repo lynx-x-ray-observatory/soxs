@@ -29,7 +29,7 @@ parser.add_argument("--area", type=float, default=30000.0,
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
-parser.add_argument("--clobber", action='store_true',
+parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
@@ -46,4 +46,4 @@ ann_src = AnnulusModel(args.ra0, args.dec0, args.r_in, args.r_out, n_evt,
                        prng=args.random_seed)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux, ann_src.ra,
-                  ann_src.dec, energy, append=args.append, clobber=args.clobber)
+                  ann_src.dec, energy, append=args.append, overwrite=args.overwrite)

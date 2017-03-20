@@ -18,7 +18,7 @@ parser.add_argument("--area", type=float, default=30000.0,
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
-parser.add_argument("--clobber", action='store_true', 
+parser.add_argument("--overwrite", action='store_true', 
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
@@ -33,4 +33,4 @@ pt_src = PointSourceModel(args.ra0, args.dec0, n_evt)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
                   pt_src.ra, pt_src.dec, energy, append=args.append,
-                  clobber=args.clobber)
+                  overwrite=args.overwrite)

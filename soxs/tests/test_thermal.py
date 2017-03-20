@@ -54,7 +54,7 @@ def test_thermal():
     pt_src = PointSourceModel(30.0, 45.0, e.size)
 
     write_photon_list("thermal_model", "thermal_model", e.flux, pt_src.ra, pt_src.dec,
-                      e, clobber=True)
+                      e, overwrite=True)
 
     instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", exp_time, 
                          inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
@@ -66,7 +66,7 @@ def test_thermal():
     os.system("cp %s ." % arf.filename)
     convert_rmf(rmf.filename)
 
-    write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", clobber=True)
+    write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", overwrite=True)
 
     load_user_model(mymodel, "wapec")
     add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm"],

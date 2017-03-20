@@ -37,7 +37,7 @@ def test_read_write():
     os.chdir(tmpdir)
 
     spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4)
-    spec1.write_file("test_spec.dat", clobber=True)
+    spec1.write_file("test_spec.dat", overwrite=True)
     spec2 = Spectrum.from_file("test_spec.dat")
 
     assert_allclose(spec1.flux, spec2.flux)

@@ -31,7 +31,7 @@ def test_append():
     pt_src2 = PointSourceModel(ra0-0.05, dec0-0.05, e1.size)
 
     write_photon_list("pt_src", "pt_src1", e1.flux, pt_src1.ra, pt_src1.dec,
-                      e1, clobber=True)
+                      e1, overwrite=True)
 
     write_photon_list("pt_src", "pt_src2", e2.flux, pt_src2.ra, pt_src2.dec,
                       e2, append=True)

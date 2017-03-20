@@ -289,7 +289,7 @@ class Spectrum(object):
         self.flux *= new_flux/f.value
         self._compute_total_flux()
 
-    def write_file(self, specfile, clobber=False):
+    def write_file(self, specfile, overwrite=False):
         """
         Write the spectrum to a file.
 
@@ -297,12 +297,12 @@ class Spectrum(object):
         ----------
         specfile : string
             The filename to write the file to.
-        clobber : boolean, optional
+        overwrite : boolean, optional
             Whether or not to overwrite an existing 
             file. Default: False
         """
-        if os.path.exists(specfile) and not clobber:
-            raise IOError("File %s exists and clobber=False!" % specfile)
+        if os.path.exists(specfile) and not overwrite:
+            raise IOError("File %s exists and overwrite=False!" % specfile)
         header = "Energy\tFlux\nkeV\t%s" % self._units
         np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
                    delimiter="\t", header=header)

@@ -3,7 +3,6 @@ from soxs.instrument import make_background, AuxiliaryResponseFile, \
 from soxs.background.foreground import hm_astro_bkgnd
 from soxs.background.instrument import acisi_particle_bkgnd
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
-from soxs.constants import erg_per_keV
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
 import astropy.io.fits as pyfits
@@ -56,14 +55,14 @@ def test_add_background():
                  "sources": ["empty"]}
 
     instrument_simulator(empty_cat, "evt1.fits", exp_time, "hdxi",
-                         [ra0, dec0], prng=prng1, clobber=True)
+                         [ra0, dec0], prng=prng1, overwrite=True)
 
     make_background_file("bkg_evt.fits", exp_time, "hdxi", [ra0, dec0],
-                         prng=prng2, clobber=True)
+                         prng=prng2, overwrite=True)
 
     instrument_simulator(empty_cat, "evt2.fits", exp_time, "hdxi",
                          [ra1, dec1], bkgnd_file="bkg_evt.fits",
-                         prng=prng2, clobber=True)
+                         prng=prng2, overwrite=True)
 
     f1 = pyfits.open("evt1.fits")
     f2 = pyfits.open("evt2.fits")

@@ -559,7 +559,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     return events, event_params
 
 def make_background_file(out_file, exp_time, instrument, sky_center, 
-                         clobber=False, foreground=True, instr_bkgnd=True,
+                         overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, dither_shape="square", 
                          dither_size=16.0, prng=None):
     """
@@ -575,7 +575,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         specification from the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
-    clobber : boolean, optional
+    overwrite : boolean, optional
         Whether or not to overwrite an existing file with the same name.
         Default: False
     foreground : boolean, optional
@@ -606,10 +606,10 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            instr_bkgnd=instr_bkgnd,
                                            dither_shape=dither_shape, 
                                            dither_size=dither_size, prng=prng)
-    write_event_file(events, event_params, out_file, clobber=clobber)
+    write_event_file(events, event_params, out_file, overwrite=overwrite)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
-                         sky_center, clobber=False, instr_bkgnd=True, 
+                         sky_center, overwrite=False, instr_bkgnd=True, 
                          foreground=True, ptsrc_bkgnd=True, 
                          bkgnd_file=None, dither_shape="square", 
                          dither_size=16.0, roll_angle=0.0, prng=None):
@@ -647,8 +647,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         specification from the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
-    clobber : boolean, optional
-        Whether or not to clobber an existing file with the same name.
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file with the same name.
         Default: False
     instr_bkgnd : boolean, optional
         Whether or not to include the instrumental/particle background. 
@@ -679,7 +679,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     Examples
     --------
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 
-    ...                      300000.0, "hdxi_3x10", [30., 45.], clobber=True)
+    ...                      300000.0, "hdxi_3x10", [30., 45.], overwrite=True)
     """
     if not out_file.endswith(".fits"):
         out_file += ".fits"
@@ -707,10 +707,10 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         if not os.path.exists(bkgnd_file):
             raise IOError("Cannot find the background event file %s!" % bkgnd_file)
         events = add_background_from_file(events, event_params, bkgnd_file)
-    write_event_file(events, event_params, out_file, clobber=clobber)
+    write_event_file(events, event_params, out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 
-def simulate_spectrum(spec, instrument, exp_time, out_file, clobber=False,
+def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
                       prng=None):
     """
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
@@ -729,7 +729,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, clobber=False,
         The exposure time in seconds.
     out_file : string
         The file to write the spectrum to.
-    clobber : boolean, optional
+    overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
@@ -741,7 +741,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, clobber=False,
     --------
     >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
     >>> soxs.simulate_spectrum(spec, "mucal", 100000.0, 
-    ...                        "my_spec.pi", clobber=True)
+    ...                        "my_spec.pi", overwrite=True)
     """
     from soxs.events import write_spectrum
     from soxs.instrument import RedistributionMatrixFile, \
@@ -767,5 +767,5 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, clobber=False,
     events["telescope"] = rmf.header["TELESCOP"]
     events["instrument"] = rmf.header["INSTRUME"]
     events["mission"] = rmf.header.get("MISSION", "")
-    write_spectrum(events, out_file, clobber=clobber)
+    write_spectrum(events, out_file, overwrite=overwrite)
 

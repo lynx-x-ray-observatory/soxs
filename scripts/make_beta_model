@@ -28,7 +28,7 @@ parser.add_argument("--ellipticity", type=float, default=1.0,
                          "get the shape you want. Default: 1.0")
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
-parser.add_argument("--clobber", action='store_true', 
+parser.add_argument("--overwrite", action='store_true', 
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
@@ -46,4 +46,4 @@ beta_src = BetaModel(args.ra0, args.dec0, args.r_c, args.beta, n_evt,
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
                   beta_src.ra, beta_src.dec, energy, append=args.append,
-                  clobber=args.clobber)
+                  overwrite=args.overwrite)

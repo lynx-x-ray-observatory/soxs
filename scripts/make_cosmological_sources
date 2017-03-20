@@ -25,7 +25,7 @@ parser.add_argument("--area", type=float, default=30000.0,
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog.')
-parser.add_argument("--clobber", action='store_true',
+parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--output_sources", type=str, 
                     help="Output the source properties to the specified file.")
@@ -42,5 +42,5 @@ else:
 
 make_cosmological_sources_file(args.simput_prefix, args.phlist_prefix, args.exp_time, 
                                args.fov, sky_center, cat_center=cat_center, nH=args.nh, 
-                               area=args.area, append=args.append, clobber=args.clobber, 
+                               area=args.area, append=args.append, overwrite=args.overwrite, 
                                output_sources=args.output_sources, prng=args.random_seed)

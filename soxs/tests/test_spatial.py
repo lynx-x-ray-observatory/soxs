@@ -44,7 +44,7 @@ def test_point_source():
     pt_src = PointSourceModel(ra0, dec0, e.size)
 
     write_photon_list("pt_src", "pt_src", e.flux, pt_src.ra, pt_src.dec,
-                      e, clobber=True)
+                      e, overwrite=True)
 
     inst = get_instrument_from_registry("hdxi")
     inst["name"] = "hdxi_big_psf"
@@ -87,7 +87,7 @@ def test_annulus():
     ann_src = AnnulusModel(ra0, dec0, r_in, r_out, e.size, prng=prng)
 
     write_photon_list("ann", "ann", e.flux, ann_src.ra, ann_src.dec,
-                      e, clobber=True)
+                      e, overwrite=True)
 
     instrument_simulator("ann_simput.fits", "ann_evt.fits", exp_time,
                          "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
@@ -101,7 +101,7 @@ def test_annulus():
 
     write_radial_profile("ann_evt.fits", "ann_evt_profile.fits", [ra0, dec0],
                          1.1*r_in, 0.9*r_out, 100, ctr_type="celestial", 
-                         emin=0.5, emax=7.0, clobber=True)
+                         emin=0.5, emax=7.0, overwrite=True)
 
     load_data(1, "ann_evt_profile.fits", 3, ["RMID","SUR_BRI","SUR_BRI_ERR"])
     set_stat("chi2")
@@ -132,7 +132,7 @@ def test_beta_model():
     beta_src = BetaModel(ra0, dec0, r_c, beta, e.size, prng=prng)
 
     write_photon_list("beta", "beta", e.flux, beta_src.ra, beta_src.dec,
-                      e, clobber=True)
+                      e, overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
                          "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
@@ -146,7 +146,7 @@ def test_beta_model():
 
     write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", [ra0, dec0],
                          0.0, 100.0, 200, ctr_type="celestial", emin=0.5, 
-                         emax=7.0, clobber=True)
+                         emax=7.0, overwrite=True)
 
     load_data(1, "beta_evt_profile.fits", 3, ["RMID","SUR_BRI","SUR_BRI_ERR"])
     set_stat("chi2")

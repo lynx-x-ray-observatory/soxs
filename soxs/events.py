@@ -15,7 +15,7 @@ def wcs_from_event_file(f):
     w.wcs.cunit = [h["TCUNI2"], h["TCUNI3"]]
     return w
 
-def write_event_file(events, parameters, filename, clobber=False):
+def write_event_file(events, parameters, filename, overwrite=False):
     from astropy.time import Time, TimeDelta
     mylog.info("Writing events to file %s." % filename)
 
@@ -117,9 +117,9 @@ def write_event_file(events, parameters, filename, clobber=False):
 
     hdulist = [pyfits.PrimaryHDU(), tbhdu, tbhdu_gti]
 
-    pyfits.HDUList(hdulist).writeto(filename, clobber=clobber)
+    pyfits.HDUList(hdulist).writeto(filename, overwrite=overwrite)
 
-def write_spectrum(evtfile, specfile, clobber=False):
+def write_spectrum(evtfile, specfile, overwrite=False):
     r"""
     Bin event energies into a spectrum and write it to 
     a FITS binary table. Does not do any grouping of 
@@ -131,8 +131,8 @@ def write_spectrum(evtfile, specfile, clobber=False):
         The name of the event file to read the events from. 
     specfile : string
         The name of the spectrum file to be written.
-    clobber : boolean, optional
-        Whether or not to clobber an existing file with 
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file with 
         the same name. Default: False
     """
     from soxs.instrument import RedistributionMatrixFile
@@ -200,11 +200,11 @@ def write_spectrum(evtfile, specfile, clobber=False):
 
     hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
 
-    hdulist.writeto(specfile, clobber=clobber)
+    hdulist.writeto(specfile, overwrite=overwrite)
 
 def write_radial_profile(evt_file, out_file, ctr, rmin, 
                          rmax, nbins, ctr_type="celestial", 
-                         emin=None, emax=None, clobber=False):
+                         emin=None, emax=None, overwrite=False):
     r"""
     Bin up events into a radial profile and write them to a FITS
     table. 
@@ -236,8 +236,8 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     emax : float
         The maximum energy of the events to be binned in keV. 
         Default is the highest energy available.
-    clobber : boolean, optional
-        Whether or not to clobber an existing file with the 
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file with the 
         same name. Default: False
     """
     f = pyfits.open(evt_file)
@@ -295,14 +295,14 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
 
     hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
 
-    hdulist.writeto(out_file, clobber=clobber)
+    hdulist.writeto(out_file, overwrite=overwrite)
 
 coord_types = {"sky": ("X", "Y", 2, 3),
                "chip": ("CHIPX", "CHIPY", 6, 7),
                "det": ("DETX", "DETY", 8, 9)}
 
 def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None, 
-                clobber=False):
+                overwrite=False):
     r"""
     Generate a image by binning X-ray counts and write 
     it to a FITS file.
@@ -322,8 +322,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     emax : float, optional
         The maximum energy of the photons to put in the 
         image, in keV.
-    clobber : boolean, optional
-        Whether or not to clobber an existing file with 
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file with 
         the same name. Default: False
     """
     f = pyfits.open(evt_file)
@@ -383,7 +383,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
     hdu.header["EXPOSURE"] = exp_time
 
-    hdu.writeto(out_file, clobber=clobber)
+    hdu.writeto(out_file, overwrite=overwrite)
 
 def plot_spectrum(specfile, figsize=(10,10), plot_energy=True):
     """

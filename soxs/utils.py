@@ -123,7 +123,7 @@ def convert_rmf(rmffile):
         if key in matrix.header:
             matrix_new.header[key] = matrix.header[key]
 
-    new_f.writeto(os.path.split(rmffile)[-1], clobber=True)
+    new_f.writeto(os.path.split(rmffile)[-1], overwrite=True)
 
 def issue_deprecation_warning(msg):
     import warnings

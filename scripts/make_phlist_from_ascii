@@ -27,7 +27,7 @@ parser.add_argument("phlist_prefix", type=str,
 parser.add_argument("infile", type=str, help="The file containing the flux and positions and energies.")
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
-parser.add_argument("--clobber", action='store_true',
+parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
 
 args = parser.parse_args()
@@ -43,4 +43,4 @@ ra, dec, energy = np.loadtxt(args.infile, unpack=True, skiprows=1)
 
 write_photon_list(args.simput_prefix, args.phlist_prefix, flux,
                   ra, dec, energy, append=args.append,
-                  clobber=args.clobber)
+                  overwrite=args.overwrite)

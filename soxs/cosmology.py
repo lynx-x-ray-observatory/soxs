@@ -200,7 +200,7 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
 def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
                                    sky_center, cat_center=None, nH=0.05, 
-                                   area=40000.0, append=False, clobber=False, 
+                                   area=40000.0, append=False, overwrite=False, 
                                    output_sources=None, prng=None):
     r"""
     Make a SIMPUT catalog made up of contributions from
@@ -233,7 +233,7 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
     append : boolean, optional
         If True, append a new source an existing SIMPUT 
         catalog. Default: False
-    clobber : boolean, optional
+    overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
     output_sources : string, optional
         If set to a filename, output the properties of the sources
@@ -248,4 +248,4 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
                                        nH=nH, area=area, output_sources=output_sources,
                                        prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
-                      events["dec"], events["energy"], append=append, clobber=clobber)
+                      events["dec"], events["energy"], append=append, overwrite=overwrite)

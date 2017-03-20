@@ -50,7 +50,7 @@ def plaw_fit(alpha_sim):
     pt_src = PointSourceModel(30.0, 45.0, e.size)
 
     write_photon_list("plaw_model", "plaw_model", e.flux, pt_src.ra, pt_src.dec,
-                      e, clobber=True)
+                      e, overwrite=True)
 
     instrument_simulator("plaw_model_simput.fits", "plaw_model_evt.fits", exp_time, 
                          inst_name, [30.0, 45.0], instr_bkgnd=False, ptsrc_bkgnd=False,
@@ -62,7 +62,7 @@ def plaw_fit(alpha_sim):
     os.system("cp %s ." % arf.filename)
     convert_rmf(rmf.filename)
     
-    write_spectrum("plaw_model_evt.fits", "plaw_model_evt.pha", clobber=True)
+    write_spectrum("plaw_model_evt.fits", "plaw_model_evt.pha", overwrite=True)
 
     load_user_model(mymodel, "wplaw")
     add_user_pars("wplaw", ["nH", "norm", "redshift", "alpha"],
