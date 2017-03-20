@@ -531,6 +531,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                                                dither_shape=dither_shape, 
                                                dither_size=dither_size, 
                                                roll_angle=roll_angle, prng=prng)
+        mylog.info("Generated %d photons from the point-source background." % len(events["ra"]))
     else:
         events = defaultdict(list)
         event_params = {"exposure_time": exp_time, 

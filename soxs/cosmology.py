@@ -164,7 +164,15 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         t = Table([ra0, dec0, rc, beta, ellip, theta, m, r500, kT, z, flux_kcorr],
                   names=('RA', 'Dec', 'r_c', 'beta', 'ellipticity',
                          'theta', 'M500c', 'r500', 'kT', 'redshift', 'flux'))
-        t.write(output_sources, format='ascii')
+        t["RA"].unit = "deg"
+        t["Dec"].unit = "deg"
+        t["flux"].unit = "erg/(cm**2*s)"
+        t["r_c"].unit = "kpc"
+        t["theta"].unit = "deg"
+        t["M500c"].unit = "solMass"
+        t["r500"].unit = "kpc"
+        t["kT"].unit = "kT"
+        t.write(output_sources, format='ascii.ecsv', overwrite=True)
 
     tot_flux = 0.0
     ee = []

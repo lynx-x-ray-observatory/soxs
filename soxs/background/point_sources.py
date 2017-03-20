@@ -108,8 +108,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
-    mylog.info("Creating photons from the point-source background.")
-
     prng = parse_prng(prng)
     agn_sources, gal_sources = generate_sources(exp_time, area, fov, prng)
 
@@ -148,7 +146,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     if output_sources is not None:
         t = Table([ra0, dec0, [s.flux for s in sources]],
                   names=('RA', 'Dec', 'flux'))
-        t.write(output_sources, format='ascii')
+        t["RA"].unit = "deg"
+        t["Dec"].unit = "deg"
+        t["flux"].unit = "erg/(cm**2*s)"
+        t.write(output_sources, format='ascii.ecsv', overwrite=True)
 
     for i, source in enumerate(sources):
         # Using the energy flux, determine the photon flux by simple scaling
@@ -193,8 +194,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         mylog.debug("%d photons remain after foreground galactic absorption." % all_nph)
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
-
-    mylog.info("Generated %d photons from the point-source background." % all_nph)
 
     output_events = {"ra": all_ra, "dec": all_dec, 
                      "energy": all_energies, "flux": all_flux}
