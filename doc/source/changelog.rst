@@ -16,6 +16,9 @@ bugfixes.
   to create a background for every observation, which can be prohibitive for 
   long exposures. 
 * Added a point-source component to the astrophysical background. 
+* The background keyword arguments for :func:`~soxs.instrument.instrument_simulator`
+  are now ``instr_bkgnd``, ``foreground``, and ``ptsrc_bkgnd``. ``astro_bkgnd``
+  has been removed. This is a backwards-incompatible change. 
 * Added the capability to create a source composed of cosmological halos drawn
   from a cosmological simulation. 
 * Instrument specifications for *Chandra*/ACIS-I have been added, with responses
