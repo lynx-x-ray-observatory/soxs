@@ -23,6 +23,9 @@ bugfixes.
   from a cosmological simulation. 
 * Instrument specifications for *Chandra*/ACIS-I have been added, with responses
   from Cycle 0 and Cycle 18. 
+* SOXS now has the new dependencies of `h5py <http://www.h5py.org>`_ and 
+  `SciPy <http://www.scipy.org>`, as well as `AstroPy <http://www.astropy.org>`_ 
+  version 1.3. 
 * Added the ability to specify a name for a source in a SIMPUT catalog when
   writing a photon list file.
 * Test coverage has been improved, especially for backgrounds. 
