@@ -23,9 +23,9 @@ of tools to design source models and convolve them with simulated models
 of X-ray observatories. In particular, SOXS is the primary simulation tool
 for simulations of *Lynx* observations.  
 
-There are two main entry points to SOXS: a command-line interface, and a
-Python interface. The former is simpler to use, but the latter has more power
-and flexibility. Both of these entry points are extensively documented here with
+There are two main entry points to SOXS: a Python interface, and a command-line
+interface. The former has more power and flexibility, but the latter is often
+simpler to use. Both of these entry points are extensively documented here with
 examples. Though you will find details on usage and example runs of the command
 line scripts in the :ref:`command-line`, it is recommended to also look over
 the corresponding documentation in the :ref:`python` for details about what is 
@@ -79,8 +79,8 @@ Documentation Contents
    installing
    overview
    responses
-   command_line/index
    users_guide/index
+   command_line/index
    cookbook/index
    getting_help
    api/index

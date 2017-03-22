@@ -3,7 +3,7 @@
 SOXS Users' Guide
 =================
 
-This section documents the Python interface to SOXS.
+This section documents the capabilities of SOXS and its Python interface.
 
 .. toctree::
    :maxdepth: 1

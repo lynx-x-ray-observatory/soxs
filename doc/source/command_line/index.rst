@@ -1,7 +1,7 @@
 .. _command-line:
 
-SOXS Command Line Interface
-===========================
+SOXS Command Line Interface Guide
+=================================
 
 This section documents the various command-line scripts included with SOXS.
 
