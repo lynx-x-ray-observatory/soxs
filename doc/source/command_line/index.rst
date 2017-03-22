@@ -12,3 +12,4 @@ This section documents the various command-line scripts included with SOXS.
    spatial
    source_catalogs
    instrument     
+   background

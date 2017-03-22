@@ -1,8 +1,3 @@
-"""
-Draw point sources from a logN-logS distribution and generate 
-simulated events from them. Flux units are 10^-14 erg/cm^2/s.  
-Author: Scott Randall (srandall@cfa.harvard.edu)
-"""
 import numpy as np
 from soxs import write_photon_list
 from soxs.constants import keV_per_erg, erg_per_keV
@@ -206,7 +201,7 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
                             output_sources=None):
     """
     Make a SIMPUT catalog made up of contributions from
-    point sources.
+    point sources. 
 
     Parameters
     ----------

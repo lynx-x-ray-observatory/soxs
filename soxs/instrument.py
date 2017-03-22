@@ -255,11 +255,10 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         following:
         1. The name of a SIMPUT catalog file.
         2. A Python dictionary containing the following items:
-            "ra": A NumPy array of right ascension values in degrees.
-            "dec": A NumPy array of declination values in degrees.
-            "energy": A NumPy array of energy values in keV.
-            "flux": The flux of the entire source, in units of erg/cm**2/s.
-        3. None if you only want to simulate the instrumental background.
+        "ra": A NumPy array of right ascension values in degrees.
+        "dec": A NumPy array of declination values in degrees.
+        "energy": A NumPy array of energy values in keV.
+        "flux": The flux of the entire source, in units of erg/cm**2/s.
     out_file : string
         The name of the event file to be written.
     exp_time : float
@@ -634,11 +633,10 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         following:
         1. The name of a SIMPUT catalog file.
         2. A Python dictionary containing the following items:
-            "ra": A NumPy array of right ascension values in degrees.
-            "dec": A NumPy array of declination values in degrees.
-            "energy": A NumPy array of energy values in keV.
-            "flux": The flux of the entire source, in units of erg/cm**2/s.
-        3. None if you only want to simulate the instrumental background.
+        "ra": A NumPy array of right ascension values in degrees.
+        "dec": A NumPy array of declination values in degrees.
+        "energy": A NumPy array of energy values in keV.
+        "flux": The flux of the entire source, in units of erg/cm**2/s.
     out_file : string
         The name of the event file to be written.
     exp_time : float

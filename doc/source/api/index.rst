@@ -11,3 +11,5 @@ This section details the API of the various Python functions and classes in SOXS
     simput
     instrument
     events
+    source_catalogs
+    background
