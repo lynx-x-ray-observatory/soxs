@@ -146,6 +146,8 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     # halo scale radius
     r500 = (3.0*m/(4.0*np.pi*500*rho_crit))**(1.0/3.0)
+    r500_kpc = r500 * 1000.0
+    rc_kpc = r500/conc * 1000.0
     rc = r500/conc/s
 
     # Halo slope parameter
@@ -161,12 +163,12 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     # If requested, output the source properties to a file
     if output_sources is not None:
-        t = Table([ra0, dec0, rc, beta, ellip, theta, m, r500, kT, z, flux_kcorr],
+        t = Table([ra0, dec0, rc_kpc, beta, ellip, theta, m, r500_kpc, kT, z, flux_kcorr],
                   names=('RA', 'Dec', 'r_c', 'beta', 'ellipticity',
-                         'theta', 'M500c', 'r500', 'kT', 'redshift', 'flux'))
+                         'theta', 'M500c', 'r500', 'kT', 'redshift', 'flux_0.5_2.0_keV'))
         t["RA"].unit = "deg"
         t["Dec"].unit = "deg"
-        t["flux"].unit = "erg/(cm**2*s)"
+        t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
         t["r_c"].unit = "kpc"
         t["theta"].unit = "deg"
         t["M500c"].unit = "solMass"

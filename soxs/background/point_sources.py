@@ -140,10 +140,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     # If requested, output the source properties to a file
     if output_sources is not None:
         t = Table([ra0, dec0, [s.flux for s in sources]],
-                  names=('RA', 'Dec', 'flux'))
+                  names=('RA', 'Dec', 'flux_0.5_2.0_keV'))
         t["RA"].unit = "deg"
         t["Dec"].unit = "deg"
-        t["flux"].unit = "erg/(cm**2*s)"
+        t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
         t.write(output_sources, format='ascii.ecsv', overwrite=True)
 
     for i, source in enumerate(sources):
