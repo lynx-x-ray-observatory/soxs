@@ -40,11 +40,18 @@ instrument you choose to simulate.
 Point Source Background Model
 -----------------------------
 
+Another astrophysical component of the background in SOXS comes from resolved
+point sources. The emission of these sources is assumed to originate from 
+cosmologically distanct AGN and galaxies. The fluxes for these sources are drawn 
+from :math:`log~N - log-S` distributions taken from 
+`Lehmer et al. (2012)'s <http://adsabs.harvard.edu/abs/2012ApJ...752...46L>`_ 
+study of the *Chandra* Deep Field South. 
+
 Each point source is given a power-law spectrum with a spectral index 
-:math:`\alpha = -1.2`, and foreground Galactic absorption is also applied to 
-these spectra assuming a neutral hydrogen column of 
-:math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}`. The position of each point source
-is then uniformly randomly distributed within the field of view. 
+:math:`\alpha = -1.2`, which is absorbed by foreground Galactic neutral hydrogen
+assuming a neutral hydrogen column of :math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}`. 
+The position of each point source is uniformly randomly distributed within the field 
+of view. 
 
 Though a point-source population is automatically created as a background 
 component when an observation is simulated, one can also create a SIMPUT catalog
