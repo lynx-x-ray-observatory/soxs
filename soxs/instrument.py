@@ -326,13 +326,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
     event_params["roll_angle"] = roll_angle
     event_params["fov"] = instrument_spec["fov"]
-    num = 0
-    for i in range(1, rmf.num_mat_columns+1):
-        if rmf.header["TTYPE%d" % i] == "F_CHAN":
-            num = i
-            break
-    event_params["chan_lim"] = [rmf.header["TLMIN%d" % num],
-                                rmf.header["TLMAX%d" % num]]
+    event_params["chan_lim"] = [rmf.cmin, rmf.cmax]
 
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
@@ -515,6 +509,11 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     input_events = defaultdict(list)
 
+    arf_file = check_file_location(instrument_spec["arf"], "files")
+    arf = AuxiliaryResponseFile(arf_file)
+    rmf_file = check_file_location(instrument_spec["rmf"], "files")
+    rmf = RedistributionMatrixFile(rmf_file)
+
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, 
@@ -525,23 +524,30 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         input_events["emin"].append(ptsrc_events["energy"].min())
         input_events["emax"].append(ptsrc_events["energy"].max())
         input_events["sources"].append("ptsrc_bkgnd")
-        events, event_params = generate_events(input_events, exp_time, 
+        events, event_params = generate_events(input_events, exp_time,
                                                instrument, sky_center,
                                                dither_shape=dither_shape, 
                                                dither_size=dither_size, 
                                                roll_angle=roll_angle, prng=prng)
         mylog.info("Generated %d photons from the point-source background." % len(events["ra"]))
     else:
+        nx = instrument_spec["num_pixels"]
         events = defaultdict(list)
         event_params = {"exposure_time": exp_time, 
                         "fov": instrument_spec["fov"],
-                        "num_pixels": instrument_spec["num_pixels"],
-                        "pix_center": np.array([0.5*(instrument_spec["num_pixels"]+1)]*2)}
+                        "num_pixels": nx,
+                        "pix_center": np.array([0.5*(nx+1)]*2),
+                        "channel_type": rmf.header["CHANTYPE"],
+                        "sky_center": sky_center,
+                        "plate_scale": instrument_spec["fov"]/nx/60.,
+                        "chan_lim": [rmf.cmin, rmf.cmax],
+                        "rmf": rmf_file, "arf": arf_file,
+                        "telescope": rmf.header["TELESCOP"],
+                        "instrument": rmf.header["INSTRUME"],
+                        "mission": rmf.header.get("MISSION", ""),
+                        "nchan": rmf.ebounds_header["DETCHANS"],
+                        "roll_angle": 0.0}
 
-    arf_file = check_file_location(instrument_spec["arf"], "files")
-    arf = AuxiliaryResponseFile(arf_file)
-    rmf_file = check_file_location(instrument_spec["rmf"], "files")
-    rmf = RedistributionMatrixFile(rmf_file)
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
         bkg_events = make_foreground(event_params, arf, rmf, prng=prng)
