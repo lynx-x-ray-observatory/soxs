@@ -147,21 +147,21 @@ the parameters ``ptsrc_bkgnd``, ``foreground``, and/or ``instr_bkgnd`` to
 .. code-block:: python
 
     # turn off the astrophysical foreground
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, overwrite=True, foreground=False)
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, foreground=False)
 
 .. code-block:: python
 
     # turn off the instrumental background
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, overwrite=True, instr_bkgnd=False)
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, instr_bkgnd=False)
 
 .. code-block:: python
 
     # turn off all backgrounds
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, overwrite=True, ptsrc_bkgnd=False,
-                         instr_bkgnd=False, foreground=False)
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, ptsrc_bkgnd=False,
+                              instr_bkgnd=False, foreground=False)
 
 .. _make-bkgnd:
 
@@ -180,9 +180,9 @@ file as input to :func:`~soxs.instrument.instrument_simulator`. The
     exp_time = 1000000.0 # seconds
     instrument = "hdxi"
     sky_center = [24., 12.] # degrees
-    make_background_file(out_file, exp_time, instrument, sky_center, 
-                         overwrite=True, foreground=True, instr_bkgnd=False,
-                         ptsrc_bkgnd=True)
+    soxs.make_background_file(out_file, exp_time, instrument, sky_center, 
+                              overwrite=True, foreground=True, instr_bkgnd=False,
+                              ptsrc_bkgnd=True)
 
 As can be noted from this example, :func:`~soxs.instrument.make_background_file`
 allows one to turn any of the three background components on or off using the
@@ -200,8 +200,8 @@ than the exposure time that the background was run with:
     simput_file = "beta_model_simput.fits"
     out_file = "evt.fits"
     sky_center = [30., 45.]
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, overwrite=True, bkgnd_file="bkgnd_evt.fits") 
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, bkgnd_file="bkgnd_evt.fits") 
 
 Note that the pointing of the background event file does not to be the same as
 the source pointing--the background events will be re-projected to match the

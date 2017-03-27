@@ -144,25 +144,18 @@ or turn off dithering entirely:
 
 .. code-block:: python
 
+    import soxs
     # this invocation makes the dither shape a circle and 
     # sets the radius to 8 arcsec
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, overwrite=True, dither_shape="circle", 
-                         dither_size=8.0)
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, dither_shape="circle", 
+                              dither_size=8.0)
     
 .. code-block:: python
 
     # this invocation turns off dithering entirely
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, overwrite=True, dither_shape=None) 
-
-You can also specify a non-zero roll angle:
-
-.. code-block:: python
-
-    # adds a roll of 45.0 degrees
-    instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                         sky_center, overwrite=True, roll_angle=45.0) 
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, dither_shape=None) 
 
 .. note:: 
 
@@ -183,8 +176,8 @@ spectrum and generate a convolved one from it. This is similar to what the XSPEC
 command "fakeit" does. 
 
 .. code-block:: python
-    
-    spec = Spectrum.from_file("lots_of_lines.dat")
+
+    spec = soxs.Spectrum.from_file("lots_of_lines.dat")
     instrument = "mucal"
     out_file = "lots_of_lines.pha"
     simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=True)

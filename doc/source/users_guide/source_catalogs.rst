@@ -4,8 +4,8 @@ Simulating Source Catalogs
 ==========================
 
 SOXS has the capability of simulating two different types of source catalogs:
-X-rays from a population of halos (galaxies, galaxy groups, and galaxy clusters),
-and point sources. 
+X-rays from a population of halos (galaxies, galaxy groups, and galaxy 
+clusters), and point sources. 
 
 .. _cosmo-source-catalog:
 
@@ -13,16 +13,22 @@ Cosmological Source Catalog
 ---------------------------
 
 SOXS provides a routine to generate X-ray photons from cosmologically distant 
-sources. This is made possible using a halo catalog from 
+sources. This is made possible using a halo catalog provided by Daisuke Nagai 
+(Yale) and Masato Shirasaki (NAOJ). The halo catalog is extracted from a light
+cone simulation produced using the methods of 
+`Shirasaki et al. (2015) <http://adsabs.harvard.edu/abs/2015ApJ...799..188S>`_. 
 
-The halo catalog is extracted from a light cone simulation of 100 square degrees
-and a maximum redshift of z = 3. A low-mass cut has been made at 
-:math:`M_{500c} = 3 \times 10^{12}~M_\odot`.
+The light cone simulation of :math:`10 \times 10` square degrees is produced 
+from two N-body simulation boxes with :math:`L = 480 \rm{Mpc/h}` and 
+:math:`L = 960 \rm{Mpc/h}`, out to the maximum redshift of z = 3, performed with
+the Gadget-2 code `(Springel 2005) <http://adsabs.harvard.edu/abs/2005MNRAS.364.1105S>`_. 
+Each simulation box contains :math:`1024^3` dark matter particles. Halo finding 
+was performed using Rockstar 
+`(Behroozi et al. 2013) <http://adsabs.harvard.edu/abs/2013ApJ...762..109B>`_, 
+and only host halos were used and not subhalos.
 
-Using scaling relations from , the halo temperature and flux are derived from the
-halo mass. The halos are then given random ellipticities and orientations. 
-
-The cosmological parameters for this halo catalog are:
+The cosmological parameters for this halo catalog are from the WMAP 9-year 
+cosmology `Hinshaw et al. 2013 <http://adsabs.harvard.edu/abs/2013ApJ...771..137M>`_:
 
 * :math:`h = 0.7`
 * :math:`\Omega_m = 0.279`
@@ -30,15 +36,27 @@ The cosmological parameters for this halo catalog are:
 * :math:`\Omega_b = 0.0463`
 * :math:`w_{\rm DE} = -1`
 * :math:`\sigma_8 = 0.823`
+* :math:`n_s = 0.972`
+
+The X-ray emitting intracluster medium for each halo is modeled using a 
+:math:`\beta`-model function for the surface brightness and assuming 
+isothermality. Using scaling relations from , the halo temperature and flux are
+derived from the halo mass and redshift. The halos are given random 
+ellipticities and orientations. A low-mass cut has been made at 
+:math:`M_{500c} = 3 \times 10^{12}~M_\odot`.
 
 Flat-Field Map of Structure
 +++++++++++++++++++++++++++
 
-Below is a map showing an image of the full flat-field :math:`10 \times 10` degree
-sky map of the X-ray halos in the catalog. 
+Below is a map showing an image of the full flat-field :math:`10 \times 10` 
+degree sky map of the X-ray halos in the catalog. 
 
 .. image:: ../images/full_map.png
     :width: 1000px
+
+A FITS image of this map can be downloaded here, which you can open in ds9
+to select regions of interest and determine coordinates to be passed into the
+``cat_center`` parameter below.
 
 .. note::
 
@@ -61,8 +79,8 @@ file for a SIMPUT catalog using the cosmological sources model:
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     nH = 0.02 # Foreground galactic absorption, optional
     area = 40000.0 # Flat collecting area to generate photon sample
-    make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
-                                   fov, sky_center, nH=nH, area=area)
+    soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
+                                        fov, sky_center, nH=nH, area=area)
 
 By default, a random position will be chosen within the halo catalog. If you 
 would prefer to simulate a specific region within the catalog, set the keyword
@@ -72,9 +90,9 @@ either direction:
 .. code-block:: python
 
     cat_center = [-0.2, 3.0]
-    make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
-                                   fov, sky_center, nH=nH, area=area, 
-                                   cat_center=cat_center, append=True)
+    soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
+                                        fov, sky_center, nH=nH, area=area, 
+                                        cat_center=cat_center, append=True)
 
 .. _point-source-catalog:
 
@@ -101,14 +119,14 @@ described in :ref:`ptsrc-bkgnd`:
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     nH = 0.02 # Foreground galactic absorption, optional
     area = 40000.0 # Flat collecting area to generate photon sample
-    make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                            sky_center, nH=nH, area=area)
+    soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+                                 sky_center, nH=nH, area=area)
 
 
 .. note::
 
-    For both cosmological and point sources, As with other SIMPUT catalogs, if you
-    supply a value for ``simput_prefix`` to this function that refers to an existing
-    catalog and set ``append=True``, the photon list file will be appended to an 
-    existing SIMPUT catalog.
+    For both cosmological and point sources, As with other SIMPUT catalogs, if 
+    you supply a value for ``simput_prefix`` to this function that refers to an 
+    existing catalog and set ``append=True``, the photon list file will be 
+    appended to an existing SIMPUT catalog.
 
