@@ -54,9 +54,14 @@ degree sky map of the X-ray halos in the catalog.
 .. image:: ../images/full_map.png
     :width: 1000px
 
-A FITS image of this map can be downloaded here, which you can open in ds9
-to select regions of interest and determine coordinates to be passed into the
-``cat_center`` parameter below.
+A FITS image of this map (in units of :math:`photons~s^{-1}~cm^{-2}` in the 0.5-2 keV
+band) can be downloaded from the link below, which you can open in ds9 to select
+regions of interest and determine coordinates to be passed into the ``cat_center``
+parameter of :func:`~soxs.cosmology.make_cosmological_sources_file`. A full ASCII
+table of the halos in the catalog and their properties is also provided.
+
+* `FITS image of sources <http://hea-www.cfa.harvard.edu/~jzuhone/full_map.fits.gz>`_
+* `ASCII table of source properties <http://hea-www.cfa.harvard.edu/~jzuhone/all_halos.dat>`_
 
 .. note::
 
