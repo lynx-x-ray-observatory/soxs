@@ -20,7 +20,8 @@ from soxs.instrument_registry import \
     add_instrument_to_registry, \
     show_instrument_registry, \
     write_instrument_json, \
-    get_instrument_from_registry
+    get_instrument_from_registry, \
+    instrument_registry
 
 from soxs.spatial import \
     PointSourceModel, \

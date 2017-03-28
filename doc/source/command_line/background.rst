@@ -15,14 +15,12 @@ Command Line Scripts for Generating Backgrounds
                                 [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
                                 [--instr_bkgnd | --no_instr_bkgnd]
                                 [--foreground | --no_foreground]
-                                simput_file out_file exp_time instrument
+                                out_file exp_time instrument
                                 sky_center
     
     Run the instrument simulator and produce a simulated background event file.
     
     positional arguments:
-      simput_file           The SIMPUT file to be used as input, or "None" if you
-                            only want to simulate backgrounds.
       out_file              The name of the event file to be written.
       exp_time              The exposure time to use, in seconds.
       instrument            The name of the instrument to use, or alternatively
