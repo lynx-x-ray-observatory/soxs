@@ -19,8 +19,8 @@ cone simulation produced using the methods of
 `Shirasaki et al. (2015) <http://adsabs.harvard.edu/abs/2015ApJ...799..188S>`_. 
 
 The light cone simulation of :math:`10 \times 10` square degrees is produced 
-from two N-body simulation boxes with :math:`L = 480 \rm{Mpc/h}` and 
-:math:`L = 960 \rm{Mpc/h}`, out to the maximum redshift of z = 3, performed with
+from two N-body simulation boxes with :math:`L = 480~\rm{Mpc/h}` and
+:math:`L = 960~\rm{Mpc/h}`, out to the maximum redshift of z = 3, performed with
 the Gadget-2 code `(Springel 2005) <http://adsabs.harvard.edu/abs/2005MNRAS.364.1105S>`_. 
 Each simulation box contains :math:`1024^3` dark matter particles. Halo finding 
 was performed using Rockstar 
@@ -40,16 +40,17 @@ cosmology `Hinshaw et al. 2013 <http://adsabs.harvard.edu/abs/2013ApJ...771..137
 
 The X-ray emitting intracluster medium for each halo is modeled using a 
 :math:`\beta`-model function for the surface brightness and assuming 
-isothermality. Using scaling relations from , the halo temperature and flux are
-derived from the halo mass and redshift. The halos are given random 
-ellipticities and orientations. A low-mass cut has been made at 
-:math:`M_{500c} = 3 \times 10^{12}~M_\odot`.
+isothermality. Using scaling relations from
+`Vikhlinin et al. (2009) <http://adsabs.harvard.edu/abs/2009ApJ...692.1033V>`_,
+the halo temperature and flux are derived from the halo mass and redshift.
+The halos are given random ellipticities and orientations. A low-mass cut
+has been made at :math:`M_{500c} = 3 \times 10^{12}~M_\odot`.
 
 Flat-Field Map of Structure
 +++++++++++++++++++++++++++
 
 Below is a map showing an image of the full flat-field :math:`10 \times 10` 
-degree sky map of the X-ray halos in the catalog. 
+degree sky flux map (in the 0.5-2 keV band) of the X-ray halos in the catalog.
 
 .. image:: ../images/full_map.png
     :width: 1000px
