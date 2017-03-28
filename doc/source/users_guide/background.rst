@@ -21,14 +21,14 @@ The galactic foreground component is modeled as a sum of two thermal models,
 * ``kT``: :math:`\rm{0.2~keV}`
 * ``abund``: :math:`\rm{1.0~Z_\odot}`
 * ``redshift``: :math:`0.0`
-* ``norm``: :math:`\rm{6.82251 \times 10^{-7}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A(1+z)^2}}`
+* ``norm``: :math:`\rm{6.82251 \times 10^{-7}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
  
 ``apec`` **Model 2**
 
 * ``kT``: :math:`\rm{0.099~keV}`
 * ``abund``: :math:`\rm{1.0~Z_\odot}`
 * ``redshift``: :math:`0.0`
-* ``norm``: :math:`\rm{1.12328 \times 10^{-6}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A(1+z)^2}}`
+* ``norm``: :math:`\rm{1.12328 \times 10^{-6}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
 
 For more details on how this model was derived see 
 `Hickox & Markevitch 2007 <http://adsabs.harvard.edu/abs/2007ApJ...661L.117H>`_.
@@ -42,9 +42,9 @@ Point Source Background Model
 
 Another astrophysical component of the background in SOXS comes from resolved
 point sources. The emission of these sources is assumed to originate from 
-cosmologically distanct AGN and galaxies. The fluxes for these sources are drawn 
-from :math:`log~N - log-S` distributions taken from 
-`Lehmer et al. (2012)'s <http://adsabs.harvard.edu/abs/2012ApJ...752...46L>`_ 
+cosmologically distant AGN and galaxies. The fluxes for these sources are drawn
+from :math:`\rm{log}~N-\rm{log}~S` distributions taken from
+`Lehmer et al. (2012) <http://adsabs.harvard.edu/abs/2012ApJ...752...46L>`_'s
 study of the *Chandra* Deep Field South. 
 
 Each point source is given a power-law spectrum with a spectral index 
