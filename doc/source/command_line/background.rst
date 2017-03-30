@@ -3,8 +3,15 @@
 Command Line Scripts for Generating Backgrounds
 ===============================================
 
+These command line scripts allow one to generate background event files. 
+
 ``make_background_file``
 ------------------------
+
+The ``make_background_file`` generates a simulated observation of background
+in a standard event file format which can then be used as the background for 
+and observation or processed by standard tools such as CIAO, HEATOOLS, XSPEC, 
+etc.
 
 .. code-block:: text
 
@@ -48,3 +55,71 @@ Command Line Scripts for Generating Backgrounds
       --no_instr_bkgnd      Turn the instrumental background off.
       --foreground          Turn the galactic foreground on.
       --no_foreground       Turn the galactic foreground off.
+
+Examples
+++++++++
+
+Changing Instrument Specification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example uses the pre-built HDXI instrument specification, assuming a 50 ks observation
+with the pointing (RA, Dec) = (30, 45) degrees.
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --overwrite
+
+The same, but use the HDXI specification with mirror diameter of :math:`d` = 3 m and focal length of
+:math:`f` = 20 m:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi_3x20 30.,45. --overwrite
+
+See :ref:`instrument-arg` for details on the options for the ``instrument`` argument.
+
+This example uses a JSON file created by the user, which contains a custom instrument specification. See
+:ref:`instrument-registry` for details on how to do this.
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 my_inst.json 30.,45. --overwrite
+
+Changing Dither
+~~~~~~~~~~~~~~~
+
+Change the dither shape to a circle and make the dither radius 32 arcsec:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --overwrite
+
+Turn dithering off entirely:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --dither_shape=None --overwrite
+
+Customizing the Background
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Turn off the instrumental background:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --no_instr_bkgnd --overwrite
+
+Turn off the Galactic foreground:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --no_foreground --overwrite
+
+Turn off the point-source background:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --no_ptsrc_bkgnd --overwrite
+
+Any combination of these may be used to turn multiple components off or all 
+of them. 
