@@ -529,7 +529,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                                                dither_shape=dither_shape, 
                                                dither_size=dither_size, 
                                                roll_angle=roll_angle, prng=prng)
-        mylog.info("Generated %d photons from the point-source background." % len(events["ra"]))
+        mylog.info("Generated %d photons from the point-source background." % len(events["energy"]))
     else:
         nx = instrument_spec["num_pixels"]
         events = defaultdict(list)
