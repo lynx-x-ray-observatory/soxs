@@ -17,6 +17,7 @@ sources. This is made possible using a halo catalog provided by Daisuke Nagai
 (Yale) and Masato Shirasaki (NAOJ). The halo catalog is extracted from a light
 cone simulation produced using the methods of 
 `Shirasaki et al. (2015) <http://adsabs.harvard.edu/abs/2015ApJ...799..188S>`_. 
+It includes :math:`M_{500c}`, :math:`z`, and center coordinates for each halo.
 
 The light cone simulation of :math:`10 \times 10` square degrees is produced 
 from two N-body simulation boxes with :math:`L = 480~\rm{Mpc/h}` and
@@ -42,9 +43,15 @@ The X-ray emitting intracluster medium for each halo is modeled using a
 :math:`\beta`-model function for the surface brightness and assuming 
 isothermality. Using scaling relations from
 `Vikhlinin et al. (2009) <http://adsabs.harvard.edu/abs/2009ApJ...692.1033V>`_,
-the halo temperature and flux are derived from the halo mass and redshift.
-The halos are given random ellipticities and orientations. A low-mass cut
-has been made at :math:`M_{500c} = 3 \times 10^{12}~M_\odot`.
+the halo temperature and flux are derived from the halo mass and redshift,
+assuming an APEC model for the spectrum. The scale radius of each halo is given
+by :math:`r_{500c}/10`. The :math:`\beta`-parameter for each halo is drawn from
+a normal distribution with mean 2/3 and standard deviation 0.05. Each halo is
+also given a random ellipticity from a Gaussian distribution of mean 0.85 and
+standard deviation 0.15, and the orientation of this ellipticity is drawn from
+a uniform distribution over the range :math:`[0, 2\pi]`.
+
+A low-mass cut has been made at :math:`M_{500c} = 3 \times 10^{12}~M_\odot`.
 
 Flat-Field Map of Structure
 +++++++++++++++++++++++++++
