@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.extension import Extension
 import numpy as np
 import glob
@@ -13,8 +13,8 @@ cython_extensions = [
               include_dirs=[np.get_include()])]
 
 setup(name='soxs',
-      packages=['soxs'],
-      version="1.0.0",
+      packages=find_packages(),
+      version="1.0.1",
       description='Simulated Observations with X-ray Surveyor',
       author='John ZuHone',
       author_email='john.zuhone@cfa.harvard.edu',
