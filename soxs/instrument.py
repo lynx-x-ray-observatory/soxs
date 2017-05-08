@@ -431,12 +431,13 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
                 # Store detector coordinates
 
-                events["detx"] = detx
-                events["dety"] = dety
+                events["detx"] = detx[keep]
+                events["dety"] = dety[keep]
 
                 # Convert detector coordinates back to pixel coordinates
 
-                pix = np.dot(rot_mat, np.array([detx, dety]))
+                pix = np.dot(rot_mat, np.array([events["detx"],
+                                                events["dety"]]))
 
                 events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset[keep]
                 events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset[keep]
