@@ -429,16 +429,14 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 for key in events:
                     events[key] = events[key][keep]
 
-                # Convert chip coordinates back to detector coordinates
+                # Store detector coordinates
 
-                events["detx"] = events["chipx"] - event_params['pix_center'][0] + \
-                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                events["dety"] = events["chipy"] - event_params['pix_center'][1] + \
-                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                events["detx"] = detx
+                events["dety"] = dety
 
                 # Convert detector coordinates back to pixel coordinates
 
-                pix = np.dot(rot_mat, np.array([events["detx"], events["dety"]]))
+                pix = np.dot(rot_mat, np.array([detx, dety]))
 
                 events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset[keep]
                 events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset[keep]
