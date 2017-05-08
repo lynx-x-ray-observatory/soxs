@@ -43,7 +43,7 @@ spec.apply_foreground_absorption(nH_sim)
 
 def test_thermal():
 
-    prng = RandomState(70)
+    prng = RandomState(71)
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
