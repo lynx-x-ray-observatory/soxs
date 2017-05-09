@@ -394,8 +394,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             # Rotate physical coordinates to detector coordinates
 
             det = np.dot(rot_mat, np.array([xpix, ypix]))
-            detx = det[0,:]
-            dety = det[1,:]
+            events["detx"] = det[0,:]
+            events["dety"] = det[1,:]
 
             # PSF scattering of detector coordinates
 
@@ -403,15 +403,15 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 psf_type, psf_spec = instrument_spec["psf"]
                 if psf_type == "gaussian":
                     sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
-                    detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-                    dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                    events["detx"] += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                    events["dety"] += prng.normal(loc=0.0, scale=sigma, size=n_evt)
                 else:
                     raise NotImplementedError("PSF type %s not implemented!" % psf_type)
 
             # Convert detector coordinates to chip coordinates
 
-            events["chipx"] = np.round(detx + event_params['pix_center'][0])
-            events["chipy"] = np.round(dety + event_params['pix_center'][1])
+            events["chipx"] = np.round(events["detx"] + event_params['pix_center'][0])
+            events["chipy"] = np.round(events["dety"] + event_params['pix_center'][1])
 
             # Throw out events that don't fall on the chip
 
@@ -426,13 +426,10 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 mylog.warning("No events are within the field of view for this source!!!")
             else:
 
+                # Keep only those events which fall on the chip
+
                 for key in events:
                     events[key] = events[key][keep]
-
-                # Store detector coordinates
-
-                events["detx"] = detx[keep]
-                events["dety"] = dety[keep]
 
                 # Convert detector coordinates back to pixel coordinates
 
