@@ -373,7 +373,13 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
             n_evt = xpix.size
 
-            # Dither pixel coordinates
+            # Rotate physical coordinates to detector coordinates
+
+            det = np.dot(rot_mat, np.array([xpix, ypix]))
+            detx = det[0,:]
+            dety = det[1,:]
+
+            # Apply dithering
 
             x_offset = np.zeros(n_evt)
             y_offset = np.zeros(n_evt)
@@ -388,14 +394,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                     x_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
                     y_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
-            xpix -= x_offset
-            ypix -= y_offset
-
-            # Rotate physical coordinates to detector coordinates
-
-            det = np.dot(rot_mat, np.array([xpix, ypix]))
-            events["detx"] = det[0,:]
-            events["dety"] = det[1,:]
+            detx -= x_offset
+            dety -= y_offset
 
             # PSF scattering of detector coordinates
 
@@ -403,15 +403,15 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 psf_type, psf_spec = instrument_spec["psf"]
                 if psf_type == "gaussian":
                     sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
-                    events["detx"] += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-                    events["dety"] += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                    detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
+                    dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
                 else:
                     raise NotImplementedError("PSF type %s not implemented!" % psf_type)
 
             # Convert detector coordinates to chip coordinates
 
-            events["chipx"] = np.round(events["detx"] + event_params['pix_center'][0])
-            events["chipy"] = np.round(events["dety"] + event_params['pix_center'][1])
+            events["chipx"] = np.round(detx + event_params['pix_center'][0])
+            events["chipy"] = np.round(dety + event_params['pix_center'][1])
 
             # Throw out events that don't fall on the chip
 
@@ -431,13 +431,22 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 for key in events:
                     events[key] = events[key][keep]
 
-                # Convert detector coordinates back to pixel coordinates
+                # Convert chip coordinates back to detector coordinates
 
-                pix = np.dot(rot_mat, np.array([events["detx"],
-                                                events["dety"]]))
+                events["detx"] = events["chipx"] - event_params["pix_center"][0] + \
+                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                events["dety"] = events["chipy"] - event_params["pix_center"][1] + \
+                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
-                events["xpix"] = pix[0,:] + event_params['pix_center'][0] + x_offset[keep]
-                events["ypix"] = pix[1,:] + event_params['pix_center'][1] + y_offset[keep]
+                # Convert detector coordinates back to pixel coordinates by
+                # adding the dither offsets back in and applying the rotation
+                # matrix again
+
+                pix = np.dot(rot_mat, np.array([events["detx"] + x_offset[keep],
+                                                events["dety"] + y_offset[keep]]))
+
+                events["xpix"] = pix[0,:] + event_params['pix_center'][0]
+                events["ypix"] = pix[1,:] + event_params['pix_center'][1]
 
         if n_evt > 0:
             for key in events:
