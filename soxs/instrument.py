@@ -236,7 +236,7 @@ class RedistributionMatrixFile(object):
 
 def generate_events(input_events, exp_time, instrument, sky_center, 
                     dither_shape="square", dither_size=16.0, roll_angle=0.0, 
-                    prng=None):
+                    subpixel_res=False, prng=None):
     """
     Take unconvolved events and convolve them with instrumental responses. This 
     function does the following:
@@ -276,6 +276,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
+    subpixel_res: boolean
+        If True, event positions are not randomized within the pixels 
+        within which they are detected. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -431,12 +434,17 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 for key in events:
                     events[key] = events[key][keep]
 
-                # Convert chip coordinates back to detector coordinates
+                # Convert chip coordinates back to detector coordinates, unless the
+                # user has specified that they want subpixel resolution
 
-                events["detx"] = events["chipx"] - event_params["pix_center"][0] + \
-                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                events["dety"] = events["chipy"] - event_params["pix_center"][1] + \
-                    prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                if subpixel_res:
+                    events["detx"] = detx[keep]
+                    events["dety"] = dety[keep]
+                else:
+                    events["detx"] = events["chipx"] - event_params["pix_center"][0] + \
+                        prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                    events["dety"] = events["chipy"] - event_params["pix_center"][1] + \
+                        prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
                 # Convert detector coordinates back to pixel coordinates by
                 # adding the dither offsets back in and applying the rotation
@@ -471,7 +479,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
 def make_background(exp_time, instrument, sky_center, foreground=True, 
                     ptsrc_bkgnd=True, instr_bkgnd=True, dither_shape="square", 
-                    dither_size=16.0, roll_angle=0.0, prng=None):
+                    dither_size=16.0, roll_angle=0.0, subpixel_res=False, 
+                    prng=None):
     """
     Make background events. 
 
@@ -499,6 +508,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
+    subpixel_res: boolean
+        If True, event positions are not randomized within the pixels 
+        within which they are detected. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -533,7 +545,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                                                instrument, sky_center,
                                                dither_shape=dither_shape, 
                                                dither_size=dither_size, 
-                                               roll_angle=roll_angle, prng=prng)
+                                               roll_angle=roll_angle,
+                                               subpixel_res=subpixel_res,
+                                               prng=prng)
         mylog.info("Generated %d photons from the point-source background." % len(events["energy"]))
     else:
         nx = instrument_spec["num_pixels"]
@@ -572,7 +586,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 def make_background_file(out_file, exp_time, instrument, sky_center, 
                          overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, dither_shape="square", 
-                         dither_size=16.0, prng=None):
+                         dither_size=16.0, subpixel_res=False, prng=None):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -604,6 +618,9 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
     dither_size : float
         The size of the dither in arcseconds. Width of square or radius
         of circle. Default: 16.0
+    subpixel_res: boolean
+        If True, event positions are not randomized within the pixels 
+        within which they are detected. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -616,14 +633,17 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            foreground=foreground, 
                                            instr_bkgnd=instr_bkgnd,
                                            dither_shape=dither_shape, 
-                                           dither_size=dither_size, prng=prng)
+                                           dither_size=dither_size, 
+                                           subpixel_res=subpixel_res,
+                                           prng=prng)
     write_event_file(events, event_params, out_file, overwrite=overwrite)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, overwrite=False, instr_bkgnd=True, 
                          foreground=True, ptsrc_bkgnd=True, 
                          bkgnd_file=None, dither_shape="square", 
-                         dither_size=16.0, roll_angle=0.0, prng=None):
+                         dither_size=16.0, roll_angle=0.0, subpixel_res=False,
+                         prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -680,6 +700,9 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         of circle. Default: 16.0
     roll_angle : float
         The roll angle of the observation in degrees. Default: 0.0
+    subpixel_res: boolean
+        If True, event positions are not randomized within the pixels 
+        within which they are detected. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -697,7 +720,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     # Make the source first
     events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
                                            dither_shape=dither_shape, dither_size=dither_size, 
-                                           roll_angle=roll_angle, prng=prng)
+                                           roll_angle=roll_angle, subpixel_res=subpixel_res,
+                                           prng=prng)
     # If the user wants backgrounds, either make the background or add an already existing
     # background event file. It may be necessary to reproject events to a new coordinate system.
     if bkgnd_file is None:
@@ -709,7 +733,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                                             foreground=foreground, instr_bkgnd=instr_bkgnd, 
                                             dither_shape=dither_shape, dither_size=dither_size, 
                                             ptsrc_bkgnd=ptsrc_bkgnd, prng=prng, 
-                                            roll_angle=roll_angle)
+                                            subpixel_res=subpixel_res, roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:

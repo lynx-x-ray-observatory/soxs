@@ -30,6 +30,8 @@ parser.add_argument("--roll_angle", type=float, default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
 parser.add_argument("--bkgnd_file", type=str,
                     help='Use background stored in a file instead of generating one.')
+parser.add_argument("--subpixel_res", action='store_true',
+                    help="Don't uniformly distribute event positions within pixels.")
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
 ptsrc_parser = parser.add_mutually_exclusive_group(required=False)
@@ -68,4 +70,5 @@ instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      dither_shape=dither_shape, overwrite=args.overwrite,
                      roll_angle=args.roll_angle, instr_bkgnd=args.instr_bkgnd,
                      ptsrc_bkgnd=args.ptsrc_bkgnd, foreground=args.foreground,
-                     bkgnd_file=args.bkgnd_file, prng=args.random_seed)
+                     bkgnd_file=args.bkgnd_file, subpixel_res=args.subpixel_res,
+                     prng=args.random_seed)
