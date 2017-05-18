@@ -77,8 +77,7 @@ def generate_fluxes(exp_time, area, fov, prng):
     return agn_fluxes, gal_fluxes
 
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
-                          input_sources=None, output_sources=None, no_events=False,
-                          prng=None):
+                          input_sources=None, output_sources=None, prng=None):
     r"""
     Make a point-source background.
 
@@ -104,10 +103,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
-    no_events : boolean, optional
-        If True, do not generate events but only generate sources. 
-        Really only makes sense if one wants to write the source
-        properties to an ASCII table to be used later.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -154,9 +149,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
         t["index"].unit = ""
         t.write(output_sources, format='ascii.ecsv', overwrite=True)
-
-    if no_events:
-        return None
 
     # Pre-calculate for optimization
     eratio = spec_emax/spec_emin
@@ -224,8 +216,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
                             sky_center, nH=0.05, area=40000.0, 
                             prng=None, append=False, overwrite=False,
-                            input_sources=None, output_sources=None,
-                            no_events=False):
+                            input_sources=None, output_sources=None):
     """
     Make a SIMPUT catalog made up of contributions from
     point sources. 
@@ -266,16 +257,10 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
-    no_events : boolean, optional
-        If True, do not generate events but only generate sources.
-        Really only makes sense if one wants to write the source
-        properties to an ASCII table to be used later.
     """
     events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
                                    input_sources=input_sources, 
-                                   output_sources=output_sources, prng=prng,
-                                   no_events=no_events)
-    if not no_events:
-        write_photon_list(simput_prefix, phlist_prefix, events["flux"], 
-                          events["ra"], events["dec"], events["energy"], 
-                          append=append, overwrite=overwrite)
+                                   output_sources=output_sources, prng=prng)
+    write_photon_list(simput_prefix, phlist_prefix, events["flux"], 
+                      events["ra"], events["dec"], events["energy"], 
+                      append=append, overwrite=overwrite)
