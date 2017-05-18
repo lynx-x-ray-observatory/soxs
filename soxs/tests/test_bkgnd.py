@@ -81,6 +81,9 @@ def test_ptsrc():
         make_ptsrc_background
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
     from soxs.constants import erg_per_keV
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
     prng = RandomState(33)
     fov = 20.0 # arcmin
     exp_time = 500000.0 # seconds
@@ -112,15 +115,22 @@ def test_ptsrc():
     agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng2)
     fluxes = np.concatenate([agn_fluxes, gal_fluxes])
     events = make_ptsrc_background(exp_time, fov, sky_center, area=area, 
-                                   prng=prng1, nH=None)
+                                   prng=prng1, nH=None, output_sources="src.dat")
     idxs = np.logical_and(events["energy"] > 0.5, events["energy"] < 2.0)
     E_mean = events["energy"][idxs].mean()*erg_per_keV
     n1 = fluxes.sum()*exp_time*area/E_mean
     n2 = idxs.sum()
     dn = np.sqrt(n2)
     assert np.abs(n1-n2) < 1.645*dn
+    events2 = make_ptsrc_background(exp_time, fov, sky_center, area=area,
+                                    prng=prng1, nH=None, input_sources="src.dat")
+    assert_allclose(events["ra"].sum(), events2["ra"].sum(), rtol=1.0e-3)
+    assert_allclose(events["dec"].sum(), events2["dec"].sum(), rtol=1.0e-3)
+    assert_allclose(events["energy"].sum(), events2["energy"].sum(), rtol=1.0e-3)
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":
-    test_add_background()
-    test_uniform_bkgnd_scale()
+    #test_add_background()
+    #test_uniform_bkgnd_scale()
     test_ptsrc()

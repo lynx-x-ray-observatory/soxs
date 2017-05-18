@@ -6,6 +6,7 @@ from soxs.utils import mylog, parse_prng
 from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import erf
 from astropy.table import Table
+from astropy.io import ascii
 
 # Function for computing spectral index of AGN sources
 # a fit to the data from Figure 13a of Hickox & Markevitch 2006
@@ -76,7 +77,7 @@ def generate_fluxes(exp_time, area, fov, prng):
     return agn_fluxes, gal_fluxes
 
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
-                          output_sources=None, prng=None):
+                          input_sources=None, output_sources=None, prng=None):
     r"""
     Make a point-source background.
 
@@ -95,6 +96,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
+    input_sources : string, optional
+        If set to a filename, input the source positions, fluxes,
+        and spectral indices from an ASCII table instead of generating
+        them. Default: None
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
@@ -105,23 +110,48 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         which sets the seed based on the system time. 
     """
     prng = parse_prng(prng)
-    agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng)
 
-    fluxes = np.concatenate([agn_fluxes, gal_fluxes])
+    if input_sources is None:
 
-    num_sources = fluxes.size
+        agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng)
+
+        fluxes = np.concatenate([agn_fluxes, gal_fluxes])
+
+        num_sources = fluxes.size
+
+        ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)),
+                              gal_index*np.ones(gal_fluxes.size)])
+
+        dec_scal = np.fabs(np.cos(sky_center[1]*np.pi/180))
+        ra_min = sky_center[0] - fov/(2.0*60.0*dec_scal)
+        dec_min = sky_center[1] - fov/(2.0*60.0)
+
+        ra0 = prng.uniform(size=num_sources)*fov/(60.0*dec_scal) + ra_min
+        dec0 = prng.uniform(size=num_sources)*fov/60.0 + dec_min
+
+    else:
+
+        t = ascii.read(input_sources)
+        ra0 = t["RA"].data
+        dec0 = t["Dec"].data
+        fluxes = t["flux_0.5_2.0_keV"].data
+        ind = t["index"].data
+        num_sources = fluxes.size
+
     mylog.debug("Generating spectra from %d sources." % num_sources)
-    dec_scal = np.fabs(np.cos(sky_center[1]*np.pi/180))
-    ra_min = sky_center[0] - fov/(2.0*60.0*dec_scal)
-    dec_min = sky_center[1] - fov/(2.0*60.0)
-    all_energies = []
-    all_ra = []
-    all_dec = []
+
+    # If requested, output the source properties to a file
+    if output_sources is not None:
+        t = Table([ra0, dec0, fluxes, ind],
+                  names=('RA', 'Dec', 'flux_0.5_2.0_keV', 'index'))
+        t["RA"].unit = "deg"
+        t["Dec"].unit = "deg"
+        t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
+        t["index"].unit = ""
+        t.write(output_sources, format='ascii.ecsv', overwrite=True)
 
     # Pre-calculate for optimization
     eratio = spec_emax/spec_emin
-    ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)),
-                          gal_index*np.ones(gal_fluxes.size)])
     oma = 1.0-ind
     invoma = 1.0/oma
     invoma[oma == 0.0] = 1.0
@@ -130,22 +160,14 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 
     fluxscale = get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax)
 
-    ra0 = prng.uniform(size=num_sources)*fov/(60.0*dec_scal) + ra_min
-    dec0 = prng.uniform(size=num_sources)*fov/60.0 + dec_min
-
-    # If requested, output the source properties to a file
-    if output_sources is not None:
-        t = Table([ra0, dec0, fluxes],
-                  names=('RA', 'Dec', 'flux_0.5_2.0_keV'))
-        t["RA"].unit = "deg"
-        t["Dec"].unit = "deg"
-        t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
-        t.write(output_sources, format='ascii.ecsv', overwrite=True)
-
     # Using the energy flux, determine the photon flux by simple scaling
     ref_ph_flux = fluxes*fluxscale*keV_per_erg
     # Now determine the number of photons we will generate
     n_photons = prng.poisson(ref_ph_flux*exp_time*area)
+
+    all_energies = []
+    all_ra = []
+    all_dec = []
 
     for i, nph in enumerate(n_photons):
         if nph > 0:
@@ -194,7 +216,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
 def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
                             sky_center, nH=0.05, area=40000.0, 
                             prng=None, append=False, overwrite=False,
-                            output_sources=None):
+                            input_sources=None, output_sources=None):
     """
     Make a SIMPUT catalog made up of contributions from
     point sources. 
@@ -228,11 +250,16 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         catalog. Default: False
     overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
+    input_sources : string, optional
+        If set to a filename, input the source positions, fluxes,
+        and spectral indices from an ASCII table instead of generating
+        them. Default: None
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
     """
     events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
+                                   input_sources=input_sources, 
                                    output_sources=output_sources, prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
                       events["dec"], events["energy"], append=append, 
