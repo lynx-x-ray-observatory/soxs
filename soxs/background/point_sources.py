@@ -7,16 +7,23 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import erf
 from astropy.table import Table
 
-# Function for computing spectral index of sources
+# Function for computing spectral index of AGN sources
+# a fit to the data from Figure 13a of Hickox & Markevitch 06
+
+# Parameters
 
 aa = -14.0
 bb = 0.5
 cc = 0.5
 dd = 1.8
 
+# Here x = log10(flux)
+
 def get_agn_index(x):
     y = (x-aa)/bb
     return cc*erf(y)+dd
+
+# Index for galaxies
 
 gal_index = 2.0
 
