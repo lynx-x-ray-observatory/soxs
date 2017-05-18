@@ -143,3 +143,57 @@ described in :ref:`ptsrc-bkgnd`:
     existing catalog and set ``append=True``, the photon list file will be 
     appended to an existing SIMPUT catalog.
 
+.. _point-source-list:
+
+Saving the Point Source Properties to Disk for Later Use
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+One can also save the point-source properties to disk for examination or later use
+to generate a consistent set of point sources more than once. This can be done in two
+different ways. The first is via :func:`~soxs.background.point_sources.make_point_sources_file`
+itself, using the ``output_sources`` keyword argument:
+
+.. code-block:: python
+
+    simput_prefix = "my_bkgnd"
+    phlist_prefix = "pt_src"
+    exp_time = 500000.0 # seconds
+    fov = 20.0 # arcmin
+    sky_center = [30.0, 45.0] # RA, Dec in degrees
+    
+    soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+                                 sky_center, output_sources="my_srcs.dat")
+
+This saves the point source properties of position, flux, and spectral index
+to an ASCII table file, as a side effect of generating the point source events.
+However, one may want to simply generate this table without generating events, 
+so SOXS also provides the :func:`~soxs.background.point_sources.make_point_source_list`
+method:
+
+.. code-block:: python
+
+    output_file = "my_srcs.dat"
+    exp_time = 500000.0 # seconds
+    fov = 20.0 # arcmin
+    sky_center = [30.0, 45.0] # RA, Dec in degrees
+    
+    soxs.make_point_source_list(output_file, exp_time, fov, sky_center)
+
+Regardless of which method used, this ASCII table can be used as input to either
+:func:`~soxs.background.point_sources.make_point_sources_file` or 
+:func:`~soxs.instrument.make_background_file` via the ``input_sources`` keyword
+argument, e.g.:
+
+.. code-block:: python
+
+    simput_prefix = "my_bkgnd"
+    phlist_prefix = "pt_src"
+    exp_time = 500000.0 # seconds
+    fov = 20.0 # arcmin
+    sky_center = [30.0, 45.0] # RA, Dec in degrees
+    
+    soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+                                 sky_center, input_sources="my_srcs.dat")
+
+Which ensures that one would have the same set of point sources every time it is
+run. 
