@@ -24,6 +24,8 @@ parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
+parser.add_argument("--input_sources", type=str,
+                    help="Use a previously written table of sources as input instead of generating them.")
 parser.add_argument("--output_sources", type=str,
                     help="Output the source properties to the specified file.")
 parser.add_argument("--random_seed", type=int,
@@ -34,6 +36,7 @@ args = parser.parse_args()
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
 make_point_sources_file(args.simput_prefix, args.phlist_prefix, args.exp_time,
-                        args.fov, sky_center, nH=args.nh, area=args.area, 
-                        append=args.append, overwrite=args.overwrite, 
-                        output_sources=args.output_sources, prng=args.random_seed)
+                        args.fov, sky_center, nH=args.nh, area=args.area,
+                        append=args.append, overwrite=args.overwrite,
+                        output_sources=args.output_sources, 
+                        input_sources=args.input_sources, prng=args.random_seed)
