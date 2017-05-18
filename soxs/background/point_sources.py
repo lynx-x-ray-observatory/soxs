@@ -4,15 +4,21 @@ from soxs.constants import keV_per_erg, erg_per_keV
 from soxs.spectra import get_wabs_absorb
 from soxs.utils import mylog, parse_prng
 from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.special import erf
 from astropy.table import Table
 
-# parameters for making event file
-# for now, we're leaving these not user-configurable
+# Function for computing spectral index of sources
 
-agn_ind = 1.2  # AGN photon index
-gal_ind = 1.2  # galaxy photon index
+aa = -14.0
+bb = 0.5
+cc = 0.5
+dd = 1.8
 
-indices = {"agn": agn_ind, "gal": gal_ind}
+def get_agn_index(x):
+    y = (x-aa)/bb
+    return cc*erf(y)+dd
+
+gal_index = 2.0
 
 fb_emin = 0.5  # keV, low energy bound for the logN-logS flux band
 fb_emax = 2.0  # keV, high energy bound for the logN-logS flux band
@@ -22,25 +28,15 @@ spec_emax = 10.0  # keV, max energy of mock spectrum
 
 src_types = ['agn', 'gal']
 
-class Bgsrc:
-    def __init__(self, src_type, flux, ind):
-        self.src_type = src_type
-        self.flux = flux
-        self.ind = ind
-
 def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
-    if ind == 1.0:
-        f_g = np.log(spec_emax/spec_emin)
-    else:
-        f_g = (spec_emax**(1.0-ind)-spec_emin**(1.0-ind))/(1.0-ind)
-    if ind == 2.0:
-        f_E = np.log(fb_emax/fb_emin)
-    else:
-        f_E = (fb_emax**(2.0-ind)-fb_emin**(2.0-ind))/(2.0-ind)
+    f_g = (spec_emax ** (1.0 - ind) - spec_emin ** (1.0 - ind)) / (1.0 - ind)
+    f_E = (fb_emax ** (2.0 - ind) - fb_emin ** (2.0 - ind)) / (2.0 - ind)
+    f_g[ind == 1.0] = np.log(spec_emax/spec_emin)
+    f_E[ind == 2.0] = np.log(fb_emax/fb_emin)
     fscale = f_g/f_E
     return fscale
 
-def generate_sources(exp_time, area, fov, prng):
+def generate_fluxes(exp_time, area, fov, prng):
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
 
     logf = np.log10(cdf_fluxes)
@@ -69,10 +65,7 @@ def generate_sources(exp_time, area, fov, prng):
     randvec2 = prng.uniform(size=n_gal)
     gal_fluxes = 10**f_gal(randvec2)
 
-    agn_sources = [Bgsrc("agn", S, indices["agn"]) for S in agn_fluxes]
-    gal_sources = [Bgsrc("gal", S, indices["gal"]) for S in gal_fluxes]
-
-    return agn_sources, gal_sources
+    return agn_fluxes, gal_fluxes
 
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
                           output_sources=None, prng=None):
@@ -104,11 +97,11 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         which sets the seed based on the system time. 
     """
     prng = parse_prng(prng)
-    agn_sources, gal_sources = generate_sources(exp_time, area, fov, prng)
+    agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng)
 
-    sources = agn_sources + gal_sources
+    fluxes = np.concatenate([agn_fluxes, gal_fluxes])
 
-    num_sources = len(sources)
+    num_sources = fluxes.size
     mylog.debug("Generating spectra from %d sources." % num_sources)
     dec_scal = np.fabs(np.cos(sky_center[1]*np.pi/180))
     ra_min = sky_center[0] - fov/(2.0*60.0*dec_scal)
@@ -117,49 +110,44 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     all_ra = []
     all_dec = []
 
-    # This loop is for optimization
+    # Pre-calculate for optimization
     eratio = spec_emax/spec_emin
-    oma = {}
-    invoma = {}
-    fac1 = {}
-    fac2 = {}
-    for k, ind in indices.items():
-        oma[k] = 1.0-ind
-        invoma[k] = 1.0/oma[k] if oma[k] != 0.0 else 1.0
-        fac1[k] = spec_emin**oma[k]
-        fac2[k] = spec_emax**oma[k]-spec_emin**oma[k]
+    ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)),
+                          gal_index*np.ones(gal_fluxes.size)])
+    oma = 1.0-ind
+    invoma = 1.0/oma
+    invoma[oma == 0.0] = 1.0
+    fac1 = spec_emin**oma
+    fac2 = spec_emax**oma-fac1
 
-    fluxscale = {}
-    for src_type in src_types:
-        fluxscale[src_type] = get_flux_scale(indices[src_type], fb_emin,
-                                             fb_emax, spec_emin, spec_emax)
+    fluxscale = get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax)
 
     ra0 = prng.uniform(size=num_sources)*fov/(60.0*dec_scal) + ra_min
     dec0 = prng.uniform(size=num_sources)*fov/60.0 + dec_min
 
     # If requested, output the source properties to a file
     if output_sources is not None:
-        t = Table([ra0, dec0, [s.flux for s in sources]],
+        t = Table([ra0, dec0, fluxes],
                   names=('RA', 'Dec', 'flux_0.5_2.0_keV'))
         t["RA"].unit = "deg"
         t["Dec"].unit = "deg"
         t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
         t.write(output_sources, format='ascii.ecsv', overwrite=True)
 
-    for i, source in enumerate(sources):
-        # Using the energy flux, determine the photon flux by simple scaling
-        ref_ph_flux = source.flux*fluxscale[source.src_type]*keV_per_erg
-        # Now determine the number of photons we will generate
-        nph = prng.poisson(ref_ph_flux*exp_time*area)
+    # Using the energy flux, determine the photon flux by simple scaling
+    ref_ph_flux = fluxes*fluxscale*keV_per_erg
+    # Now determine the number of photons we will generate
+    n_photons = prng.poisson(ref_ph_flux*exp_time*area)
 
+    for i, nph in enumerate(n_photons):
         if nph > 0:
             # Generate the energies in the source frame
             u = prng.uniform(size=nph)
-            if source.ind == 1.0:
+            if ind[i] == 1.0:
                 energies = spec_emin*(eratio**u)
             else:
-                energies = fac1[source.src_type] + u*fac2[source.src_type]
-                energies **= invoma[source.src_type]
+                energies = fac1[i] + u*fac2[i]
+                energies **= invoma[i]
             # Assign positions for this source
             ra = ra0[i]*np.ones(nph)
             dec = dec0[i]*np.ones(nph)
@@ -186,7 +174,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         all_ra = all_ra[randvec < absorb]
         all_dec = all_dec[randvec < absorb]
         all_nph = all_energies.size
-        mylog.debug("%d photons remain after foreground galactic absorption." % all_nph)
+    mylog.debug("%d photons remain after foreground galactic absorption." % all_nph)
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
 
