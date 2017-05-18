@@ -14,8 +14,10 @@ distribution of point sources and simulate an observation of them.
     # and simulate an observation.
 
     # First, make the photons from the point sources into a SIMPUT catalog,
-    # saving the point source properties to a table file and choosing "24"
-    # as a random seed to insure we get the same point sources every time.
+    # saving the point source properties to an ASCII table file and choosing 
+    # "24" as a random seed to insure we get the same point sources every time.
+    # If you wish, the table file can be used to generate the same sources later
+    # using the "--input_sources" parameter.
     make_point_sources my_cat ptsrc 300000.0 20. 22.,-27.0 --random_seed=24 --output_sources=point_source_table.dat
  
     # Take the SIMPUT catalog and make an event file. Since we already made a
