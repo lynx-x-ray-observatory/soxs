@@ -46,4 +46,5 @@ from soxs.cosmology import \
     make_cosmological_sources_file
 
 from soxs.background import \
-    make_point_sources_file
+    make_point_sources_file, \
+    make_point_source_list

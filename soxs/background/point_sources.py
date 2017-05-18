@@ -76,6 +76,46 @@ def generate_fluxes(exp_time, area, fov, prng):
 
     return agn_fluxes, gal_fluxes
 
+def generate_sources(exp_time, fov, sky_center, area=40000.0, prng=None):
+    r"""
+    Make a catalog of point sources.
+
+    Parameters
+    ----------
+    exp_time : float
+        The exposure time of the observation in seconds.
+    fov : float
+        The field of view in arcminutes.
+    sky_center : array-like
+        The center RA, Dec of the field of view in degrees.
+    area : float, optional
+        The effective area in cm**2. It must be large enough 
+        so that a sufficiently large sample is drawn for the 
+        ARF. Default: 40000.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
+    """
+    prng = parse_prng(prng)
+
+    agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng)
+
+    fluxes = np.concatenate([agn_fluxes, gal_fluxes])
+
+    ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)),
+                          gal_index * np.ones(gal_fluxes.size)])
+
+    dec_scal = np.fabs(np.cos(sky_center[1] * np.pi / 180))
+    ra_min = sky_center[0] - fov / (2.0 * 60.0 * dec_scal)
+    dec_min = sky_center[1] - fov / (2.0 * 60.0)
+
+    ra0 = prng.uniform(size=fluxes.size) * fov / (60.0 * dec_scal) + ra_min
+    dec0 = prng.uniform(size=fluxes.size) * fov / 60.0 + dec_min
+
+    return ra0, dec0, fluxes, ind
+
 def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
                           input_sources=None, output_sources=None, prng=None):
     r"""
@@ -112,25 +152,11 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     prng = parse_prng(prng)
 
     if input_sources is None:
-
-        agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng)
-
-        fluxes = np.concatenate([agn_fluxes, gal_fluxes])
-
+        ra0, dec0, fluxes, ind = generate_sources(exp_time, fov, sky_center,
+                                                  area=area, prng=prng)
         num_sources = fluxes.size
-
-        ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)),
-                              gal_index*np.ones(gal_fluxes.size)])
-
-        dec_scal = np.fabs(np.cos(sky_center[1]*np.pi/180))
-        ra_min = sky_center[0] - fov/(2.0*60.0*dec_scal)
-        dec_min = sky_center[1] - fov/(2.0*60.0)
-
-        ra0 = prng.uniform(size=num_sources)*fov/(60.0*dec_scal) + ra_min
-        dec0 = prng.uniform(size=num_sources)*fov/60.0 + dec_min
-
     else:
-
+        mylog.info("Reading in point-source properties from %s." % input_sources)
         t = ascii.read(input_sources)
         ra0 = t["RA"].data
         dec0 = t["Dec"].data
@@ -264,3 +290,40 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], 
                       events["ra"], events["dec"], events["energy"], 
                       append=append, overwrite=overwrite)
+
+def make_point_source_list(output_file, exp_time, fov, sky_center,
+                           area=40000.0, prng=None):
+    r"""
+    Make a list of point source properties and write it to an ASCII
+    table file.
+
+    Parameters
+    ----------
+    output_file : string
+        The ASCII table file to write the source properties to.
+    exp_time : float
+        The exposure time of the observation in seconds.
+    fov : float
+        The field of view in arcminutes.
+    sky_center : array-like
+        The center RA, Dec of the field of view in degrees.
+    area : float, optional
+        The effective area in cm**2. It must be large enough 
+        so that a sufficiently large sample is drawn for the 
+        ARF. Default: 40000.
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
+    """
+    ra0, dec0, fluxes, ind = generate_sources(exp_time, fov, sky_center,
+                                              area=area, prng=prng)
+
+    t = Table([ra0, dec0, fluxes, ind],
+              names=('RA', 'Dec', 'flux_0.5_2.0_keV', 'index'))
+    t["RA"].unit = "deg"
+    t["Dec"].unit = "deg"
+    t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
+    t["index"].unit = ""
+    t.write(output_file, format='ascii.ecsv', overwrite=True)
