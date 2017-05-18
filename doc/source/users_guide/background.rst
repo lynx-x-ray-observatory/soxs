@@ -30,7 +30,7 @@ The galactic foreground component is modeled as a sum of two thermal models,
 * ``redshift``: :math:`0.0`
 * ``norm``: :math:`\rm{1.12328 \times 10^{-6}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
 
-For more details on how this model was derived see 
+This fit is based on the results of 
 `Hickox & Markevitch 2007 <http://adsabs.harvard.edu/abs/2007ApJ...661L.117H>`_.
 This background is diffuse and uniformly fills the entire field of view of the
 instrument you choose to simulate. 
@@ -49,16 +49,18 @@ study of the *Chandra* Deep Field South. The point sources have fluxes in the
 0.5-2 keV band in the :math:`7.63 \times 10^{-22} - 1.0 \times 10^{-13}~\rm{erg}~\rm{s}^{-1}~\rm{cm}^{-2}` 
 range.
 
-Each point source is given a power-law spectrum with a spectral index 
-:math:`\alpha = -1.2`, which is absorbed by foreground Galactic neutral hydrogen
-assuming a neutral hydrogen column of :math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}`. 
-The position of each point source is uniformly randomly distributed within the field 
-of view. 
+Each point source is given a power-law spectrum. Galaxies are assumed to have a
+spectral index of :math:`\alpha = 2.0`. The spectral indices of AGN sources are
+drawn from a fit to the spectral index distribution of sources given in 
+Figure 13a of `Hickox & Markevitch 2006 <http://adsabs.harvard.edu/abs/2006ApJ...645...95H>`_. 
+Sources are absorbed by foreground Galactic neutral hydrogen assuming a neutral 
+hydrogen column of :math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}`. The position of 
+each point source is uniformly randomly distributed within the field of view. 
 
 Though a point-source population is automatically created as a background 
 component when an observation is simulated, one can also create a SIMPUT catalog
-of point sources using the same machinery. For more information, see
-:ref:`point-source-catalog`.
+of point sources using the same machinery, with the ability more finely control
+the input parameters of the model. For more information, see :ref:`point-source-catalog`.
 
 Instrumental Background
 -----------------------
