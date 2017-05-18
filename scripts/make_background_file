@@ -22,6 +22,8 @@ parser.add_argument("--dither_shape", type=str, default='square',
 parser.add_argument("--dither_size", type=float, default=16.0,
                     help='The size of the dither pattern in arcseconds. For a circle, the'+
                          'size is the radius; for a square, the size is the width. Default: 16.0')
+parser.add_argument("--input_sources", type=str,
+                    help="Use a previously written table of point sources as input instead of generating them.")
 parser.add_argument("--subpixel_res", action='store_true',
                     help="Don't uniformly distribute event positions within pixels.")
 parser.add_argument("--random_seed", type=int,
@@ -61,4 +63,5 @@ make_background_file(args.out_file, args.exp_time, instrument,
                      sky_center, args.overwrite, foreground=args.foreground, 
                      instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd, 
                      dither_shape=dither_shape, dither_size=args.dither_size, 
-                     subpixel_res=args.subpixel_res, prng=args.random_seed)
+                     subpixel_res=args.subpixel_res, prng=args.random_seed,
+                     input_sources=args.input_sources)
