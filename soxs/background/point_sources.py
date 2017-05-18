@@ -8,7 +8,8 @@ from scipy.special import erf
 from astropy.table import Table
 
 # Function for computing spectral index of AGN sources
-# a fit to the data from Figure 13a of Hickox & Markevitch 06
+# a fit to the data from Figure 13a of Hickox & Markevitch 2006
+# http://adsabs.harvard.edu/abs/2006ApJ...645...95H
 
 # Parameters
 
