@@ -480,7 +480,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True, 
                     ptsrc_bkgnd=True, instr_bkgnd=True, dither_shape="square", 
                     dither_size=16.0, roll_angle=0.0, subpixel_res=False, 
-                    prng=None):
+                    input_sources=None, prng=None):
     """
     Make background events. 
 
@@ -511,6 +511,10 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     subpixel_res: boolean
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
+    input_sources : string, optional
+        If set to a filename, input the point source positions, fluxes,
+        and spectral indices from an ASCII table instead of generating
+        them. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -533,8 +537,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
-        ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center, 
-                                             prng=prng)
+        ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center,
+                                             input_sources=input_sources, prng=prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(ptsrc_events[key])
         input_events["flux"].append(ptsrc_events["flux"])
@@ -583,10 +587,11 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     return events, event_params
 
-def make_background_file(out_file, exp_time, instrument, sky_center, 
+def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
-                         ptsrc_bkgnd=True, dither_shape="square", 
-                         dither_size=16.0, subpixel_res=False, prng=None):
+                         ptsrc_bkgnd=True, dither_shape="square",
+                         dither_size=16.0, subpixel_res=False, 
+                         input_sources=None, prng=None):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -621,6 +626,10 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
     subpixel_res: boolean
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
+    input_sources : string, optional
+        If set to a filename, input the point source positions, fluxes,
+        and spectral indices from an ASCII table instead of generating
+        them. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -635,6 +644,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            dither_shape=dither_shape, 
                                            dither_size=dither_size, 
                                            subpixel_res=subpixel_res,
+                                           input_sources=input_sources,
                                            prng=prng)
     write_event_file(events, event_params, out_file, overwrite=overwrite)
 
