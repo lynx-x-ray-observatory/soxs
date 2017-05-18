@@ -80,7 +80,7 @@ def test_ptsrc():
     from soxs.background.point_sources import generate_fluxes, \
         make_ptsrc_background
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
-    from soxs.spectra import Spectrum
+    from soxs.constants import erg_per_keV
     prng = RandomState(33)
     fov = 20.0 # arcmin
     exp_time = 500000.0 # seconds
@@ -103,7 +103,6 @@ def test_ptsrc():
     err_gal[sigma_gal == 0.0] = 0.0
     assert np.all(err_agn < 1.0)
     assert np.all(err_gal < 1.0)
-    """
     exp_time = 500000.0 # seconds
     fov = 20.0 # arcmin
     area = 30000.0 # cm**2
@@ -111,18 +110,15 @@ def test_ptsrc():
     prng1 = RandomState(33)
     prng2 = RandomState(33)
     agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng2)
-    fluxes = np.array([src.flux for src in agn_fluxes+gal_sources])
+    fluxes = np.concatenate([agn_fluxes, gal_fluxes])
     events = make_ptsrc_background(exp_time, fov, sky_center, area=area, 
                                    prng=prng1, nH=None)
     idxs = np.logical_and(events["energy"] > 0.5, events["energy"] < 2.0)
-    n1 = idxs.sum()
-    spec = Spectrum.from_powerlaw(1.2, 0.0, 1.0)
-    norm = spec.get_flux_in_band(0.5, 2.0)[1].value
-    norm = spec.get_flux_in_band(0.5, 2.0)[0].value / norm
-    n2 = norm*fluxes.sum()*exp_time*area
+    E_mean = events["energy"][idxs].mean()*erg_per_keV
+    n1 = fluxes.sum()*exp_time*area/E_mean
+    n2 = idxs.sum()
     dn = np.sqrt(n2)
     assert np.abs(n1-n2) < 1.645*dn
-    """
 
 if __name__ == "__main__":
     test_add_background()
