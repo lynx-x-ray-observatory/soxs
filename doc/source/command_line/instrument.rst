@@ -18,7 +18,7 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
     usage: instrument_simulator [-h] [--overwrite] [--dither_shape DITHER_SHAPE]
                                 [--dither_size DITHER_SIZE]
                                 [--roll_angle ROLL_ANGLE]
-                                [--bkgnd_file BKGND_FILE]
+                                [--bkgnd_file BKGND_FILE] [--subpixel_res]
                                 [--random_seed RANDOM_SEED]
                                 [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
                                 [--instr_bkgnd | --no_instr_bkgnd]
@@ -26,7 +26,7 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
                                 simput_file out_file exp_time instrument
                                 sky_center
     
-    Convolve a spectrum with an ARF and RMF and produce a PHA or PI spectrum.
+    Run the instrument simulator and produce a simulated event file.
     
     positional arguments:
       simput_file           The SIMPUT file to be used as input, or "None" if you
@@ -54,6 +54,8 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
       --bkgnd_file BKGND_FILE
                             Use background stored in a file instead of generating
                             one.
+      --subpixel_res        Don't uniformly distribute event positions within
+                            pixels.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.

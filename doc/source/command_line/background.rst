@@ -15,15 +15,14 @@ etc.
 
 .. code-block:: text
 
-    usage: make_background_file [-h] [--overwrite]
-                                [--dither_shape DITHER_SHAPE]
+    usage: make_background_file [-h] [--overwrite] [--dither_shape DITHER_SHAPE]
                                 [--dither_size DITHER_SIZE]
+                                [--input_sources INPUT_SOURCES] [--subpixel_res]
                                 [--random_seed RANDOM_SEED]
                                 [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
                                 [--instr_bkgnd | --no_instr_bkgnd]
                                 [--foreground | --no_foreground]
-                                out_file exp_time instrument
-                                sky_center
+                                out_file exp_time instrument sky_center
     
     Run the instrument simulator and produce a simulated background event file.
     
@@ -46,6 +45,11 @@ etc.
                             The size of the dither pattern in arcseconds. For a
                             circle, thesize is the radius; for a square, the size
                             is the width. Default: 16.0
+      --input_sources INPUT_SOURCES
+                            Use a previously written table of point sources as
+                            input instead of generating them.
+      --subpixel_res        Don't uniformly distribute event positions within
+                            pixels.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.
@@ -123,3 +127,9 @@ Turn off the point-source background:
 
 Any combination of these may be used to turn multiple components off or all 
 of them. 
+
+Use a pre-made ASCII table of point-source properties to generate the point-source background:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --input_sources=my_ptsrc.dat --overwrite
