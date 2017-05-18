@@ -93,10 +93,10 @@ Write the source properties to an ASCII text file:
 .. code-block:: text
 
     usage: make_point_sources [-h] [--nh NH] [--area AREA] [--append]
-                              [--overwrite] [--random_seed RANDOM_SEED]
+                              [--overwrite] [--input_sources INPUT_SOURCES]
                               [--output_sources OUTPUT_SOURCES]
-                              simput_prefix phlist_prefix exp_time fov
-                              sky_center
+                              [--random_seed RANDOM_SEED]
+                              simput_prefix phlist_prefix exp_time fov sky_center
     
     Create a SIMPUT photon list of a point-source background.
     
@@ -118,6 +118,9 @@ Write the source properties to an ASCII text file:
       --append              If set, append a new source an existing SIMPUT
                             catalog.
       --overwrite           Overwrite an existing file with the same name.
+      --input_sources INPUT_SOURCES
+                            Use a previously written table of sources as input
+                            instead of generating them.
       --output_sources OUTPUT_SOURCES
                             Output the source properties to the specified file.
       --random_seed RANDOM_SEED
@@ -132,22 +135,63 @@ catalog, with an exposure time of 75 ks:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --overwrite
+    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --overwrite
 
 Append the point source photons to an existing SIMPUT catalog, "my_cat":
 
 .. code-block:: bash
 
-    [~]$ make_point_sources my_cat pt_src 10.0 75000.0 90.0,5.0 --append
+    [~]$ make_point_sources my_cat pt_src 75000.0 5.0 90.0,-10.0 --append
 
 Change the Galactic hydrogen column to :math:`3.5 \times 10^{20}~cm^{-2}`:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --nh=0.035 --overwrite
+    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --nh=0.035 --overwrite
 
 Write the source properties to an ASCII text file:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 10.0 75000.0 90.0,5.0 --output_sources=my_ptsrc.txt --overwrite
+    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --output_sources=my_ptsrc.txt --overwrite
+
+Use a previously written ASCII text file of point source properties as input:
+
+.. code-block:: bash
+        
+    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --input_sources=my_ptsrc.txt --overwrite
+
+``make_point_source_list``
+--------------------------
+
+.. code-block:: text
+
+    usage: make_point_source_list [-h] [--area AREA] [--random_seed RANDOM_SEED]
+                                  output_file exp_time fov sky_center
+    
+    Make a list of point source properties and write it to an ASCII table file.
+    
+    positional arguments:
+      output_file           The ASCII table file to write the source properties
+                            to.
+      exp_time              The exposure time to use, in seconds.
+      fov                   The field of view on a side in arcminutes.
+      sky_center            The center RA, Dec coordinates of the observation, in
+                            degrees, comma-separated.
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --area AREA           The collecting area to use, in cm^2. Default: 30000.0
+      --random_seed RANDOM_SEED
+                            A constant integer random seed to produce a consistent
+                            set of random numbers.
+
+Examples
+++++++++
+
+Generate point source properties and write them to an ASCII table, assuming a field
+of view of 30 arcminutes, with an exposure time of 100 ks:
+
+.. code-block:: bash
+
+    [~]$ make_point_source_list my_ptsrc_list.dat 10000.0 30.0 90.0,-10.0
