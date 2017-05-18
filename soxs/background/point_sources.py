@@ -26,8 +26,6 @@ fb_emax = 2.0  # keV, high energy bound for the logN-logS flux band
 spec_emin = 0.1  # keV, minimum energy of mock spectrum
 spec_emax = 10.0  # keV, max energy of mock spectrum
 
-src_types = ['agn', 'gal']
-
 def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
     f_g = np.log(spec_emax/spec_emin)*np.ones(ind.size)
     f_E = np.log(fb_emax/fb_emin)*np.ones(ind.size)
