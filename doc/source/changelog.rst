@@ -3,6 +3,14 @@
 ChangeLog
 =========
 
+Version 1.1.1
+-------------
+
+This is a release with a single minor feature addition, which allows the foreground
+galactic absorption parameter ``nH`` to be supplied to 
+:func:`~soxs.instrument.make_background_file`, which is applied to the point-source
+background.
+
 Version 1.1.0
 -------------
 
