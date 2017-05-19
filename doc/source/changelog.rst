@@ -16,6 +16,10 @@ This is an important release that contains new features and bugfixes.
   added to provide a way to generate an ASCII table of point source properties
   for input into making background files and point source catalogs without
   having to create the events.
+* For the point-source background, the photon spectral index for the galaxies is
+  now :math:`\alpha = 2`, and the photon spectral index for the AGN is drawn
+  from a fit to Figure 13a from 
+  `Hickox & Markevitch 2006 <http://adsabs.harvard.edu/abs/2006ApJ...645...95H>`_.
 * The *Athena* instrument models have been updated to more accurately reflect
   the current design parameters.
 * A bug that prevented one from using an instrument model that did not have
