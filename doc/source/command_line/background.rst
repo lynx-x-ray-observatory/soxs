@@ -50,6 +50,8 @@ etc.
                             input instead of generating them.
       --subpixel_res        Don't uniformly distribute event positions within
                             pixels.
+      --nh NH               The galactic hydrogen column in units of 10**22
+                            atoms/cm**2. Default: 0.05
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.
@@ -133,3 +135,10 @@ Use a pre-made ASCII table of point-source properties to generate the point-sour
 .. code-block:: bash
 
     [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --input_sources=my_ptsrc.dat --overwrite
+
+Change the foreground galactic absorption for the point-source background.
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50000.0 hdxi 30.,45. --nh=0.02 --overwrite
+

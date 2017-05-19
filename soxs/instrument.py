@@ -480,7 +480,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True, 
                     ptsrc_bkgnd=True, instr_bkgnd=True, dither_shape="square", 
                     dither_size=16.0, roll_angle=0.0, subpixel_res=False, 
-                    input_sources=None, prng=None):
+                    input_sources=None, nH=0.05, prng=None):
     """
     Make background events. 
 
@@ -515,6 +515,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -538,7 +541,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center,
-                                             input_sources=input_sources, prng=prng)
+                                             input_sources=input_sources, 
+                                             nH=nH, prng=prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(ptsrc_events[key])
         input_events["flux"].append(ptsrc_events["flux"])
@@ -591,7 +595,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, dither_shape="square",
                          dither_size=16.0, subpixel_res=False, 
-                         input_sources=None, prng=None):
+                         input_sources=None, nH=0.05, prng=None):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -630,6 +634,9 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -645,7 +652,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            dither_size=dither_size, 
                                            subpixel_res=subpixel_res,
                                            input_sources=input_sources,
-                                           prng=prng)
+                                           nH=nH, prng=prng)
     write_event_file(events, event_params, out_file, overwrite=overwrite)
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
