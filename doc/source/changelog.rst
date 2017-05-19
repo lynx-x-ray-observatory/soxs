@@ -3,6 +3,27 @@
 ChangeLog
 =========
 
+Version 1.1.0
+-------------
+
+This is an important release that contains new features and bugfixes.
+
+* The ability to provide an ASCII table of point source properties to re-use
+  the same distribution of point sources has been added to 
+  :func:`~soxs.background.point_sources.make_point_sources_file` and 
+  :func:`~soxs.instrument.make_background_file`. 
+* A new function, :func:`~soxs.background.point_sources.make_point_source_list`, has been
+  added to provide a way to generate an ASCII table of point source properties
+  for input into making background files and point source catalogs without
+  having to create the events.
+* The *Athena* instrument models have been updated to more accurately reflect
+  the current design parameters.
+* A bug that prevented one from using an instrument model that did not have
+  an instrumental background has been fixed.
+* An experimental feature to turn off uniform randomization of events within
+  pixels has been added.
+* Dithering now occurs in detector coordinates instead of sky coordinates.
+
 Version 1.0.1
 -------------
 
