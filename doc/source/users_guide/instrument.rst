@@ -328,5 +328,4 @@ file for editing using :func:`~soxs.instrument.write_instrument_json`:
     are two differences one must note when creating JSON-based instrument 
     specifications:
     1. Python's ``None`` will convert to ``null``, and vice-versa.
-    2. ``True`` and ``False`` are capitalized in Python, in JSON they are 
-       lowercase.
+    2. ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
