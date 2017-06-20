@@ -6,11 +6,33 @@ from soxs.utils import parse_prng
 
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
-    def __init__(self, filename):
+
+    def __init__(self, ebins, flux):
+        super(BackgroundSpectrum, self).__init__(ebins, flux)
+
+    @classmethod
+    def from_spectrum(cls, spec, fov):
+        flux = spec.flux.value/fov/fov
+        return cls(spec.flux.ebins.value, flux)
+
+    @classmethod
+    def from_file(cls, filename):
+        """
+        Read a background spectrum from an ASCII text file. 
+        Accepts a file with two columns, the first being the 
+        center energy of the bin in keV and the second being 
+        the intensity in photons/s/cm**2/keV/arcmin**2, 
+        assuming a linear binning with constant bin widths.
+
+        Parameters
+        ----------
+        filename : string
+            The path to the file containing the spectrum.
+        """
         emid, flux = np.loadtxt(filename, unpack=True)
         de = np.diff(emid)[0]
         ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
-        super(BackgroundSpectrum, self).__init__(ebins, flux)
+        return cls(ebins, flux)
 
     def generate_energies(self, t_exp, area, fov, prng=None):
         """

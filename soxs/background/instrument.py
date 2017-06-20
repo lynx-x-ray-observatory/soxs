@@ -4,9 +4,9 @@ from soxs.background.spectra import BackgroundSpectrum
 from soxs.background.events import make_uniform_background
 
 class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
-    def __init__(self, filename, default_focal_length):
-        super(InstrumentalBackgroundSpectrum, self).__init__(filename)
-        self.default_focal_length = default_focal_length
+    def __new__(self, filename, default_focal_length):
+        spec = BackgroundSpectrum.from_file(filename)
+        spec.default_focal_length = default_focal_length
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")

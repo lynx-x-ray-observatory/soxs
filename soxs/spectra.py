@@ -219,7 +219,7 @@ class Spectrum(object):
         Read a spectrum from an ASCII text file. Accepts a file
         with two columns, the first being the center energy of the
         bin in keV and the second being the flux in photons/s/cm**2/keV, 
-        assuming a linear binning with constant bin widths:
+        assuming a linear binning with constant bin widths.
 
         Parameters
         ----------
