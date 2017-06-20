@@ -49,8 +49,8 @@ def flux2lum(kT, z):
     return flux2lum
 
 def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
-                              nH=0.05, area=40000.0, output_sources=None,
-                              prng=None):
+                              absorb_model="wabs", nH=0.05, area=40000.0, 
+                              output_sources=None, prng=None):
     r"""
     Make an X-ray source made up of contributions from
     galaxy clusters, galaxy groups, and galaxies. 
@@ -68,6 +68,8 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         halo catalog, which range from -5.0 to 5.0 in 
         degrees in both directions. If None is given, a 
         center will be randomly chosen.
+    absorb_model : string, optional
+        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
@@ -186,7 +188,7 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         spec = agen.get_spectrum(kT[halo], abund, z[halo], 1.0)
         spec.rescale_flux(flux_kcorr[halo], emin=emin, emax=emax, flux_type="energy")
         if nH is not None:
-            spec.apply_foreground_absorption(nH)
+            spec.apply_foreground_absorption(nH, model=absorb_model)
         e = spec.generate_energies(exp_time, area, prng=prng, quiet=True)
         beta_model = BetaModel(ra0[halo], dec0[halo], rc[halo], beta[halo], e.size, 
                                ellipticity=ellip[halo], theta=theta[halo], prng=prng)
@@ -209,8 +211,8 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     return output_events
 
 def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                                   sky_center, cat_center=None, nH=0.05, 
-                                   area=40000.0, append=False, overwrite=False, 
+                                   sky_center, cat_center=None, absorb_model="wabs",
+                                   nH=0.05, area=40000.0, append=False, overwrite=False, 
                                    output_sources=None, prng=None):
     r"""
     Make a SIMPUT catalog made up of contributions from
@@ -233,6 +235,8 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         halo catalog, which range from -5.0 to 5.0 degrees
         along both axes. If None is given, a center will be
         randomly chosen.
+    absorb_model : string, optional
+        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
@@ -255,7 +259,7 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         which sets the seed based on the system time. 
     """
     events = make_cosmological_sources(exp_time, fov, sky_center, cat_center=cat_center,
-                                       nH=nH, area=area, output_sources=output_sources,
-                                       prng=prng)
+                                       absorb_model=absorb_model, nH=nH, area=area, 
+                                       output_sources=output_sources, prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
                       events["dec"], events["energy"], append=append, overwrite=overwrite)

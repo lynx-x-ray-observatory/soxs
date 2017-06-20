@@ -19,6 +19,8 @@ parser.add_argument("--cat_center", type=str, help='The center of the field in t
                                                    'of the halo catalog, which range from -5.0 '
                                                    'to 5.0 degrees in both directions. If not '
                                                    'set, a center will be randomly chosen.')
+parser.add_argument("--absorb_model", type=str, default="wabs",
+                    help="The absorption model to use for foreground galactic absorption. Default: 'wabs'")
 parser.add_argument("--nh", type=float, default=0.05,
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.05')
 parser.add_argument("--area", type=float, default=30000.0,
@@ -41,6 +43,7 @@ else:
     cat_center = np.array(args.cat_center.split(',')).astype("float64")
 
 make_cosmological_sources_file(args.simput_prefix, args.phlist_prefix, args.exp_time, 
-                               args.fov, sky_center, cat_center=cat_center, nH=args.nh, 
-                               area=args.area, append=args.append, overwrite=args.overwrite, 
+                               args.fov, sky_center, cat_center=cat_center, 
+                               absorb_model=args.absorb_model, nH=args.nh, area=args.area, 
+                               append=args.append, overwrite=args.overwrite, 
                                output_sources=args.output_sources, prng=args.random_seed)
