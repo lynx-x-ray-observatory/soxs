@@ -14,7 +14,8 @@ in SOXS, see :ref:`source-catalogs`.
 
 .. code-block:: text
 
-    usage: make_cosmological_sources [-h] [--cat_center CAT_CENTER] [--nh NH]
+    usage: make_cosmological_sources [-h] [--cat_center CAT_CENTER] 
+                                     [--absorb_model ABSORB_MODEL] [--nh NH]
                                      [--area AREA] [--append] [--overwrite]
                                      [--output_sources OUTPUT_SOURCES]
                                      [--random_seed RANDOM_SEED]
@@ -40,6 +41,9 @@ in SOXS, see :ref:`source-catalogs`.
                             catalog, which range from -5.0 to 5.0 degrees in both
                             directions. If not set, a center will be randomly
                             chosen.
+      --absorb_model ABSORB_MODEL
+                            The absorption model to use for foreground galactic
+                            absorption. Default: 'wabs'
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
                             Default: 0.05
       --area AREA           The collecting area to use, in cm^2. Default: 30000.0
@@ -75,11 +79,12 @@ Append the halo photons to an existing SIMPUT catalog, "my_cat":
 
     [~]$ make_cosmological_sources my_cat halos 100000.0 10.0 22.0,-12.0 --append
 
-Change the Galactic hydrogen column to :math:`2 \times 10^{20}~cm^{-2}`:
+Change the Galactic hydrogen column to :math:`2 \times 10^{20}~cm^{-2}`, and 
+use the "tbabs" model:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --nh=0.02 --overwrite
+    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --absorb_model="tbabs" --nh=0.02 --overwrite
 
 Write the source properties to an ASCII text file:
 
@@ -92,8 +97,9 @@ Write the source properties to an ASCII text file:
 
 .. code-block:: text
 
-    usage: make_point_sources [-h] [--nh NH] [--area AREA] [--append]
-                              [--overwrite] [--input_sources INPUT_SOURCES]
+    usage: make_point_sources [-h] [--absorb_model ABSORB_MODEL] [--nh NH] 
+                              [--area AREA] [--append] [--overwrite] 
+                              [--input_sources INPUT_SOURCES]
                               [--output_sources OUTPUT_SOURCES]
                               [--random_seed RANDOM_SEED]
                               simput_prefix phlist_prefix exp_time fov sky_center
@@ -112,6 +118,9 @@ Write the source properties to an ASCII text file:
     
     optional arguments:
       -h, --help            show this help message and exit
+      --absorb_model ABSORB_MODEL
+                            The absorption model to use for foreground galactic
+                            absorption. Default: 'wabs'
       --nh NH               The galactic hydrogen column in units of 10**22
                             atoms/cm**2. Default: 0.05
       --area AREA           The collecting area to use, in cm^2. Default: 30000.0
@@ -143,11 +152,12 @@ Append the point source photons to an existing SIMPUT catalog, "my_cat":
 
     [~]$ make_point_sources my_cat pt_src 75000.0 5.0 90.0,-10.0 --append
 
-Change the Galactic hydrogen column to :math:`3.5 \times 10^{20}~cm^{-2}`:
+Change the Galactic hydrogen column to :math:`3.5 \times 10^{20}~cm^{-2}`, 
+and use the "tbabs" model:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --nh=0.035 --overwrite
+    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --absorb_model="tbabs" --nh=0.035 --overwrite
 
 Write the source properties to an ASCII text file:
 

@@ -3,6 +3,14 @@
 ChangeLog
 =========
 
+Version 1.2.0
+-------------
+
+This is a release with two new features. 
+
+* An instrument specification for the *Hitomi*/SXS has been added.
+* There are now two options for absorption models, "wabs" and "tbabs". 
+
 Version 1.1.1
 -------------
 

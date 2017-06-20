@@ -90,10 +90,12 @@ file for a SIMPUT catalog using the cosmological sources model:
     exp_time = 500000.0 # seconds
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
+    absorb_model = "wabs" # Choose a model for absorption, optional
     nH = 0.02 # Foreground galactic absorption, optional
     area = 40000.0 # Flat collecting area to generate photon sample
     soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
-                                        fov, sky_center, nH=nH, area=area)
+                                        fov, sky_center, absorb_model=absorb_model,
+                                        nH=nH, area=area)
 
 By default, a random position will be chosen within the halo catalog. If you 
 would prefer to simulate a specific region within the catalog, set the keyword
@@ -104,8 +106,9 @@ either direction:
 
     cat_center = [-0.2, 3.0]
     soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
-                                        fov, sky_center, nH=nH, area=area, 
-                                        cat_center=cat_center, append=True)
+                                        fov, sky_center, absorb_model=absorb_model,
+                                        nH=nH, area=area, cat_center=cat_center, 
+                                        append=True)
 
 .. _point-source-catalog:
 
@@ -130,10 +133,12 @@ described in :ref:`ptsrc-bkgnd`:
     exp_time = 500000.0 # seconds
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
+    absorb_model = "tbabs" # Choose a model for absorption, optional
     nH = 0.02 # Foreground galactic absorption, optional
     area = 40000.0 # Flat collecting area to generate photon sample
     soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                                 sky_center, nH=nH, area=area)
+                                 sky_center, absorb_model=absorb_model, nH=nH, 
+                                 area=area)
 
 
 .. note::
