@@ -235,15 +235,17 @@ Applying Galactic Foreground Absorption to a Spectrum
 -----------------------------------------------------
 
 The :meth:`~soxs.spectra.Spectrum.apply_foreground_absorption` method
-can be used to apply foreground absorption using the "wabs" model. It takes 
-one parameter, the hydrogen column along the line of sight, in units of 
-:math:`10^{22}~{\rm cm}^{-2}`:
+can be used to apply foreground absorption using the ``"wabs"`` or 
+``"tbabs"``models. It takes one required parameter, the hydrogen 
+column along the line of sight, in units of :math:`10^{22}~{\rm cm}^{-2}`.
+Once can optionally specify which absorption model to use using the ``"model"``
+parameter (default is ``"wabs"``):
 
 .. code-block:: python
 
     spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9)
     n_H = 0.02
-    spec.apply_foreground_absorption(n_H)
+    spec.apply_foreground_absorption(n_H, model="tbabs")
 
 The flux in the energy bins will be reduced according to the absorption at a
 given energy.
