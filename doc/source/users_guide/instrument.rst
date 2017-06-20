@@ -90,6 +90,13 @@ at low energies for ``"acisi_cy18"`` is much lower due to the buildup of
 contamination on the ACIS optical blocking filters compared to the 
 ``"acisi_cy0"`` responses.
 
+Hitomi
+~~~~~~
+
+A single instrument specification is available for *Hitomi*, for the Soft X-ray
+Spectrometer (SXS) instrument. It has a 5.6-meter focal length, a 1.2-arcminute
+Gaussian PSF, no dithering, a 3-arcminute field of view, and 0.5-arcminute pixels.
+
 .. _bkgnds:
 
 Backgrounds
