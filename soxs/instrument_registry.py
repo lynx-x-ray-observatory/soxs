@@ -65,6 +65,8 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "dither": False,
                                       "psf": ["gaussian", 5.0]}
 
+# Chandra
+
 instrument_registry["acisi_cy0"] = {"name": "acis_cy0", 
                                     "arf": "acisi_aimpt_cy0.arf",
                                     "rmf": "acisi_aimpt_cy0.rmf",
@@ -84,6 +86,19 @@ instrument_registry["acisi_cy18"] = {"name": "acis_cy18",
                                      "psf": ["gaussian", 0.5],
                                      "focal_length": 10.0,
                                      "dither": True}
+
+# Hitomi
+
+instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
+                                     "arf": "hitomi_sxs_ptsrc.arf",
+                                     "rmf": "hitomi_sxs.rmf",
+                                     "bkgnd": None,
+                                     "num_pixels": 6,
+                                     "fov": 3.06450576,
+                                     "focal_length": 5.6,
+                                     "dither": False,
+                                     "psf": ["gaussian", 72.0]}
+
 
 def add_instrument_to_registry(inst_spec):
     """
