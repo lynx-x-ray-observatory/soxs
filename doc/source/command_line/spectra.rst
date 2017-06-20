@@ -16,8 +16,8 @@ using the AtomDB tables.
 
     usage: make_thermal_spectrum [-h] [--velocity VELOCITY] [--emin EMIN]
                                  [--emax EMAX] [--nbins NBINS]
-                                 [--apec_vers APEC_VERS] [--absorb] [--nh NH]
-                                 [--overwrite] [--broadening | --no_broadening]
+                                 [--apec_vers APEC_VERS] [--absorb ABSORB] 
+                                 [--nh NH] [--overwrite] [--broadening | --no_broadening]
 
                                  kT abund redshift norm specfile
     
@@ -40,7 +40,8 @@ using the AtomDB tables.
       --nbins NBINS         The number of bins in the spectrum. Default: 10000
       --apec_vers APEC_VERS
                             The version of the AtomDB tables to use. Default: 3.0.3
-      --absorb              Apply foreground Galactic absorption.
+      --absorb ABSORB       Apply foreground Galactic absorption. Default is
+                            "wabs".
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
                             Default: 0.02
       --overwrite           Overwrite an existing file with the same name.
@@ -68,11 +69,12 @@ The same spectrum, but with velocity and thermal broadening turned off.
 
     [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --no_broadening --overwrite
 
-The same spectrum, but with foreground galactic absorption with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
+The same spectrum, but with foreground galactic absorption using the "wabs" model
+with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --absorb --nh 0.04 --overwrite
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --absorb "wabs" --nh 0.04 --overwrite
 
 The same spectrum, but with different binning.
 
@@ -99,7 +101,7 @@ form:
 .. code-block:: text
 
     usage: make_powerlaw_spectrum [-h] [--emin EMIN] [--emax EMAX] [--nbins NBINS]
-                                  [--absorb] [--nh NH] [--overwrite]
+                                  [--absorb ABSORB] [--nh NH] [--overwrite]
                                   photon_index redshift norm specfile
     
     Create a power-law spectrum and write it to a file.
@@ -116,7 +118,8 @@ form:
       --emin EMIN    The minimum energy in keV. Default: 0.01
       --emax EMAX    The maximum energy in keV. Default: 50.0
       --nbins NBINS  The number of bins in the spectrum. Default: 10000
-      --absorb       Apply foreground Galactic absorption.
+      --absorb ABSORB       Apply foreground Galactic absorption. Default is
+                            "wabs".
       --nh NH        The hydrogen column in units of 10**22 atoms/cm**2. Default:
                      0.02
       --overwrite    Overwrite an existing file with the same name.
@@ -130,11 +133,12 @@ Make a basic power-law spectrum.
 
     [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --overwrite
 
-The same spectrum, but with foreground galactic absorption with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
+The same spectrum, but with foreground galactic absorption using the "tbabs" model
+with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
-    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --absorb --nh 0.04 --overwrite
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat --absorb "tbabs" --nh 0.04 --overwrite
 
 The same spectrum, but with different binning.
 
