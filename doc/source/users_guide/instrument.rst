@@ -213,7 +213,7 @@ gives (showing only a subset for brevity):
 
     Instrument: hdxi
         num_pixels: 4096
-        fov: 5.0
+        fov: 20.0
         bkgnd: acisi
         psf: ['gaussian', 0.5]
         name: hdxi_3x10
