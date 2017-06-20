@@ -16,7 +16,7 @@ from sherpa.astro.ui import load_user_model, add_user_pars, \
     covar, get_covar_results, set_covar_opt
 from numpy.random import RandomState
 
-prng = RandomState(23)
+prng = RandomState(34)
 
 def mymodel(pars, x, xhi=None):
     dx = x[1]-x[0]
@@ -44,7 +44,7 @@ def plaw_fit(alpha_sim):
     inst_name = "hdxi"
 
     spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim)
-    spec.apply_foreground_absorption(nH_sim, "tbabs")
+    spec.apply_foreground_absorption(nH_sim, model="tbabs")
     e = spec.generate_energies(exp_time, area, prng=prng)
 
     pt_src = PointSourceModel(30.0, 45.0, e.size)
@@ -75,7 +75,7 @@ def plaw_fit(alpha_sim):
     set_stat("cstat")
     set_method("simplex")
     ignore(":0.5, 8.0:")
-    set_model("wplaw")
+    set_model("tplaw")
     fit()
     set_covar_opt("sigma", 1.645)
     covar()
