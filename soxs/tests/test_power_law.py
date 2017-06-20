@@ -2,7 +2,7 @@ import numpy as np
 import os
 import shutil
 import tempfile
-from soxs.spectra import Spectrum, get_wabs_absorb
+from soxs.spectra import Spectrum, get_tbabs_absorb
 from soxs.spatial import PointSourceModel
 from soxs.simput import write_photon_list
 from soxs.instrument_registry import \
@@ -20,9 +20,9 @@ prng = RandomState(23)
 
 def mymodel(pars, x, xhi=None):
     dx = x[1]-x[0]
-    wabs = get_wabs_absorb(x, pars[0])
+    tbabs = get_tbabs_absorb(x, pars[0])
     plaw = pars[1]*dx*(x*(1.0+pars[2]))**(-pars[3])
-    return wabs*plaw
+    return tbabs*plaw
 
 def test_power_law():
     plaw_fit(1.1)
@@ -44,7 +44,7 @@ def plaw_fit(alpha_sim):
     inst_name = "hdxi"
 
     spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim)
-    spec.apply_foreground_absorption(nH_sim)
+    spec.apply_foreground_absorption(nH_sim, "tbabs")
     e = spec.generate_energies(exp_time, area, prng=prng)
 
     pt_src = PointSourceModel(30.0, 45.0, e.size)
@@ -61,11 +61,11 @@ def plaw_fit(alpha_sim):
     rmf = RedistributionMatrixFile(inst["rmf"])
     os.system("cp %s ." % arf.filename)
     convert_rmf(rmf.filename)
-    
+
     write_spectrum("plaw_model_evt.fits", "plaw_model_evt.pha", overwrite=True)
 
-    load_user_model(mymodel, "wplaw")
-    add_user_pars("wplaw", ["nH", "norm", "redshift", "alpha"],
+    load_user_model(mymodel, "tplaw")
+    add_user_pars("tplaw", ["nH", "norm", "redshift", "alpha"],
                   [0.01, norm_sim*0.8, redshift, 0.9], 
                   parmins=[0.0, 0.0, 0.0, 0.1],
                   parmaxs=[10.0, 1.0e9, 10.0, 10.0],
