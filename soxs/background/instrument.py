@@ -7,6 +7,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
     def __new__(self, filename, default_focal_length):
         spec = BackgroundSpectrum.from_file(filename)
         spec.default_focal_length = default_focal_length
+        return spec
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
