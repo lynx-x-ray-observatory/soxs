@@ -62,3 +62,12 @@ ACIS-I Cycle 18
 
 * RMF: `acisi_aimpt_cy18.rmf <acisi_aimpt_cy18.rmf>`_
 * ARF: `acisi_aimpt_cy18.arf <acisi_aimpt_cy18.arf>`_
+
+Hitomi
+------
+
+SXS
++++
+
+* RMF: `hitomi_sxs.rmf <hitomi_sxs.rmf>`_
+* ARF: `hitomi_sxs_ptsrc.arf <hitomi_sxs_ptsrc.arf>`_
