@@ -1,7 +1,7 @@
 import numpy as np
 from soxs import write_photon_list
 from soxs.constants import keV_per_erg, erg_per_keV
-from soxs.spectra import get_wabs_absorb
+from soxs.spectra import get_wabs_absorb, get_tbabs_absorb
 from soxs.utils import mylog, parse_prng
 from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import erf
@@ -116,8 +116,9 @@ def generate_sources(exp_time, fov, sky_center, area=40000.0, prng=None):
 
     return ra0, dec0, fluxes, ind
 
-def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0, 
-                          input_sources=None, output_sources=None, prng=None):
+def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs", 
+                          nH=0.05, area=40000.0, input_sources=None, 
+                          output_sources=None, prng=None):
     r"""
     Make a point-source background.
 
@@ -129,6 +130,8 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
+    absorb_model : string, optional
+        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
@@ -224,7 +227,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     # We will throw a lot of stuff away, but this is more general and still
     # faster. 
     if nH is not None:
-        absorb = get_wabs_absorb(all_energies, nH)
+        if absorb_model == "wabs":
+            absorb = get_wabs_absorb(all_energies, nH)
+        elif absorb_model == "tbabs":
+            absorb = get_tbabs_absorb(all_energies, nH)
         randvec = prng.uniform(size=all_energies.size)
         all_energies = all_energies[randvec < absorb]
         all_ra = all_ra[randvec < absorb]
@@ -240,9 +246,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, nH=0.05, area=40000.0,
     return output_events
 
 def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                            sky_center, nH=0.05, area=40000.0, 
-                            prng=None, append=False, overwrite=False,
-                            input_sources=None, output_sources=None):
+                            sky_center, absorb_model="wabs", nH=0.05, 
+                            area=40000.0, prng=None, append=False, 
+                            overwrite=False, input_sources=None, 
+                            output_sources=None):
     """
     Make a SIMPUT catalog made up of contributions from
     point sources. 
@@ -259,6 +266,8 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
+    absorb_model : string, optional
+        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
@@ -284,8 +293,9 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
     """
-    events = make_ptsrc_background(exp_time, fov, sky_center, nH=nH, area=area, 
-                                   input_sources=input_sources, 
+    events = make_ptsrc_background(exp_time, fov, sky_center, 
+                                   absorb_model=absorb_model, nH=nH, 
+                                   area=area, input_sources=input_sources, 
                                    output_sources=output_sources, prng=prng)
     write_photon_list(simput_prefix, phlist_prefix, events["flux"], 
                       events["ra"], events["dec"], events["energy"], 

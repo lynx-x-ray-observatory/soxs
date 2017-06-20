@@ -5,13 +5,15 @@ import subprocess
 import tempfile
 import shutil
 import os
-from soxs.utils import soxs_files_path, mylog, parse_prng
+from soxs.utils import soxs_files_path, mylog, \
+    parse_prng, check_file_location
 from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
     m_u
 import astropy.io.fits as pyfits
 import astropy.units as u
+import h5py
 
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
@@ -307,7 +309,7 @@ class Spectrum(object):
         np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
                    delimiter="\t", header=header)
 
-    def apply_foreground_absorption(self, nH):
+    def apply_foreground_absorption(self, nH, model="wabs"):
         """
         Given a hydrogen column density, apply
         galactic foreground absorption to the spectrum. 
@@ -316,8 +318,16 @@ class Spectrum(object):
         ----------
         nH : float
             The hydrogen column in units of 10**22 atoms/cm**2
+        model : string, optional
+            The model for absorption to use. Options are "wabs"
+            (Wisconsin, Morrison and McCammon; ApJ 270, 119) or
+            "tbabs" (Tuebingen-Boulder, Wilms, J., Allen, A., & 
+            McCray, R. 2000, ApJ, 542, 914). Default: "wabs".
         """
-        sigma = wabs_cross_section(self.emid.value)
+        if model == "wabs":
+            sigma = wabs_cross_section(self.emid.value)
+        elif model == "tbabs":
+            sigma = tbabs_cross_section(self.emid.value)
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()
 
@@ -529,6 +539,25 @@ def wabs_cross_section(E):
 
 def get_wabs_absorb(e, nH):
     sigma = wabs_cross_section(e)
+    return np.exp(-nH*1.0e22*sigma)
+
+_tbabs_emid = None
+_tbabs_sigma = None
+
+def tbabs_cross_section(E):
+    global _tbabs_emid
+    global _tbabs_sigma
+    if _tbabs_sigma is None:
+        filename = check_file_location("tbabs_table.h5", "files")
+        f = h5py.File(filename, "r")
+        _tbabs_emid = 0.5*(f["energy"][1:]+f["energy"][:-1])
+        _tbabs_sigma = f["cross_section"][:]
+        f.close()
+    sigma = np.interp(E, _tbabs_emid, _tbabs_sigma, left=0.0, right=0.0)
+    return sigma
+
+def get_tbabs_absorb(e, nH):
+    sigma = tbabs_cross_section(e)
     return np.exp(-nH*1.0e22*sigma)
 
 class ConvolvedSpectrum(Spectrum):
