@@ -90,8 +90,6 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
         return cls(ebins, flux, default_focal_length)
 
-    area = (focal_length / bkgnd_spec.default_focal_length) ** 2
-
     def generate_energies(self, t_exp, fov, focal_length=None, 
                           prng=None):
         """
