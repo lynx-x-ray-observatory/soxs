@@ -8,7 +8,8 @@ Version 1.2.0
 
 This is a release with two new features and some fixes to the documentation.
 
-* An instrument specification for the *Hitomi*/SXS has been added.
+* An instrument specification for the *Hitomi*/SXS has been added. Thanks to
+  Eric Miller of MIT for generating the response files.
 * There are now two options for absorption models, "wabs" and "tbabs". All tools
   which take a parameter for the Galactic hydrogen column ``nH`` now take an
   optional parameter which can be set to ``"wabs"`` or ``"tbabs"``. The default 
