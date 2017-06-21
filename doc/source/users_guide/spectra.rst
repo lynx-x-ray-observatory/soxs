@@ -236,7 +236,7 @@ Applying Galactic Foreground Absorption to a Spectrum
 
 The :meth:`~soxs.spectra.Spectrum.apply_foreground_absorption` method
 can be used to apply foreground absorption using the ``"wabs"`` or 
-``"tbabs"``models. It takes one required parameter, the hydrogen 
+``"tbabs"`` models. It takes one required parameter, the hydrogen 
 column along the line of sight, in units of :math:`10^{22}~{\rm cm}^{-2}`.
 Once can optionally specify which absorption model to use using the ``"model"``
 parameter (default is ``"wabs"``):
