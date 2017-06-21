@@ -10,3 +10,4 @@ soxs.egg-info
 *.c
 *.o
 *.so
+build
