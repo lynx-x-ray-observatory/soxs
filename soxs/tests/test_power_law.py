@@ -16,7 +16,7 @@ from sherpa.astro.ui import load_user_model, add_user_pars, \
     covar, get_covar_results, set_covar_opt
 from numpy.random import RandomState
 
-prng = RandomState(34)
+prng = RandomState(67)
 
 def mymodel(pars, x, xhi=None):
     dx = x[1]-x[0]
@@ -74,7 +74,7 @@ def plaw_fit(alpha_sim):
     load_pha("plaw_model_evt.pha")
     set_stat("cstat")
     set_method("simplex")
-    ignore(":0.5, 8.0:")
+    ignore(":0.6, 8.0:")
     set_model("tplaw")
     fit()
     set_covar_opt("sigma", 1.645)
