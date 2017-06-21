@@ -6,7 +6,6 @@ from soxs.utils import parse_prng
 
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
-
     def __init__(self, ebins, flux):
         super(BackgroundSpectrum, self).__init__(ebins, flux)
 
@@ -60,6 +59,68 @@ class BackgroundSpectrum(Spectrum):
         """
         prng = parse_prng(prng)
         rate = area*fov*fov*self.total_flux.value
+        energy = _generate_energies(self, t_exp, rate, prng)
+        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        energies = Energies(energy, flux)
+        return energies
+
+class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
+    _units = "photon/(s*keV*arcmin**2)"
+    def __init__(self, ebins, flux, default_focal_length):
+        super(BackgroundSpectrum, self).__init__(ebins, flux)
+        self.default_focal_length = default_focal_length
+
+    @classmethod
+    def from_file(cls, filename, default_focal_length):
+        """
+        Read an instrumental background spectrum from an 
+        ASCII text file. Accepts a file with two columns, 
+        the first being the center energy of the bin in 
+        keV and the second being the intensity in 
+        photons/s/keV/arcmin**2, assuming a linear binning 
+        with constant bin widths.
+
+        Parameters
+        ----------
+        filename : string
+            The path to the file containing the spectrum.
+        """
+        emid, flux = np.loadtxt(filename, unpack=True)
+        de = np.diff(emid)[0]
+        ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+        return cls(ebins, flux, default_focal_length)
+
+    area = (focal_length / bkgnd_spec.default_focal_length) ** 2
+
+    def generate_energies(self, t_exp, fov, focal_length=None, 
+                          prng=None):
+        """
+        Generate photon energies from this instrumental 
+        background spectrum given an exposure time, 
+        effective area, and field of view.
+
+        Parameters
+        ----------
+        t_exp : float
+            The exposure time in seconds.
+        fov : float
+            The width of the field of view on a side in 
+            arcminutes.
+        focal_length : float, optional
+            The focal length in meters. Default is to use
+            the default focal length of the instrument
+            configuration.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
+        """
+        prng = parse_prng(prng)
+        if focal_length is None:
+            focal_length = self.default_focal_length
+        rate = fov*fov*self.total_flux.value
+        rate *= (focal_length/self.default_focal_length)**2
         energy = _generate_energies(self, t_exp, rate, prng)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
         energies = Energies(energy, flux)

@@ -4,5 +4,6 @@ from .point_sources import make_ptsrc_background, \
 from .instrument import make_instrument_background, \
     add_instrumental_background
 from .spectra import BackgroundSpectrum, \
-    ConvolvedBackgroundSpectrum
+    ConvolvedBackgroundSpectrum, \
+    InstrumentalBackgroundSpectrum
 from .events import add_background_from_file

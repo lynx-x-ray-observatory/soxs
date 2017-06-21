@@ -1,35 +1,30 @@
 import os
 from soxs.utils import soxs_files_path, parse_prng
-from soxs.background.spectra import BackgroundSpectrum
+from soxs.background.spectra import BackgroundSpectrum, \
+    InstrumentalBackgroundSpectrum
 from soxs.background.events import make_uniform_background
-
-class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
-    def __new__(self, filename, default_focal_length):
-        spec = BackgroundSpectrum.from_file(filename)
-        spec.default_focal_length = default_focal_length
-        return spec
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
-acisi_particle_bkgnd = InstrumentalBackgroundSpectrum(acisi_bkgnd_file, 10.0)
+acisi_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(acisi_bkgnd_file, 10.0)
 
 # Athena-like microcalorimeter background 
 # (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
 mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.dat")
-mucal_particle_bkgnd = InstrumentalBackgroundSpectrum(mucal_bkgnd_file, 10.0)
+mucal_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(mucal_bkgnd_file, 10.0)
 
 # Athena microcalorimeter background 
 # (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
 xifu_bkgnd_file = os.path.join(soxs_files_path, "xifu_bkgnd.dat")
-athena_xifu_bkgnd = InstrumentalBackgroundSpectrum(xifu_bkgnd_file, 12.0)
+athena_xifu_bkgnd = InstrumentalBackgroundSpectrum.from_file(xifu_bkgnd_file, 12.0)
 
 # Athena imager background 
 wfi_bkgnd_file = os.path.join(soxs_files_path, "wfi_bkgnd.dat")
-athena_wfi_bkgnd = InstrumentalBackgroundSpectrum(wfi_bkgnd_file, 12.0)
+athena_wfi_bkgnd = InstrumentalBackgroundSpectrum.from_file(wfi_bkgnd_file, 12.0)
 
 # Hitomi SXS background
 sxs_bkgnd_file = os.path.join(soxs_files_path, "hitomi_sxs_bkgnd.dat")
-hitomi_sxs_bkgnd = InstrumentalBackgroundSpectrum(sxs_bkgnd_file, 5.6)
+hitomi_sxs_bkgnd = InstrumentalBackgroundSpectrum.from_file(sxs_bkgnd_file, 5.6)
 
 instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
                           "mucal": mucal_particle_bkgnd,
@@ -69,9 +64,9 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
 
     # Generate background events
 
-    area = (focal_length / bkgnd_spec.default_focal_length) ** 2
-    energy = bkgnd_spec.generate_energies(event_params["exposure_time"], area, 
-                                          fov, prng=prng).value
+    energy = bkgnd_spec.generate_energies(event_params["exposure_time"], 
+                                          fov, focal_length=focal_length,
+                                          prng=prng).value
 
     if energy.size == 0:
         raise RuntimeError("No instrumental background events were detected!!!")
