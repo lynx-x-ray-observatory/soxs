@@ -120,7 +120,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         rate = fov*fov*self.total_flux.value
         rate *= (focal_length/self.default_focal_length)**2
         energy = _generate_energies(self, t_exp, rate, prng)
-        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        flux = np.sum(energy)*erg_per_keV/t_exp
         energies = Energies(energy, flux)
         return energies
 
