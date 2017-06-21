@@ -17,12 +17,21 @@ of energies and photon fluxes. There are several ways to create a
 Reading a Spectrum from a File
 ++++++++++++++++++++++++++++++
 
-If you have a spectrum tabulated in an ASCII text file, this can be read
-in using the :meth:`~soxs.spectra.Spectrum.from_file` method. The file
-must be comprised of two columns, the first being the energies of the bins
-in keV and the second being the photon flux in units of 
-:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. The binning 
-must be linear and the bins must be equally spaced. For example:
+If you have a spectrum tabulated in an ASCII text or HDF5 file, this can 
+be read in using the :meth:`~soxs.spectra.Spectrum.from_file` method. 
+
+* If the file is ASCII, it must be comprised of two columns, the first 
+being the energies of the bins in keV and the second being the photon flux 
+in units of :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. 
+The binning must be linear and the bins must be equally spaced. 
+
+* If the file is HDF5, it must have one array dataset, named ``"spectrum"``, 
+which is the spectrum in units of 
+:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`, and two 
+scalar datasets, ``"emin"`` and ``"emax"``, which are the minimum and 
+maximum energies in keV.
+
+For example:
 
 .. code-block:: python
 

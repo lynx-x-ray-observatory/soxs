@@ -16,6 +16,8 @@ This is a release with two new features and some fixes to the documentation.
   is still ``"wabs"``.
 * SOXS now bundles only one version of the AtomDB tables, v3.0.8. It is still
   possible to point to your own directory containing a different version. 
+* The :meth:`~soxs.spectra.Spectrum.from_file` method now accepts HDF5 files as
+  input. 
 * Various minor corrections to the documentation were made.
 
 Version 1.1.1
