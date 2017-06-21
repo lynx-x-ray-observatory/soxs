@@ -218,19 +218,35 @@ class Spectrum(object):
     @classmethod
     def from_file(cls, filename):
         """
-        Read a spectrum from an ASCII text file. Accepts a file
-        with two columns, the first being the center energy of the
-        bin in keV and the second being the flux in photons/s/cm**2/keV, 
-        assuming a linear binning with constant bin widths.
+        Read a spectrum from an ASCII or HDF5 file.
+
+        If ASCII: accepts a file with two columns,
+        the first being the center energy of the bin in 
+        keV and the second being the spectrum in the
+        appropriate units, assuming a linear binning 
+        with constant bin widths.
+
+        If HDF5: accepts a file with one array dataset, 
+        named "spectrum", which is the spectrum in the 
+        appropriate units, and two scalar datasets, 
+        "emin" and "emax", which are the minimum and 
+        maximum energies in keV.
 
         Parameters
         ----------
         filename : string
             The path to the file containing the spectrum.
         """
-        emid, flux = np.loadtxt(filename, unpack=True)
-        de = np.diff(emid)[0]
-        ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+        if filename.endswith(".h5"):
+            f = h5py.File(filename)
+            flux = f["spectrum"].value
+            nbins = flux.size
+            ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
+            f.close()
+        else:
+            emid, flux = np.loadtxt(filename, unpack=True)
+            de = np.diff(emid)[0]
+            ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
         return cls(ebins, flux)
 
     @classmethod

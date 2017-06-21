@@ -5,25 +5,25 @@ from soxs.background.spectra import BackgroundSpectrum, \
 from soxs.background.events import make_uniform_background
 
 # ACIS-I particle background
-acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.dat")
+acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
 acisi_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(acisi_bkgnd_file, 10.0)
 
 # Athena-like microcalorimeter background 
 # (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
-mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.dat")
+mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.h5")
 mucal_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(mucal_bkgnd_file, 10.0)
 
 # Athena microcalorimeter background 
 # (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
-xifu_bkgnd_file = os.path.join(soxs_files_path, "xifu_bkgnd.dat")
+xifu_bkgnd_file = os.path.join(soxs_files_path, "xifu_bkgnd.h5")
 athena_xifu_bkgnd = InstrumentalBackgroundSpectrum.from_file(xifu_bkgnd_file, 12.0)
 
 # Athena imager background 
-wfi_bkgnd_file = os.path.join(soxs_files_path, "wfi_bkgnd.dat")
+wfi_bkgnd_file = os.path.join(soxs_files_path, "wfi_bkgnd.h5")
 athena_wfi_bkgnd = InstrumentalBackgroundSpectrum.from_file(wfi_bkgnd_file, 12.0)
 
 # Hitomi SXS background
-sxs_bkgnd_file = os.path.join(soxs_files_path, "hitomi_sxs_bkgnd.dat")
+sxs_bkgnd_file = os.path.join(soxs_files_path, "hitomi_sxs_bkgnd.h5")
 hitomi_sxs_bkgnd = InstrumentalBackgroundSpectrum.from_file(sxs_bkgnd_file, 5.6)
 
 instrument_backgrounds = {"acisi": acisi_particle_bkgnd,

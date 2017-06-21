@@ -3,6 +3,7 @@ from soxs.spectra import Spectrum, ConvolvedSpectrum, \
     _generate_energies, Energies
 from soxs.constants import erg_per_keV
 from soxs.utils import parse_prng
+import h5py
 
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
@@ -13,25 +14,6 @@ class BackgroundSpectrum(Spectrum):
     def from_spectrum(cls, spec, fov):
         flux = spec.flux.value/fov/fov
         return cls(spec.flux.ebins.value, flux)
-
-    @classmethod
-    def from_file(cls, filename):
-        """
-        Read a background spectrum from an ASCII text file. 
-        Accepts a file with two columns, the first being the 
-        center energy of the bin in keV and the second being 
-        the intensity in photons/s/cm**2/keV/arcmin**2, 
-        assuming a linear binning with constant bin widths.
-
-        Parameters
-        ----------
-        filename : string
-            The path to the file containing the spectrum.
-        """
-        emid, flux = np.loadtxt(filename, unpack=True)
-        de = np.diff(emid)[0]
-        ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
-        return cls(ebins, flux)
 
     def generate_energies(self, t_exp, area, fov, prng=None):
         """
@@ -73,21 +55,39 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
     @classmethod
     def from_file(cls, filename, default_focal_length):
         """
-        Read an instrumental background spectrum from an 
-        ASCII text file. Accepts a file with two columns, 
+        Read an instrumental background spectrum from 
+        an ASCII or HDF5 file.
+
+        If ASCII: accepts a file with two columns,
         the first being the center energy of the bin in 
-        keV and the second being the intensity in 
-        photons/s/keV/arcmin**2, assuming a linear binning 
+        keV and the second being the spectrum in the
+        appropriate units, assuming a linear binning 
         with constant bin widths.
+
+        If HDF5: accepts a file with one array dataset, 
+        named "spectrum", which is the spectrum in the 
+        appropriate units, and two scalar datasets, 
+        "emin" and "emax", which are the minimum and 
+        maximum energies in keV.
 
         Parameters
         ----------
         filename : string
             The path to the file containing the spectrum.
+        default_focal_length : float
+            The default focal length of the instrument
+            in meters. 
         """
-        emid, flux = np.loadtxt(filename, unpack=True)
-        de = np.diff(emid)[0]
-        ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+        if filename.endswith(".h5"):
+            f = h5py.File(filename)
+            flux = f["spectrum"].value
+            nbins = flux.size
+            ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
+            f.close()
+        else:
+            emid, flux = np.loadtxt(filename, unpack=True)
+            de = np.diff(emid)[0]
+            ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
         return cls(ebins, flux, default_focal_length)
 
     def generate_energies(self, t_exp, fov, focal_length=None, 
