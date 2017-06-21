@@ -14,6 +14,8 @@ This is a release with two new features and some fixes to the documentation.
   which take a parameter for the Galactic hydrogen column ``nH`` now take an
   optional parameter which can be set to ``"wabs"`` or ``"tbabs"``. The default 
   is still ``"wabs"``.
+* SOXS now bundles only one version of the AtomDB tables, v3.0.8. It is still
+  possible to point to your own directory containing a different version. 
 * Various minor corrections to the documentation were made.
 
 Version 1.1.1

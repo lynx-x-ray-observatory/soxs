@@ -89,8 +89,7 @@ new :class:`~soxs.spectra.Spectrum` objects. You start by initializing an
 
 The ``broadening`` parameter sets whether or not spectral lines will be 
 thermally and velocity broadened. The ``apec_vers`` parameter sets the version 
-of the AtomDB tables to use. Versions 2.0.2 and 3.0.3 are built into SOXS, the 
-default version is 3.0.3.
+of the AtomDB tables to use. Version 3.0.8 is built into SOXS, and is the default.
 
 You may also supply another location for the AtomDB tables. For example, the 
 following construction will look for the AtomDB tables in the current working 
