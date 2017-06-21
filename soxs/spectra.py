@@ -550,8 +550,10 @@ def tbabs_cross_section(E):
     if _tbabs_sigma is None:
         filename = check_file_location("tbabs_table.h5", "files")
         f = h5py.File(filename, "r")
-        _tbabs_emid = 0.5*(f["energy"][1:]+f["energy"][:-1])
         _tbabs_sigma = f["cross_section"][:]
+        nbins = _tbabs_sigma.size
+        ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
+        _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
         f.close()
     sigma = np.interp(E, _tbabs_emid, _tbabs_sigma, left=0.0, right=0.0)
     return sigma
