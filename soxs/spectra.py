@@ -14,6 +14,7 @@ from soxs.constants import erg_per_keV, hc, \
 import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
+from scipy.interpolate import InterpolatedUnivariateSpline
 
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
@@ -559,20 +560,23 @@ def get_wabs_absorb(e, nH):
 
 _tbabs_emid = None
 _tbabs_sigma = None
+_tbabs_spline = None
 
 def tbabs_cross_section(E):
     global _tbabs_emid
     global _tbabs_sigma
-    if _tbabs_sigma is None:
+    global _tbabs_spline
+    if _tbabs_spline is None:
         filename = check_file_location("tbabs_table.h5", "files")
         f = h5py.File(filename, "r")
         _tbabs_sigma = f["cross_section"][:]
         nbins = _tbabs_sigma.size
         ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
-        _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
         f.close()
-    sigma = np.interp(E, _tbabs_emid, _tbabs_sigma, left=0.0, right=0.0)
-    return sigma
+        _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
+        _tbabs_spline = InterpolatedUnivariateSpline(_tbabs_emid,
+                                                     _tbabs_sigma, ext=1)
+    return _tbabs_spline(E)
 
 def get_tbabs_absorb(e, nH):
     sigma = tbabs_cross_section(e)
