@@ -85,8 +85,7 @@ class AuxiliaryResponseFile(object):
         earea = self.interpolate_area(energy).value
         idxs = np.logical_and(energy >= refband[0], energy <= refband[1])
         rate = flux/(energy[idxs].sum()*erg_per_keV)*earea[idxs].sum()
-        n_ph = np.modf(rate*exp_time)
-        n_ph = np.int64(n_ph[1]) + np.int64(n_ph[0] >= prng.uniform())
+        n_ph = prng.poisson(lam=rate*exp_time)
         fak = float(n_ph)/energy.size
         if fak > 1.0:
             mylog.error("Number of events in sample: %d, Number of events wanted: %d" % (energy.size, n_ph))
