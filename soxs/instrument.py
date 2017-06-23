@@ -116,7 +116,7 @@ class AuxiliaryResponseFile(object):
             fig = plt.figure(figsize=(10, 10))
         if ax is None:
             ax = fig.add_subplot(111)
-        ax.loglog(self.emid, self.eff_area, label="$\mathrm{\mu-cal}$")
+        ax.loglog(self.emid, self.eff_area)
         ax.set_xlabel("E (keV)")
         ax.set_ylabel("$\mathrm{A\ (cm^2)}$")
         return fig
