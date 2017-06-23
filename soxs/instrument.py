@@ -196,6 +196,19 @@ class RedistributionMatrixFile(object):
     def __str__(self):
         return self.filename
 
+    def _make_channels(self, k):
+        # build channel number list associated to array value,
+        # there are groups of channels in rmfs with nonzero probabilities
+        trueChannel = []
+        f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+        n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+        for start, nchan in zip(f_chan, n_chan):
+            if nchan == 0:
+                trueChannel.append(start)
+            else:
+                trueChannel += list(range(start, start + nchan))
+        return np.array(trueChannel)
+
     def scatter_energies(self, events, prng=None):
         """
         Scatter photon energies with the RMF and produce the 
@@ -226,17 +239,7 @@ class RedistributionMatrixFile(object):
             # weight function for probabilities from RMF
             weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
             weights /= weights.sum()
-            # build channel number list associated to array value,
-            # there are groups of channels in rmfs with nonzero probabilities
-            trueChannel = []
-            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
-            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-            for start, nchan in zip(f_chan, n_chan):
-                if nchan == 0:
-                    trueChannel.append(start)
-                else:
-                    trueChannel += list(range(start, start+nchan))
-            trueChannel = np.array(trueChannel)
+            trueChannel = self._make_channels(k)
             if len(trueChannel) > 0:
                 e = sorted_e[fcurr:last]
                 nn = np.logical_and(low <= e, e < high).sum()
