@@ -6,7 +6,8 @@ ChangeLog
 Version 1.2.0
 -------------
 
-This is a release with two new features and some fixes to the documentation.
+This is a release with three new features, a change in AtomDB version, and some
+fixes to the documentation.
 
 * An instrument specification for the *Hitomi*/SXS has been added. Thanks to
   Eric Miller of MIT for generating the response files.
