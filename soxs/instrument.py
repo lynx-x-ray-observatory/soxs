@@ -100,6 +100,27 @@ class AuxiliaryResponseFile(object):
             events[key] = events[key][eidxs]
         return events
 
+    def plot(self, fig=None, ax=None):
+        """
+        Make a quick plot of the effective area curve.
+
+        Parameters
+        ----------
+        fig : :class:`~matplotlib.figure.Figure`, optional
+            The figure to place the plot in. If not supplied, one will be created.
+        ax : :class:`~matplotlib.axes.Axes`, optional
+            The axes to place the plot in. If not supplied, one will be created.
+        """
+        import matplotlib.pyplot as plt
+        if fig is None:
+            fig = plt.figure(figsize=(10, 10))
+        if ax is None:
+            ax = fig.add_subplot(111)
+        ax.loglog(self.emid, self.eff_area, label="$\mathrm{\mu-cal}$")
+        ax.set_xlabel("E (keV)")
+        ax.set_ylabel("$\mathrm{A\ (cm^2)}$")
+        return fig
+
 class FlatResponse(AuxiliaryResponseFile):
     """
     A flat effective area response. 
