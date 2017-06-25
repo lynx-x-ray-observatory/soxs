@@ -699,7 +699,11 @@ class ConvolvedSpectrum(Spectrum):
             A pseudo-random number generator. Typically will only 
             be specified if you have a reason to generate the same 
             set of random numbers, such as for a test. Default is None, 
-            which sets the seed based on the system time. 
+            which sets the seed based on the system time.
+        quiet : boolean, optional
+            If True, log messages will not be displayed when 
+            creating energies. Useful if you have to loop over 
+            a lot of spectra. Default: False
         """
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
