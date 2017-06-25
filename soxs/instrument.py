@@ -253,6 +253,18 @@ class RedistributionMatrixFile(object):
 
         return events
 
+def perform_dither(x_offset, y_offset, dither_shape, dither_size, prng):
+    n_evt = x_offset.size
+    if dither_shape == "circle":
+        r = dither_size*np.sqrt(prng.uniform(size=n_evt))
+        theta = 2.*np.pi*prng.uniform(size=n_evt)
+        x_offset[:] = r*np.cos(theta)
+        y_offset[:] = r*np.sin(theta)
+    elif dither_shape == "square":
+        x_offset[:] = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+        y_offset[:] = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+    return x_offset, y_offset
+
 def generate_events(input_events, exp_time, instrument, sky_center, 
                     dither_shape="square", dither_size=16.0, roll_angle=0.0, 
                     subpixel_res=False, prng=None):
@@ -352,6 +364,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["fov"] = instrument_spec["fov"]
     event_params["chan_lim"] = [rmf.cmin, rmf.cmax]
     event_params["chips"] = instrument_spec["chips"]
+    event_params["dither"] = instrument_spec["dither"]
+    event_params["dither_size"] = dither_size
+    event_params["dither_shape"] = dither_shape
 
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
@@ -410,14 +425,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             y_offset = np.zeros(n_evt)
 
             if instrument_spec["dither"]:
-                if dither_shape == "circle":
-                    r = dsize*np.sqrt(prng.uniform(size=n_evt))
-                    theta = 2.*np.pi*prng.uniform(size=n_evt)
-                    x_offset = r*np.cos(theta)
-                    y_offset = r*np.sin(theta)
-                elif dither_shape == "square":
-                    x_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                    y_offset = dsize*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                x_offset, y_offset = perform_dither(x_offset, y_offset, 
+                                                    dither_shape, dsize,
+                                                    prng)
 
             detx -= x_offset
             dety -= y_offset
@@ -606,6 +616,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "pix_center": np.array([0.5*(nx+1)]*2),
                         "channel_type": rmf.header["CHANTYPE"],
                         "sky_center": sky_center,
+                        "dither": instrument_spec["dither"],
+                        "dither_size": dither_size,
+                        "dither_shape": dither_shape,
                         "plate_scale": instrument_spec["fov"]/nx/60.,
                         "chan_lim": [rmf.cmin, rmf.cmax],
                         "rmf": rmf_file, "arf": arf_file,

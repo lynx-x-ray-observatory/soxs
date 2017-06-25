@@ -61,8 +61,12 @@ def add_background_from_file(events, event_params, bkg_file):
     return all_events
 
 def make_uniform_background(energy, event_params, rmf, prng=None):
+    from soxs.instrument import perform_dither
 
     prng = parse_prng(prng)
+
+    plate_scale_arcsec = event_params["plate_scale"]*3600.0
+    dsize = event_params["dither_size"]/plate_scale_arcsec
 
     bkg_events = {}
 
@@ -93,10 +97,21 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
 
     n_e = bkg_events["energy"].size
 
+    x_offset = np.zeros(n_e)
+    y_offset = np.zeros(n_e)
+
+    if event_params["dither"]:
+        x_offset, y_offset = perform_dither(x_offset, y_offset,
+                                            event_params["dither_shape"],
+                                            dsize, prng)
+
     bkg_events["detx"] += prng.uniform(low=-0.5, high=0.5, size=n_e) - \
                           event_params['pix_center'][0]
     bkg_events["dety"] += prng.uniform(low=-0.5, high=0.5, size=n_e) - \
                           event_params['pix_center'][1]
+
+    bkg_events["dety"] -= x_offset
+    bkg_events["detx"] -= x_offset
 
     roll_angle = np.deg2rad(event_params["roll_angle"])
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
