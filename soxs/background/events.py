@@ -45,12 +45,13 @@ def add_background_from_file(events, event_params, bkg_file):
         roll_angle = np.deg2rad(event_params["roll_angle"])
         rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
                             [-np.cos(roll_angle), -np.sin(roll_angle)]])
-        xpix, ypix = np.dot(rot_mat, np.array([hdu.data["DETX"][idxs], hdu.data["DETY"][idxs]]))
+        xpix, ypix = np.dot(rot_mat, np.array([hdu.data["DETX"][idxs], 
+                                               hdu.data["DETY"][idxs]]))
         xpix += hdu.header["TCRPX2"]
         ypix += hdu.header["TCRPX3"]
 
     all_events = {}
-    for key in ["chipx", "chipy", "detx", "dety", "time", event_params["channel_type"]]:
+    for key in ["chipx", "chipy", "detx", "dety", "time", "ccd_id", event_params["channel_type"]]:
         all_events[key] = np.concatenate([events[key], hdu.data[key.upper()][idxs]])
     all_events["xpix"] = np.concatenate([events["xpix"], xpix])
     all_events["ypix"] = np.concatenate([events["ypix"], ypix])
@@ -110,8 +111,8 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
     bkg_events["dety"] += prng.uniform(low=-0.5, high=0.5, size=n_e) - \
                           event_params['pix_center'][1]
 
-    bkg_events["dety"] -= x_offset
     bkg_events["detx"] -= x_offset
+    bkg_events["dety"] -= y_offset
 
     roll_angle = np.deg2rad(event_params["roll_angle"])
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
