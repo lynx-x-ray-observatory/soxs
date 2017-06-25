@@ -15,7 +15,7 @@ class BackgroundSpectrum(Spectrum):
         flux = spec.flux.value/fov/fov
         return cls(spec.flux.ebins.value, flux)
 
-    def generate_energies(self, t_exp, area, fov, prng=None):
+    def generate_energies(self, t_exp, area, fov, prng=None, quiet=False):
         """
         Generate photon energies from this background 
         spectrum given an exposure time, effective area, 
@@ -44,7 +44,7 @@ class BackgroundSpectrum(Spectrum):
         area = parse_value(area, "cm**2")
         prng = parse_prng(prng)
         rate = area*fov*fov*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng)
+        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
         energies = Energies(energy, flux)
         return energies
@@ -94,7 +94,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         return cls(ebins, flux, default_focal_length)
 
     def generate_energies(self, t_exp, fov, focal_length=None, 
-                          prng=None):
+                          prng=None, quiet=False):
         """
         Generate photon energies from this instrumental 
         background spectrum given an exposure time, 
@@ -126,7 +126,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
             focal_length = parse_value(focal_length, "m")
         rate = fov*fov*self.total_flux.value
         rate *= (focal_length/self.default_focal_length)**2
-        energy = _generate_energies(self, t_exp, rate, prng)
+        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
         flux = np.sum(energy)*erg_per_keV/t_exp
         energies = Energies(energy, flux)
         return energies
@@ -134,7 +134,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
 
-    def generate_energies(self, t_exp, fov, prng=None):
+    def generate_energies(self, t_exp, fov, prng=None, quiet=False):
         """
         Generate photon energies from this convolved 
         background spectrum given an exposure time and 
@@ -157,7 +157,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         fov = parse_value(fov, "arcmin")
         prng = parse_prng(prng)
         rate = fov*fov*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng)
+        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)

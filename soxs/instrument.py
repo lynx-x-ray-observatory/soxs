@@ -253,7 +253,6 @@ class RedistributionMatrixFile(object):
 
         return events
 
-
 def generate_events(input_events, exp_time, instrument, sky_center, 
                     dither_shape="square", dither_size=16.0, roll_angle=0.0, 
                     subpixel_res=False, prng=None):
@@ -331,7 +330,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
-    nx = instrument_spec["num_pixels"]
+    nx = instrument_spec["fov_pixels"]
     plate_scale = instrument_spec["fov"]/nx/60. # arcmin to deg
     plate_scale_arcsec = plate_scale * 3600.0
     dsize = dither_size/plate_scale_arcsec
@@ -341,7 +340,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["arf"] = arf.filename
     event_params["sky_center"] = sky_center
     event_params["pix_center"] = np.array([0.5*(nx+1)]*2)
-    event_params["num_pixels"] = nx
+    event_params["fov_pixels"] = nx
     event_params["plate_scale"] = plate_scale
     event_params["rmf"] = rmf.filename
     event_params["channel_type"] = rmf.header["CHANTYPE"]
@@ -352,6 +351,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["roll_angle"] = roll_angle
     event_params["fov"] = instrument_spec["fov"]
     event_params["chan_lim"] = [rmf.cmin, rmf.cmax]
+    event_params["chips"] = instrument_spec["chips"]
 
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
@@ -433,18 +433,29 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 else:
                     raise NotImplementedError("PSF type %s not implemented!" % psf_type)
 
-            # Convert detector coordinates to chip coordinates
+            # Convert detector coordinates to chip coordinates.
+            # Throw out events that don't fall on any chip.
 
-            events["chipx"] = np.round(detx + event_params['pix_center'][0])
-            events["chipy"] = np.round(dety + event_params['pix_center'][1])
+            events["chip_id"] = -np.ones(n_evt, dtype='int')
+            events["chipx"] = -np.ones(n_evt, dtype='int')
+            events["chipy"] = -np.ones(n_evt, dtype='int')
 
-            # Throw out events that don't fall on the chip
+            cx = np.round(detx + event_params['pix_center'][0])-1
+            cy = np.round(dety + event_params['pix_center'][1])-1
 
-            keepx = np.logical_and(events["chipx"] >= 1.0, events["chipx"] <= nx)
-            keepy = np.logical_and(events["chipy"] >= 1.0, events["chipy"] <= nx)
-            keep = np.logical_and(keepx, keepy)
+            for chip in event_params["chips"]:
+                cxmin, cxmax, cymin, cymax = chip["mask_true"]
+                thisx = np.logical_and(cx >= cxmin, cx < cxmax)
+                thisy = np.logical_and(cy >= cymin, cy < cymax)
+                thisc = np.logical_and(thisx, thisy)
+                events["chip_id"][thisc] = chip["id"]
+                events["chipx"][thisc] = cx[thisc] - cxmin + 1
+                events["chipy"][thisc] = cy[thisc] - cymin + 1
+
+            keep = events["chip_id"] > -1
+
             mylog.info("%d events were rejected because " % (n_evt-keep.sum()) +
-                       "they fall outside the field of view.")
+                       "they do not fall on any CCD.")
             n_evt = keep.sum()
 
             if n_evt == 0:
@@ -463,9 +474,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                     events["detx"] = detx[keep]
                     events["dety"] = dety[keep]
                 else:
-                    events["detx"] = events["chipx"] - event_params["pix_center"][0] + \
+                    events["detx"] = cx[keep] + 1 - event_params["pix_center"][0] + \
                         prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                    events["dety"] = events["chipy"] - event_params["pix_center"][1] + \
+                    events["dety"] = cy[keep] + 1 - event_params["pix_center"][1] + \
                         prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
                 # Convert detector coordinates back to pixel coordinates by
@@ -587,11 +598,11 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                                                prng=prng)
         mylog.info("Generated %d photons from the point-source background." % len(events["energy"]))
     else:
-        nx = instrument_spec["num_pixels"]
+        nx = instrument_spec["fov_pixels"]
         events = defaultdict(list)
         event_params = {"exposure_time": exp_time, 
                         "fov": instrument_spec["fov"],
-                        "num_pixels": nx,
+                        "fov_pixels": nx,
                         "pix_center": np.array([0.5*(nx+1)]*2),
                         "channel_type": rmf.header["CHANTYPE"],
                         "sky_center": sky_center,
@@ -602,7 +613,18 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "instrument": rmf.header["INSTRUME"],
                         "mission": rmf.header.get("MISSION", ""),
                         "nchan": rmf.ebounds_header["DETCHANS"],
-                        "roll_angle": 0.0}
+                        "roll_angle": roll_angle}
+
+    if "chips" not in event_params:
+        event_params["chips"] = instrument_spec["chips"]
+
+    event_params["chips_fov"] = []
+    for chip in event_params["chips"]:
+        cxmin, cxmax, cymin, cymax = chip["mask_true"]
+        fov = (cxmax-cxmin)*(cymax-cymin)
+        fov *= event_params["plate_scale"]*60.0
+        fov *= event_params["plate_scale"]*60.0
+        event_params["chips_fov"].append(fov)
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
@@ -792,6 +814,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         if not os.path.exists(bkgnd_file):
             raise IOError("Cannot find the background event file %s!" % bkgnd_file)
         events = add_background_from_file(events, event_params, bkgnd_file)
+    if len(events["energy"]) == 0:
+        raise RuntimeError("No events were detected from source or background!!")
     write_event_file(events, event_params, out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 

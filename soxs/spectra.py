@@ -686,7 +686,7 @@ class ConvolvedSpectrum(Spectrum):
         flux = np.nan_to_num(flux.value)
         return Spectrum(self.ebins.value, flux)
 
-    def generate_energies(self, t_exp, prng=None):
+    def generate_energies(self, t_exp, prng=None, quiet=False):
         """
         Generate photon energies from this convolved spectrum given an
         exposure time.
@@ -704,7 +704,7 @@ class ConvolvedSpectrum(Spectrum):
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
         rate = self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng)
+        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)

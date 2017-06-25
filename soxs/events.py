@@ -30,6 +30,7 @@ def write_event_file(events, parameters, filename, overwrite=False):
     col_cy = pyfits.Column(name='CHIPY', format='D', unit='pixel', array=events["chipy"])
     col_dx = pyfits.Column(name='DETX', format='D', unit='pixel', array=events["detx"])
     col_dy = pyfits.Column(name='DETY', format='D', unit='pixel', array=events["dety"])
+    col_id = pyfits.Column(name='CCD_ID', format='D', unit='pixel', array=events["ccd_id"])
 
     chantype = parameters["channel_type"]
     if chantype == "PHA":
@@ -40,7 +41,8 @@ def write_event_file(events, parameters, filename, overwrite=False):
 
     col_t = pyfits.Column(name="TIME", format='1D', unit='s', array=events['time'])
 
-    cols = [col_e, col_x, col_y, col_ch, col_t, col_cx, col_cy, col_dx, col_dy]
+    cols = [col_e, col_x, col_y, col_ch, col_t, col_cx, 
+            col_cy, col_dx, col_dy, col_id]
 
     coldefs = pyfits.ColDefs(cols)
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
@@ -62,18 +64,18 @@ def write_event_file(events, parameters, filename, overwrite=False):
     tbhdu.header["TCUNI3"] = "deg"
     tbhdu.header["TLMIN2"] = 0.5
     tbhdu.header["TLMIN3"] = 0.5
-    tbhdu.header["TLMAX2"] = parameters["num_pixels"]+0.5
-    tbhdu.header["TLMAX3"] = parameters["num_pixels"]+0.5
+    tbhdu.header["TLMAX2"] = parameters["fov_pixels"]+0.5
+    tbhdu.header["TLMAX3"] = parameters["fov_pixels"]+0.5
     tbhdu.header["TLMIN4"] = parameters["chan_lim"][0]
     tbhdu.header["TLMAX4"] = parameters["chan_lim"][1]
     tbhdu.header["TLMIN6"] = 0.5
-    tbhdu.header["TLMAX6"] = parameters["num_pixels"]+0.5
+    tbhdu.header["TLMAX6"] = events["chipx"].max()+0.5
     tbhdu.header["TLMIN7"] = 0.5
-    tbhdu.header["TLMAX7"] = parameters["num_pixels"]+0.5
+    tbhdu.header["TLMAX7"] = events["chipy"].max()+0.5
     tbhdu.header["TLMIN8"] = 1.0-parameters["pix_center"][0]
-    tbhdu.header["TLMAX8"] = parameters["num_pixels"]-parameters["pix_center"][0]
+    tbhdu.header["TLMAX8"] = parameters["fov_pixels"]-parameters["pix_center"][0]
     tbhdu.header["TLMIN9"] = 1.0-parameters["pix_center"][1]
-    tbhdu.header["TLMAX9"] = parameters["num_pixels"]-parameters["pix_center"][1]
+    tbhdu.header["TLMAX9"] = parameters["fov_pixels"]-parameters["pix_center"][1]
     tbhdu.header["EXPOSURE"] = parameters["exposure_time"]
     tbhdu.header["TSTART"] = 0.0
     tbhdu.header["TSTOP"] = parameters["exposure_time"]

@@ -1,6 +1,6 @@
 import os
 from soxs.utils import soxs_files_path, parse_prng, \
-    parse_value
+    parse_value, mylog
 from soxs.background.spectra import \
     InstrumentalBackgroundSpectrum
 from soxs.background.events import make_uniform_background
@@ -60,17 +60,23 @@ def add_instrumental_background(name, filename, default_focal_length):
 def make_instrument_background(bkgnd_name, event_params, focal_length, rmf, 
                                prng=None):
     prng = parse_prng(prng)
-    fov = event_params["fov"]
 
     bkgnd_spec = instrument_backgrounds[bkgnd_name]
 
     # Generate background events
 
-    energy = bkgnd_spec.generate_energies(event_params["exposure_time"], 
-                                          fov, focal_length=focal_length,
-                                          prng=prng).value
+    n_e = 0
+    energy = []
+    for fov in event_params["chips_fov"]:
+        e = bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                         fov, focal_length=focal_length,
+                                         prng=prng, quiet=True).value
+        n_e += e.size
+        energy.append(e)
 
-    if energy.size == 0:
+    if n_e == 0:
         raise RuntimeError("No instrumental background events were detected!!!")
+    else:
+        mylog.info("Making %d events from the instrumental background." % n_e)
 
     return make_uniform_background(energy, event_params, rmf, prng=prng)

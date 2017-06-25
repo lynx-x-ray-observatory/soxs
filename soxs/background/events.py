@@ -66,20 +66,46 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
 
     bkg_events = {}
 
-    n_events = energy.size
+    bkg_events['energy'] = []
+    bkg_events["chipx"] = []
+    bkg_events["chipy"] = []
+    bkg_events["chip_id"] = []
+    bkg_events["detx"] = []
+    bkg_events["dety"] = []
 
-    bkg_events['energy'] = energy
+    for i, chip in enumerate(event_params["chips"]):
+        n_events = energy[i].size
+        cxmin, cxmax, cymin, cymax = chip["mask_true"]
+        nx = cxmax - cxmin
+        ny = cymax - cymin
+        cx = prng.randint(low=1, high=nx, size=n_events)
+        cy = prng.randint(low=1, high=ny, size=n_events)
+        id = [chip["id"]]*n_events
+        bkg_events["chip_id"].append(id)
+        bkg_events["chipx"].append(cx)
+        bkg_events["chipy"].append(cy)
+        bkg_events["detx"].append(cx - 1.0 + cxmin)
+        bkg_events["dety"].append(cy - 1.0 + cymin)
+        bkg_events["energy"].append(energy[i])
 
-    bkg_events['chipx'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                size=n_events))
-    bkg_events['chipy'] = np.round(prng.uniform(low=1.0, high=event_params['num_pixels'],
-                                                size=n_events))
-    bkg_events["detx"] = bkg_events["chipx"] - event_params['pix_center'][0] + \
-        prng.uniform(low=-0.5, high=0.5, size=n_events)
-    bkg_events["dety"] = bkg_events["chipy"] - event_params['pix_center'][1] + \
-        prng.uniform(low=-0.5, high=0.5, size=n_events)
-    bkg_events["xpix"] = bkg_events["detx"] + event_params['pix_center'][0]
-    bkg_events["ypix"] = bkg_events["dety"] + event_params['pix_center'][1]
+    for key in ["energy", "chipx", "chipy", "chip_id", "detx", "dety"]:
+        bkg_events[key] = np.concatenate(bkg_events[key])
+
+    n_e = bkg_events["energy"].size
+
+    bkg_events["detx"] += prng.uniform(low=-0.5, high=0.5, size=n_e) - \
+                          event_params['pix_center'][0]
+    bkg_events["dety"] += prng.uniform(low=-0.5, high=0.5, size=n_e) - \
+                          event_params['pix_center'][1]
+
+    roll_angle = np.deg2rad(event_params["roll_angle"])
+    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
+                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
+
+    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
+
+    bkg_events["xpix"] = pix[0, :] + event_params['pix_center'][0]
+    bkg_events["ypix"] = pix[1, :] + event_params['pix_center'][1]
 
     mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
     bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
