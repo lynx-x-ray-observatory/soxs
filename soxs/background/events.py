@@ -51,7 +51,7 @@ def add_background_from_file(events, event_params, bkg_file):
         ypix += hdu.header["TCRPX3"]
 
     all_events = {}
-    for key in ["chipx", "chipy", "detx", "dety", "time", "ccd_id", event_params["channel_type"]]:
+    for key in ["detx", "dety", "time", "ccd_id", event_params["channel_type"]]:
         all_events[key] = np.concatenate([events[key], hdu.data[key.upper()][idxs]])
     all_events["xpix"] = np.concatenate([events["xpix"], xpix])
     all_events["ypix"] = np.concatenate([events["ypix"], ypix])
@@ -72,28 +72,24 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
     bkg_events = {}
 
     bkg_events['energy'] = []
-    bkg_events["chipx"] = []
-    bkg_events["chipy"] = []
     bkg_events["chip_id"] = []
     bkg_events["detx"] = []
     bkg_events["dety"] = []
 
     for i, chip in enumerate(event_params["chips"]):
         n_events = energy[i].size
-        cxmin, cxmax, cymin, cymax = chip["mask_true"]
+        cxmin, cxmax, cymin, cymax = chip["bounds"]
         nx = cxmax - cxmin
         ny = cymax - cymin
         cx = prng.randint(low=1, high=nx, size=n_events)
         cy = prng.randint(low=1, high=ny, size=n_events)
         id = [chip["id"]]*n_events
         bkg_events["chip_id"].append(id)
-        bkg_events["chipx"].append(cx)
-        bkg_events["chipy"].append(cy)
         bkg_events["detx"].append(cx - 1.0 + cxmin)
         bkg_events["dety"].append(cy - 1.0 + cymin)
         bkg_events["energy"].append(energy[i])
 
-    for key in ["energy", "chipx", "chipy", "chip_id", "detx", "dety"]:
+    for key in ["energy", "chip_id", "detx", "dety"]:
         bkg_events[key] = np.concatenate(bkg_events[key])
 
     n_e = bkg_events["energy"].size

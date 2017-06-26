@@ -448,19 +448,16 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
             events["chip_id"] = -np.ones(n_evt, dtype='int')
             events["chipx"] = -np.ones(n_evt, dtype='int')
-            events["chipy"] = -np.ones(n_evt, dtype='int')
 
             cx = np.round(detx + event_params['pix_center'][0])-1
             cy = np.round(dety + event_params['pix_center'][1])-1
 
             for chip in event_params["chips"]:
-                cxmin, cxmax, cymin, cymax = chip["mask_true"]
+                cxmin, cxmax, cymin, cymax = chip["bounds"]
                 thisx = np.logical_and(cx >= cxmin, cx < cxmax)
                 thisy = np.logical_and(cy >= cymin, cy < cymax)
                 thisc = np.logical_and(thisx, thisy)
                 events["chip_id"][thisc] = chip["id"]
-                events["chipx"][thisc] = cx[thisc] - cxmin + 1
-                events["chipy"][thisc] = cy[thisc] - cymin + 1
 
             keep = events["chip_id"] > -1
 
@@ -505,8 +502,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
     if len(all_events["energy"]) == 0:
         mylog.warning("No events from any of the sources in the catalog were detected!")
-        for key in ["xpix", "ypix", "chipx", "chipy", "detx", "dety", "time", 
-                    event_params["channel_type"]]:
+        for key in ["xpix", "ypix", "detx", "dety", "time", "chip_id", event_params["channel_type"]]:
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
@@ -633,7 +629,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     event_params["chips_fov"] = []
     for chip in event_params["chips"]:
-        cxmin, cxmax, cymin, cymax = chip["mask_true"]
+        cxmin, cxmax, cymin, cymax = chip["bounds"]
         fov = (cxmax-cxmin)*(cymax-cymin)
         fov *= event_params["plate_scale"]*60.0
         fov *= event_params["plate_scale"]*60.0
