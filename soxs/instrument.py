@@ -316,6 +316,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
+    import pyregion._region_filter as filter
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
@@ -447,16 +448,25 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             # Throw out events that don't fall on any chip.
 
             events["chip_id"] = -np.ones(n_evt, dtype='int')
-            events["chipx"] = -np.ones(n_evt, dtype='int')
 
-            cx = np.round(detx + event_params['pix_center'][0])-1
-            cy = np.round(dety + event_params['pix_center'][1])-1
+            cx = np.round(detx + event_params['pix_center'][0])
+            cy = np.round(dety + event_params['pix_center'][1])
 
             for chip in event_params["chips"]:
                 cxmin, cxmax, cymin, cymax = chip["bounds"]
-                thisx = np.logical_and(cx >= cxmin, cx < cxmax)
-                thisy = np.logical_and(cy >= cymin, cy < cymax)
+                thisx = np.logical_and(cx >= cxmin+1, cx < cxmax+1)
+                thisy = np.logical_and(cy >= cymin+1, cy < cymax+1)
                 thisc = np.logical_and(thisx, thisy)
+                if chip["region"] is not None:
+                    reg = chip["region"]
+                    rtype = reg[0]
+                    mask = reg[1]
+                    args = reg[2:]
+                    r = getattr(filter, rtype)(*args)
+                    keep = r.inside(cx, cy)
+                    if not mask:
+                        keep = np.logical_not(keep)
+                    thisc = np.logical_and(thisc, keep)
                 events["chip_id"][thisc] = chip["id"]
 
             keep = events["chip_id"] > -1
@@ -481,9 +491,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                     events["detx"] = detx[keep]
                     events["dety"] = dety[keep]
                 else:
-                    events["detx"] = cx[keep] + 1 - event_params["pix_center"][0] + \
+                    events["detx"] = cx[keep] - event_params["pix_center"][0] + \
                         prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                    events["dety"] = cy[keep] + 1 - event_params["pix_center"][1] + \
+                    events["dety"] = cy[keep] - event_params["pix_center"][1] + \
                         prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
                 # Convert detector coordinates back to pixel coordinates by

@@ -63,6 +63,7 @@ def add_background_from_file(events, event_params, bkg_file):
 
 def make_uniform_background(energy, event_params, rmf, prng=None):
     from soxs.instrument import perform_dither
+    import pyregion._region_filter as filter
 
     prng = parse_prng(prng)
 
@@ -79,15 +80,24 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
     for i, chip in enumerate(event_params["chips"]):
         n_events = energy[i].size
         cxmin, cxmax, cymin, cymax = chip["bounds"]
-        nx = cxmax - cxmin
-        ny = cymax - cymin
-        cx = prng.randint(low=1, high=nx, size=n_events)
-        cy = prng.randint(low=1, high=ny, size=n_events)
-        id = [chip["id"]]*n_events
-        bkg_events["chip_id"].append(id)
-        bkg_events["detx"].append(cx - 1.0 + cxmin)
-        bkg_events["dety"].append(cy - 1.0 + cymin)
-        bkg_events["energy"].append(energy[i])
+        cx = prng.randint(low=cxmin, high=cxmax, size=n_events)+1.
+        cy = prng.randint(low=cymin, high=cymax, size=n_events)+1.
+        if chip["region"] is not None:
+            reg = chip["region"]
+            rtype = reg[0]
+            mask = reg[1]
+            args = reg[2:]
+            r = getattr(filter, rtype)(*args)
+            keep = r.inside(cx, cy)
+            if not mask:
+                keep = np.logical_not(keep)
+        else:
+            keep = np.ones(n_events, dtype='bool')
+        n_kept = keep.sum()
+        bkg_events["chip_id"].append([chip["id"]]*n_kept)
+        bkg_events["detx"].append(cx[keep])
+        bkg_events["dety"].append(cy[keep])
+        bkg_events["energy"].append(energy[i][keep])
 
     for key in ["energy", "chip_id", "detx", "dety"]:
         bkg_events[key] = np.concatenate(bkg_events[key])
