@@ -18,7 +18,7 @@ def add_background_from_file(events, event_params, bkg_file):
     bexp = hdu.header["EXPOSURE"]
 
     if event_params["exposure_time"] > hdu.header["EXPOSURE"]:
-        raise RuntimeError("The bagkround file does not have sufficient exposure! Source "
+        raise RuntimeError("The background file does not have sufficient exposure! Source "
                            "exposure time %g, background exposure time %g." % (sexp, bexp))
 
     for k1, k2 in key_map.items():
