@@ -41,7 +41,7 @@ install:
     # CORE DEPENDENCIES
     - conda config --add channels https://conda.anaconda.org/sherpa
     - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy sherpa scipy cython h5py tqdm pyyaml
-    - conda install -c astropy pyregion
+    - pip install pyregion
 
     # COVERAGE DEPENDENCIES
     - pip install coverage coveralls
