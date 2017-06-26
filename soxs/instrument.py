@@ -343,7 +343,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
-    nx = instrument_spec["fov_pixels"]
+    nx = instrument_spec["num_pixels"]
     plate_scale = instrument_spec["fov"]/nx/60. # arcmin to deg
     plate_scale_arcsec = plate_scale * 3600.0
     dsize = dither_size/plate_scale_arcsec
@@ -352,8 +352,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["exposure_time"] = exp_time
     event_params["arf"] = arf.filename
     event_params["sky_center"] = sky_center
-    event_params["pix_center"] = np.array([0.5*(nx+1)]*2)
-    event_params["fov_pixels"] = nx
+    event_params["pix_center"] = np.array([0.5*(2*nx+1)]*2)
+    event_params["det_center"] = np.array([0.5*(nx+1)]*2)
+    event_params["num_pixels"] = nx
     event_params["plate_scale"] = plate_scale
     event_params["rmf"] = rmf.filename
     event_params["channel_type"] = rmf.header["CHANTYPE"]
@@ -368,6 +369,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["dither"] = instrument_spec["dither"]
     event_params["dither_size"] = dither_size
     event_params["dither_shape"] = dither_shape
+    event_params["aimpt_coords"] = instrument_spec["aimpt_coords"]
 
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
@@ -417,8 +419,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             # Rotate physical coordinates to detector coordinates
 
             det = np.dot(rot_mat, np.array([xpix, ypix]))
-            detx = det[0,:]
-            dety = det[1,:]
+            detx = det[0,:] + event_params["aimpt_coords"][0]
+            dety = det[1,:] + event_params["aimpt_coords"][1]
 
             # Apply dithering
 
@@ -447,29 +449,29 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             # Convert detector coordinates to chip coordinates.
             # Throw out events that don't fall on any chip.
 
-            events["chip_id"] = -np.ones(n_evt, dtype='int')
+            cx = np.round(detx + event_params['det_center'][0])
+            cy = np.round(dety + event_params['det_center'][1])
 
-            cx = np.round(detx + event_params['pix_center'][0])
-            cy = np.round(dety + event_params['pix_center'][1])
-
-            for chip in event_params["chips"]:
-                cxmin, cxmax, cymin, cymax = chip["bounds"]
-                thisx = np.logical_and(cx >= cxmin, cx <= cxmax)
-                thisy = np.logical_and(cy >= cymin, cy <= cymax)
-                thisc = np.logical_and(thisx, thisy)
-                if chip["region"] is not None:
-                    reg = chip["region"]
-                    rtype = reg[0]
-                    mask = reg[1]
-                    args = reg[2:]
-                    r = getattr(filter, rtype)(*args)
-                    keep = r.inside(cx, cy)
-                    if not mask:
-                        keep = np.logical_not(keep)
-                    thisc = np.logical_and(thisc, keep)
-                events["chip_id"][thisc] = chip["id"]
-
-            keep = events["chip_id"] > -1
+            if event_params["chips"] is None:
+                events["chip_id"] = np.zeros(n_evt, dtype='int')
+                keepx = np.logical_and(cx >= 0.5, cx <= nx+0.5)
+                keepy = np.logical_and(cy >= 0.5, cy <= nx+0.5)
+                keep = np.logical_and(keepx, keepy)
+            else:
+                events["chip_id"] = -np.ones(n_evt, dtype='int')
+                for i, chip in enumerate(event_params["chips"]):
+                    thisc = np.ones(n_evt, dtype='bool')
+                    for reg in chip["region"]:
+                        rtype = reg[0]
+                        mask = reg[1]
+                        args = reg[2:]
+                        r = getattr(filter, rtype)(*args)
+                        inside = r.inside(cx, cy)
+                        if not mask:
+                            inside = np.logical_not(inside)
+                        thisc = np.logical_and(thisc, inside)
+                    events["chip_id"][thisc] = chip["id"]
+                keep = events["chip_id"] > -1
 
             mylog.info("%d events were rejected because " % (n_evt-keep.sum()) +
                        "they do not fall on any CCD.")
@@ -479,7 +481,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                 mylog.warning("No events are within the field of view for this source!!!")
             else:
 
-                # Keep only those events which fall on the chip
+                # Keep only those events which fall on a chip
 
                 for key in events:
                     events[key] = events[key][keep]
@@ -491,17 +493,37 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                     events["detx"] = detx[keep]
                     events["dety"] = dety[keep]
                 else:
-                    events["detx"] = cx[keep] - event_params["pix_center"][0] + \
-                        prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                    events["dety"] = cy[keep] - event_params["pix_center"][1] + \
-                        prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                    events["detx"] = cx[keep]
+                    events["dety"] = cy[keep]
+
+                    if event_params["chips"] is None:
+                        events["detx"] += prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                        events["dety"] += prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                    else:
+                        for chip in event_params["chips"]:
+                            fac = chip["pixel_size"]
+                            my_events = events["chip_id"] == chip["id"]
+                            n_mine = my_events.sum()
+                            if fac != 1:
+                                events["detx"][my_events] = np.floor((events["detx"][my_events]-1.0)/fac)
+                                events["dety"][my_events] = np.floor((events["dety"][my_events]-1.0)/fac)
+                                events["detx"][my_events] *= fac
+                                events["dety"][my_events] *= fac
+                                events["detx"][my_events] += 0.5*fac
+                                events["dety"][my_events] += 0.5*fac
+                            events["detx"][my_events] += prng.uniform(low=-0.5*fac, high=0.5*fac, size=n_mine)
+                            events["dety"][my_events] += prng.uniform(low=-0.5*fac, high=0.5*fac, size=n_mine)
+    
+                    events["detx"] -= event_params["det_center"][0]
+                    events["dety"] -= event_params["det_center"][1]
 
                 # Convert detector coordinates back to pixel coordinates by
                 # adding the dither offsets back in and applying the rotation
                 # matrix again
 
-                pix = np.dot(rot_mat, np.array([events["detx"] + x_offset[keep],
-                                                events["dety"] + y_offset[keep]]))
+                det = np.array([events["detx"] + x_offset[keep] - event_params["aimpt_coords"][0],
+                                events["dety"] + y_offset[keep] - event_params["aimpt_coords"][1]])
+                pix = np.dot(rot_mat, det)
 
                 events["xpix"] = pix[0,:] + event_params['pix_center'][0]
                 events["ypix"] = pix[1,:] + event_params['pix_center'][1]
@@ -614,12 +636,13 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                                                prng=prng)
         mylog.info("Generated %d photons from the point-source background." % len(events["energy"]))
     else:
-        nx = instrument_spec["fov_pixels"]
+        nx = instrument_spec["num_pixels"]
         events = defaultdict(list)
         event_params = {"exposure_time": exp_time, 
                         "fov": instrument_spec["fov"],
-                        "fov_pixels": nx,
-                        "pix_center": np.array([0.5*(nx+1)]*2),
+                        "num_pixels": nx,
+                        "det_center": np.array([0.5*(nx+1)]*2),
+                        "pix_center": np.array([0.5*(2*nx+1)]*2),
                         "channel_type": rmf.header["CHANTYPE"],
                         "sky_center": sky_center,
                         "dither": instrument_spec["dither"],
@@ -632,18 +655,11 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "instrument": rmf.header["INSTRUME"],
                         "mission": rmf.header.get("MISSION", ""),
                         "nchan": rmf.ebounds_header["DETCHANS"],
-                        "roll_angle": roll_angle}
+                        "roll_angle": roll_angle,
+                        "aimpt_coords": instrument_spec["aimpt_coords"]}
 
     if "chips" not in event_params:
         event_params["chips"] = instrument_spec["chips"]
-
-    event_params["chips_fov"] = []
-    for chip in event_params["chips"]:
-        cxmin, cxmax, cymin, cymax = chip["bounds"]
-        fov = (cxmax-cxmin)*(cymax-cymin)
-        fov *= event_params["plate_scale"]*60.0
-        fov *= event_params["plate_scale"]*60.0
-        event_params["chips_fov"].append(fov)
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")

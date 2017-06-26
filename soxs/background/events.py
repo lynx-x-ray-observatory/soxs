@@ -72,35 +72,34 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
 
     bkg_events = {}
 
-    bkg_events['energy'] = []
-    bkg_events["chip_id"] = []
-    bkg_events["detx"] = []
-    bkg_events["dety"] = []
+    n_events = energy.size
 
-    for i, chip in enumerate(event_params["chips"]):
-        n_events = energy[i].size
-        cxmin, cxmax, cymin, cymax = chip["bounds"]
-        cx = prng.randint(low=cxmin, high=cxmax, size=n_events)
-        cy = prng.randint(low=cymin, high=cymax, size=n_events)
-        if chip["region"] is not None:
-            reg = chip["region"]
-            rtype = reg[0]
-            mask = reg[1]
-            args = reg[2:]
-            r = getattr(filter, rtype)(*args)
-            keep = r.inside(cx, cy)
-            if not mask:
-                keep = np.logical_not(keep)
-        else:
-            keep = np.ones(n_events, dtype='bool')
-        n_kept = keep.sum()
-        bkg_events["chip_id"].append([chip["id"]]*n_kept)
-        bkg_events["detx"].append(cx[keep].astype("float64"))
-        bkg_events["dety"].append(cy[keep].astype("float64"))
-        bkg_events["energy"].append(energy[i][keep])
+    nx = event_params["num_pixels"]
+    bkg_events["detx"] = prng.uniform(low=0.5, high=nx+0.5, size=n_events)
+    bkg_events["dety"] = prng.uniform(low=0.5, high=nx+0.5, size=n_events)
+    bkg_events["energy"] = energy
 
-    for key in ["energy", "chip_id", "detx", "dety"]:
-        bkg_events[key] = np.concatenate(bkg_events[key])
+    if event_params["chips"] is None:
+        bkg_events["chip_id"] = np.zeros(n_events, dtype='int')
+    else:
+        bkg_events["chip_id"] = -np.ones(n_events, dtype='int')
+        for i, chip in enumerate(event_params["chips"]):
+            thisc = np.ones(n_events, dtype='bool')
+            for reg in chip["region"]:
+                rtype = reg[0]
+                mask = reg[1]
+                args = reg[2:]
+                r = getattr(filter, rtype)(*args)
+                inside = r.inside(bkg_events["detx"], bkg_events["dety"])
+                if not mask:
+                    inside = np.logical_not(inside)
+                thisc = np.logical_and(thisc, inside)
+            bkg_events["chip_id"][thisc] = chip["id"]
+
+    keep = bkg_events["chip_id"] > -1
+
+    for key in bkg_events:
+        bkg_events[key] = bkg_events[key][keep]
 
     n_e = bkg_events["energy"].size
 
@@ -112,11 +111,8 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
                                             event_params["dither_shape"],
                                             dsize, prng)
 
-    bkg_events["detx"] += prng.uniform(low=-0.5, high=0.5, size=n_e)
-    bkg_events["dety"] += prng.uniform(low=-0.5, high=0.5, size=n_e)
-
-    bkg_events["detx"] -= x_offset + event_params['pix_center'][0]
-    bkg_events["dety"] -= y_offset + event_params['pix_center'][1]
+    bkg_events["detx"] -= x_offset + event_params['det_center'][0]
+    bkg_events["dety"] -= y_offset + event_params['det_center'][1]
 
     roll_angle = np.deg2rad(event_params["roll_angle"])
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],

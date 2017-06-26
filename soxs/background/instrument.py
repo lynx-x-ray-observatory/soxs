@@ -65,18 +65,14 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
 
     # Generate background events
 
-    n_e = 0
-    energy = []
-    for fov in event_params["chips_fov"]:
-        e = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                         fov, focal_length=focal_length,
-                                         prng=prng, quiet=True).value
-        n_e += e.size
-        energy.append(e)
+    solid_angle = event_params["fov"]**2
+    energy = bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                          solid_angle, focal_length=focal_length,
+                                          prng=prng, quiet=True).value
 
-    if n_e == 0:
+    if energy.size == 0:
         raise RuntimeError("No instrumental background events were detected!!!")
     else:
-        mylog.info("Making %d events from the instrumental background." % n_e)
+        mylog.info("Making %d events from the instrumental background." % energy.size)
 
     return make_uniform_background(energy, event_params, rmf, prng=prng)

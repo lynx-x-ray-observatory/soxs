@@ -14,17 +14,15 @@ def make_foreground(event_params, arf, rmf, prng=None):
 
     conv_bkgnd_spec = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, arf)
 
-    n_e = 0
-    energy = []
-    for fov in event_params["chips_fov"]:
-        e = conv_bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                              fov, prng=prng, quiet=True).value
-        n_e += e.size
-        energy.append(e)
+    solid_angle = event_params["fov"]**2
 
-    if n_e == 0:
+    energy = conv_bkgnd_spec.generate_energies(event_params["exposure_time"],
+                                               solid_angle, prng=prng, 
+                                               quiet=True).value
+
+    if energy.size == 0:
         raise RuntimeError("No astrophysical foreground events were detected!!!")
     else:
-        mylog.info("Making %d events from the astrophysical foreground." % n_e)
+        mylog.info("Making %d events from the astrophysical foreground." % energy.size)
 
     return make_uniform_background(energy, event_params, rmf, prng=prng)
