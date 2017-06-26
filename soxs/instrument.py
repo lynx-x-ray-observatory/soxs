@@ -454,8 +454,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
             for chip in event_params["chips"]:
                 cxmin, cxmax, cymin, cymax = chip["bounds"]
-                thisx = np.logical_and(cx >= cxmin+1, cx < cxmax+1)
-                thisy = np.logical_and(cy >= cymin+1, cy < cymax+1)
+                thisx = np.logical_and(cx >= cxmin, cx <= cxmax)
+                thisy = np.logical_and(cy >= cymin, cy <= cymax)
                 thisc = np.logical_and(thisx, thisy)
                 if chip["region"] is not None:
                     reg = chip["region"]
