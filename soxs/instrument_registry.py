@@ -245,9 +245,18 @@ def add_instrument_to_registry(inst_spec):
         inst.pop("plate_scale")
     # Catch older JSON files without chip definitions
     if "chips" not in inst:
+        mylog.warning("Instrument specifications must now include a 'chips' item, which details "
+                      "the layout of the chips if there are more that one. Assuming None for "
+                      "one chip that covers the entire field of view.")
         inst["chips"] = None
+    # Catch older JSON files without aimpoint coordinates
+    if "chips" not in inst:
+        mylog.warning("Instrument specifications must now include a 'aimpt_coords' item, which "
+                      "details the position in detector coordinates of the nominal aimpoint. "
+                      "Assuming [0.0, 0.0].")
+        inst["aimpt_coords"] = [0.0, 0.0]
     default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
-                   "focal_length", "num_pixels", "dither", "psf"}
+                   "aimpt_coords", "focal_length", "num_pixels", "dither", "psf"}
     if set(inst.keys()) != default_set:
         raise RuntimeError("One or more items is missing from the instrument specification!\n"
                            "Items present: %s\nItems needed: %s" % (set(inst.keys()), default_set))
