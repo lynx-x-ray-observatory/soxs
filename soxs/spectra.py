@@ -15,6 +15,7 @@ import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
+from soxs.instrument import AuxiliaryResponseFile
 
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
@@ -57,18 +58,23 @@ class Spectrum(object):
             not np.isclose(self.ebins.value, other.ebins.value).all():
             raise RuntimeError("Energy binning for these two "
                                "spectra is not the same!!")
+        if self._units != other._units:
+            raise RuntimeError("The units for these two spectra "
+                               "are not the same!")
         return Spectrum(self.ebins, self.flux+other.flux)
 
     def __mul__(self, other):
-        return Spectrum(self.ebins, other*self.flux)
+        if isinstance(other, AuxiliaryResponseFile):
+            return ConvolvedSpectrum(self, other)
+        else:
+            return Spectrum(self.ebins, other*self.flux)
 
     __rmul__ = __mul__
 
-    def __div__(self, other):
-        return Spectrum(self.ebins, self.flux/other)
-
     def __truediv__(self, other):
         return Spectrum(self.ebins, self.flux/other)
+
+    __div__ = __truediv__
 
     def __repr__(self):
         s = "Spectrum (%s - %s)\n" % (self.ebins[0], self.ebins[-1])
@@ -596,7 +602,6 @@ class ConvolvedSpectrum(Spectrum):
         arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
             The ARF to use in the convolution.
         """
-        from soxs.instrument import AuxiliaryResponseFile
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
@@ -604,6 +609,15 @@ class ConvolvedSpectrum(Spectrum):
         rate = spectrum.flux * earea
         super(ConvolvedSpectrum, self).__init__(spectrum.ebins, rate)
 
+    def unconvolve(self):
+        """
+        Return the unconvolved :class:`~soxs.spectra.Spectrum`
+        object associated with this convolved spectrum.
+        """
+        earea = self.arf.interpolate_area(self.emid)
+        flux = self.flux / earea
+        return Spectrum(self.ebins, flux)    
+    
     def generate_energies(self, t_exp, prng=None):
         """
         Generate photon energies from this convolved spectrum given an
