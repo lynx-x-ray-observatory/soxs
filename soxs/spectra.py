@@ -44,6 +44,7 @@ class Spectrum(object):
         self.nbins = len(self.emid)
         self.de = self.ebins[1]-self.ebins[0]
         self._compute_total_flux()
+        self.func = InterpolatedUnivariateSpline(self.emid.value, self.flux.value)
 
     def _compute_total_flux(self):
         self.total_flux = self.flux.sum()*self.de
@@ -80,6 +81,11 @@ class Spectrum(object):
         s = "Spectrum (%s - %s)\n" % (self.ebins[0], self.ebins[-1])
         s += "    Total Flux:\n    %s\n    %s\n" % (self.total_flux, self.total_energy_flux)
         return s
+
+    def __call__(self, e):
+        if isinstance(e, u.Quantity):
+            e = e.to("keV").value
+        return u.Quantity(self.func(e), self._units)
 
     def get_flux_in_band(self, emin, emax):
         """
