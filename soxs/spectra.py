@@ -548,7 +548,7 @@ class ApecGenerator(object):
             # Now do any metals that we wanted to vary freely from the abund
             # parameter
             if self.num_var_elem > 0:
-                for j, elem in self.var_elem_num:
+                for j, elem in enumerate(self.var_elem_num):
                     vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem, velocity, 
                                                        line_fields, coco_fields, scale_factor)
         return cspec, mspec, vspec
