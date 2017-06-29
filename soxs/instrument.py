@@ -10,9 +10,6 @@ from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array, parse_prng
 from soxs.events import write_event_file
-from soxs.background import make_instrument_background, \
-    make_foreground, add_background_from_file, \
-    make_ptsrc_background
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
@@ -549,6 +546,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
+    from soxs.background import make_instrument_background, \
+        make_foreground, make_ptsrc_background
     prng = parse_prng(prng)
     try:
         instrument_spec = instrument_registry[instrument]
@@ -761,6 +760,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 
     ...                      300000.0, "hdxi_3x10", [30., 45.], overwrite=True)
     """
+    from soxs.background import add_background_from_file
     if not out_file.endswith(".fits"):
         out_file += ".fits"
     mylog.info("Making observation of source in %s." % out_file)
