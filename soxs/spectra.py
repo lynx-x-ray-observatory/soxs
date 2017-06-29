@@ -572,6 +572,9 @@ class ApecGenerator(object):
         velocity : float, optional
             The velocity broadening parameter, in units of 
             km/s. Default: 0.0
+        elem_abund : dict of element name, float pairs
+            A dictionary of elemental abundances to vary
+            freely of the abund parameter. Default: None
         """
         v = velocity*1.0e5
         if set(elem_abund.keys()) != set(self.var_elem):
