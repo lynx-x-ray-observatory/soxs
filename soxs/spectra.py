@@ -416,7 +416,10 @@ class ApecGenerator(object):
         e.g. "2.0.2"
     broadening : boolean, optional
         Whether or not the spectral lines should be 
-        thermally and velocity broadened.
+        thermally and velocity broadened. Default: True
+    nolines : boolean, optional
+        Turn off lines entirely for generating spectra.
+        Default: False
 
     Examples
     --------
@@ -424,7 +427,7 @@ class ApecGenerator(object):
     ...                            broadening=True)
     """
     def __init__(self, emin, emax, nbins, apec_root=None,
-                 apec_vers="3.0.8", broadening=True):
+                 apec_vers="3.0.8", broadening=True, nolines=False):
         self.emin = emin
         self.emax = emax
         self.nbins = nbins
@@ -438,6 +441,7 @@ class ApecGenerator(object):
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
                                                                       self.linefile))
+        self.nolines = nolines
         self.wvbins = hc/self.ebins[::-1]
         self.broadening = broadening
         try:
@@ -460,20 +464,21 @@ class ApecGenerator(object):
 
         tmpspec = np.zeros(self.nbins)
 
-        i = np.where((line_fields['element'] == element) &
-                     (line_fields['lambda'] > self.minlam) &
-                     (line_fields['lambda'] < self.maxlam))[0]
+        if not self.nolines:
+            i = np.where((line_fields['element'] == element) &
+                         (line_fields['lambda'] > self.minlam) &
+                         (line_fields['lambda'] < self.maxlam))[0]
 
-        E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
-        amp = line_fields['epsilon'][i].astype("float64")
-        if self.broadening:
-            sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
-            sigma += 2.0*velocity*velocity
-            sigma = E0*np.sqrt(sigma)/clight
-            vec = broaden_lines(E0, sigma, amp, self.ebins)
-        else:
-            vec = np.histogram(E0, self.ebins, weights=amp)[0]
-        tmpspec += vec
+            E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
+            amp = line_fields['epsilon'][i].astype("float64")
+            if self.broadening:
+                sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
+                sigma += 2.0*velocity*velocity
+                sigma = E0*np.sqrt(sigma)/clight
+                vec = broaden_lines(E0, sigma, amp, self.ebins)
+            else:
+                vec = np.histogram(E0, self.ebins, weights=amp)[0]
+            tmpspec += vec
 
         ind = np.where((coco_fields['Z'] == element) &
                        (coco_fields['rmJ'] == 0))[0]
