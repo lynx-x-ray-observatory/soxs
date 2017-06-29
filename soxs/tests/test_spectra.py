@@ -1,5 +1,6 @@
-from soxs.spectra import Spectrum
-from numpy.testing import assert_allclose
+from soxs.spectra import Spectrum, ConvolvedSpectrum
+from soxs.instrument import AuxiliaryResponseFile
+from numpy.testing import assert_allclose, assert_array_equal
 import os
 import tempfile
 import shutil
@@ -59,3 +60,14 @@ def test_rescale_flux():
     f = spec.get_flux_in_band(0.4, 1.0)[1]
     assert_allclose(1.0e-12, f.value)
 
+def test_convolved_spectra():
+    arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
+    spec1 = Spectrum.from_powerlaw(2.0, 0.01, 1.0, 
+                                   emin=0.1, emax=10.0, nbins=1000)
+    cspec1 = ConvolvedSpectrum(spec1, arf)
+    cspec2 = spec1*arf
+    spec2 = cspec1.deconvolve()
+    assert_array_equal(cspec1.ebins.value, cspec2.ebins.value)
+    assert_array_equal(spec1.ebins.value, spec2.ebins.value)
+    assert_array_equal(cspec1.flux.value, cspec2.flux.value)
+    assert_allclose(spec1.flux.value, spec2.flux.value)

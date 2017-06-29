@@ -609,15 +609,16 @@ class ConvolvedSpectrum(Spectrum):
         rate = spectrum.flux * earea
         super(ConvolvedSpectrum, self).__init__(spectrum.ebins, rate)
 
-    def unconvolve(self):
+    def deconvolve(self):
         """
-        Return the unconvolved :class:`~soxs.spectra.Spectrum`
+        Return the deconvolved :class:`~soxs.spectra.Spectrum`
         object associated with this convolved spectrum.
         """
         earea = self.arf.interpolate_area(self.emid)
         flux = self.flux / earea
-        return Spectrum(self.ebins, flux)    
-    
+        flux = np.nan_to_num(flux.value)
+        return Spectrum(self.ebins.value, flux)
+
     def generate_energies(self, t_exp, prng=None):
         """
         Generate photon energies from this convolved spectrum given an
