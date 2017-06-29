@@ -10,7 +10,7 @@ from soxs.utils import soxs_files_path, mylog, \
 from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
-    m_u
+    m_u, elem_names
 import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
@@ -407,6 +407,10 @@ class ApecGenerator(object):
         The maximum energy for the spectral model.
     nbins : integer
         The number of bins in the spectral model.
+    var_elem : list of strings, optional
+        The names of elements to allow to vary freely
+        from the single abundance parameter. Default:
+        None
     apec_root : string, optional
         The directory root where the APEC model files 
         are stored. If not provided, the default is to 
@@ -426,7 +430,7 @@ class ApecGenerator(object):
     >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
     ...                            broadening=True)
     """
-    def __init__(self, emin, emax, nbins, apec_root=None,
+    def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
                  apec_vers="3.0.8", broadening=True, nolines=False):
         self.emin = emin
         self.emax = emax
@@ -458,8 +462,20 @@ class ApecGenerator(object):
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
+        if var_elem is None:
+            var_elem = []
+            self.var_elem_num = []
+        else:
+            self.var_elem_num = [elem_names.index(elem) for elem in var_elem]
+        self.var_elem = var_elem
+        self.var_elem_num.sort()
+        self.num_var_elem = len(self.var_elem_num)
+        self.cosmic_elem = [elem for elem in cosmic_elem 
+                            if elem not in self.var_elem_num]
+        self.metal_elem = [elem for elem in metal_elem
+                           if elem not in self.var_elem_num]
 
-    def _make_spectrum(self, kT, element, velocity, line_fields, 
+    def _make_spectrum(self, kT, element, velocity, line_fields,
                        coco_fields, scale_factor):
 
         tmpspec = np.zeros(self.nbins)
@@ -516,6 +532,9 @@ class ApecGenerator(object):
         scale_factor = 1./(1.+redshift)
         cspec = np.zeros((numi, self.nbins))
         mspec = np.zeros((numi, self.nbins))
+        vspec = None
+        if self.num_var_elem > 0:
+            vspec = np.zeros((self.num_var_elem, numi, self.nbins))
         for i, ikT in enumerate(indices):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
@@ -526,9 +545,16 @@ class ApecGenerator(object):
             for elem in metal_elem:
                 mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
                                                   coco_fields, scale_factor)
-        return cspec, mspec
+            # Now do any metals that we wanted to vary freely from the abund
+            # parameter
+            if self.num_var_elem > 0:
+                for j, elem in self.var_elem_num:
+                    vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem, velocity, 
+                                                       line_fields, coco_fields, scale_factor)
+        return cspec, mspec, vspec
 
-    def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0):
+    def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0,
+                     elem_abund=None):
         """
         Get a thermal emission spectrum.
 
@@ -548,14 +574,22 @@ class ApecGenerator(object):
             km/s. Default: 0.0
         """
         v = velocity*1.0e5
+        if set(elem_abund.keys()) != set(self.var_elem):
+            raise RuntimeError("The set of variable elements requested "
+                               "is not the same as that was originally set!")
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
         dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
-        cspec, mspec = self._get_table([tindex, tindex+1], redshift, v)
+        cspec, mspec, vspec = self._get_table([tindex, tindex+1], redshift, v)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
-        spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)/self.de
+        spec = cosmic_spec + abund*metal_spec
+        if vspec is not None:
+            for elem, eabund in elem_abund.items():
+                j = self.var_elem_num.index(elem_names.index(elem))
+                spec += eabund*(vspec[j,0,:]*(1.-dT)+vspec[j,1,:]*dT)
+        spec = 1.0e14*norm*spec/self.de
         return Spectrum(self.ebins, spec)
 
 def wabs_cross_section(E):
