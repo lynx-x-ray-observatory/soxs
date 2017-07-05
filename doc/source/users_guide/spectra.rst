@@ -122,6 +122,13 @@ generate thermal spectra:
 
 ``spec1`` is just a standard :class:`~soxs.spectra.Spectrum` object.
 
+Variable Abundances
+~~~~~~~~~~~~~~~~~~~
+
+By default, :class:`~soxs.spectra.ApecGenerator` assumes all abundances besides
+H, He, and the trace elements are set to the value provided by the ``abund``
+parameter. 
+
 Generating a Spectrum from XSPEC
 ++++++++++++++++++++++++++++++++
 
