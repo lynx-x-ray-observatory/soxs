@@ -463,17 +463,16 @@ class ApecGenerator(object):
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
         if var_elem is None:
-            var_elem = []
-            self.var_elem_num = []
+            self.var_elem = []
         else:
-            self.var_elem_num = [elem_names.index(elem) for elem in var_elem]
-        self.var_elem = var_elem
-        self.var_elem_num.sort()
-        self.num_var_elem = len(self.var_elem_num)
+            self.var_elem = [elem_names.index(elem) for elem in var_elem]
+        self.var_elem.sort()
+        self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
+        self.num_var_elem = len(self.var_elem)
         self.cosmic_elem = [elem for elem in cosmic_elem 
-                            if elem not in self.var_elem_num]
+                            if elem not in self.var_elem]
         self.metal_elem = [elem for elem in metal_elem
-                           if elem not in self.var_elem_num]
+                           if elem not in self.var_elem]
 
     def _make_spectrum(self, kT, element, velocity, line_fields,
                        coco_fields, scale_factor):
@@ -548,7 +547,7 @@ class ApecGenerator(object):
             # Now do any metals that we wanted to vary freely from the abund
             # parameter
             if self.num_var_elem > 0:
-                for j, elem in enumerate(self.var_elem_num):
+                for j, elem in enumerate(self.var_elem):
                     vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem, velocity, 
                                                        line_fields, coco_fields, scale_factor)
         return cspec, mspec, vspec
@@ -577,7 +576,7 @@ class ApecGenerator(object):
             freely of the abund parameter. Default: None
         """
         v = velocity*1.0e5
-        if elem_abund is not None and set(elem_abund.keys()) != set(self.var_elem):
+        if elem_abund is not None and set(elem_abund.keys()) != set(self.var_elem_names):
             raise RuntimeError("The set of variable elements requested "
                                "is not the same as that was originally set!")
         tindex = np.searchsorted(self.Tvals, kT)-1
@@ -590,7 +589,7 @@ class ApecGenerator(object):
         spec = cosmic_spec + abund*metal_spec
         if vspec is not None:
             for elem, eabund in elem_abund.items():
-                j = self.var_elem_num.index(elem_names.index(elem))
+                j = self.var_elem_names.index(elem)
                 spec += eabund*(vspec[j,0,:]*(1.-dT)+vspec[j,1,:]*dT)
         spec = 1.0e14*norm*spec/self.de
         return Spectrum(self.ebins, spec)
