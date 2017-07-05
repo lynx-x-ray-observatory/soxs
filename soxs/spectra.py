@@ -537,11 +537,11 @@ class ApecGenerator(object):
         for i, ikT in enumerate(indices):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
-            for elem in cosmic_elem:
+            for elem in self.cosmic_elem:
                 cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
                                                   coco_fields, scale_factor)
             # Next do the metals
-            for elem in metal_elem:
+            for elem in self.metal_elem:
                 mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
                                                   coco_fields, scale_factor)
             # Now do any metals that we wanted to vary freely from the abund
