@@ -576,7 +576,9 @@ class ApecGenerator(object):
             freely of the abund parameter. Default: None
         """
         v = velocity*1.0e5
-        if elem_abund is not None and set(elem_abund.keys()) != set(self.var_elem_names):
+        if elem_abund is None:
+            elem_abund = {}
+        if set(elem_abund.keys()) != set(self.var_elem_names):
             raise RuntimeError("The set of variable elements requested "
                                "is not the same as that was originally set!")
         tindex = np.searchsorted(self.Tvals, kT)-1
