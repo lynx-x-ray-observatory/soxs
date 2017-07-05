@@ -4,6 +4,7 @@ import astropy.io.fits as pyfits
 import numpy as np
 from copy import copy
 from numpy.random import RandomState
+from astropy.units import Quantity
 
 soxsLogger = logging.getLogger("soxs")
 
@@ -129,3 +130,13 @@ def issue_deprecation_warning(msg):
     import warnings
     from numpy import VisibleDeprecationWarning
     warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
+
+def parse_value(value, default_units):
+    if hasattr(value, "to_astropy"):
+        value = value.to_astropy()
+    if isinstance(value, Quantity):
+        return Quantity(value.value, value.unit).to(default_units)
+    elif iterable(value):
+        return Quantity(value[0], value[1]).to(default_units)
+    else:
+        return Quantity(value, default_units)
