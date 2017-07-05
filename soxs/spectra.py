@@ -579,8 +579,10 @@ class ApecGenerator(object):
         if elem_abund is None:
             elem_abund = {}
         if set(elem_abund.keys()) != set(self.var_elem_names):
-            raise RuntimeError("The set of variable elements requested "
-                               "is not the same as that was originally set!")
+            raise RuntimeError("The supplied set of abundances is not the "
+                               "same as that was originally set!\n"
+                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
+                                                                      set(self.var_elem_names)))
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
