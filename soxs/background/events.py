@@ -67,8 +67,6 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
 
     prng = parse_prng(prng)
 
-    plate_scale_arcsec = event_params["plate_scale"]*3600.0
-
     bkg_events = {}
 
     n_events = energy.size

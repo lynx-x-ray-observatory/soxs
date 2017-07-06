@@ -914,3 +914,18 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     events["mission"] = rmf.header.get("MISSION", "")
     write_spectrum(events, out_file, overwrite=overwrite)
 
+def make_exposure_map(event_file, expmap_file, band, weights=None, 
+                      overwrite=False):
+    f_in = pyfits.open(event_file)
+    hdu = f_in["EVENTS"]
+    exp_time = hdu.header["EXPOSURE"]
+    roll_angle = hdu.header["ROLL_PNT"]
+    arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
+    f_in.close()
+
+    exposure = arf.interpolate_area().sum()*exp_time
+
+    map_header = {}
+
+    map_hdu = pyfits.ImageHDU(map.T, header=map_header)
+    map_hdu.writeto(expmap_file, overwrite=overwrite)
