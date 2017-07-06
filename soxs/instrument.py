@@ -253,21 +253,21 @@ class RedistributionMatrixFile(object):
 
         return events
 
-def perform_dither(x_offset, y_offset, dither_shape, dither_size, prng):
-    n_evt = x_offset.size
-    if dither_shape == "circle":
-        r = dither_size*np.sqrt(prng.uniform(size=n_evt))
-        theta = 2.*np.pi*prng.uniform(size=n_evt)
-        x_offset[:] = r*np.cos(theta)
-        y_offset[:] = r*np.sin(theta)
-    elif dither_shape == "square":
-        x_offset[:] = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
-        y_offset[:] = dither_size*prng.uniform(low=-0.5, high=0.5, size=n_evt)
+def perform_dither(t, dither_params):
+    if dither_params["dither_on"]:
+        a = 2.0*np.pi/dither_params["x_period"]
+        b = 2.0*np.pi/dither_params["y_period"]
+        A = dither_params["x_amp"]/dither_params["plate_scale"]
+        B = dither_params["y_amp"]/dither_params["plate_scale"]
+        x_offset = A*np.sin(a*t)
+        y_offset = B*np.sin(b*t)
+    else:
+        x_offset = np.zeros(t.size)
+        y_offset = np.zeros(t.size)
     return x_offset, y_offset
 
-def generate_events(input_events, exp_time, instrument, sky_center, 
-                    dither_shape="square", dither_size=16.0, roll_angle=0.0, 
-                    subpixel_res=False, prng=None):
+def generate_events(input_events, exp_time, instrument, sky_center, dither_params=None, 
+                    roll_angle=0.0, subpixel_res=False, prng=None):
     """
     Take unconvolved events and convolve them with instrumental responses. This 
     function does the following:
@@ -346,7 +346,14 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     nx = instrument_spec["num_pixels"]
     plate_scale = instrument_spec["fov"]/nx/60. # arcmin to deg
     plate_scale_arcsec = plate_scale * 3600.0
-    dsize = dither_size/plate_scale_arcsec
+
+    if dither_params is None:
+        dither_params = {"x_amp": 16.0,
+                         "y_amp": 16.0,
+                         "x_period": 1000.0,
+                         "y_period": 707.0}
+    dither_params["dither_on"] = instrument_spec["dither"]
+    dither_params["plate_scale"] = plate_scale_arcsec
 
     event_params = {}
     event_params["exposure_time"] = exp_time
@@ -366,9 +373,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["fov"] = instrument_spec["fov"]
     event_params["chan_lim"] = [rmf.cmin, rmf.cmax]
     event_params["chips"] = instrument_spec["chips"]
-    event_params["dither"] = instrument_spec["dither"]
-    event_params["dither_size"] = dither_size
-    event_params["dither_shape"] = dither_shape
+    event_params["dither_params"] = dither_params
     event_params["aimpt_coords"] = instrument_spec["aimpt_coords"]
 
     w = pywcs.WCS(naxis=2)
@@ -422,15 +427,13 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             detx = det[0,:] + event_params["aimpt_coords"][0]
             dety = det[1,:] + event_params["aimpt_coords"][1]
 
+            # Add times to events
+            events['time'] = prng.uniform(size=n_evt, low=0.0,
+                                          high=event_params["exposure_time"])
+
             # Apply dithering
 
-            x_offset = np.zeros(n_evt)
-            y_offset = np.zeros(n_evt)
-
-            if instrument_spec["dither"]:
-                x_offset, y_offset = perform_dither(x_offset, y_offset, 
-                                                    dither_shape, dsize,
-                                                    prng)
+            x_offset, y_offset = perform_dither(events["time"], dither_params)
 
             detx -= x_offset
             dety -= y_offset
@@ -541,17 +544,13 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
-        # Step 5: Add times to events
-        all_events['time'] = prng.uniform(size=all_events["energy"].size, low=0.0,
-                                          high=event_params["exposure_time"])
-
     return all_events, event_params
 
 
 def make_background(exp_time, instrument, sky_center, foreground=True, 
-                    ptsrc_bkgnd=True, instr_bkgnd=True, dither_shape="square", 
-                    dither_size=16.0, roll_angle=0.0, subpixel_res=False, 
-                    input_sources=None, absorb_model="wabs", nH=0.05, prng=None):
+                    ptsrc_bkgnd=True, instr_bkgnd=True, dither_params=None, 
+                    roll_angle=0.0, subpixel_res=False, input_sources=None, 
+                    absorb_model="wabs", nH=0.05, prng=None):
     """
     Make background events. 
 
@@ -629,8 +628,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         input_events["sources"].append("ptsrc_bkgnd")
         events, event_params = generate_events(input_events, exp_time,
                                                instrument, sky_center,
-                                               dither_shape=dither_shape, 
-                                               dither_size=dither_size, 
+                                               dither_params=dither_params, 
                                                roll_angle=roll_angle,
                                                subpixel_res=subpixel_res,
                                                prng=prng)
@@ -638,6 +636,13 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     else:
         nx = instrument_spec["num_pixels"]
         events = defaultdict(list)
+        if dither_params is None:
+            dither_params = {"x_amp": 16.0,
+                             "y_amp": 16.0,
+                             "x_period": 1000.0,
+                             "y_period": 707.0}
+        dither_params["dither_on"] = instrument_spec["dither"]
+        dither_params["plate_scale"] = instrument_spec["fov"]/nx*60.0
         event_params = {"exposure_time": exp_time, 
                         "fov": instrument_spec["fov"],
                         "num_pixels": nx,
@@ -645,10 +650,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "pix_center": np.array([0.5*(2*nx+1)]*2),
                         "channel_type": rmf.header["CHANTYPE"],
                         "sky_center": sky_center,
-                        "dither": instrument_spec["dither"],
-                        "dither_size": dither_size,
-                        "dither_shape": dither_shape,
-                        "plate_scale": instrument_spec["fov"]/nx/60.,
+                        "dither_params": dither_params,
+                        "plate_scale": instrument_spec["fov"]/nx/60.0,
                         "chan_lim": [rmf.cmin, rmf.cmax],
                         "rmf": rmf_file, "arf": arf_file,
                         "telescope": rmf.header["TELESCOP"],
@@ -679,10 +682,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
 def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
-                         ptsrc_bkgnd=True, dither_shape="square",
-                         dither_size=16.0, subpixel_res=False, 
-                         input_sources=None, absorb_model="wabs", nH=0.05, 
-                         prng=None):
+                         ptsrc_bkgnd=True, dither_params=None,
+                         subpixel_res=False,  input_sources=None, 
+                         absorb_model="wabs", nH=0.05, prng=None):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -737,8 +739,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            ptsrc_bkgnd=ptsrc_bkgnd, 
                                            foreground=foreground, 
                                            instr_bkgnd=instr_bkgnd,
-                                           dither_shape=dither_shape, 
-                                           dither_size=dither_size, 
+                                           dither_params=dither_params, 
                                            subpixel_res=subpixel_res,
                                            input_sources=input_sources,
                                            absorb_model=absorb_model,
@@ -748,8 +749,8 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, overwrite=False, instr_bkgnd=True, 
                          foreground=True, ptsrc_bkgnd=True, 
-                         bkgnd_file=None, dither_shape="square", 
-                         dither_size=16.0, roll_angle=0.0, subpixel_res=False,
+                         bkgnd_file=None, dither_params=None, 
+                         roll_angle=0.0, subpixel_res=False,
                          prng=None):
     """
     Take unconvolved events and create an event file from them. This
@@ -827,9 +828,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     mylog.info("Making observation of source in %s." % out_file)
     # Make the source first
     events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
-                                           dither_shape=dither_shape, dither_size=dither_size, 
-                                           roll_angle=roll_angle, subpixel_res=subpixel_res,
-                                           prng=prng)
+                                           dither_params=dither_params, roll_angle=roll_angle, 
+                                           subpixel_res=subpixel_res, prng=prng)
     # If the user wants backgrounds, either make the background or add an already existing
     # background event file. It may be necessary to reproject events to a new coordinate system.
     if bkgnd_file is None:
@@ -839,9 +839,9 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             mylog.info("Adding background events.")
             bkg_events, _ = make_background(exp_time, instrument, sky_center,
                                             foreground=foreground, instr_bkgnd=instr_bkgnd, 
-                                            dither_shape=dither_shape, dither_size=dither_size, 
-                                            ptsrc_bkgnd=ptsrc_bkgnd, prng=prng, 
-                                            subpixel_res=subpixel_res, roll_angle=roll_angle)
+                                            dither_params=dither_params, ptsrc_bkgnd=ptsrc_bkgnd, 
+                                            prng=prng, subpixel_res=subpixel_res, 
+                                            roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:

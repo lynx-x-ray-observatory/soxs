@@ -68,7 +68,6 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
     prng = parse_prng(prng)
 
     plate_scale_arcsec = event_params["plate_scale"]*3600.0
-    dsize = event_params["dither_size"]/plate_scale_arcsec
 
     bkg_events = {}
 
@@ -103,13 +102,11 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
 
     n_e = bkg_events["energy"].size
 
-    x_offset = np.zeros(n_e)
-    y_offset = np.zeros(n_e)
+    bkg_events['time'] = prng.uniform(size=n_e, low=0.0,
+                                      high=event_params["exposure_time"])
 
-    if event_params["dither"]:
-        x_offset, y_offset = perform_dither(x_offset, y_offset,
-                                            event_params["dither_shape"],
-                                            dsize, prng)
+    x_offset, y_offset = perform_dither(bkg_events["time"],
+                                        event_params["dither_params"])
 
     bkg_events["detx"] -= x_offset + event_params['det_center'][0]
     bkg_events["dety"] -= y_offset + event_params['det_center'][1]
@@ -125,8 +122,5 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
 
     mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
     bkg_events = rmf.scatter_energies(bkg_events, prng=prng)
-
-    bkg_events['time'] = prng.uniform(size=bkg_events["energy"].size, low=0.0,
-                                      high=event_params["exposure_time"])
 
     return bkg_events
