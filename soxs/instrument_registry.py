@@ -101,7 +101,7 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
 
 # Chandra
 
-instrument_registry["acisi_cy0"] = {"name": "acis_cy0", 
+instrument_registry["acisi_cy0"] = {"name": "acisi_cy0", 
                                     "arf": "acisi_aimpt_cy0.arf",
                                     "rmf": "acisi_aimpt_cy0.rmf",
                                     "bkgnd": "acisi",
@@ -134,7 +134,7 @@ instrument_registry["acisi_cy0"] = {"name": "acis_cy0",
                                     "focal_length": 10.0,
                                     "dither": True}
 
-instrument_registry["acisi_cy18"] = {"name": "acis_cy18",
+instrument_registry["acisi_cy18"] = {"name": "acisi_cy18",
                                      "arf": "acisi_aimpt_cy18.arf",
                                      "rmf": "acisi_aimpt_cy18.rmf",
                                      "bkgnd": "acisi",
@@ -167,7 +167,7 @@ instrument_registry["acisi_cy18"] = {"name": "acis_cy18",
                                      "focal_length": 10.0,
                                      "dither": True}
 
-instrument_registry["acisi_cy0_old"] = {"name": "acis_cy0_old",
+instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
                                         "arf": "acisi_aimpt_cy0.arf",
                                         "rmf": "acisi_aimpt_cy0.rmf",
                                         "bkgnd": "acisi",
@@ -179,7 +179,7 @@ instrument_registry["acisi_cy0_old"] = {"name": "acis_cy0_old",
                                         "focal_length": 10.0,
                                         "dither": True}
 
-instrument_registry["acisi_cy18_old"] = {"name": "acis_cy18",
+instrument_registry["acisi_cy18_old"] = {"name": "acisi_cy18",
                                          "arf": "acisi_aimpt_cy18.arf",
                                          "rmf": "acisi_aimpt_cy18.rmf",
                                          "bkgnd": "acisi",
