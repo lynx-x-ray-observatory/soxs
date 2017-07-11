@@ -106,14 +106,16 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
     x_offset, y_offset = perform_dither(bkg_events["time"],
                                         event_params["dither_params"])
 
-    bkg_events["detx"] -= x_offset + event_params['det_center'][0]
-    bkg_events["dety"] -= y_offset + event_params['det_center'][1]
+    bkg_events["detx"] -= event_params['det_center'][0]
+    bkg_events["dety"] -= event_params['det_center'][1]
 
     roll_angle = np.deg2rad(event_params["roll_angle"])
     rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
                         [-np.cos(roll_angle), -np.sin(roll_angle)]])
 
-    pix = np.dot(rot_mat, np.array([bkg_events["detx"], bkg_events["dety"]]))
+    det = np.array([bkg_events["detx"] + x_offset - event_params["aimpt_coords"][0],
+                    bkg_events["dety"] + y_offset - event_params["aimpt_coords"][1]])
+    pix = np.dot(rot_mat, det)
 
     bkg_events["xpix"] = pix[0, :] + event_params['pix_center'][0]
     bkg_events["ypix"] = pix[1, :] + event_params['pix_center'][1]
