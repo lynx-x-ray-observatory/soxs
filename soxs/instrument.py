@@ -349,8 +349,8 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
     plate_scale_arcsec = plate_scale * 3600.0
 
     if dither_params is None:
-        dither_params = {"x_amp": 16.0,
-                         "y_amp": 16.0,
+        dither_params = {"x_amp": 8.0,
+                         "y_amp": 8.0,
                          "x_period": 1000.0,
                          "y_period": 707.0}
     dither_params["dither_on"] = instrument_spec["dither"]
