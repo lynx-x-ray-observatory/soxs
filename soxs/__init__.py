@@ -15,7 +15,8 @@ from soxs.instrument import \
     RedistributionMatrixFile, \
     make_background_file, \
     FlatResponse, simulate_spectrum, \
-    make_aspect_solution
+    make_aspect_solution, \
+    make_exposure_map
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \

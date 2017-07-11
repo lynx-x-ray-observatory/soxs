@@ -8,7 +8,8 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array, parse_prng, parse_value
+    ensure_numpy_array, parse_prng, parse_value, \
+    iterable
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from six import string_types
@@ -516,7 +517,7 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
                                 events["dety"][my_events] += 0.5*fac
                             events["detx"][my_events] += prng.uniform(low=-0.5*fac, high=0.5*fac, size=n_mine)
                             events["dety"][my_events] += prng.uniform(low=-0.5*fac, high=0.5*fac, size=n_mine)
-    
+
                     events["detx"] -= event_params["det_center"][0]
                     events["dety"] -= event_params["det_center"][1]
 
@@ -914,7 +915,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     events["mission"] = rmf.header.get("MISSION", "")
     write_spectrum(events, out_file, overwrite=overwrite)
 
-def make_aspect_solution(event_file, asol_file, dt_res=1.0, overwrite=False):
+def make_aspect_solution(event_file, asol_file, overwrite=False):
     """
     Using an event file, create an aspect solution file from its internal
     parameters. Only really useful if your simulation had dither and you
@@ -926,9 +927,6 @@ def make_aspect_solution(event_file, asol_file, dt_res=1.0, overwrite=False):
         The path to the event file to create the aspect solution from.
     asol_file : string
         The path to write the aspect solution file to. 
-    dt_res : float, optional
-        The time resolution of the aspect solution file in seconds. 
-        Default: 1.0
     overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
     """
@@ -956,7 +954,7 @@ def make_aspect_solution(event_file, asol_file, dt_res=1.0, overwrite=False):
     f_in.close()
 
     # Create time and roll arrays
-    t = np.arange(0.0, exp_time+dt_res, dt_res)
+    t = np.arange(0.0, exp_time+1.0, 1.0)
     roll = roll_angle*np.ones(t.size)
 
     # Construct rotation matrix
@@ -980,7 +978,7 @@ def make_aspect_solution(event_file, asol_file, dt_res=1.0, overwrite=False):
     xpix = pix[0, :] + x0
     ypix = pix[1, :] + y0
 
-    ra, dec = w.wcs_world2pix(xpix, ypix, 1)
+    ra, dec = w.wcs_pix2world(xpix, ypix, 1)
 
     col_t = pyfits.Column(name='time', format='D', unit='s', array=t)
     col_ra = pyfits.Column(name='ra', format='D', unit='deg', array=ra)
@@ -990,24 +988,115 @@ def make_aspect_solution(event_file, asol_file, dt_res=1.0, overwrite=False):
     coldefs = pyfits.ColDefs([col_t, col_ra, col_dec, col_roll])
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
     tbhdu.name = "ASPSOL"
+    tbhdu.header["EXPOSURE"] = exp_time
 
     hdulist = [pyfits.PrimaryHDU(), tbhdu]
 
     pyfits.HDUList(hdulist).writeto(asol_file, overwrite=overwrite)
 
-def make_exposure_map(event_file, expmap_file, band, weights=None, 
+def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None, 
                       overwrite=False):
-    f_in = pyfits.open(event_file)
-    hdu = f_in["EVENTS"]
-    exp_time = hdu.header["EXPOSURE"]
-    roll_angle = hdu.header["ROLL_PNT"]
+    import pyregion._region_filter as filter
+    if iterable(energy) and weights is None:
+        raise RuntimeError("Must supply a single value for the energy if "
+                           "you do not supply weights!")
+    f_evt = pyfits.open(event_file)
+    hdu = f_evt["EVENTS"]
     arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
-    f_in.close()
+    exp_time = hdu.header["EXPOSURE"]
+    nx = int(hdu.header["TLMAX2"]-0.5)//2
+    ny = int(hdu.header["TLMAX3"]-0.5)//2
+    ra0 = hdu.header["TCRVL2"]
+    dec0 = hdu.header["TCRVL3"]
+    xdel = hdu.header["TCDLT2"]
+    ydel = hdu.header["TCDLT3"]
+    x0 = hdu.header["TCRPX2"]
+    y0 = hdu.header["TCRPX3"]
+    xdet0 = 1.0-hdu.header["TLMIN6"]
+    ydet0 = 1.0-hdu.header["TLMIN7"]
+    xaim = hdu.header.get("AIMPT_X", 0.0)
+    yaim = hdu.header.get("AIMPT_Y", 0.0)
+    instr = instrument_registry[hdu.header["INSTRUME"].lower()]
+    f_evt.close()
 
-    exposure = arf.interpolate_area().sum()*exp_time
+    f_asol = pyfits.open(asol_file)
+    hdu = f_asol["ASPSOL"]
+    ra = hdu.data["RA"]
+    dec = hdu.data["DEC"]
+    roll = hdu.data["ROLL"]
+    f_asol.close()
 
-    map_header = {}
+    # Construct WCS
+    w = pywcs.WCS(naxis=2)
+    w.wcs.crval = [ra0, dec0]
+    w.wcs.crpix = [x0, y0]
+    w.wcs.cdelt = [xdel, ydel]
+    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
+    w.wcs.cunit = ["deg"]*2
 
-    map_hdu = pyfits.ImageHDU(map.T, header=map_header)
+    dt = 1.0 # Seconds
+
+    exposure = arf.interpolate_area(energy).value
+    if weights is not None:
+        exposure = np.average(exposure, weights=weights)
+    exposure *= dt
+
+    detx, dety = np.mgrid[0:nx, 0:ny].astype("float64")+1
+    for i, chip in enumerate(instr["chips"]):
+        thisc = np.ones(nx*ny, dtype='bool')
+        for reg in chip["region"]:
+            rtype = reg[0]
+            mask = reg[1]
+            args = reg[2:]
+            r = getattr(filter, rtype)(*args)
+            inside = r.inside(detx.flat, dety.flat)
+            if not mask:
+                inside = np.logical_not(inside)
+            thisc = np.logical_and(thisc, inside)
+    detx = detx.flat[thisc] - xdet0
+    dety = dety.flat[thisc] - ydet0
+
+    x_offset, y_offset = w.wcs_world2pix(ra, dec, 1)
+    roll_rad = np.deg2rad(roll)
+    rot_mat = np.array([[np.sin(roll_rad), -np.cos(roll_rad)],
+                        [-np.cos(roll_rad), -np.sin(roll_rad)]])
+
+    expmap = np.zeros((2*nx, 2*ny))
+
+    pbar = tqdm(leave=True, total=x_offset.size, desc="Creating exposure map ")
+
+    for j in range(x_offset.size):
+
+        det = np.array([detx + x_offset[j] - xaim,
+                        dety + y_offset[j] - yaim])
+        pix = np.dot(rot_mat[:,:,j], det)
+
+        xpix = (pix[0, :] + x0 - 1).astype("int")
+        ypix = (pix[1, :] + y0 - 1).astype("int")
+
+        expmap[xpix, ypix] += 1
+
+        pbar.update()
+
+    pbar.close()
+
+    expmap *= exposure
+
+    map_header = {"EXPOSURE": exp_time,
+                  "MTYPE1": "EQPOS",
+                  "MFORM1": "RA,DEC",
+                  "CTYPE1": "RA---TAN",
+                  "CTYPE2": "DEC--TAN",
+                  "CRVAL1": ra0,
+                  "CRVAL2": dec0,
+                  "CUNIT1": "deg",
+                  "CUNIT2": "deg",
+                  "CDELT1": xdel,
+                  "CDELT2": ydel,
+                  "CRPIX1": x0,
+                  "CRPIX2": y0}
+
+    map_hdu = pyfits.ImageHDU(expmap.T, header=map_header)
+    map_hdu.name = "EXPMAP"
     map_hdu.writeto(expmap_file, overwrite=overwrite)
 
