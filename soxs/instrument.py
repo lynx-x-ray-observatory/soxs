@@ -366,7 +366,7 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
     event_params["rmf"] = rmf.filename
     event_params["channel_type"] = rmf.header["CHANTYPE"]
     event_params["telescope"] = rmf.header["TELESCOP"]
-    event_params["instrument"] = rmf.header["INSTRUME"]
+    event_params["instrument"] = instrument_spec['name']
     event_params["mission"] = rmf.header.get("MISSION", "")
     event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
     event_params["roll_angle"] = roll_angle
@@ -655,7 +655,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "chan_lim": [rmf.cmin, rmf.cmax],
                         "rmf": rmf_file, "arf": arf_file,
                         "telescope": rmf.header["TELESCOP"],
-                        "instrument": rmf.header["INSTRUME"],
+                        "instrument": instrument_spec['name'],
                         "mission": rmf.header.get("MISSION", ""),
                         "nchan": rmf.ebounds_header["DETCHANS"],
                         "roll_angle": roll_angle,
