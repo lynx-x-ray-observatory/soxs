@@ -14,7 +14,8 @@ from soxs.instrument import \
     AuxiliaryResponseFile, \
     RedistributionMatrixFile, \
     make_background_file, \
-    FlatResponse, simulate_spectrum
+    FlatResponse, simulate_spectrum, \
+    make_aspect_solution
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \

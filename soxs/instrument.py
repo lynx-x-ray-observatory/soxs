@@ -914,6 +914,87 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     events["mission"] = rmf.header.get("MISSION", "")
     write_spectrum(events, out_file, overwrite=overwrite)
 
+def make_aspect_solution(event_file, asol_file, dt_res=1.0, overwrite=False):
+    """
+    Using an event file, create an aspect solution file from its internal
+    parameters. Only really useful if your simulation had dither and you
+    want to create an exposure map. 
+
+    Parameters
+    ----------
+    event_file : string
+        The path to the event file to create the aspect solution from.
+    asol_file : string
+        The path to write the aspect solution file to. 
+    dt_res : float, optional
+        The time resolution of the aspect solution file in seconds. 
+        Default: 1.0
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file. Default: False
+    """
+    f_in = pyfits.open(event_file)
+    hdu = f_in["EVENTS"]
+    exp_time = hdu.header["EXPOSURE"]
+    ra0 = hdu.header["RA_PNT"]
+    dec0 = hdu.header["DEC_PNT"]
+    roll_angle = hdu.header["ROLL_PNT"]
+    x0 = hdu.header["TCRPX2"]
+    y0 = hdu.header["TCRPX3"]
+    plate_scale = hdu.header["TCDLT3"]
+    xaim = hdu.header.get("AIMPT_X", 0.0)
+    yaim = hdu.header.get("AIMPT_Y", 0.0)
+    dither_params = {}
+    if "DITHXAMP" in hdu.header:
+        dither_params["x_amp"] = hdu.header["DITHXAMP"]
+        dither_params["y_amp"] = hdu.header["DITHYAMP"]
+        dither_params["x_period"] = hdu.header["DITHXPER"]
+        dither_params["y_period"] = hdu.header["DITHYPER"]
+        dither_params["plate_scale"] = plate_scale*3600.0
+        dither_params["dither_on"] = True
+    else:
+        dither_params["dither_on"] = False
+    f_in.close()
+
+    # Create time and roll arrays
+    t = np.arange(0.0, exp_time+dt_res, dt_res)
+    roll = roll_angle*np.ones(t.size)
+
+    # Construct rotation matrix
+    roll_angle = np.deg2rad(roll_angle)
+    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
+                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
+
+    # Construct WCS
+    w = pywcs.WCS(naxis=2)
+    w.wcs.crval = [ra0, dec0]
+    w.wcs.crpix = [x0, y0]
+    w.wcs.cdelt = [-plate_scale, plate_scale]
+    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
+    w.wcs.cunit = ["deg"]*2
+
+    x_offset, y_offset = perform_dither(t, dither_params)
+
+    det = np.array([x_offset - xaim, y_offset - yaim])
+    pix = np.dot(rot_mat, det)
+
+    xpix = pix[0, :] + x0
+    ypix = pix[1, :] + y0
+
+    ra, dec = w.wcs_world2pix(xpix, ypix, 1)
+
+    col_t = pyfits.Column(name='time', format='D', unit='s', array=t)
+    col_ra = pyfits.Column(name='ra', format='D', unit='deg', array=ra)
+    col_dec = pyfits.Column(name='dec', format='D', unit='deg', array=dec)
+    col_roll = pyfits.Column(name='roll', format='D', unit='deg', array=roll)
+
+    coldefs = pyfits.ColDefs([col_t, col_ra, col_dec, col_roll])
+    tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+    tbhdu.name = "ASPSOL"
+
+    hdulist = [pyfits.PrimaryHDU(), tbhdu]
+
+    pyfits.HDUList(hdulist).writeto(asol_file, overwrite=overwrite)
+
 def make_exposure_map(event_file, expmap_file, band, weights=None, 
                       overwrite=False):
     f_in = pyfits.open(event_file)
@@ -929,3 +1010,4 @@ def make_exposure_map(event_file, expmap_file, band, weights=None,
 
     map_hdu = pyfits.ImageHDU(map.T, header=map_header)
     map_hdu.writeto(expmap_file, overwrite=overwrite)
+
