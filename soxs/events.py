@@ -91,6 +91,13 @@ def write_event_file(events, parameters, filename, overwrite=False):
     tbhdu.header["RA_PNT"] = parameters["sky_center"][0]
     tbhdu.header["DEC_PNT"] = parameters["sky_center"][1]
     tbhdu.header["ROLL_PNT"] = parameters["roll_angle"]
+    tbhdu.header["AIMPT_X"] = parameters["aimpt_coords"][0]
+    tbhdu.header["AIMPT_Y"] = parameters["aimpt_coords"][1]
+    if parameters["dither_params"]["dither_on"]:
+        tbhdu.header["DITHXAMP"] = parameters["dither_params"]["x_amp"]
+        tbhdu.header["DITHYAMP"] = parameters["dither_params"]["y_amp"]
+        tbhdu.header["DITHXPER"] = parameters["dither_params"]["x_period"]
+        tbhdu.header["DITHYPER"] = parameters["dither_params"]["y_period"]
 
     start = pyfits.Column(name='START', format='1D', unit='s',
                           array=np.array([0.0]))
