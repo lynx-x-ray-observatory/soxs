@@ -304,8 +304,7 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     hdulist.writeto(out_file, overwrite=overwrite)
 
 coord_types = {"sky": ("X", "Y", 2, 3),
-               "chip": ("CHIPX", "CHIPY", 6, 7),
-               "det": ("DETX", "DETY", 8, 9)}
+               "det": ("DETX", "DETY", 6, 7)}
 
 def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None, 
                 overwrite=False):
@@ -321,7 +320,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         The name of the image file to write.
     coord_type : string, optional
         The type of coordinate to bin into an image. 
-        Can be "sky", "det", or "chip". Default: "sky"
+        Can be "sky" or "det". Default: "sky"
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The minimum energy of the photons to put in the 
         image, in keV.
