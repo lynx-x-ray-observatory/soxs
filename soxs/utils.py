@@ -137,6 +137,6 @@ def parse_value(value, default_units):
     if isinstance(value, Quantity):
         return Quantity(value.value, value.unit).to(default_units)
     elif iterable(value):
-        return Quantity(value[0], value[1]).to(default_units)
+        return Quantity(float(value[0]), value[1]).to(default_units)
     else:
         return Quantity(value, default_units)
