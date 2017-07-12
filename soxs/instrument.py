@@ -916,7 +916,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
 def parse_region_args(rtype, args, dx, dy):
     if rtype == "Box":
         xctr, yctr, xw, yw = args
-        new_args = [xctr + dx, yctr + dx, xw, yw]
+        new_args = [xctr + dx, yctr + dy, xw, yw]
     elif rtype == "Circle":
         xctr, yctr, radius = args
         new_args = [xctr + dx, yctr + dx, radius]
@@ -1023,15 +1023,12 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
                 masks.append(reg[1])
                 args.append(np.array(reg[2:]))
 
-    xd0 = xdet0+xaim
-    yd0 = ydet0+yaim
-
     tmpmap = np.zeros((2*nx, 2*ny))
 
     for rtype, mask, arg in zip(rtypes, masks, args):
         if mask:
             rfunc = getattr(filter, rtype)
-            new_args = parse_region_args(rtype, arg, xd0, yd0)
+            new_args = parse_region_args(rtype, arg, xdet0-xaim, ydet0-yaim)
             r = rfunc(*new_args)
             tmpmap += r.mask(tmpmap)
 
@@ -1067,7 +1064,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
                   "CRPIX1": x0,
                   "CRPIX2": y0}
 
-    map_hdu = pyfits.ImageHDU(expmap.T, header=pyfits.Header(map_header))
+    map_hdu = pyfits.ImageHDU(expmap, header=pyfits.Header(map_header))
     map_hdu.name = "EXPMAP"
     map_hdu.writeto(expmap_file, overwrite=overwrite)
 
