@@ -915,9 +915,9 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
 
 def make_aspect_solution(event_file, asol_file, overwrite=False):
     """
-    Using an event file, create an aspect solution file from its internal
-    parameters. Only really useful if your simulation had dither and you
-    want to create an exposure map. 
+    Using a SOXS event file, create an aspect solution file from 
+    its internal parameters. Only really useful if your simulation 
+    has dither and you want to create an exposure map.
 
     Parameters
     ----------
@@ -955,7 +955,7 @@ def make_aspect_solution(event_file, asol_file, overwrite=False):
     t = np.arange(0.0, exp_time+1.0, 1.0)
 
     # Construct rotation matrix
-    roll_angle = get_rot_mat(roll_angle)
+    rot_mat = get_rot_mat(roll_angle)
 
     # Construct WCS
     w = pywcs.WCS(naxis=2)
