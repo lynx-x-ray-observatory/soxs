@@ -1,6 +1,7 @@
 import numpy as np
 from soxs.constants import one_arcsec
-from soxs.utils import parse_prng, parse_value
+from soxs.utils import parse_prng, parse_value, \
+    get_rot_mat
 import astropy.units as u
 import astropy.wcs as pywcs
 
@@ -25,10 +26,7 @@ def generate_radial_events(num_events, func, prng, ellipticity=1.0):
     return x, y
 
 def rotate_xy(theta, x, y):
-    theta_rad = np.deg2rad(theta)
-    rot_mat = np.array([[np.cos(theta_rad), -np.sin(theta_rad)],
-                        [np.sin(theta_rad), np.cos(theta_rad)]])
-    coords = np.dot(rot_mat, np.array([x, y]))
+    coords = np.dot(get_rot_mat(theta), np.array([x, y]))
     return coords
 
 class SpatialModel(object):

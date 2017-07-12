@@ -9,7 +9,7 @@ from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array, parse_prng, parse_value, \
-    iterable
+    iterable, get_rot_mat
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from six import string_types
@@ -384,9 +384,7 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
     w.wcs.ctype = ["RA---TAN","DEC--TAN"]
     w.wcs.cunit = ["deg"]*2
 
-    roll_angle = np.deg2rad(roll_angle)
-    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
-                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
+    rot_mat = get_rot_mat(roll_angle)
 
     all_events = defaultdict(list)
 
@@ -527,7 +525,7 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
 
                 det = np.array([events["detx"] + x_offset[keep] - event_params["aimpt_coords"][0],
                                 events["dety"] + y_offset[keep] - event_params["aimpt_coords"][1]])
-                pix = np.dot(rot_mat, det)
+                pix = np.dot(rot_mat.T, det)
 
                 events["xpix"] = pix[0,:] + event_params['pix_center'][0]
                 events["ypix"] = pix[1,:] + event_params['pix_center'][1]
@@ -957,9 +955,7 @@ def make_aspect_solution(event_file, asol_file, overwrite=False):
     t = np.arange(0.0, exp_time+1.0, 1.0)
 
     # Construct rotation matrix
-    roll_angle = np.deg2rad(roll_angle)
-    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
-                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
+    roll_angle = get_rot_mat(roll_angle)
 
     # Construct WCS
     w = pywcs.WCS(naxis=2)

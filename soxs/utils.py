@@ -148,3 +148,9 @@ def parse_value(value, default_units):
     else:
         q = Quantity(value, default_units)
     return q.value
+
+def get_rot_mat(roll_angle):
+    roll_angle = np.deg2rad(roll_angle)
+    rot_mat = np.array([[np.cos(roll_angle), -np.sin(roll_angle)],
+                        [np.sin(roll_angle), np.cos(roll_angle)]])
+    return rot_mat

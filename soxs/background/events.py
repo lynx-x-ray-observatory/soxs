@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import astropy.io.fits as pyfits
-from soxs.utils import mylog, parse_prng
+from soxs.utils import mylog, parse_prng, get_rot_mat
 
 key_map = {"telescope": "TELESCOP",
            "mission": "MISSION",
@@ -42,10 +42,8 @@ def add_background_from_file(events, event_params, bkg_file):
         xpix = hdu.data["X"][idxs]
         ypix = hdu.data["Y"][idxs]
     else:
-        roll_angle = np.deg2rad(event_params["roll_angle"])
-        rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
-                            [-np.cos(roll_angle), -np.sin(roll_angle)]])
-        xpix, ypix = np.dot(rot_mat, np.array([hdu.data["DETX"][idxs], 
+        rot_mat = get_rot_mat(event_params["roll_angle"])
+        xpix, ypix = np.dot(rot_mat.T, np.array([hdu.data["DETX"][idxs], 
                                                hdu.data["DETY"][idxs]]))
         xpix += hdu.header["TCRPX2"]
         ypix += hdu.header["TCRPX3"]
@@ -109,13 +107,11 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
     bkg_events["detx"] -= event_params['det_center'][0]
     bkg_events["dety"] -= event_params['det_center'][1]
 
-    roll_angle = np.deg2rad(event_params["roll_angle"])
-    rot_mat = np.array([[np.sin(roll_angle), -np.cos(roll_angle)],
-                        [-np.cos(roll_angle), -np.sin(roll_angle)]])
+    rot_mat = get_rot_mat(event_params["roll_angle"])
 
     det = np.array([bkg_events["detx"] + x_offset - event_params["aimpt_coords"][0],
                     bkg_events["dety"] + y_offset - event_params["aimpt_coords"][1]])
-    pix = np.dot(rot_mat, det)
+    pix = np.dot(rot_mat.T, det)
 
     bkg_events["xpix"] = pix[0, :] + event_params['pix_center'][0]
     bkg_events["ypix"] = pix[1, :] + event_params['pix_center'][1]
