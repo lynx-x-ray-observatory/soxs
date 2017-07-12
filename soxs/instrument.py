@@ -1048,7 +1048,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     if normalize:
         expmap /= exp_time
 
-    rotate(expmap, -roll, output=expmap, reshape=False)
+    rotate(expmap, roll, output=expmap, reshape=False)
 
     map_header = {"EXPOSURE": exp_time,
                   "MTYPE1": "EQPOS",
