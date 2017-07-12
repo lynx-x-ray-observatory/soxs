@@ -913,6 +913,14 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     events["mission"] = rmf.header.get("MISSION", "")
     write_spectrum(events, out_file, overwrite=overwrite)
 
+def parse_region_args(rtype, args, x0, y0):
+    if rtype == "Box":
+        xctr, yctr, xw, yw = args
+        new_args = [xctr + x0, yctr + y0, xw, yw]
+    else:
+        raise NotImplementedError
+    return new_args
+
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False):
     """
@@ -932,6 +940,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
     """
     import pyregion._region_filter as filter
+    from scipy.ndimage.interpolation import rotate
     if iterable(energy) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if "
                            "you do not supply weights!")
@@ -947,8 +956,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     ydel = hdu.header["TCDLT3"]
     x0 = hdu.header["TCRPX2"]
     y0 = hdu.header["TCRPX3"]
-    xdet0 = 1.0-hdu.header["TLMIN6"]
-    ydet0 = 1.0-hdu.header["TLMIN7"]
+    xdet0 = 0.5*(nx+1)
+    ydet0 = 0.5*(ny+1)
     xaim = hdu.header.get("AIMPT_X", 0.0)
     yaim = hdu.header.get("AIMPT_Y", 0.0)
     roll = hdu.header["ROLL_PNT"]
@@ -977,6 +986,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
     # Create aspect solution if we had dithering.
     # otherwise just set the offsets to zero
+    """
     if dither_params["dither_on"]:
         x_off, y_off = perform_dither(t, dither_params)
 
@@ -984,55 +994,39 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         asphist = np.histogram2d(x_off, y_off, (32, 32))[0]
         asphist *= dt
     else:
-        pass
+        asphist = exp_time
+    """
 
     # Determine the effective area
     eff_area = arf.interpolate_area(energy).value
     if weights is not None:
         eff_area = np.average(eff_area, weights=weights)
 
-    detx, dety = np.mgrid[0:nx, 0:ny].astype("float64")+1
+    rtypes = []
+    masks = []
+    args = []
     for i, chip in enumerate(instr["chips"]):
-        thisc = np.ones(nx*ny, dtype='bool')
         for reg in chip["region"]:
-            rtype = reg[0]
-            mask = reg[1]
-            args = reg[2:]
-            r = getattr(filter, rtype)(*args)
-            inside = r.inside(detx.flat, dety.flat)
-            if not mask:
-                inside = np.logical_not(inside)
-            thisc = np.logical_and(thisc, inside)
-    detx = detx.flat[thisc] - xdet0 - xaim
-    dety = dety.flat[thisc] - ydet0 - yaim
-
-    rot_mat = get_rot_mat(roll)
+            rtypes.append(reg[0])
+            masks.append(reg[1])
+            args.append(np.array(reg[2:]))
 
     expmap = np.zeros((2*nx, 2*ny))
-    pix = np.dot(rot_mat.T, np.array([detx, dety]))
-    pix[0,:] += x0 - 1
-    pix[1,:] += y0 - 1
 
-    off = np.dot(rot_mat.T, np.array([x_off, y_off]))
-
-    #pbar = tqdm(leave=True, total=x_offset.size, desc="Creating exposure map ")
-
-    #for j in range(x_offset.size):
-
-        #xpix = (pix[0, :] + off[0, j]).astype("int")
-        #ypix = (pix[1, :] + off[1, j]).astype("int")
-
-        #idxs = np.ravel_multi_index(np.array([xpix, ypix]), (2*nx, 2*ny))
-
-        #expmap.flat[idxs] += 1
-
-        #pbar.update()
-
-    #pbar.close()
+    for rtype, mask, arg in zip(rtypes, masks, args):
+        rfunc = getattr(filter, rtype)
+        new_args = parse_region_args(rtype, arg, xdet0+xaim, ydet0+yaim)
+        r = rfunc(*new_args)
+        inside = r.mask(expmap)
+        if not mask:
+            inside = np.logical_not(inside)
+        expmap += inside
 
     expmap *= eff_area
-    if normalize:
-        expmap /= exp_time
+    #if normalize:
+    #    expmap /= exp_time
+
+    rotate(expmap, roll, output=expmap, reshape=False)
 
     map_header = {"EXPOSURE": exp_time,
                   "MTYPE1": "EQPOS",
@@ -1048,7 +1042,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
                   "CRPIX1": x0,
                   "CRPIX2": y0}
 
-    map_hdu = pyfits.ImageHDU(expmap.T, header=map_header)
+    map_hdu = pyfits.ImageHDU(expmap.T, header=pyfits.Header(map_header))
     map_hdu.name = "EXPMAP"
     map_hdu.writeto(expmap_file, overwrite=overwrite)
 
