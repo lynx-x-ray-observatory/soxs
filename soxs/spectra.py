@@ -6,7 +6,7 @@ import tempfile
 import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
-    parse_prng, check_file_location
+    parse_prng, check_file_location, parse_value
 from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -20,7 +20,7 @@ from soxs.instrument import AuxiliaryResponseFile
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
         ret = u.Quantity.__new__(cls, energy, unit="keV")
-        ret.flux = u.Quantity(flux, "erg/(cm**2*s)")
+        ret.flux = flux
         return ret
 
 def _generate_energies(spec, t_exp, rate, prng, quiet=False):
@@ -83,8 +83,7 @@ class Spectrum(object):
         return s
 
     def __call__(self, e):
-        if isinstance(e, u.Quantity):
-            e = e.to("keV").value
+        e = parse_value(e, "keV").value
         return u.Quantity(self.func(e), self._units)
 
     def get_flux_in_band(self, emin, emax):
@@ -353,11 +352,12 @@ class Spectrum(object):
             "tbabs" (Tuebingen-Boulder, Wilms, J., Allen, A., & 
             McCray, R. 2000, ApJ, 542, 914). Default: "wabs".
         """
+        nH = parse_value(nH, "1.0e22*cm**-2")
         if model == "wabs":
             sigma = wabs_cross_section(self.emid.value)
         elif model == "tbabs":
             sigma = tbabs_cross_section(self.emid.value)
-        self.flux *= np.exp(-nH*1.0e22*sigma)
+        self.flux *= np.exp(-nH.to("cm**-2").value*sigma)
         self._compute_total_flux()
 
     def generate_energies(self, t_exp, area, prng=None, quiet=False):
@@ -384,10 +384,12 @@ class Spectrum(object):
             creating energies. Useful if you have to loop over 
             a lot of spectra. Default: False
         """
+        t_exp = parse_value(t_exp, "s")
+        area = parse_value(area, "cm**2")
         prng = parse_prng(prng)
-        rate = area*self.total_flux.value
+        rate = area*self.total_flux
         energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
-        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        flux = np.sum(energy).to("erg")/t_exp/area
         energies = Energies(energy, flux)
         return energies
 
@@ -640,10 +642,11 @@ class ConvolvedSpectrum(Spectrum):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
+        t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
-        rate = self.total_flux.value
+        rate = self.total_flux
         energy = _generate_energies(self, t_exp, rate, prng)
-        earea = self.arf.interpolate_area(energy).value
-        flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
+        earea = self.arf.interpolate_area(energy)
+        flux = np.sum(energy).to("erg")/t_exp/earea.sum()
         energies = Energies(energy, flux)
         return energies

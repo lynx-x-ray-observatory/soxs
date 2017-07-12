@@ -8,7 +8,7 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array, parse_prng
+    ensure_numpy_array, parse_prng, parse_value
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from six import string_types
@@ -305,6 +305,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
+    exp_time = parse_value(exp_time, "s").value
     prng = parse_prng(prng)
     if isinstance(input_events, dict):
         parameters = {}
@@ -549,6 +550,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     from soxs.background import make_instrument_background, \
         make_foreground, make_ptsrc_background
     prng = parse_prng(prng)
+    exp_time = parse_value(exp_time, "s").value
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -829,6 +831,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
     prng = parse_prng(prng)
+    exp_time = parse_value(exp_time, "s").value
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
