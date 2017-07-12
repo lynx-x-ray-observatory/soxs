@@ -913,10 +913,13 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     events["mission"] = rmf.header.get("MISSION", "")
     write_spectrum(events, out_file, overwrite=overwrite)
 
-def parse_region_args(rtype, args, x0, y0):
+def parse_region_args(rtype, args, dx, dy):
     if rtype == "Box":
         xctr, yctr, xw, yw = args
-        new_args = [xctr + x0, yctr + y0, xw, yw]
+        new_args = [xctr + dx, yctr + dx, xw, yw]
+    elif rtype == "Circle":
+        xctr, yctr, radius = args
+        new_args = [xctr + dx, yctr + dx, radius]
     else:
         raise NotImplementedError
     return new_args
@@ -925,23 +928,23 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False,
                       nhistx=16, nhisty=16):
     """
-    Make an exposure map for a SOXS event file.
+    Make an exposure map for a SOXS event file, and optionally write
+    an aspect solution file.
 
     Parameters
     ----------
     event_file
-    asol_file
     expmap_file
     energy
     weights
+    asol_file
+    normalize
     overwrite
-
-    Returns
-    -------
-
+    nhistx
+    nhisty
     """
     import pyregion._region_filter as filter
-    from scipy.ndimage.interpolation import rotate
+    from scipy.ndimage.interpolation import rotate, shift
     if iterable(energy) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if "
                            "you do not supply weights!")
@@ -1000,13 +1003,6 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         asphist *= dt
         x_mid = 0.5*(x_edges[1:]+x_edges[:-1])
         y_mid = 0.5*(y_edges[1:]+y_edges[:-1])
-    else:
-        # No dithering
-        nhistx = 1
-        nhisty = 1
-        x_mid = [0.0]
-        y_mid = [0.0]
-        asphist = np.array([[exp_time]])
 
     # Determine the effective area
     eff_area = arf.interpolate_area(energy).value
@@ -1027,32 +1023,35 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
                 masks.append(reg[1])
                 args.append(np.array(reg[2:]))
 
-    expmap = np.zeros((2*nx, 2*ny))
-
     xd0 = xdet0+xaim
     yd0 = ydet0+yaim
 
-    niter = rtypes*nhistx*nhisty
+    tmpmap = np.zeros((2*nx, 2*ny))
 
-    pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
     for rtype, mask, arg in zip(rtypes, masks, args):
-        rfunc = getattr(filter, rtype)
+        if mask:
+            rfunc = getattr(filter, rtype)
+            new_args = parse_region_args(rtype, arg, xd0, yd0)
+            r = rfunc(*new_args)
+            tmpmap += r.mask(tmpmap)
+
+    if dither_params["dither_on"]:
+        expmap = np.zeros((2*nx, 2*ny))
+        niter = nhistx*nhisty
+        pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
         for i in range(nhistx):
             for j in range(nhisty):
-                new_args = parse_region_args(rtype, arg, xd0+x_mid[i], yd0+y_mid[j])
-                r = rfunc(*new_args)
-                inside = r.mask(expmap)
-                if not mask:
-                    inside = np.logical_not(inside)
-                expmap += inside*asphist[i, j]
+                expmap += shift(tmpmap, (x_mid[i], y_mid[j]), order=0)*asphist[i, j]
             pbar.update(nhisty)
-    pbar.close()
+        pbar.close()
+    else:
+        expmap = tmpmap*exp_time
 
     expmap *= eff_area
     if normalize:
         expmap /= exp_time
 
-    rotate(expmap, roll, output=expmap, reshape=False)
+    rotate(expmap, -roll, output=expmap, reshape=False)
 
     map_header = {"EXPOSURE": exp_time,
                   "MTYPE1": "EQPOS",
