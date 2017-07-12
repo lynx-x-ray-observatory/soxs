@@ -922,7 +922,8 @@ def parse_region_args(rtype, args, x0, y0):
     return new_args
 
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
-                      asol_file=None, normalize=True, overwrite=False):
+                      asol_file=None, normalize=True, overwrite=False,
+                      nhistx=16, nhisty=16):
     """
     Make an exposure map for a SOXS event file.
 
@@ -966,6 +967,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     if "DITHXAMP" in hdu.header:
         dither_params["x_amp"] = hdu.header["DITHXAMP"]
         dither_params["y_amp"] = hdu.header["DITHYAMP"]
+        dither_params["x_period"] = hdu.header["DITHXPER"]
+        dither_params["y_period"] = hdu.header["DITHYPER"]
         dither_params["plate_scale"] = ydel*3600.0
         dither_params["dither_on"] = True
     else:
@@ -986,45 +989,68 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
     # Create aspect solution if we had dithering.
     # otherwise just set the offsets to zero
-    """
     if dither_params["dither_on"]:
         x_off, y_off = perform_dither(t, dither_params)
-
         # Make the aspect histogram
-        asphist = np.histogram2d(x_off, y_off, (32, 32))[0]
+        x_amp = dither_params["x_amp"]/dither_params["plate_scale"]
+        y_amp = dither_params["y_amp"]/dither_params["plate_scale"]
+        x_edges = np.linspace(-x_amp, x_amp, nhistx+1, endpoint=True)
+        y_edges = np.linspace(-y_amp, y_amp, nhisty+1, endpoint=True)
+        asphist = np.histogram2d(x_off, y_off, (x_edges, y_edges))[0]
         asphist *= dt
+        x_mid = 0.5*(x_edges[1:]+x_edges[:-1])
+        y_mid = 0.5*(y_edges[1:]+y_edges[:-1])
     else:
-        asphist = exp_time
-    """
+        # No dithering
+        nhistx = 1
+        nhisty = 1
+        x_mid = [0.0]
+        y_mid = [0.0]
+        asphist = np.array([[exp_time]])
 
     # Determine the effective area
     eff_area = arf.interpolate_area(energy).value
     if weights is not None:
         eff_area = np.average(eff_area, weights=weights)
 
-    rtypes = []
-    masks = []
-    args = []
-    for i, chip in enumerate(instr["chips"]):
-        for reg in chip["region"]:
-            rtypes.append(reg[0])
-            masks.append(reg[1])
-            args.append(np.array(reg[2:]))
+    if instr["chips"] is None:
+        rtypes = ["Box"]
+        masks = [True]
+        args = [[0.0, 0.0, instr["num_pixels"], instr["num_pixels"]]]
+    else:
+        rtypes = []
+        masks = []
+        args = []
+        for i, chip in enumerate(instr["chips"]):
+            for reg in chip["region"]:
+                rtypes.append(reg[0])
+                masks.append(reg[1])
+                args.append(np.array(reg[2:]))
 
     expmap = np.zeros((2*nx, 2*ny))
 
+    xd0 = xdet0+xaim
+    yd0 = ydet0+yaim
+
+    niter = rtypes*nhistx*nhisty
+
+    pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
     for rtype, mask, arg in zip(rtypes, masks, args):
         rfunc = getattr(filter, rtype)
-        new_args = parse_region_args(rtype, arg, xdet0+xaim, ydet0+yaim)
-        r = rfunc(*new_args)
-        inside = r.mask(expmap)
-        if not mask:
-            inside = np.logical_not(inside)
-        expmap += inside
+        for i in range(nhistx):
+            for j in range(nhisty):
+                new_args = parse_region_args(rtype, arg, xd0+x_mid[i], yd0+y_mid[j])
+                r = rfunc(*new_args)
+                inside = r.mask(expmap)
+                if not mask:
+                    inside = np.logical_not(inside)
+                expmap += inside*asphist[i, j]
+            pbar.update(nhisty)
+    pbar.close()
 
     expmap *= eff_area
-    #if normalize:
-    #    expmap /= exp_time
+    if normalize:
+        expmap /= exp_time
 
     rotate(expmap, roll, output=expmap, reshape=False)
 
@@ -1052,7 +1078,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
             det = np.array([x_off, y_off])
 
-            pix = np.dot(rot_mat.T, det)
+            pix = np.dot(get_rot_mat(roll).T, det)
 
             ra, dec = w.wcs_pix2world(pix[0,:]+x0, pix[1,:]+y0, 1)
 
