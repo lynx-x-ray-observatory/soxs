@@ -913,83 +913,24 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     events["mission"] = rmf.header.get("MISSION", "")
     write_spectrum(events, out_file, overwrite=overwrite)
 
-def make_aspect_solution(event_file, asol_file, overwrite=False):
+def make_exposure_map(event_file, expmap_file, energy, weights=None,
+                      asol_file=None, normalize=True, overwrite=False):
     """
-    Using a SOXS event file, create an aspect solution file from 
-    its internal parameters. Only really useful if your simulation 
-    has dither and you want to create an exposure map.
+    Make an exposure map for a SOXS event file.
 
     Parameters
     ----------
-    event_file : string
-        The path to the event file to create the aspect solution from.
-    asol_file : string
-        The path to write the aspect solution file to. 
-    overwrite : boolean, optional
-        Whether or not to overwrite an existing file. Default: False
+    event_file
+    asol_file
+    expmap_file
+    energy
+    weights
+    overwrite
+
+    Returns
+    -------
+
     """
-    f_in = pyfits.open(event_file)
-    hdu = f_in["EVENTS"]
-    exp_time = hdu.header["EXPOSURE"]
-    ra0 = hdu.header["RA_PNT"]
-    dec0 = hdu.header["DEC_PNT"]
-    roll_angle = hdu.header["ROLL_PNT"]
-    x0 = hdu.header["TCRPX2"]
-    y0 = hdu.header["TCRPX3"]
-    plate_scale = hdu.header["TCDLT3"]
-    xaim = hdu.header.get("AIMPT_X", 0.0)
-    yaim = hdu.header.get("AIMPT_Y", 0.0)
-    dither_params = {}
-    if "DITHXAMP" in hdu.header:
-        dither_params["x_amp"] = hdu.header["DITHXAMP"]
-        dither_params["y_amp"] = hdu.header["DITHYAMP"]
-        dither_params["x_period"] = hdu.header["DITHXPER"]
-        dither_params["y_period"] = hdu.header["DITHYPER"]
-        dither_params["plate_scale"] = plate_scale*3600.0
-        dither_params["dither_on"] = True
-    else:
-        dither_params["dither_on"] = False
-    f_in.close()
-
-    # Create time and roll arrays
-    t = np.arange(0.0, exp_time+1.0, 1.0)
-
-    # Construct rotation matrix
-    rot_mat = get_rot_mat(roll_angle)
-
-    # Construct WCS
-    w = pywcs.WCS(naxis=2)
-    w.wcs.crval = [ra0, dec0]
-    w.wcs.crpix = [x0, y0]
-    w.wcs.cdelt = [-plate_scale, plate_scale]
-    w.wcs.ctype = ["RA---TAN","DEC--TAN"]
-    w.wcs.cunit = ["deg"]*2
-
-    x_offset, y_offset = perform_dither(t, dither_params)
-
-    det = np.array([x_offset - xaim, y_offset - yaim])
-    pix = np.dot(rot_mat, det)
-
-    xpix = pix[0, :] + x0
-    ypix = pix[1, :] + y0
-
-    ra, dec = w.wcs_pix2world(xpix, ypix, 1)
-
-    col_t = pyfits.Column(name='time', format='D', unit='s', array=t)
-    col_ra = pyfits.Column(name='ra', format='D', unit='deg', array=ra)
-    col_dec = pyfits.Column(name='dec', format='D', unit='deg', array=dec)
-
-    coldefs = pyfits.ColDefs([col_t, col_ra, col_dec])
-    tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    tbhdu.name = "ASPSOL"
-    tbhdu.header["EXPOSURE"] = exp_time
-
-    hdulist = [pyfits.PrimaryHDU(), tbhdu]
-
-    pyfits.HDUList(hdulist).writeto(asol_file, overwrite=overwrite)
-
-def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None, 
-                      overwrite=False):
     import pyregion._region_filter as filter
     if iterable(energy) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if "
@@ -1012,13 +953,19 @@ def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None,
     yaim = hdu.header.get("AIMPT_Y", 0.0)
     roll = hdu.header["ROLL_PNT"]
     instr = instrument_registry[hdu.header["INSTRUME"].lower()]
+    dither_params = {}
+    if "DITHXAMP" in hdu.header:
+        dither_params["x_amp"] = hdu.header["DITHXAMP"]
+        dither_params["y_amp"] = hdu.header["DITHYAMP"]
+        dither_params["plate_scale"] = ydel*3600.0
+        dither_params["dither_on"] = True
+    else:
+        dither_params["dither_on"] = False
     f_evt.close()
 
-    f_asol = pyfits.open(asol_file)
-    hdu = f_asol["ASPSOL"]
-    ra = hdu.data["RA"]
-    dec = hdu.data["DEC"]
-    f_asol.close()
+    # Create time array for aspect solution
+    dt = 1.0 # Seconds
+    t = np.arange(0.0, exp_time+dt, dt)
 
     # Construct WCS
     w = pywcs.WCS(naxis=2)
@@ -1028,12 +975,21 @@ def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None,
     w.wcs.ctype = ["RA---TAN","DEC--TAN"]
     w.wcs.cunit = ["deg"]*2
 
-    dt = 1.0 # Seconds
+    # Create aspect solution if we had dithering.
+    # otherwise just set the offsets to zero
+    if dither_params["dither_on"]:
+        x_off, y_off = perform_dither(t, dither_params)
 
-    exposure = arf.interpolate_area(energy).value
+        # Make the aspect histogram
+        asphist = np.histogram2d(x_off, y_off, (32, 32))[0]
+        asphist *= dt
+    else:
+        pass
+
+    # Determine the effective area
+    eff_area = arf.interpolate_area(energy).value
     if weights is not None:
-        exposure = np.average(exposure, weights=weights)
-    exposure *= dt
+        eff_area = np.average(eff_area, weights=weights)
 
     detx, dety = np.mgrid[0:nx, 0:ny].astype("float64")+1
     for i, chip in enumerate(instr["chips"]):
@@ -1047,35 +1003,36 @@ def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None,
             if not mask:
                 inside = np.logical_not(inside)
             thisc = np.logical_and(thisc, inside)
-    detx = detx.flat[thisc] - xdet0
-    dety = dety.flat[thisc] - ydet0
+    detx = detx.flat[thisc] - xdet0 - xaim
+    dety = dety.flat[thisc] - ydet0 - yaim
 
-    x_offset, y_offset = w.wcs_world2pix(ra, dec, 1)
-
-    roll_rad = np.deg2rad(roll)
-    rot_mat = np.array([[np.sin(roll_rad), -np.cos(roll_rad)],
-                        [-np.cos(roll_rad), -np.sin(roll_rad)]])
+    rot_mat = get_rot_mat(roll)
 
     expmap = np.zeros((2*nx, 2*ny))
+    pix = np.dot(rot_mat.T, np.array([detx, dety]))
+    pix[0,:] += x0 - 1
+    pix[1,:] += y0 - 1
 
-    pbar = tqdm(leave=True, total=x_offset.size, desc="Creating exposure map ")
+    off = np.dot(rot_mat.T, np.array([x_off, y_off]))
 
-    for j in range(x_offset.size):
+    #pbar = tqdm(leave=True, total=x_offset.size, desc="Creating exposure map ")
 
-        det = np.array([detx + x_offset[j] - xaim,
-                        dety + y_offset[j] - yaim])
-        pix = np.dot(rot_mat[:,:,j], det)
+    #for j in range(x_offset.size):
 
-        xpix = (pix[0, :] + x0 - 1).astype("int")
-        ypix = (pix[1, :] + y0 - 1).astype("int")
+        #xpix = (pix[0, :] + off[0, j]).astype("int")
+        #ypix = (pix[1, :] + off[1, j]).astype("int")
 
-        expmap[xpix, ypix] += 1
+        #idxs = np.ravel_multi_index(np.array([xpix, ypix]), (2*nx, 2*ny))
 
-        pbar.update()
+        #expmap.flat[idxs] += 1
 
-    pbar.close()
+        #pbar.update()
 
-    expmap *= exposure
+    #pbar.close()
+
+    expmap *= eff_area
+    if normalize:
+        expmap /= exp_time
 
     map_header = {"EXPOSURE": exp_time,
                   "MTYPE1": "EQPOS",
@@ -1095,3 +1052,30 @@ def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None,
     map_hdu.name = "EXPMAP"
     map_hdu.writeto(expmap_file, overwrite=overwrite)
 
+    if asol_file is not None:
+
+        if dither_params["dither_on"]:
+
+            det = np.array([x_off, y_off])
+
+            pix = np.dot(rot_mat.T, det)
+
+            ra, dec = w.wcs_pix2world(pix[0,:]+x0, pix[1,:]+y0, 1)
+
+            col_t = pyfits.Column(name='time', format='D', unit='s', array=t)
+            col_ra = pyfits.Column(name='ra', format='D', unit='deg', array=ra)
+            col_dec = pyfits.Column(name='dec', format='D', unit='deg', array=dec)
+
+            coldefs = pyfits.ColDefs([col_t, col_ra, col_dec])
+            tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+            tbhdu.name = "ASPSOL"
+            tbhdu.header["EXPOSURE"] = exp_time
+
+            hdulist = [pyfits.PrimaryHDU(), tbhdu]
+
+            pyfits.HDUList(hdulist).writeto(asol_file, overwrite=overwrite)
+
+        else:
+
+            mylog.warning("Refusing to write an aspect solution file because "
+                          "there was no dithering.")
