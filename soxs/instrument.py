@@ -955,7 +955,6 @@ def make_aspect_solution(event_file, asol_file, overwrite=False):
 
     # Create time and roll arrays
     t = np.arange(0.0, exp_time+1.0, 1.0)
-    roll = roll_angle*np.ones(t.size)
 
     # Construct rotation matrix
     roll_angle = np.deg2rad(roll_angle)
@@ -983,9 +982,8 @@ def make_aspect_solution(event_file, asol_file, overwrite=False):
     col_t = pyfits.Column(name='time', format='D', unit='s', array=t)
     col_ra = pyfits.Column(name='ra', format='D', unit='deg', array=ra)
     col_dec = pyfits.Column(name='dec', format='D', unit='deg', array=dec)
-    col_roll = pyfits.Column(name='roll', format='D', unit='deg', array=roll)
 
-    coldefs = pyfits.ColDefs([col_t, col_ra, col_dec, col_roll])
+    coldefs = pyfits.ColDefs([col_t, col_ra, col_dec])
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
     tbhdu.name = "ASPSOL"
     tbhdu.header["EXPOSURE"] = exp_time
@@ -1016,6 +1014,7 @@ def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None,
     ydet0 = 1.0-hdu.header["TLMIN7"]
     xaim = hdu.header.get("AIMPT_X", 0.0)
     yaim = hdu.header.get("AIMPT_Y", 0.0)
+    roll = hdu.header["ROLL_PNT"]
     instr = instrument_registry[hdu.header["INSTRUME"].lower()]
     f_evt.close()
 
@@ -1023,7 +1022,6 @@ def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None,
     hdu = f_asol["ASPSOL"]
     ra = hdu.data["RA"]
     dec = hdu.data["DEC"]
-    roll = hdu.data["ROLL"]
     f_asol.close()
 
     # Construct WCS
@@ -1057,6 +1055,7 @@ def make_exposure_map(event_file, asol_file, expmap_file, energy, weights=None,
     dety = dety.flat[thisc] - ydet0
 
     x_offset, y_offset = w.wcs_world2pix(ra, dec, 1)
+
     roll_rad = np.deg2rad(roll)
     rot_mat = np.array([[np.sin(roll_rad), -np.cos(roll_rad)],
                         [-np.cos(roll_rad), -np.sin(roll_rad)]])
