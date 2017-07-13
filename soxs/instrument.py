@@ -361,7 +361,6 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
     event_params["arf"] = arf.filename
     event_params["sky_center"] = sky_center
     event_params["pix_center"] = np.array([0.5*(2*nx+1)]*2)
-    event_params["det_center"] = np.array([0.5*(nx+1)]*2)
     event_params["num_pixels"] = nx
     event_params["plate_scale"] = plate_scale
     event_params["rmf"] = rmf.filename
@@ -451,13 +450,13 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
             # Convert detector coordinates to chip coordinates.
             # Throw out events that don't fall on any chip.
 
-            cx = np.round(detx + event_params['det_center'][0])
-            cy = np.round(dety + event_params['det_center'][1])
+            cx = np.trunc(detx)+0.5*np.sign(detx)
+            cy = np.trunc(dety)+0.5*np.sign(dety)
 
             if event_params["chips"] is None:
                 events["chip_id"] = np.zeros(n_evt, dtype='int')
-                keepx = np.logical_and(cx >= 0.5, cx <= nx+0.5)
-                keepy = np.logical_and(cy >= 0.5, cy <= nx+0.5)
+                keepx = np.logical_and(cx >= -0.5*nx, cx <= 0.5*nx)
+                keepy = np.logical_and(cy >= -0.5*nx, cy <= 0.5*nx)
                 keep = np.logical_and(keepx, keepy)
             else:
                 events["chip_id"] = -np.ones(n_evt, dtype='int')
@@ -495,29 +494,8 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
                     events["detx"] = detx[keep]
                     events["dety"] = dety[keep]
                 else:
-                    events["detx"] = cx[keep]
-                    events["dety"] = cy[keep]
-
-                    if event_params["chips"] is None:
-                        events["detx"] += prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                        events["dety"] += prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                    else:
-                        for chip in event_params["chips"]:
-                            fac = chip["pixel_size"]
-                            my_events = events["chip_id"] == chip["id"]
-                            n_mine = my_events.sum()
-                            if fac != 1:
-                                events["detx"][my_events] = np.floor((events["detx"][my_events]-1.0)/fac)
-                                events["dety"][my_events] = np.floor((events["dety"][my_events]-1.0)/fac)
-                                events["detx"][my_events] *= fac
-                                events["dety"][my_events] *= fac
-                                events["detx"][my_events] += 0.5*fac
-                                events["dety"][my_events] += 0.5*fac
-                            events["detx"][my_events] += prng.uniform(low=-0.5*fac, high=0.5*fac, size=n_mine)
-                            events["dety"][my_events] += prng.uniform(low=-0.5*fac, high=0.5*fac, size=n_mine)
-
-                    events["detx"] -= event_params["det_center"][0]
-                    events["dety"] -= event_params["det_center"][1]
+                    events["detx"] = cx[keep] + prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                    events["dety"] = cy[keep] + prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
                 # Convert detector coordinates back to pixel coordinates by
                 # adding the dither offsets back in and applying the rotation
@@ -645,7 +623,6 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         event_params = {"exposure_time": exp_time, 
                         "fov": instrument_spec["fov"],
                         "num_pixels": nx,
-                        "det_center": np.array([0.5*(nx+1)]*2),
                         "pix_center": np.array([0.5*(2*nx+1)]*2),
                         "channel_type": rmf.header["CHANTYPE"],
                         "sky_center": sky_center,
@@ -960,8 +937,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     ydel = hdu.header["TCDLT3"]
     x0 = hdu.header["TCRPX2"]
     y0 = hdu.header["TCRPX3"]
-    xdet0 = 0.5*(nx+1)
-    ydet0 = 0.5*(ny+1)
+    xdet0 = 0.5*(2*nx+1)
+    ydet0 = 0.5*(2*ny+1)
     xaim = hdu.header.get("AIMPT_X", 0.0)
     yaim = hdu.header.get("AIMPT_Y", 0.0)
     roll = hdu.header["ROLL_PNT"]

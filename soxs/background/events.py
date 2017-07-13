@@ -44,7 +44,7 @@ def add_background_from_file(events, event_params, bkg_file):
     else:
         rot_mat = get_rot_mat(event_params["roll_angle"])
         xpix, ypix = np.dot(rot_mat.T, np.array([hdu.data["DETX"][idxs], 
-                                               hdu.data["DETY"][idxs]]))
+                                                 hdu.data["DETY"][idxs]]))
         xpix += hdu.header["TCRPX2"]
         ypix += hdu.header["TCRPX3"]
 
@@ -70,8 +70,8 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
     n_events = energy.size
 
     nx = event_params["num_pixels"]
-    bkg_events["detx"] = prng.uniform(low=0.5, high=nx+0.5, size=n_events)
-    bkg_events["dety"] = prng.uniform(low=0.5, high=nx+0.5, size=n_events)
+    bkg_events["detx"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
+    bkg_events["dety"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
     bkg_events["energy"] = energy
 
     if event_params["chips"] is None:
@@ -103,9 +103,6 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
 
     x_offset, y_offset = perform_dither(bkg_events["time"],
                                         event_params["dither_params"])
-
-    bkg_events["detx"] -= event_params['det_center'][0]
-    bkg_events["dety"] -= event_params['det_center'][1]
 
     rot_mat = get_rot_mat(event_params["roll_angle"])
 
