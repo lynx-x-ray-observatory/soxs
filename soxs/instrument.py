@@ -1008,7 +1008,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     for rtype, mask, arg in zip(rtypes, masks, args):
         if mask:
             rfunc = getattr(filter, rtype)
-            new_args = parse_region_args(rtype, arg, xdet0-xaim, ydet0-yaim)
+            new_args = parse_region_args(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
             r = rfunc(*new_args)
             tmpmap += r.mask(tmpmap)
 
