@@ -659,7 +659,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, dither_params=None,
-                         subpixel_res=False,  input_sources=None, 
+                         subpixel_res=False, input_sources=None, 
                          absorb_model="wabs", nH=0.05, prng=None):
     """
     Make an event file consisting entirely of background events. This will be 
@@ -679,9 +679,6 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         Default: False
     foreground : boolean, optional
         Whether or not to include the Galactic foreground. Default: True
-    cosmo_bkgnd : boolean, optional
-        Whether or not to include the cosmological halo background. Default:
-        True
     instr_bkgnd : boolean, optional
         Whether or not to include the instrumental background. Default: True
     ptsrc_bkgnd : boolean, optional
