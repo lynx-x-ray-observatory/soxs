@@ -307,7 +307,7 @@ coord_types = {"sky": ("X", "Y", 2, 3),
                "det": ("DETX", "DETY", 6, 7)}
 
 def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None, 
-                overwrite=False):
+                overwrite=False, expmap_file=None):
     r"""
     Generate a image by binning X-ray counts and write 
     it to a FITS file.
@@ -330,6 +330,9 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     overwrite : boolean, optional
         Whether or not to overwrite an existing file with 
         the same name. Default: False
+    expmap_file : string, optional
+        Supply an exposure map file to divide this image by
+        to get a flux map. Default: None
     """
     emin = parse_value(emin, "keV")
     emax = parse_value(emax, "keV")
@@ -368,6 +371,12 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     ybins = np.linspace(ymin, ymax, ny+1, endpoint=True)
 
     H, xedges, yedges = np.histogram2d(x, y, bins=[xbins, ybins])
+
+    if expmap_file is not None:
+        f = pyfits.open(expmap_file)
+        H /= f["EXPMAP"].data.T
+        H = np.fabs(np.nan_to_num(H))
+        f.close()
 
     hdu = pyfits.PrimaryHDU(H.T)
 
