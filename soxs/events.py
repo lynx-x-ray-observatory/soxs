@@ -206,7 +206,8 @@ def write_spectrum(evtfile, specfile, overwrite=False):
 
 def write_radial_profile(evt_file, out_file, ctr, rmin, 
                          rmax, nbins, ctr_type="celestial", 
-                         emin=None, emax=None, overwrite=False):
+                         emin=None, emax=None, expmap_file=None,
+                         overwrite=False):
     r"""
     Bin up events into a radial profile and write them to a FITS
     table. 
@@ -241,6 +242,9 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     overwrite : boolean, optional
         Whether or not to overwrite an existing file with the 
         same name. Default: False
+    expmap_file : string, optional
+        Supply an exposure map file to determine fluxes. 
+        Default: None
     """
     rmin = parse_value(rmin, "arcsec")
     rmax = parse_value(rmax, "arcsec")
@@ -268,9 +272,9 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         ctr = w.all_world2pix(ctr[0], ctr[1], 1)
 
     r = np.sqrt((x-ctr[0])**2+(y-ctr[1])**2)
-    rbin = np.linspace(rmin/dtheta, rmax/dtheta, nbins+1)
-    C, _ = np.histogram(r, bins=rbin)
-    rbin *= dtheta
+    rr = np.linspace(rmin/dtheta, rmax/dtheta, nbins+1)
+    C = np.histogram(r, bins=rr)[0]
+    rbin = rr*dtheta
     rmid = 0.5*(rbin[1:]+rbin[:-1])
 
     A = np.pi*(rbin[1:]**2-rbin[:-1]**2)
@@ -294,7 +298,23 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     col9 = pyfits.Column(name='SUR_BRI', format='D', unit='count/s/arcsec**2', array=S)
     col10 = pyfits.Column(name='SUR_BRI_ERR', format='1D', unit='count/s/arcsec**2', array=Serr)
 
-    coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9, col10])
+    coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, 
+                              col6, col7, col8, col9, col10])
+
+    if expmap_file is not None:
+        f = pyfits.open(expmap_file)
+        exp = f["EXPMAP"].data[:,:]
+        nx, ny = exp.shape
+        x, y = np.mgrid[1:nx+1,1:ny+1]
+        r = np.sqrt((x-ctr[0])**2 + (y-ctr[1])**2)
+        f.close()
+        E = np.histogram(r, bins=rr, weights=exp)[0] / np.histogram(r, bins=rr)[0]
+        F = R/E
+        Ferr = Rerr/E
+        col11 = pyfits.Column(name='MEAN_SRC_EXP', format='D', unit='cm**2', array=E)
+        col12 = pyfits.Column(name='NET_FLUX', format='D', unit='count/s/cm**2', array=F)
+        col13 = pyfits.Column(name='NET_FLUX_ERR', format='D', unit='count/s/cm**2', array=Ferr)
+        coldefs.append([col11, col12, col13])
 
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
     tbhdu.name = "PROFILE"
