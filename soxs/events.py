@@ -374,7 +374,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
     if expmap_file is not None:
         f = pyfits.open(expmap_file)
-        H /= f["EXPMAP"].data.T
+        with np.errstate(divide='ignore'):
+            H /= f["EXPMAP"].data.T
         H = np.fabs(np.nan_to_num(H))
         f.close()
 
