@@ -396,7 +396,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         f = pyfits.open(expmap_file)
         with np.errstate(divide='ignore'):
             H /= f["EXPMAP"].data.T
-        H = np.fabs(np.nan_to_num(H))
+        H = np.nan_to_num(H)
+        H[H < 0] = 0.0
         f.close()
 
     hdu = pyfits.PrimaryHDU(H.T)
