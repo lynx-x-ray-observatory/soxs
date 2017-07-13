@@ -58,7 +58,7 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "chips": [{"id": 0,
                                                  "region": [["Polygon", True,
                                                              [-33, 0, 33,
-                                                              -33, 0, 33],
+                                                              33, 0, -33],
                                                              [20, 38, 20,
                                                               -20, -38, -20]]]
                                                              }],

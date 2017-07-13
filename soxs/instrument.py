@@ -897,6 +897,9 @@ def parse_region_args(rtype, args, dx, dy):
     elif rtype == "Circle":
         xctr, yctr, radius = args
         new_args = [xctr + dx, yctr + dx, radius]
+    elif rtype == "Polygon":
+        new_args = [[x + dx for x in args[0]],
+                    [y + dy for y in args[1]]]
     else:
         raise NotImplementedError
     return new_args
