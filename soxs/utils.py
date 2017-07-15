@@ -135,8 +135,9 @@ def parse_value(value, default_units):
     if hasattr(value, "to_astropy"):
         value = value.to_astropy()
     if isinstance(value, Quantity):
-        return Quantity(value.value, value.unit).to(default_units)
+        q = Quantity(value.value, value.unit).to(default_units)
     elif iterable(value):
-        return Quantity(float(value[0]), value[1]).to(default_units)
+        q = Quantity(float(value[0]), value[1]).to(default_units)
     else:
-        return Quantity(value, default_units)
+        q = Quantity(value, default_units)
+    return q.value

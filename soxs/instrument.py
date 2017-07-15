@@ -305,7 +305,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
-    exp_time = parse_value(exp_time, "s").value
+    exp_time = parse_value(exp_time, "s")
     prng = parse_prng(prng)
     if isinstance(input_events, dict):
         parameters = {}
@@ -550,7 +550,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     from soxs.background import make_instrument_background, \
         make_foreground, make_ptsrc_background
     prng = parse_prng(prng)
-    exp_time = parse_value(exp_time, "s").value
+    exp_time = parse_value(exp_time, "s")
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -831,7 +831,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
     prng = parse_prng(prng)
-    exp_time = parse_value(exp_time, "s").value
+    exp_time = parse_value(exp_time, "s")
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:

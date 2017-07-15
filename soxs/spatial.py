@@ -1,6 +1,6 @@
 import numpy as np
 from soxs.constants import one_arcsec
-from soxs.utils import parse_prng
+from soxs.utils import parse_prng, parse_value
 import astropy.units as u
 import astropy.wcs as pywcs
 
@@ -61,6 +61,8 @@ class PointSourceModel(SpatialModel):
         The number of events to generate. 
     """
     def __init__(self, ra0, dec0, num_events):
+        ra0 = parse_value(ra0, "deg")
+        dec0 = parse_value(dec0, "deg")
         ra = ra0*np.ones(num_events)
         dec = dec0*np.ones(num_events)
         w = construct_wcs(ra0, dec0)
@@ -105,6 +107,9 @@ class RadialFunctionModel(SpatialModel):
     def __init__(self, ra0, dec0, func, num_events, theta=0.0, 
                  ellipticity=1.0, prng=None):
         prng = parse_prng(prng)
+        ra0 = parse_value(ra0, "deg")
+        dec0 = parse_value(dec0, "deg")
+        theta = parse_value(theta, "deg")
         x, y = generate_radial_events(num_events, func, prng,
                                       ellipticity=ellipticity)
         w = construct_wcs(ra0, dec0)
