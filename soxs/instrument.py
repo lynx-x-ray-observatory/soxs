@@ -306,6 +306,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         which sets the seed based on the system time. 
     """
     exp_time = parse_value(exp_time, "s")
+    roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
     if isinstance(input_events, dict):
         parameters = {}
@@ -551,6 +552,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         make_foreground, make_ptsrc_background
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
+    roll_angle = parse_value(roll_angle, "deg")
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:

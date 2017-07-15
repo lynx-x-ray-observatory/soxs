@@ -320,6 +320,8 @@ class RectangleModel(SpatialModel):
         prng = parse_prng(prng)
         ra0 = parse_value(ra0, "deg")
         dec0 = parse_value(dec0, "deg")
+        width = parse_value(width, "arcsec")
+        height = parse_value(height, "arcsec")
         w = construct_wcs(ra0, dec0)
         x = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
         y = prng.uniform(low=-0.5*height, high=0.5*height, size=num_events)
