@@ -15,7 +15,7 @@ prng = RandomState(24)
 
 def test_uniform_bkgnd_scale():
     hdxi_arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
-    events, event_params = make_background(50000.0, "hdxi", [30., 45.], 
+    events, event_params = make_background((50, "ks"), "hdxi", [30., 45.], 
                                            foreground=True, instr_bkgnd=True,
                                            ptsrc_bkgnd=False, prng=prng)
     ncts = np.logical_and(events["energy"] >= 0.7, events["energy"] <= 2.0).sum()
@@ -82,9 +82,9 @@ def test_ptsrc():
     curdir = os.getcwd()
     os.chdir(tmpdir)
     prng = RandomState(33)
-    fov = 20.0 # arcmin
-    exp_time = 500000.0 # seconds
-    area = 30000.0 # cm**2
+    fov = (20.0, "arcmin")
+    exp_time = (500.0, "ks")
+    area = (30000.0, "cm**2")
     f_agn = np.zeros((cdf_fluxes.size-1, 100))
     f_gal = np.zeros((cdf_fluxes.size-1, 100))
     for k in range(100):
@@ -128,6 +128,6 @@ def test_ptsrc():
     shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":
-    #test_add_background()
-    #test_uniform_bkgnd_scale()
+    test_add_background()
+    test_uniform_bkgnd_scale()
     test_ptsrc()

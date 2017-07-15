@@ -14,8 +14,8 @@ def test_append():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    exp_time = 50000.
-    area = 40000.
+    exp_time = (50.0, "ks")
+    area = (4.0, "m**2")
 
     ra0 = 30.0
     dec0 = 45.0

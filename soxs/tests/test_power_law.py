@@ -39,7 +39,7 @@ def plaw_fit(alpha_sim):
     norm_sim = 1.0e-4
     redshift = 0.01
 
-    exp_time = 5.0e4
+    exp_time = (50.0, "ks")
     area = 40000.0
     inst_name = "hdxi"
 

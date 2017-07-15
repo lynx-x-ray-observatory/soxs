@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 import astropy.io.fits as pyfits
+from astropy.units import Quantity
 from soxs.events import write_radial_profile
 from soxs.simput import write_photon_list
 from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
@@ -17,17 +18,17 @@ from sherpa.astro.ui import set_source, freeze, \
     fit, covar, get_covar_results, set_covar_opt, \
     load_data, set_stat, set_method
 
-kT = 6.0
+kT = Quantity(6.0, "keV")
 Z = 0.3
 redshift = 0.03
 norm = 1.0e-3
 nH = 0.04
-exp_time = 5.0e4
-area = 30000.0
+exp_time = Quantity(50.0, "ks")
+area = Quantity(3.0, "m**2")
 
 prng = RandomState(31)
 
-agen = ApecGenerator(0.05, 12.0, 10000, broadening=True)
+agen = ApecGenerator((0.05, "keV"), (12.0, "keV"), 10000, broadening=True)
 spec = agen.get_spectrum(kT, Z, redshift, norm)
 spec.apply_foreground_absorption(nH)
 
