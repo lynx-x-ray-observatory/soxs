@@ -82,7 +82,7 @@ def test_ptsrc():
     curdir = os.getcwd()
     os.chdir(tmpdir)
     prng = RandomState(33)
-    fov = (20.0, "arcmin")
+    fov = 20.0
     exp_time = (500.0, "ks")
     area = (30000.0, "cm**2")
     f_agn = np.zeros((cdf_fluxes.size-1, 100))
