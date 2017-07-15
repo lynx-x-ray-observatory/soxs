@@ -8,7 +8,7 @@ from soxs import make_background_file, \
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated background event file.')
 parser.add_argument("out_file", type=str, help='The name of the event file to be written.')
-parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
 parser.add_argument("instrument", type=str, help='The name of the instrument to use, '+
                                                  'or alternatively the name of a JSON file which contains an instrument '+
                                                  'specification.')
@@ -28,7 +28,7 @@ parser.add_argument("--subpixel_res", action='store_true',
                     help="Don't uniformly distribute event positions within pixels.")
 parser.add_argument("--absorb_model", type=str, default="wabs",
                     help="The absorption model to use for foreground galactic absorption. Default: 'wabs'")
-parser.add_argument("--nh", type=float, default=0.05,
+parser.add_argument("--nh", default=0.05,
                     help='The galactic hydrogen column in units of 10**22 atoms/cm**2. '
                          'Default: 0.05')
 parser.add_argument("--random_seed", type=int,

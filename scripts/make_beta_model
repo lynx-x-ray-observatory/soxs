@@ -9,15 +9,15 @@ parser.add_argument("simput_prefix", type=str,
                          'catalog. If it does not exist, it will be created.')
 parser.add_argument("phlist_prefix", type=str, 
                     help='The prefix of the photon list file to be written.')
-parser.add_argument("ra0", type=float, help="The right ascension of the source center in degrees.")
-parser.add_argument("dec0", type=float, help="The declination of the source center in degrees.")
-parser.add_argument("r_c", type=float, help="The core radius in arcseconds.")
+parser.add_argument("ra0", help="The right ascension of the source center in degrees.")
+parser.add_argument("dec0", help="The declination of the source center in degrees.")
+parser.add_argument("r_c", help="The core radius in arcseconds.")
 parser.add_argument("beta", type=float, help="The beta parameter.")
 parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
-parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
-parser.add_argument("--area", type=float, default=30000.0, 
+parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
+parser.add_argument("--area", default=30000.0, 
                     help='The collecting area to use, in cm^2. Default: 30000.0')
-parser.add_argument("--theta", type=float, default=0.0, 
+parser.add_argument("--theta", default=0.0, 
                     help="The angle through which to rotate the beta model in degrees. "
                          "Only makes sense if ellipticity is added. Default: 0.0")
 parser.add_argument("--ellipticity", type=float, default=1.0,

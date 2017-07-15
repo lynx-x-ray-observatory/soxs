@@ -13,7 +13,7 @@ parser.add_argument("spec_file", type=str, help="The file containing the spectru
 parser.add_argument("instrument", type=str, help='The name of the instrument to use, '
                                                  'or alternatively the name of a JSON file '
                                                  'which contains an instrument specification.')
-parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
 parser.add_argument("out_file", type=str, help="The file to write the convolved spectrum to.")
 parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')

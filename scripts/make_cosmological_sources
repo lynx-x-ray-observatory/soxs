@@ -21,9 +21,9 @@ parser.add_argument("--cat_center", type=str, help='The center of the field in t
                                                    'set, a center will be randomly chosen.')
 parser.add_argument("--absorb_model", type=str, default="wabs",
                     help="The absorption model to use for foreground galactic absorption. Default: 'wabs'")
-parser.add_argument("--nh", type=float, default=0.05,
+parser.add_argument("--nh", default=0.05,
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.05')
-parser.add_argument("--area", type=float, default=30000.0,
+parser.add_argument("--area", default=30000.0,
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog.')

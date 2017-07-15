@@ -12,7 +12,7 @@ parser.add_argument("simput_file", type=str, help='The SIMPUT file to be used as
                                                   '"None" if you only want to simulate '
                                                   'backgrounds.')
 parser.add_argument("out_file", type=str, help='The name of the event file to be written.')
-parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
+parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
 parser.add_argument("instrument", type=str, help='The name of the instrument to use, '+
                     'or alternatively the name of a JSON file which contains an instrument '+
                     'specification.')
@@ -26,7 +26,7 @@ parser.add_argument("--dither_shape", type=str, default='square',
 parser.add_argument("--dither_size", type=float, default=16.0,
                     help='The size of the dither pattern in arcseconds. For a circle, the'+
                          'size is the radius; for a square, the size is the width. Default: 16.0')
-parser.add_argument("--roll_angle", type=float, default=0.0,
+parser.add_argument("--roll_angle", default=0.0,
                     help='The roll angle in degrees. Default: 0.0')
 parser.add_argument("--bkgnd_file", type=str,
                     help='Use background stored in a file instead of generating one.')
