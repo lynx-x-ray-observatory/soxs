@@ -235,6 +235,7 @@ class BetaModel(RadialFunctionModel):
     """
     def __init__(self, ra0, dec0, r_c, beta, num_events,
                  theta=0.0, ellipticity=1.0, prng=None):
+        r_c = parse_value(r_c, "arcsec")
         func = lambda r: (1.0+(r/r_c)**2)**(-3*beta+0.5)
         super(BetaModel, self).__init__(ra0, dec0, func,
                                         num_events, theta=theta, 
@@ -315,6 +316,8 @@ class RectangleModel(SpatialModel):
     """
     def __init__(self, ra0, dec0, width, height, num_events, theta=0.0, prng=None):
         prng = parse_prng(prng)
+        ra0 = parse_value(ra0, "deg")
+        dec0 = parse_value(dec0, "deg")
         w = construct_wcs(ra0, dec0)
         x = prng.uniform(low=-0.5*width, high=0.5*width, size=num_events)
         y = prng.uniform(low=-0.5*height, high=0.5*height, size=num_events)
@@ -343,6 +346,7 @@ class FillFOVModel(RectangleModel):
         which sets the seed based on the system time. 
     """
     def __init__(self, ra0, dec0, fov, num_events, prng=None):
+        fov = parse_value(fov, "arcmin")
         width = fov*60.0
         height = fov*60.0
         super(FillFOVModel, self).__init__(ra0, dec0, width, height, 

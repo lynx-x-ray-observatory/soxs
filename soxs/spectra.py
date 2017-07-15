@@ -104,6 +104,8 @@ class Spectrum(object):
         band: the first value is in terms of the photon 
         rate, the second value is in terms of the energy rate. 
         """
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         pflux = self.flux[range].sum()*self.de
         eflux = (self.flux*self.emid.to("erg"))[range].sum()*self.de/(1.0*u.photon)
@@ -172,6 +174,8 @@ class Spectrum(object):
 
     @classmethod
     def _from_xspec(cls, xspec_in, emin, emax, nbins):
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
         tmpdir = tempfile.mkdtemp()
         curdir = os.getcwd()
         os.chdir(tmpdir)
@@ -222,6 +226,8 @@ class Spectrum(object):
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
         """
+        emin = parse_value(emin, 'keV')
+        emax = parse_value(emax, 'keV')
         ebins = np.linspace(emin, emax, nbins+1)
         emid = 0.5*(ebins[1:]+ebins[:-1])
         flux = norm*(emid*(1.0+redshift))**(-photon_index)
@@ -281,6 +287,8 @@ class Spectrum(object):
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
         """
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, 'keV')
         ebins = np.linspace(emin, emax, nbins+1)
         flux = const_flux*np.ones(nbins)
         return cls(ebins, flux)
@@ -311,6 +319,8 @@ class Spectrum(object):
             emin = self.ebins[0].value
         if emax is None:
             emax = self.ebins[-1].value
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, 'keV')
         idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         if flux_type == "photons":
             f = self.flux[idxs].sum()*self.de
@@ -427,6 +437,8 @@ class ApecGenerator(object):
     """
     def __init__(self, emin, emax, nbins, apec_root=None,
                  apec_vers="3.0.8", broadening=True):
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, 'keV')
         self.emin = emin
         self.emax = emax
         self.nbins = nbins
@@ -544,6 +556,8 @@ class ApecGenerator(object):
             The velocity broadening parameter, in units of 
             km/s. Default: 0.0
         """
+        kT = parse_value(kT, "keV")
+        velocity = parse_value(velocity, "km/s")
         v = velocity*1.0e5
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
