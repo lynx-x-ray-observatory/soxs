@@ -47,7 +47,7 @@ def add_instrumental_background(name, filename, default_focal_length):
         The file containing the background. It must 
         have two columns: energy in keV, and background 
         intensity in units of photons/s/cm**2/arcmin**2/keV.
-    default_focal_length : float
+    default_focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The focal length of the telescope that this background
         is scaled to. Used for rescaling the background if an
         alternative focal length is provided in an instrument

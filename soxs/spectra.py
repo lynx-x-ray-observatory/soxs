@@ -93,9 +93,9 @@ class Spectrum(object):
 
         Parameters
         ----------
-        emin : float
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The minimum energy in the band, in keV.
-        emax : float
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The maximum energy in the band, in keV.
 
         Returns
@@ -121,10 +121,10 @@ class Spectrum(object):
         ----------
         infile : string
             Path to the script file to use. 
-        emin : float, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The minimum energy of the spectrum in keV. 
             Default: 0.01
-        emax : float, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The maximum energy of the spectrum in keV. 
             Default: 50.0
         nbins : integer, optional
@@ -150,9 +150,9 @@ class Spectrum(object):
         params : list
             The list of parameters for the model. Must be in the order
             that XSPEC expects.
-        emin : float, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The minimum energy of the spectrum in keV. Default: 0.01
-        emax : float, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The maximum energy of the spectrum in keV. Default: 50.0
         nbins : integer, optional
             The number of bins in the spectrum. Default: 10000
@@ -217,10 +217,10 @@ class Spectrum(object):
             The normalization of the source in units of
             photons/s/cm**2/keV at 1 keV in the source 
             frame.
-        emin : float, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The minimum energy of the spectrum in keV. 
             Default: 0.01
-        emax : float, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The maximum energy of the spectrum in keV. 
             Default: 50.0
         nbins : integer, optional
@@ -278,10 +278,10 @@ class Spectrum(object):
         const_flux : float
             The value of the constant flux in the units 
             of the spectrum. 
-        emin : float, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The minimum energy of the spectrum in keV. 
             Default: 0.01
-        emax : float, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The maximum energy of the spectrum in keV. 
             Default: 50.0
         nbins : integer, optional
@@ -302,11 +302,11 @@ class Spectrum(object):
         ----------
         new_flux : float
             The new flux in units of photons/s/cm**2.
-        emin : float, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The minimum energy of the band to consider, 
             in keV. Default: Use the minimum energy of 
             the entire spectrum.
-        emax : float, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The maximum energy of the band to consider, 
             in keV. Default: Use the maximum energy of 
             the entire spectrum.
@@ -354,7 +354,7 @@ class Spectrum(object):
 
         Parameters
         ----------
-        nH : float
+        nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The hydrogen column in units of 10**22 atoms/cm**2
         model : string, optional
             The model for absorption to use. Options are "wabs"
@@ -377,9 +377,9 @@ class Spectrum(object):
 
         Parameters
         ----------
-        t_exp : float
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
-        area : float
+        area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The effective area in cm**2. If one is creating 
             events for a SIMPUT file, a constant should be 
             used and it must be large enough so that a 
@@ -413,9 +413,9 @@ class ApecGenerator(object):
 
     Parameters
     ----------
-    emin : float
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The minimum energy for the spectral model.
-    emax : float
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The maximum energy for the spectral model.
     nbins : integer
         The number of bins in the spectral model.
@@ -543,7 +543,7 @@ class ApecGenerator(object):
 
         Parameters
         ----------
-        kT : float
+        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The temperature in keV.
         abund : float
             The metal abundance in solar units. 
@@ -552,7 +552,7 @@ class ApecGenerator(object):
         norm : float
             The normalization of the model, in the standard
             Xspec units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
-        velocity : float, optional
+        velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The velocity broadening parameter, in units of 
             km/s. Default: 0.0
         """
@@ -648,7 +648,7 @@ class ConvolvedSpectrum(Spectrum):
 
         Parameters
         ----------
-        t_exp : float
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
             A pseudo-random number generator. Typically will only 

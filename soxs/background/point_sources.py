@@ -2,7 +2,7 @@ import numpy as np
 from soxs import write_photon_list
 from soxs.constants import keV_per_erg, erg_per_keV
 from soxs.spectra import get_wabs_absorb, get_tbabs_absorb
-from soxs.utils import mylog, parse_prng
+from soxs.utils import mylog, parse_prng, parse_value
 from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import erf
 from astropy.table import Table
@@ -82,13 +82,13 @@ def generate_sources(exp_time, fov, sky_center, area=40000.0, prng=None):
 
     Parameters
     ----------
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
-    fov : float
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
-    area : float, optional
+    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
@@ -99,6 +99,10 @@ def generate_sources(exp_time, fov, sky_center, area=40000.0, prng=None):
         which sets the seed based on the system time. 
     """
     prng = parse_prng(prng)
+
+    exp_time = parse_value(exp_time, "s")
+    fov = parse_value(fov, "arcmin")
+    area = parse_value(area, "cm**2")
 
     agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng)
 
@@ -124,18 +128,18 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
 
     Parameters
     ----------
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
-    fov : float
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    nH : float, optional
+    nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
-    area : float, optional
+    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
@@ -154,6 +158,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
     """
     prng = parse_prng(prng)
 
+    exp_time = parse_value(exp_time, "s")
+    fov = parse_value(fov, "arcmin")
+    nH = parse_value(nH, "1.0e22*cm**-2")
+    area = parse_value(area, "cm**2")
     if input_sources is None:
         ra0, dec0, fluxes, ind = generate_sources(exp_time, fov, sky_center,
                                                   area=area, prng=prng)
@@ -260,18 +268,18 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         The filename prefix for the SIMPUT file.
     phlist_prefix : string
         The filename prefix for the photon list file.
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
-    fov : float
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    nH : float, optional
+    nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
-    area : float, optional
+    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
@@ -311,13 +319,13 @@ def make_point_source_list(output_file, exp_time, fov, sky_center,
     ----------
     output_file : string
         The ASCII table file to write the source properties to.
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
-    fov : float
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
-    area : float, optional
+    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.

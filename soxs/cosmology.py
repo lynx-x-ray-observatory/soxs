@@ -58,9 +58,9 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     Parameters
     ----------
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
-    fov : float
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
@@ -71,10 +71,10 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         center will be randomly chosen.
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    nH : float, optional
+    nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
-    area : float, optional
+    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
@@ -229,9 +229,9 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         The filename prefix for the SIMPUT file.
     phlist_prefix : string
         The filename prefix for the photon list file.
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
-    fov : float
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
@@ -242,10 +242,10 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         randomly chosen.
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    nH : float, optional
+    nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
-    area : float, optional
+    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.

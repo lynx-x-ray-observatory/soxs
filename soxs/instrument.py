@@ -281,7 +281,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         "flux": The flux of the entire source, in units of erg/cm**2/s.
     out_file : string
         The name of the event file to be written.
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
@@ -294,9 +294,9 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     dither_size : float
         The size of the dither in arcseconds. Width of square or radius
         of circle. Default: 16.0
-    roll_angle : float
+    roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
-    subpixel_res: boolean
+    subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
@@ -508,7 +508,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     Parameters
     ----------
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
@@ -528,9 +528,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     dither_size : float
         The size of the dither in arcseconds. Width of square or radius
         of circle. Default: 16.0
-    roll_angle : float
+    roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
-    subpixel_res: boolean
+    subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
     input_sources : string, optional
@@ -632,7 +632,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
 
     Parameters
     ----------
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
@@ -657,7 +657,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
     dither_size : float
         The size of the dither in arcseconds. Width of square or radius
         of circle. Default: 16.0
-    subpixel_res: boolean
+    subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
     input_sources : string, optional
@@ -720,7 +720,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         "flux": The flux of the entire source, in units of erg/cm**2/s.
     out_file : string
         The name of the event file to be written.
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time to use, in seconds. 
     instrument : string
         The name of the instrument to use, which picks an instrument
@@ -748,9 +748,9 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     dither_size : float
         The size of the dither in arcseconds. Width of square or radius
         of circle. Default: 16.0
-    roll_angle : float
+    roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
-    subpixel_res: boolean
+    subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
@@ -810,7 +810,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     instrument : string
         The name of the instrument to use, which picks an instrument
         specification from the instrument registry. 
-    exp_time : float
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time in seconds.
     out_file : string
         The file to write the spectrum to.

@@ -220,9 +220,9 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         celestial coordinates (the default) or "physical" pixel 
         coordinates. If the former, the ``ctr_type`` keyword 
         argument must be explicity set to "physical".
-    rmin : float
+    rmin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The minimum radius of the profile, in arcseconds. 
-    rmax : float
+    rmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The maximum radius of the profile, in arcseconds.
     nbins : integer
         The number of bins in the profile.
@@ -230,10 +230,10 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         The type of center coordinate. Either "celestial" for 
         (RA, Dec) coordinates (the default), or "physical" for 
         pixel coordinates.
-    emin : float
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The minimum energy of the events to be binned in keV. 
         Default is the lowest energy available.
-    emax : float
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The maximum energy of the events to be binned in keV. 
         Default is the highest energy available.
     overwrite : boolean, optional
@@ -320,10 +320,10 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     coord_type : string, optional
         The type of coordinate to bin into an image. 
         Can be "sky", "det", or "chip". Default: "sky"
-    emin : float, optional
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The minimum energy of the photons to put in the 
         image, in keV.
-    emax : float, optional
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The maximum energy of the photons to put in the 
         image, in keV.
     overwrite : boolean, optional

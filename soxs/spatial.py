@@ -53,9 +53,9 @@ class PointSourceModel(SpatialModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The RA of the source in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The Dec of the source in degrees.
     num_events : integer
         The number of events to generate. 
@@ -78,16 +78,16 @@ class RadialFunctionModel(SpatialModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center RA of the source in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the source in degrees.
     func : function or function-like, something callable.
         A function that takes an array of radii 
         and generates a radial surface brightness profile. 
     num_events : integer
         The number of events to generate. 
-    theta : float, optional
+    theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The angle through which to rotate the beta model 
         in degrees. Only makes sense if ellipticity is 
         added. Default: 0.0
@@ -125,17 +125,17 @@ class RadialArrayModel(RadialFunctionModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center RA of the source in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the source in degrees.
     r : NumPy array
         The array of radii for the profile in arcseconds. 
-    S_r: float
+    S_r: NumPy array
         The array of the surface brightness of the profile. 
     num_events : integer
         The number of events to generate. 
-    theta : float, optional
+    theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The angle through which to rotate the beta model 
         in degrees. Only makes sense if ellipticity is 
         added. Default: 0.0
@@ -166,9 +166,9 @@ class RadialFileModel(RadialArrayModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center RA of the source in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the source in degrees.
     radfile : string
         The file containing the table of radii and surface 
@@ -176,7 +176,7 @@ class RadialFileModel(RadialArrayModel):
         columns. 
     num_events : integer
         The number of events to generate. 
-    theta : float, optional
+    theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The angle through which to rotate the beta model in 
         degrees. Only makes sense if ellipticity is added. 
         Default: 0.0
@@ -206,17 +206,17 @@ class BetaModel(RadialFunctionModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center RA of the beta model in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the beta model in degrees.
-    r_c: float
+    r_c: float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The core radius of the profile in arcseconds.
-    beta : float
+    beta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The "beta" parameter of the profile.
     num_events : integer
         The number of events to generate. 
-    theta : float, optional
+    theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The angle through which to rotate the beta model in 
         degrees. Only makes sense if ellipticity is added. 
         Default: 0.0
@@ -249,17 +249,17 @@ class AnnulusModel(RadialFunctionModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center RA of the annulus in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the annulus in degrees.
-    r_in : float
+    r_in : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The inner radius of the annulus in arcseconds.
-    r_out: float
+    r_out: float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The outer radius of the annulus in arcseconds.
     num_events : integer
         The number of events to generate. 
-    theta : float, optional
+    theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The angle through which to rotate the beta model in 
         degrees. Only makes sense if ellipticity is added. 
         Default: 0.0
@@ -297,17 +297,17 @@ class RectangleModel(SpatialModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center RA of the rectangle in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the rectangle in degrees.
-    width : float
+    width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The width of the rectangle in arcseconds.
-    height : float
+    height : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The height of the rectangle in arcseconds.
     num_events : integer
         The number of events to generate.
-    theta : float, optional
+    theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The angle through which to rotate the rectangle 
         in degrees. Default: 0.0
     prng : :class:`~numpy.random.RandomState` object, integer, or None
@@ -335,11 +335,11 @@ class FillFOVModel(RectangleModel):
 
     Parameters
     ----------
-    ra0 : float
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center RA of the field of view in degrees.
-    dec0 : float
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the field of view in degrees.
-    fov : float
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The width of the field of view in arcminutes.
     num_events : integer
         The number of events to generate. 

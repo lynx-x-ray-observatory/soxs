@@ -23,14 +23,14 @@ class BackgroundSpectrum(Spectrum):
 
         Parameters
         ----------
-        t_exp : float
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
-        area : float
+        area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The effective area in cm**2. If one is creating 
             events for a SIMPUT file, a constant should be 
             used and it must be large enough so that a 
             sufficiently large sample is drawn for the ARF.
-        fov : float
+        fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The width of the field of view on a side in 
             arcminutes.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
@@ -77,7 +77,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         ----------
         filename : string
             The path to the file containing the spectrum.
-        default_focal_length : float
+        default_focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The default focal length of the instrument
             in meters. 
         """
@@ -102,12 +102,12 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
 
         Parameters
         ----------
-        t_exp : float
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
-        fov : float
+        fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The width of the field of view on a side in 
             arcminutes.
-        focal_length : float, optional
+        focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The focal length in meters. Default is to use
             the default focal length of the instrument
             configuration.
@@ -122,6 +122,8 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         prng = parse_prng(prng)
         if focal_length is None:
             focal_length = self.default_focal_length
+        else:
+            focal_length = parse_value(focal_length, "m")
         rate = fov*fov*self.total_flux.value
         rate *= (focal_length/self.default_focal_length)**2
         energy = _generate_energies(self, t_exp, rate, prng)
@@ -140,9 +142,9 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
 
         Parameters
         ----------
-        t_exp : float
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
-        fov : float
+        fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The width of the field of view on a side 
             in arcminutes.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
