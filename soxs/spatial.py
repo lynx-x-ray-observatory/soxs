@@ -278,6 +278,8 @@ class AnnulusModel(RadialFunctionModel):
     """
     def __init__(self, ra0, dec0, r_in, r_out, num_events,
                  theta=0.0, ellipticity=1.0, prng=None):
+        r_in = parse_value(r_in, "arcsec")
+        r_out = parse_value(r_out, "arcsec")
         def func(r):
             f = np.zeros(r.size)
             idxs = np.logical_and(r >= r_in, r < r_out)
