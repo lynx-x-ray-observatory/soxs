@@ -196,7 +196,14 @@ def add_instrument_to_registry(inst_spec):
 
     The *inst_spec* must have the structure as shown below. 
     The order is not important. If you use a JSON file, the
-    structure is the same, but the file cannot include comments.
+    structure is the same, but the file cannot include comments,
+    and use "null" instead of "None", and "true" or "false"
+    instead of "True" or "False".
+
+    For the "chips" entry, "None" means no chips and the detector
+    field of view is a single square. If you want to have multiple
+    chips, they must be specified in a format described in the 
+    online documentation.
 
     >>> {
     ...     "name": "hdxi_3x10", # The short name of the instrument
@@ -208,6 +215,8 @@ def add_instrument_to_registry(inst_spec):
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
     ...     "dither": True, # Whether or not to dither the instrument
     ...     "psf": ["gaussian", 0.5] # The type of PSF and its HPD
+    ...     "chips": None # The specification for the chips
+    ...     "aimpt_coords": [0.0, 0.0] # The detector coordinates of the aimpoint
     ... }
     """
     if isinstance(inst_spec, dict):

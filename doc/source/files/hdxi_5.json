@@ -7,5 +7,7 @@
     "fov": 20.0, 
     "focal_length": 10.0,
     "dither": true,
-    "psf": ["gaussian", 5.0]
+    "psf": ["gaussian", 5.0],    
+    "aimpt_coords": [0.0, 0.0],
+    "chips": null
 }

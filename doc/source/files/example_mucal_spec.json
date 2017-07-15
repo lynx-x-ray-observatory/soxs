@@ -10,5 +10,7 @@
     "dither": true,
     "arf": "xrs_mucal_3x10.arf",
     "num_pixels": 300,
-    "focal_length": 10.0
+    "focal_length": 10.0,
+    "aimpt_coords": [0.0, 0.0],
+    "chips": null
 }
