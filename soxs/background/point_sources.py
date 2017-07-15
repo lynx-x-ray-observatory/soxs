@@ -48,6 +48,10 @@ def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
 def generate_fluxes(exp_time, area, fov, prng):
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
 
+    exp_time = parse_value(exp_time, "s")
+    area = parse_value(area, "cm**2")
+    fov = parse_value(fov, "arcmin")
+
     logf = np.log10(cdf_fluxes)
 
     n_gal = np.rint(cdf_gal[-1])
