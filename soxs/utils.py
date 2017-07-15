@@ -135,7 +135,7 @@ def issue_deprecation_warning(msg):
 def parse_value(value, default_units):
     if isinstance(value, string_types):
         v = value.split(",")
-        if len(value) == 2:
+        if len(v) == 2:
             value = (float(v[0]), v[1])
         else:
             value = float(v[0])
