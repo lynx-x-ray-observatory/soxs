@@ -5,6 +5,7 @@ import numpy as np
 from copy import copy
 from numpy.random import RandomState
 from astropy.units import Quantity
+from six import string_types
 
 soxsLogger = logging.getLogger("soxs")
 
@@ -132,12 +133,18 @@ def issue_deprecation_warning(msg):
     warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
 
 def parse_value(value, default_units):
+    if isinstance(value, string_types):
+        v = value.split(",")
+        if len(value) == 2:
+            value = (float(v[0]), v[1])
+        else:
+            value = float(v[0])
     if hasattr(value, "to_astropy"):
         value = value.to_astropy()
     if isinstance(value, Quantity):
         q = Quantity(value.value, value.unit).to(default_units)
     elif iterable(value):
-        q = Quantity(float(value[0]), value[1]).to(default_units)
+        q = Quantity(value[0], value[1]).to(default_units)
     else:
         q = Quantity(value, default_units)
     return q.value
