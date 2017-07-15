@@ -17,8 +17,8 @@ would set the random seed in this way:
 
 .. code-block:: python
 
-    t_exp = 50000.0
-    area = 30000.0
+    t_exp = (50.0, "ks")
+    area = (3.0, "m**2")
     prng = 24
     e = spec.generate_energies(t_exp, area, prng=prng)
 

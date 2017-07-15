@@ -113,11 +113,11 @@ generate thermal spectra:
 
 .. code-block:: python
     
-    kT = 6.0 # in units of keV
+    kT = (6.0, "keV")
     abund = 0.3 # solar units
     redshift = 0.05
     norm = 1.0e-3 # in units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2)
-    velocity = 100.0 # in units of km/s, optional
+    velocity = (100.0, "km/s") # optional
     spec1 = agen.get_spectrum(kT, abund, redshift, norm, velocity=velocity)
 
 ``spec1`` is just a standard :class:`~soxs.spectra.Spectrum` object.
@@ -276,8 +276,8 @@ An example using a :class:`~soxs.spectra.Spectrum` created from a file:
 .. code-block:: python
 
     spec = Spectrum.from_file("my_spec.dat")
-    t_exp = 100000. # exposure time in seconds
-    area = 30000. # constant effective area
+    t_exp = (100., "ks") # exposure time
+    area = (3.0, "m**2") # constant effective area
     energies = spec.generate_energies(t_exp, area)
 
 The ``energies`` object :meth:`~soxs.spectra.Spectrum.generate_energies` returns 
@@ -331,7 +331,7 @@ Or to generate an array of energies:
 
 .. code-block:: python
 
-    t_exp = 500000. # in seconds
+    t_exp = (500.0, "ks")
     e = cspec.generate_energies(t_exp)
 
 :class:`~soxs.spectra.ConvolvedSpectrum` objects are not used directly in the 

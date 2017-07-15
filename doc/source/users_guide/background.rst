@@ -188,7 +188,7 @@ file as input to :func:`~soxs.instrument.instrument_simulator`. The
 .. code-block:: python
 
     out_file = 'bkgnd_evt.fits'
-    exp_time = 1000000.0 # seconds
+    exp_time = (1.0, "Ms")
     instrument = "hdxi"
     sky_center = [24., 12.] # degrees
     soxs.make_background_file(out_file, exp_time, instrument, sky_center, 
@@ -209,7 +209,7 @@ using the ``input_sources`` keyword argument:
 
     fov = 20.0 # arcmin
     out_file = 'bkgnd_evt.fits'
-    exp_time = 1000000.0 # seconds
+    exp_time = (1.0, "Ms")
     instrument = "hdxi"
     sky_center = [24., 12.] # degrees
     soxs.make_point_source_list('my_ptsrc.dat', exp_time, fov, sky_center)
@@ -225,7 +225,7 @@ than the exposure time that the background was run with:
 
 .. code-block:: python
 
-    exp_time = 500000.0 # seconds
+    exp_time = (500.0, "ks") # smaller than the original value
     instrument = "hdxi"
     simput_file = "beta_model_simput.fits"
     out_file = "evt.fits"

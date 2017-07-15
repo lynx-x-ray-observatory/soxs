@@ -24,8 +24,8 @@ and photon list file like this:
 
     from soxs import write_photon_list, PointSource
     
-    exp_time = 100000. # in seconds
-    area = 30000. # in cm^2
+    exp_time = (500.0, "ks")
+    area = (3.0, "m**2")
     energies = spec.generate_energies(exp_time, area)
     num_events = len(energies)
     pt_src = PointSource(30.0, 45.0)

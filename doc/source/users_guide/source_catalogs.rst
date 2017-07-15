@@ -87,12 +87,12 @@ file for a SIMPUT catalog using the cosmological sources model:
 
     simput_prefix = "my_bkgnd"
     phlist_prefix = "cosmo"
-    exp_time = 500000.0 # seconds
+    exp_time = (500.0, "ks") 
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     absorb_model = "wabs" # Choose a model for absorption, optional
     nH = 0.02 # Foreground galactic absorption, optional
-    area = 40000.0 # Flat collecting area to generate photon sample
+    area = (4.0, "m**2") # Flat collecting area to generate photon sample
     soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
                                         fov, sky_center, absorb_model=absorb_model,
                                         nH=nH, area=area)
@@ -130,12 +130,12 @@ described in :ref:`ptsrc-bkgnd`:
 
     simput_prefix = "my_bkgnd"
     phlist_prefix = "pt_src"
-    exp_time = 500000.0 # seconds
+    exp_time = (500.0, "ks") 
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     absorb_model = "tbabs" # Choose a model for absorption, optional
     nH = 0.02 # Foreground galactic absorption, optional
-    area = 40000.0 # Flat collecting area to generate photon sample
+    area = (4.0, "m**2") # Flat collecting area to generate photon sample
     soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
                                  sky_center, absorb_model=absorb_model, nH=nH, 
                                  area=area)
@@ -162,7 +162,7 @@ itself, using the ``output_sources`` keyword argument:
 
     simput_prefix = "my_bkgnd"
     phlist_prefix = "pt_src"
-    exp_time = 500000.0 # seconds
+    exp_time = (500.0, "ks")
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     
@@ -178,7 +178,7 @@ method:
 .. code-block:: python
 
     output_file = "my_srcs.dat"
-    exp_time = 500000.0 # seconds
+    exp_time = (500.0, "ks") 
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     
@@ -193,7 +193,7 @@ argument, e.g.:
 
     simput_prefix = "my_bkgnd"
     phlist_prefix = "pt_src"
-    exp_time = 500000.0 # seconds
+    exp_time = (500.0, "ks")
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     

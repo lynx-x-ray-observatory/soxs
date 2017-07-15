@@ -31,7 +31,7 @@ following:
     from soxs import instrument_simulator
     simput_file = "snr_simput.fits" # SIMPUT file to be read
     out_file = "evt_mucal.fits" # event file to be written
-    exp_time = 30000. # The exposure time in seconds
+    exp_time = (30.0, "ks") # The exposure time
     instrument = "mucal" # short name for instrument to be used
     sky_center = [30., 45.] # RA, Dec of pointing in degrees
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
