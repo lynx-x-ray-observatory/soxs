@@ -219,13 +219,6 @@ def add_instrument_to_registry(inst_spec):
     name = inst["name"]
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
-    # Catch old JSON files with plate scale
-    if "plate_scale" in inst:
-        mylog.warning("Instrument specifications with the 'plate_scale' item are deprecated, and will "
-                      "not work in a future release. Please specify the field of view in arcminutes "
-                      "with 'fov' instead.")
-        inst["fov"] = inst["num_pixels"]*inst["plate_scale"]/60.0
-        inst.pop("plate_scale")
     # Catch older JSON files without chip definitions
     if "chips" not in inst:
         mylog.warning("Instrument specifications must now include a 'chips' item, which details "
@@ -233,16 +226,18 @@ def add_instrument_to_registry(inst_spec):
                       "one chip that covers the entire field of view.")
         inst["chips"] = None
     # Catch older JSON files without aimpoint coordinates
-    if "chips" not in inst:
+    if "aimpt_coords" not in inst:
         mylog.warning("Instrument specifications must now include a 'aimpt_coords' item, which "
                       "details the position in detector coordinates of the nominal aimpoint. "
                       "Assuming [0.0, 0.0].")
         inst["aimpt_coords"] = [0.0, 0.0]
     default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
                    "aimpt_coords", "focal_length", "num_pixels", "dither", "psf"}
-    if set(inst.keys()) != default_set:
+    my_keys = set(inst.keys())
+    if my_keys != default_set:
+        missing = default_set.difference(my_keys)
         raise RuntimeError("One or more items is missing from the instrument specification!\n"
-                           "Items present: %s\nItems needed: %s" % (set(inst.keys()), default_set))
+                           "Items needed: %s" % missing)
     instrument_registry[name] = inst
     mylog.debug("The %s instrument specification has been added to the instrument registry." % name)
     return name
