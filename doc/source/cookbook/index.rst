@@ -27,7 +27,6 @@ Command Line Scripts
        
    make_multiple_sources
    change_instrument_spec
-   change_dither
    make_background_file_cmd
    point_source_catalog_cmd
    cosmo_source_catalog_cmd
