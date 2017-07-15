@@ -906,19 +906,36 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       nhistx=16, nhisty=16):
     """
     Make an exposure map for a SOXS event file, and optionally write
-    an aspect solution file.
+    an aspect solution file. The exposure map will be created by
+    binning an aspect histogram over the range of the aspect solution.
 
     Parameters
     ----------
-    event_file
-    expmap_file
-    energy
-    weights
-    asol_file
-    normalize
-    overwrite
-    nhistx
-    nhisty
+    event_file : string
+        The path to the event file to use for making the exposure map.
+    expmap_file : string
+        The path to write the exposure map file to.
+    energy : float or array-like
+        The energy in keV to use when computing the exposure map, or 
+        a set of energies to be used with the *weights* parameter. 
+    weights : array-like, optional
+        The weights to use with a set of energies given in the
+        *energy* parameter. Used to create a more accurate exposure
+        map weighted by a range of energies. Default: None
+    asol_file : string, optional
+        The path to write the aspect solution file to, if desired.
+        Default: None
+    normalize : boolean, optional
+        If True, the exposure map will be divided by the exposure time
+        so that the map's units are cm**2. Default: True
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file. Default: False
+    nhistx : integer, optional
+        The number of bins in the aspect histogram in the DETX
+        direction. Default: 16
+    nhisty : integer, optional
+        The number of bins in the aspect histogram in the DETY
+        direction. Default: 16
     """
     import pyregion._region_filter as filter
     from scipy.ndimage.interpolation import rotate, shift
