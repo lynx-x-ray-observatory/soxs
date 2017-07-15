@@ -3,7 +3,7 @@ import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import os
 from six import string_types
-from soxs.utils import mylog
+from soxs.utils import mylog, parse_value
 
 def wcs_from_event_file(f):
     h = f["EVENTS"].header
@@ -240,6 +240,10 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         Whether or not to overwrite an existing file with the 
         same name. Default: False
     """
+    rmin = parse_value(rmin, "arcsec")
+    rmax = parse_value(rmax, "arcsec")
+    emin = parse_value(emin, "keV")
+    emax = parse_value(emax, "keV")
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]
     if emin is None:
@@ -326,6 +330,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         Whether or not to overwrite an existing file with 
         the same name. Default: False
     """
+    emin = parse_value(emin, "keV")
+    emax = parse_value(emax, "keV")
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]
     if emin is None:

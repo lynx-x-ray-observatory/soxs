@@ -1,6 +1,7 @@
 import os
-from soxs.utils import soxs_files_path, parse_prng
-from soxs.background.spectra import BackgroundSpectrum, \
+from soxs.utils import soxs_files_path, parse_prng, \
+    parse_value
+from soxs.background.spectra import \
     InstrumentalBackgroundSpectrum
 from soxs.background.events import make_uniform_background
 
@@ -52,7 +53,8 @@ def add_instrumental_background(name, filename, default_focal_length):
         alternative focal length is provided in an instrument
         specification.
     """
-    spec = InstrumentalBackgroundSpectrum(filename, default_focal_length)
+    default_focal_length = parse_value(default_focal_length, "m")
+    spec = InstrumentalBackgroundSpectrum.from_file(filename, default_focal_length)
     instrument_backgrounds[name] = spec
 
 def make_instrument_background(bkgnd_name, event_params, focal_length, rmf, 

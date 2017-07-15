@@ -2,7 +2,7 @@ import numpy as np
 from soxs.spectra import Spectrum, ConvolvedSpectrum, \
     _generate_energies, Energies
 from soxs.constants import erg_per_keV
-from soxs.utils import parse_prng
+from soxs.utils import parse_prng, parse_value
 import h5py
 
 class BackgroundSpectrum(Spectrum):
@@ -39,6 +39,9 @@ class BackgroundSpectrum(Spectrum):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
+        t_exp = parse_value(t_exp, "s")
+        fov = parse_value(fov, "arcmin")
+        area = parse_value(area, "cm**2")
         prng = parse_prng(prng)
         rate = area*fov*fov*self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng)
@@ -114,6 +117,8 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
+        t_exp = parse_value(t_exp, "s")
+        fov = parse_value(fov, "arcmin")
         prng = parse_prng(prng)
         if focal_length is None:
             focal_length = self.default_focal_length
@@ -146,6 +151,8 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
+        t_exp = parse_value(t_exp, "s")
+        fov = parse_value(fov, "arcmin")
         prng = parse_prng(prng)
         rate = fov*fov*self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng)

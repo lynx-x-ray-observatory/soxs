@@ -10,7 +10,8 @@ from astropy.table import Table
 from soxs.simput import write_photon_list
 from soxs.spatial import BetaModel, construct_wcs
 from soxs.spectra import ApecGenerator
-from soxs.utils import soxs_files_path, mylog, parse_prng
+from soxs.utils import soxs_files_path, mylog, parse_prng, \
+    parse_value
 
 # Cosmological parameters for the catalog 
 # SHOULD NOT BE ALTERED
@@ -86,6 +87,10 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time.
     """
+    exp_time = parse_value(exp_time, "s")
+    fov = parse_value(fov, "arcmin")
+    nH = parse_value(nH, "1.0e22*cm**-2")
+    area = parse_value(area, "cm**2")
     prng = parse_prng(prng)
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
     agen = ApecGenerator(0.1, 10.0, 10000, broadening=False)
