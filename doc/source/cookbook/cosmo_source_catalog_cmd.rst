@@ -18,10 +18,10 @@ distribution of cosmological halos and simulate an observation of them.
     # to insure we get the same sources every time. Set the catalog pointing
     # location using the "cat_center" argument. To aid in picking a location, 
     # see the halo map at http://hea-www.cfa.harvard.edu/~jzuhone/soxs/users_guide/source_catalog.html.
-    make_cosmological_sources my_cat cosmo 200000.0 20. 30.,45. --cat_center=3.1,-1.9 --random_seed=33 --overwrite --output_sources=halo_source_table.dat
+    make_cosmological_sources my_cat cosmo 200.0,ks 20. 30.,45. --cat_center=3.1,-1.9 --random_seed=33 --overwrite --output_sources=halo_source_table.dat
  
     # Take the SIMPUT catalog and make an event file.
-    instrument_simulator my_cat_simput.fits cosmo_cat_evt.fits 200000.0 hdxi 30.,45. --overwrite
+    instrument_simulator my_cat_simput.fits cosmo_cat_evt.fits 200.0,ks hdxi 30.,45. --overwrite
 
 Download this script here: `cosmo_source_catalog.sh <../cosmo_source_catalog.sh>`_
 

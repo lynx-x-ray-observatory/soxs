@@ -18,11 +18,11 @@ distribution of point sources and simulate an observation of them.
     # "24" as a random seed to insure we get the same point sources every time.
     # If you wish, the table file can be used to generate the same sources later
     # using the "--input_sources" parameter.
-    make_point_sources my_cat ptsrc 300000.0 20. 22.,-27.0 --random_seed=24 --output_sources=point_source_table.dat
+    make_point_sources my_cat ptsrc 300.0,ks 20. 22.,-27.0 --random_seed=24 --output_sources=point_source_table.dat
  
     # Take the SIMPUT catalog and make an event file. Since we already made a
     # distribution of point sources, turn the point-source background off. 
-    instrument_simulator my_cat_simput.fits ptsrc_cat_evt.fits 300000.0 hdxi 22.,-27.0 --overwrite --no_ptsrc_bkgnd
+    instrument_simulator my_cat_simput.fits ptsrc_cat_evt.fits 300.0,ks hdxi 22.,-27.0 --overwrite --no_ptsrc_bkgnd
 
 Download this script here: `point_source_catalog.sh <../point_source_catalog.sh>`_
 
