@@ -1,4 +1,4 @@
-.. _general-info-cmd:
+.. _cmd-general-info:
 
 General Information Regarding the Command-Line Interface to SOXS
 ================================================================
@@ -22,6 +22,9 @@ but can take other units, like ks and :math:`\rm{m^2}`, in this format:
 .. code-block:: bash
 
     [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100.0,ks --overwrite --area=3.0,m**2
+
+Since the quantities are the same but in different units, these two calls would
+be equivalent. 
 
 The following arguments used in the command line scripts accept values with a 
 unit specification:
