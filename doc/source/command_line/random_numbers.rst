@@ -17,7 +17,7 @@ like this:
 
 .. code-block:: bash
 
-    make_annulus_source my_cat annulus 30.0 45.0 10.0 30.0 thermal_spec.dat 100000.0 --random_seed=24
+    make_annulus_source my_cat annulus 30.0 45.0 10.0 30.0 thermal_spec.dat 100.0,ks --random_seed=24
 
 Check the documentation for the various command line scripts to see which
 functions have the ``random_seed`` argument. 

@@ -65,32 +65,32 @@ be chosen:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --overwrite
+    [~]$ make_cosmological_sources halos halos 100.0,ks 10.0 22.0,-12.0 --overwrite
 
 The same as before, but choose a particular location in the halo catalog:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --cat_center=-0.1,2.0 --overwrite
+    [~]$ make_cosmological_sources halos halos 100.0,ks 10.0 22.0,-12.0 --cat_center=-0.1,2.0 --overwrite
 
 Append the halo photons to an existing SIMPUT catalog, "my_cat":
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources my_cat halos 100000.0 10.0 22.0,-12.0 --append
+    [~]$ make_cosmological_sources my_cat halos 100.0,ks 10.0 22.0,-12.0 --append
 
 Change the Galactic hydrogen column to :math:`2 \times 10^{20}~cm^{-2}`, and 
 use the "tbabs" model:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --absorb_model="tbabs" --nh=0.02 --overwrite
+    [~]$ make_cosmological_sources halos halos 100.0,ks 10.0 22.0,-12.0 --absorb_model="tbabs" --nh=0.02 --overwrite
 
 Write the source properties to an ASCII text file:
 
 .. code-block:: bash
 
-    [~]$ make_cosmological_sources halos halos 100000.0 10.0 22.0,-12.0 --output_sources=my_halos.txt --overwrite
+    [~]$ make_cosmological_sources halos halos 100.0,ks 10.0 22.0,-12.0 --output_sources=my_halos.txt --overwrite
 
 ``make_point_sources``
 ----------------------
@@ -144,32 +144,32 @@ catalog, with an exposure time of 75 ks:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --overwrite
+    [~]$ make_point_sources pt_src pt_src 75.0,ks 5.0 90.0,-10.0 --overwrite
 
 Append the point source photons to an existing SIMPUT catalog, "my_cat":
 
 .. code-block:: bash
 
-    [~]$ make_point_sources my_cat pt_src 75000.0 5.0 90.0,-10.0 --append
+    [~]$ make_point_sources my_cat pt_src 75.0,ks 5.0 90.0,-10.0 --append
 
 Change the Galactic hydrogen column to :math:`3.5 \times 10^{20}~cm^{-2}`, 
 and use the "tbabs" model:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --absorb_model="tbabs" --nh=0.035 --overwrite
+    [~]$ make_point_sources pt_src pt_src 75.0,ks 5.0 90.0,-10.0 --absorb_model="tbabs" --nh=0.035 --overwrite
 
 Write the source properties to an ASCII text file:
 
 .. code-block:: bash
 
-    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --output_sources=my_ptsrc.txt --overwrite
+    [~]$ make_point_sources pt_src pt_src 75.0,ks 5.0 90.0,-10.0 --output_sources=my_ptsrc.txt --overwrite
 
 Use a previously written ASCII text file of point source properties as input:
 
 .. code-block:: bash
         
-    [~]$ make_point_sources pt_src pt_src 75000.0 5.0 90.0,-10.0 --input_sources=my_ptsrc.txt --overwrite
+    [~]$ make_point_sources pt_src pt_src 75.0,ks 5.0 90.0,-10.0 --input_sources=my_ptsrc.txt --overwrite
 
 ``make_point_source_list``
 --------------------------
@@ -204,4 +204,4 @@ of view of 30 arcminutes, with an exposure time of 100 ks:
 
 .. code-block:: bash
 
-    [~]$ make_point_source_list my_ptsrc_list.dat 10000.0 30.0 90.0,-10.0
+    [~]$ make_point_source_list my_ptsrc_list.dat 100.0,ks 30.0 90.0,-10.0

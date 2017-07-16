@@ -77,14 +77,14 @@ with the pointing (RA, Dec) = (30, 45) degrees.
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --overwrite
 
 The same, but use the HDXI specification with mirror diameter of :math:`d` = 3 m and focal length of
 :math:`f` = 20 m:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi_3x20 30.,45. --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi_3x20 30.,45. --overwrite
 
 See :ref:`instrument-arg` for details on the options for the ``instrument`` argument.
 
@@ -93,7 +93,7 @@ This example uses a JSON file created by the user, which contains a custom instr
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 my_inst.json 30.,45. --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks my_inst.json 30.,45. --overwrite
 
 The following details how to change the other options, for more info see :ref:`other-mods`.
 
@@ -104,19 +104,19 @@ Change the roll angle to 45 degrees:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --roll_angle=45.0 --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --roll_angle=45.0 --overwrite
 
 Change the dither shape to a circle and make the dither radius 32 arcsec:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --overwrite
 
 Turn dithering off entirely:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --dither_shape=None --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --dither_shape=None --overwrite
 
 Customizing Backgrounds
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,19 +125,19 @@ Turn off the instrumental background:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_instr_bkgnd --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --no_instr_bkgnd --overwrite
 
 Turn off the Galactic foreground:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_foreground --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --no_foreground --overwrite
 
 Turn off the point-source background:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --no_ptsrc_bkgnd --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --no_ptsrc_bkgnd --overwrite
 
 Any combination of these may be used to turn multiple components off or all 
 of them. 
@@ -146,7 +146,7 @@ To use a background stored in an event file:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50000.0 hdxi 30.,45. --bkgnd_file="bkg_evt.fits" --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --bkgnd_file="bkg_evt.fits" --overwrite
 
 .. note::
 
@@ -189,4 +189,4 @@ Examples
 
 .. code-block:: bash
 
-    [~]$ simulate_spectrum power_law_spec.dat mucal 300000.0 plaw_spec.pha
+    [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha
