@@ -9,8 +9,8 @@ This section documents the various command-line scripts included with SOXS.
    :maxdepth: 1
 
    spectra
+   general_info
    spatial
    source_catalogs
    instrument     
    background
-   random_numbers

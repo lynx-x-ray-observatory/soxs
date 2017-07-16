@@ -6,6 +6,8 @@ Command Line Scripts for Spectra
 These are scripts that create ASCII tables of spectra for use by other 
 modules in SOXS. For details on what's going on under the hood, see :ref:`spectra`.
 
+.. _cmd-make-thermal-spectrum:
+
 ``make_thermal_spectrum``
 -------------------------
 

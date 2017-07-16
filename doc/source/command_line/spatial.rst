@@ -13,6 +13,8 @@ which can be written using the spectra command-line scripts (see :ref:`cmd-spect
 the Python method :meth:`~soxs.spectrum.Spectrum.write_file` (see :ref:`spectra`), 
 or can be created by hand.
 
+.. _cmd-make-point-source:
+
 ``make_point_source``
 ---------------------
 
