@@ -164,7 +164,8 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
 
     exp_time = parse_value(exp_time, "s")
     fov = parse_value(fov, "arcmin")
-    nH = parse_value(nH, "1.0e22*cm**-2")
+    if nH is not None:
+        nH = parse_value(nH, "1.0e22*cm**-2")
     area = parse_value(area, "cm**2")
     if input_sources is None:
         ra0, dec0, fluxes, ind = generate_sources(exp_time, fov, sky_center,

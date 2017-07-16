@@ -89,7 +89,8 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     """
     exp_time = parse_value(exp_time, "s")
     fov = parse_value(fov, "arcmin")
-    nH = parse_value(nH, "1.0e22*cm**-2")
+    if nH is not None:
+        nH = parse_value(nH, "1.0e22*cm**-2")
     area = parse_value(area, "cm**2")
     prng = parse_prng(prng)
     cosmo = FlatLambdaCDM(H0=100.0*h0, Om0=omega_m)
