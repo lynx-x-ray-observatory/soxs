@@ -915,7 +915,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         The path to the event file to use for making the exposure map.
     expmap_file : string
         The path to write the exposure map file to.
-    energy : float or array-like
+    energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The energy in keV to use when computing the exposure map, or 
         a set of energies to be used with the *weights* parameter. 
     weights : array-like, optional
@@ -942,6 +942,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     if iterable(energy) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if "
                            "you do not supply weights!")
+    energy = parse_value(energy, "keV")
     f_evt = pyfits.open(event_file)
     hdu = f_evt["EVENTS"]
     arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
