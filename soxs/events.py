@@ -298,8 +298,8 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     col9 = pyfits.Column(name='SUR_BRI', format='D', unit='count/s/arcsec**2', array=S)
     col10 = pyfits.Column(name='SUR_BRI_ERR', format='1D', unit='count/s/arcsec**2', array=Serr)
 
-    coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, 
-                              col6, col7, col8, col9, col10])
+
+    coldefs = [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10]
 
     if expmap_file is not None:
         f = pyfits.open(expmap_file)
@@ -314,9 +314,9 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         col11 = pyfits.Column(name='MEAN_SRC_EXP', format='D', unit='cm**2', array=E)
         col12 = pyfits.Column(name='NET_FLUX', format='D', unit='count/s/cm**2', array=F)
         col13 = pyfits.Column(name='NET_FLUX_ERR', format='D', unit='count/s/cm**2', array=Ferr)
-        coldefs.append([col11, col12, col13])
+        coldefs += [col11, col12, col13]
 
-    tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+    tbhdu = pyfits.BinTableHDU.from_columns(pyfits.ColDefs(coldefs))
     tbhdu.name = "PROFILE"
 
     hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
