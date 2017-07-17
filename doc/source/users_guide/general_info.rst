@@ -3,6 +3,8 @@
 General Information Regarding the Python Interface to SOXS
 ==========================================================
 
+.. _units:
+
 Special Argument Handling for Quantities with Units
 ---------------------------------------------------
 

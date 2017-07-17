@@ -3,6 +3,8 @@
 General Information Regarding the Command-Line Interface to SOXS
 ================================================================
 
+.. _cmd-units:
+
 Special Argument Handling for Quantities with Units
 ---------------------------------------------------
 

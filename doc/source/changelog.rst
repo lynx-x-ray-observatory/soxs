@@ -3,6 +3,15 @@
 ChangeLog
 =========
 
+Version 1.3.0
+-------------
+
+This is a release with important new features and some bugfixes.
+
+* Many arguments to functions and command line scripts which have units (such as
+exposure time, field of view, area, temperature, etc.) now accept arguments with
+units. See :ref:`units` and :ref:`cmd-units` for more information.
+
 Version 1.2.0
 -------------
 
