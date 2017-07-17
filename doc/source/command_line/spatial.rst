@@ -66,6 +66,8 @@ Specify a different collecting area for the photons.
 
     [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100.0,ks --area=40000. --overwrite
 
+.. _cmd-make-beta-model:
+
 ``make_beta_model``
 -------------------
 
@@ -144,6 +146,8 @@ Add ellipticity and tilt the model:
 
     [~]$ make_beta_model my_srcs beta_src1 20.0 -32.0 10.0 1.0 my_spectrum.dat 100.0,ks --ellipticity=0.5 --theta=45.0 --overwrite
 
+.. _cmd-make-annulus-source:
+
 ``make_annulus_source``
 -----------------------
 
@@ -219,6 +223,8 @@ Add ellipticity and tilt the model:
 
     [~]$ make_annulus_source my_srcs ann_src1 20.0 -32.0 0.0 30.0 my_spectrum.dat 100.0,ks --ellipticity=2.0 --theta=30.0 --overwrite
 
+.. _cmd-make-rectangle-source:
+
 ``make_rectangle_source``
 -------------------------
 
@@ -289,6 +295,8 @@ Specify a different collecting area for the photons.
 .. code-block:: bash
 
     [~]$ make_rectangle_source my_srcs rect_src1 20.0 -32.0 20.0 10.0 my_spectrum.dat 100.0,ks --area=50000. --overwrite
+
+.. _cmd-make-fov-source:
 
 ``make_fov_source``
 -------------------
