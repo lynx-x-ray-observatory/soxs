@@ -10,7 +10,7 @@ from astropy.units import Quantity
 from soxs.events import write_radial_profile
 from soxs.simput import write_photon_list
 from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
-    AuxiliaryResponseFile
+    AuxiliaryResponseFile, make_exposure_map
 from soxs.instrument_registry import get_instrument_from_registry, \
     add_instrument_to_registry
 from numpy.random import RandomState
@@ -26,7 +26,7 @@ nH = 0.04
 exp_time = Quantity(50.0, "ks")
 area = Quantity(3.0, "m**2")
 
-prng = RandomState(31)
+prng = 31
 
 agen = ApecGenerator((0.05, "keV"), (12.0, "keV"), 10000, broadening=True)
 spec = agen.get_spectrum(kT, Z, redshift, norm)
@@ -128,6 +128,8 @@ def test_beta_model():
     r_c = 20.0
     beta = 1.0
 
+    exp_time = Quantity(500.0, "ks")
+
     e = spec.generate_energies(exp_time, area, prng=prng)
 
     beta_src = BetaModel(ra0, dec0, r_c, beta, e.size, prng=prng)
@@ -170,7 +172,63 @@ def test_beta_model():
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
+def test_beta_model_flux():
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    r_c = 20.0
+    beta = 1.0
+
+    prng = 34
+
+    e = spec.generate_energies(exp_time, area, prng=prng)
+
+    beta_src = BetaModel(ra0, dec0, r_c, beta, e.size, prng=prng)
+
+    write_photon_list("beta", "beta", e.flux, beta_src.ra, beta_src.dec,
+                      e, overwrite=True)
+
+    instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
+                         "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
+                         instr_bkgnd=False, foreground=False, 
+                         roll_angle=37.0, prng=prng)
+
+    ph_flux = spec.get_flux_in_band(0.5, 7.0)[0].value
+    S0 = 3.0*ph_flux/(2.0*np.pi*r_c*r_c)
+
+    wspec = spec.new_spec_from_band(0.5, 7.0)
+
+    make_exposure_map("beta_evt.fits", "beta_expmap.fits", wspec.emid.value,
+                      weights=wspec.flux.value, overwrite=True)
+
+    write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", [ra0, dec0],
+                         0.0, 100.0, 200, ctr_type="celestial", emin=0.5,
+                         emax=7.0, expmap_file="beta_expmap.fits", overwrite=True)
+
+    load_data(1, "beta_evt_profile.fits", 3, ["RMID","SUR_FLUX","SUR_FLUX_ERR"])
+    set_stat("chi2")
+    set_method("levmar")
+    set_source("beta1d.src")
+    src.beta = 1.0
+    src.r0 = 10.0
+    src.ampl = 0.8*S0
+    freeze(src.xpos)
+
+    fit()
+    set_covar_opt("sigma", 1.645)
+    covar()
+    res = get_covar_results()
+
+    assert np.abs(res.parvals[0]-r_c) < res.parmaxes[0]
+    assert np.abs(res.parvals[1]-beta) < res.parmaxes[1]
+    assert np.abs(res.parvals[2]-S0) < res.parmaxes[2]
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
+
 if __name__ == "__main__":
     test_point_source()
     test_annulus()
     test_beta_model()
+    test_beta_model_flux()
