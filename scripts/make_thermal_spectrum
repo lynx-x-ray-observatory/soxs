@@ -27,6 +27,8 @@ parser.add_argument("--nh", default=0.02,
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
 parser.add_argument("--overwrite", action='store_true', 
                     help='Overwrite an existing file with the same name.')
+parser.add_argument("--nolines", action='store_true',
+                    help="Make a spectrum without lines.")
 feature_parser = parser.add_mutually_exclusive_group(required=False)
 feature_parser.add_argument("--broadening", dest='broadening', action='store_true',
                             help='Turn thermal and velocity broadening on. On by default.')
@@ -37,7 +39,7 @@ parser.set_defaults(broadening=True)
 args = parser.parse_args()
 
 agen = ApecGenerator(args.emin, args.emax, args.nbins, apec_vers=args.apec_vers, 
-                     broadening=args.broadening)
+                     broadening=args.broadening, nolines=args.nolines)
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
                          velocity=args.velocity)
 

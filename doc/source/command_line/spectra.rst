@@ -47,6 +47,7 @@ using the AtomDB tables.
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
                             Default: 0.02
       --overwrite           Overwrite an existing file with the same name.
+      --nolines             Make a spectrum without lines.
       --broadening          Turn thermal and velocity broadening on. On by default.
       --no_broadening       Turn thermal and velocity broadening off. On by default.
 
@@ -89,6 +90,12 @@ The same spectrum, but with a different APEC version.
 .. code-block:: bash
 
     [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --apec_vers=2.0.2 --overwrite
+
+The same spectrum, but without emission lines. 
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --nolines --overwrite
 
 ``make_powerlaw_spectrum``
 --------------------------
