@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+import argparse
+from soxs import make_exposure_map
+import numpy as np
+
+make_exposure_map(args.event_file, args.expmap_file, energy, weights=weights,
+                  asol_file=args.asol_file, normalize=args.normalize, 
+                  overwrite=args.overwrite, nhistx=args.nhistx, nhisty=args.nhisty)
