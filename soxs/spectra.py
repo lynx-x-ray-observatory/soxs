@@ -10,7 +10,7 @@ from soxs.utils import soxs_files_path, mylog, \
 from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
-    m_u
+    m_u, elem_names
 import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
@@ -419,6 +419,10 @@ class ApecGenerator(object):
         The maximum energy for the spectral model.
     nbins : integer
         The number of bins in the spectral model.
+    var_elem : list of strings, optional
+        The names of elements to allow to vary freely
+        from the single abundance parameter. Default:
+        None
     apec_root : string, optional
         The directory root where the APEC model files 
         are stored. If not provided, the default is to 
@@ -428,15 +432,18 @@ class ApecGenerator(object):
         e.g. "2.0.2"
     broadening : boolean, optional
         Whether or not the spectral lines should be 
-        thermally and velocity broadened.
+        thermally and velocity broadened. Default: True
+    nolines : boolean, optional
+        Turn off lines entirely for generating spectra.
+        Default: False
 
     Examples
     --------
     >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
     ...                            broadening=True)
     """
-    def __init__(self, emin, emax, nbins, apec_root=None,
-                 apec_vers="3.0.8", broadening=True):
+    def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
+                 apec_vers="3.0.8", broadening=True, nolines=False):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
         self.emin = emin
@@ -452,6 +459,7 @@ class ApecGenerator(object):
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
                                                                       self.linefile))
+        self.nolines = nolines
         self.wvbins = hc/self.ebins[::-1]
         self.broadening = broadening
         try:
@@ -468,26 +476,38 @@ class ApecGenerator(object):
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
+        if var_elem is None:
+            self.var_elem = []
+        else:
+            self.var_elem = [elem_names.index(elem) for elem in var_elem]
+        self.var_elem.sort()
+        self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
+        self.num_var_elem = len(self.var_elem)
+        self.cosmic_elem = [elem for elem in cosmic_elem 
+                            if elem not in self.var_elem]
+        self.metal_elem = [elem for elem in metal_elem
+                           if elem not in self.var_elem]
 
-    def _make_spectrum(self, kT, element, velocity, line_fields, 
+    def _make_spectrum(self, kT, element, velocity, line_fields,
                        coco_fields, scale_factor):
 
         tmpspec = np.zeros(self.nbins)
 
-        i = np.where((line_fields['element'] == element) &
-                     (line_fields['lambda'] > self.minlam) &
-                     (line_fields['lambda'] < self.maxlam))[0]
+        if not self.nolines:
+            i = np.where((line_fields['element'] == element) &
+                         (line_fields['lambda'] > self.minlam) &
+                         (line_fields['lambda'] < self.maxlam))[0]
 
-        E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
-        amp = line_fields['epsilon'][i].astype("float64")
-        if self.broadening:
-            sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
-            sigma += 2.0*velocity*velocity
-            sigma = E0*np.sqrt(sigma)/clight
-            vec = broaden_lines(E0, sigma, amp, self.ebins)
-        else:
-            vec = np.histogram(E0, self.ebins, weights=amp)[0]
-        tmpspec += vec
+            E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
+            amp = line_fields['epsilon'][i].astype("float64")
+            if self.broadening:
+                sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
+                sigma += 2.0*velocity*velocity
+                sigma = E0*np.sqrt(sigma)/clight
+                vec = broaden_lines(E0, sigma, amp, self.ebins)
+            else:
+                vec = np.histogram(E0, self.ebins, weights=amp)[0]
+            tmpspec += vec
 
         ind = np.where((coco_fields['Z'] == element) &
                        (coco_fields['rmJ'] == 0))[0]
@@ -525,19 +545,29 @@ class ApecGenerator(object):
         scale_factor = 1./(1.+redshift)
         cspec = np.zeros((numi, self.nbins))
         mspec = np.zeros((numi, self.nbins))
+        vspec = None
+        if self.num_var_elem > 0:
+            vspec = np.zeros((self.num_var_elem, numi, self.nbins))
         for i, ikT in enumerate(indices):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
-            for elem in cosmic_elem:
+            for elem in self.cosmic_elem:
                 cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
                                                   coco_fields, scale_factor)
             # Next do the metals
-            for elem in metal_elem:
+            for elem in self.metal_elem:
                 mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
                                                   coco_fields, scale_factor)
-        return cspec, mspec
+            # Now do any metals that we wanted to vary freely from the abund
+            # parameter
+            if self.num_var_elem > 0:
+                for j, elem in enumerate(self.var_elem):
+                    vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem, velocity, 
+                                                       line_fields, coco_fields, scale_factor)
+        return cspec, mspec, vspec
 
-    def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0):
+    def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0,
+                     elem_abund=None):
         """
         Get a thermal emission spectrum.
 
@@ -555,18 +585,33 @@ class ApecGenerator(object):
         velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The velocity broadening parameter, in units of 
             km/s. Default: 0.0
+        elem_abund : dict of element name, float pairs
+            A dictionary of elemental abundances to vary
+            freely of the abund parameter. Default: None
         """
         kT = parse_value(kT, "keV")
         velocity = parse_value(velocity, "km/s")
         v = velocity*1.0e5
+        if elem_abund is None:
+            elem_abund = {}
+        if set(elem_abund.keys()) != set(self.var_elem_names):
+            raise RuntimeError("The supplied set of abundances is not the "
+                               "same as that was originally set!\n"
+                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
+                                                                      set(self.var_elem_names)))
         tindex = np.searchsorted(self.Tvals, kT)-1
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
         dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
-        cspec, mspec = self._get_table([tindex, tindex+1], redshift, v)
+        cspec, mspec, vspec = self._get_table([tindex, tindex+1], redshift, v)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
-        spec = 1.0e14*norm*(cosmic_spec + abund*metal_spec)/self.de
+        spec = cosmic_spec + abund*metal_spec
+        if vspec is not None:
+            for elem, eabund in elem_abund.items():
+                j = self.var_elem_names.index(elem)
+                spec += eabund*(vspec[j,0,:]*(1.-dT)+vspec[j,1,:]*dT)
+        spec = 1.0e14*norm*spec/self.de
         return Spectrum(self.ebins, spec)
 
 def wabs_cross_section(E):
