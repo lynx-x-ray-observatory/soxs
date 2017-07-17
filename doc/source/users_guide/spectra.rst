@@ -109,25 +109,79 @@ directory:
     agen = ApecGenerator(0.05, 50.0, 10000, apec_root=".")
 
 Once you have an :class:`~soxs.spectra.ApecGenerator` object, you can use it to
-generate thermal spectra: 
+generate thermal spectra. The parameters are:
+
+* ``kT``: The temperature of the plasma, with default units of keV
+* ``abund``: The metal abundance, in solar units. Includes C, N, O, Ne, Mg, Al, 
+  Si, S, Ar, Ca, Fe, Ni (He fixed at cosmic, other trace elements fixed at solar). 
+  See :ref:`var-abund` below for more fine-grained control of abundances.
+* ``redshift``: The redshift of the plasma
+* ``norm``: The normalization of the model, assuming the standard prescription of
+  :math:`10^{-14}\int{n_en_p}dV/[4*\pi*(1+z)**2*D_A**2]` where :math:`n_e` and 
+  :math`n_p` are the electron and proton number densities, :math:`z` is the 
+  redshift, and :math:`D_A` is the angular diameter distance to the source. All
+  units are in cgs. 
+* ``velocity``:
 
 .. code-block:: python
     
-    kT = 6.0 # in units of keV
-    abund = 0.3 # solar units
+    kT = 6.0
+    abund = 0.3 
     redshift = 0.05
-    norm = 1.0e-3 # in units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2)
-    velocity = 100.0 # in units of km/s, optional
+    norm = 1.0e-3 
+    velocity = 100.0 # optional
     spec1 = agen.get_spectrum(kT, abund, redshift, norm, velocity=velocity)
 
 ``spec1`` is just a standard :class:`~soxs.spectra.Spectrum` object.
+
+.. _var-abund:
 
 Variable Abundances
 ~~~~~~~~~~~~~~~~~~~
 
 By default, :class:`~soxs.spectra.ApecGenerator` assumes all abundances besides
 H, He, and the trace elements are set to the value provided by the ``abund``
-parameter. 
+parameter. However, more fine-grained control is possible. 
+:class:`~soxs.spectra.ApecGenerator` accepts a ``var_elem`` optional argument
+to specify which elements should be allowed to vary freely:
+
+.. code-block:: python
+
+    var_elem = ["O", "Ca"] # allow oxygen and calcium to vary freely 
+    agen = ApecGenerator(0.05, 50.0, 10000, var_elem=var_elem)
+    
+Whatever elements are not specified here are assumed to be set as normal, whether
+they are H, He, trace elements, or metals covered by the ``abund`` parameter. 
+Now, spectra which are created from this :class:`~soxs.spectra.ApecGenerator`
+object should set values for the abundances of these elements in solar units. This
+is done by supplying the ``elem_abund`` dict like so:
+
+.. code-block:: python
+
+    kT = 6.0
+    abund = 0.3 # for all other metals
+    redshift = 0.05
+    norm = 1.0e-3 
+    O_abund = 0.5
+    Ca_abund = 0.4
+    spec = agen.get_spectrum(kT, abund, redshift, norm,
+                             elem_abund={"O": O_abund, "Ca": Ca_abund})
+
+Note that setting the ``abund`` parameter is still necessary for the other
+metals. 
+
+.. _nolines:
+
+APEC Spectra Without Lines
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is also an option to generate continuum spectra only from the AtomDB
+tables. This is done by setting ``nolines=True`` in the constructor for
+:class:`~soxs.spectra.ApecGenerator`:
+
+.. code-block:: python
+
+    agen = ApecGenerator(0.05, 50.0, 10000, nolines=True)
 
 Generating a Spectrum from XSPEC
 ++++++++++++++++++++++++++++++++
