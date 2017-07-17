@@ -942,7 +942,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     if iterable(energy) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if "
                            "you do not supply weights!")
-    energy = parse_value(energy, "keV")
+    if not iterable(energy):
+        energy = parse_value(energy, "keV")
     f_evt = pyfits.open(event_file)
     hdu = f_evt["EVENTS"]
     arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
