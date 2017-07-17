@@ -8,9 +8,17 @@ Version 1.3.0
 
 This is a release with important new features and some bugfixes.
 
-* Many arguments to functions and command line scripts which have units (such as
-exposure time, field of view, area, temperature, etc.) now accept arguments with
-units. See :ref:`units` and :ref:`cmd-units` for more information.
+* Many arguments to functions and command line scripts which have units (such as 
+  exposure time, field of view, area, temperature, etc.) now accept arguments with
+  units. See :ref:`units` and :ref:`cmd-units` for more information.
+* The "square" and "circle" dither pattern options have been replaced with a single
+  option, a Lissajous pattern like that used by *Chandra*. This is a backwards-incompatible
+  change.
+* :class:`~soxs.spectra.ApecGenerator` objects can now generate spectra that 
+  vary the elemental abundances separately. See :ref:`thermal-spectra` for more 
+  details.
+* :class:`~soxs.spectra.ApecGenerator` objects can now generate spectra without 
+  line emission. See :ref:`thermal-spectra` for more details.
 
 Version 1.2.0
 -------------

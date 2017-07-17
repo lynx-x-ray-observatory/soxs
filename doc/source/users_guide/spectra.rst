@@ -82,6 +82,8 @@ set up a power-law spectrum like this:
 The optional parameters ``emin``, ``emax``, and ``nbins`` can be used to control
 the binning. 
 
+.. _thermal-spectra:
+
 Generating Thermal Spectra
 ++++++++++++++++++++++++++
 
