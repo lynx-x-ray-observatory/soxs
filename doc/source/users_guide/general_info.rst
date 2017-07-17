@@ -29,7 +29,8 @@ numbers, they will be in a default set of units:
                                    sky_center, nH=nH, area=area):
 
 However, these same arguments accept values with unit information, either in the
-form of ``(value, unit)`` tuples or :class:`~astropy.units.Quantity` objects:
+form of ``(value, unit)`` tuples, :class:`~astropy.units.Quantity`, or
+:class:`~yt.units.yt_array.YTQuantity` objects:
 
 .. code-block:: python
 
