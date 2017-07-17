@@ -14,10 +14,8 @@ def make_foreground(event_params, arf, rmf, prng=None):
 
     conv_bkgnd_spec = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, arf)
 
-    solid_angle = event_params["fov"]**2
-
     energy = conv_bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                               solid_angle, prng=prng, 
+                                               event_params["fov"], prng=prng, 
                                                quiet=True).value
 
     if energy.size == 0:
