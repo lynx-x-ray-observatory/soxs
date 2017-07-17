@@ -311,10 +311,14 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         E = np.histogram(r, bins=rr, weights=exp)[0] / np.histogram(r, bins=rr)[0]
         F = R/E
         Ferr = Rerr/E
+        SF = F/A
+        SFerr = Ferr/A
         col11 = pyfits.Column(name='MEAN_SRC_EXP', format='D', unit='cm**2', array=E)
         col12 = pyfits.Column(name='NET_FLUX', format='D', unit='count/s/cm**2', array=F)
         col13 = pyfits.Column(name='NET_FLUX_ERR', format='D', unit='count/s/cm**2', array=Ferr)
-        coldefs += [col11, col12, col13]
+        col14 = pyfits.Column(name='SUR_FLUX', format='D', unit='count/s/cm**2/arcsec**2', array=SF)
+        col15 = pyfits.Column(name='SUR_FLUX_ERR', format='D', unit='count/s/cm**2/arcsec**2', array=SFerr)
+        coldefs += [col11, col12, col13, col14, col15]
 
     tbhdu = pyfits.BinTableHDU.from_columns(pyfits.ColDefs(coldefs))
     tbhdu.name = "PROFILE"
