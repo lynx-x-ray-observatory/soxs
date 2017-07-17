@@ -15,10 +15,13 @@ This is a release with important new features and some bugfixes.
   option, a Lissajous pattern like that used by *Chandra*. This is a backwards-incompatible
   change.
 * :class:`~soxs.spectra.ApecGenerator` objects can now generate spectra that 
-  vary the elemental abundances separately. See :ref:`thermal-spectra` for more 
-  details.
+  vary the elemental abundances separately. See :ref:`thermal-spectra` and 
+  :ref:`cmd-make-thermal-spectrum` for more details.
 * :class:`~soxs.spectra.ApecGenerator` objects can now generate spectra without 
-  line emission. See :ref:`thermal-spectra` for more details.
+  line emission. See :ref:`thermal-spectra` and :ref:`cmd-make-thermal-spectrum` 
+  for more details.
+* A bug that prevented one from adding new instrumental background spectra to the
+  instrumental background spectrum registry has been fixed. 
 
 Version 1.2.0
 -------------
