@@ -23,7 +23,9 @@ using the AtomDB tables.
 
                                  kT abund redshift norm specfile
     
-    Create a thermal spectrum and write it to a file.
+    Create a thermal spectrum and write it to a file. The abundances of individual
+    elements can be set by supplying optional arguments in the form of --O=0.5,
+    --Mg=0.6, etc.
     
     positional arguments:
       kT                    The temperature in keV.
@@ -96,6 +98,12 @@ The same spectrum, but without emission lines.
 .. code-block:: bash
 
     [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --nolines --overwrite
+
+The same spectrum, but setting the abundances of elements oxygen and calcium separately.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat --O=0.5 --Ca=0.7 --overwrite
 
 ``make_powerlaw_spectrum``
 --------------------------

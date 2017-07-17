@@ -3,7 +3,9 @@
 import argparse
 from soxs import ApecGenerator
 
-parser = argparse.ArgumentParser(description='Create a thermal spectrum and write it to a file.')
+parser = argparse.ArgumentParser(description='Create a thermal spectrum and write it to a file. ' +
+                                 'The abundances of individual elements can be set by supplying '
+                                 'optional arguments in the form of --O=0.5, --Mg=0.6, etc.')
 parser.add_argument("kT", help='The temperature in keV.')
 parser.add_argument("abund", type=float, help="The metal abundance in solar units.")
 parser.add_argument("redshift", type=float, help="The redshift of the source.")
@@ -36,12 +38,24 @@ feature_parser.add_argument("--no_broadening", dest='broadening', action='store_
                             help='Turn thermal and velocity broadening off. On by default.')
 parser.set_defaults(broadening=True)
 
-args = parser.parse_args()
+args, unknown = parser.parse_known_args()
+
+var_elem = None
+elem_abund = None
+
+if len(unknown) > 0:
+    var_elem = []
+    elem_abund = {}
+    for uarg in unknown:
+        key, value = uarg[2:].split("=")
+        var_elem.append(key)
+        elem_abund[key] = float(value)
 
 agen = ApecGenerator(args.emin, args.emax, args.nbins, apec_vers=args.apec_vers, 
-                     broadening=args.broadening, nolines=args.nolines)
+                     broadening=args.broadening, nolines=args.nolines, 
+                     var_elem=var_elem)
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
-                         velocity=args.velocity)
+                         velocity=args.velocity, elem_abund=elem_abund)
 
 if args.absorb is not None:
     spec.apply_foreground_absorption(args.nh, model=args.absorb)
