@@ -4,6 +4,38 @@ import argparse
 from soxs import make_exposure_map
 import numpy as np
 
+parser = argparse.ArgumentParser(description='Make a SOXS exposure map from an event file.')
+parser.add_argument("event_file", type=str, help="The event file to use to make the exposure map.")
+parser.add_argument("expmap_file", type=str, help='The file to write the exposure map to.')
+parser.add_argument("energy", help="The reference energy to use when making the exposure map. "
+                                   "This parameter will be ignored if a 'weightsfile' is set.")
+parser.add_argument("--weightsfile", type=str, help="A file containing two columns: energy and "
+                                                    "spectral weights, to create an exposure map "
+                                                    "weighted over an energy band.")
+parser.add_argument("--asol_file", type=str, help="If set, write the aspect solution to this file.")
+parser.add_argument("--overwrite", action='store_true',
+                    help='Overwrite an existing file with the same name.')
+parser.add_argument("--nhistx", type=int, default=16, 
+                    help="The number of bins in the aspect histogram in the "
+                         "DETX direction. Default: 16")
+parser.add_argument("--nhisty", type=int, default=16,
+                    help="The number of bins in the aspect histogram in the "
+                         "DETY direction. Default: 16")
+feature_parser = parser.add_mutually_exclusive_group(required=False)
+feature_parser.add_argument("--normalize", dest='normalize', action='store_true',
+                            help='Normalize the exposure map by the exposure time. This is the default.')
+feature_parser.add_argument("--no_normalize", dest='normalize', action='store_false',
+                            help="Don't ormalize the exposure map by the exposure time.")
+parser.set_defaults(normalize=True)
+
+args = parser.parse_args()
+
+if args.weightfile is None:
+    energy = args.energy
+    weights = None
+else:
+    energy, weights = np.loadtxt(args.weightfile)
+
 make_exposure_map(args.event_file, args.expmap_file, energy, weights=weights,
                   asol_file=args.asol_file, normalize=args.normalize, 
                   overwrite=args.overwrite, nhistx=args.nhistx, nhisty=args.nhisty)
