@@ -293,6 +293,28 @@ class Spectrum(object):
         flux = const_flux*np.ones(nbins)
         return cls(ebins, flux)
 
+    def new_spec_from_band(self, emin, emax):
+        """
+        Create a new :class:`~soxs.spectra.Spectrum` object
+        from a subset of an existing one defined by a particular
+        energy band.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the band in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the band in keV.
+        """
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, 'keV')
+        band = np.logical_and(self.ebins.value >= emin, 
+                              self.ebins.value <= emax)
+        idxs = np.where(band)[0]
+        ebins = self.ebins.value[idxs]
+        flux = self.flux.value[idxs[:-1]]
+        return Spectrum(ebins, flux)
+
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
         """
         Rescale the flux of the spectrum, optionally using 
