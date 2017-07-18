@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import argparse
+from soxs import write_radial_profile
+
+parser = argparse.ArgumentParser(description='Make a FITS image from a SOXS event file.')
+parser.add_argument("event_file", type=str, help="The event file to use to make the image.")
+parser.add_argument("out_file", type=str, help='The file to write the image to.')
+parser.add_argument("ctr", help='The central coordinate of the profile. Can either be in '
+                                 'celestial coordinates (the default) or "physical" pixel '
+                                 'coordinates. If the former, the ``ctr_type`` keyword '
+                                 'argument must be explicity set to "physical".')
+parser.add_argument("rmin", help="The minimum radius of the profile, in arcseconds.")
+parser.add_argument("rmax", help="The maximum radius of the profile, in arcseconds.")
+parser.add_argument("nbins", help="The number of bins in the profile.")
+parser.add_argument("--ctr_type", type=str, help="The type of center coordinate. Either "
+                                                 "'celestial' for (RA, Dec) coordinates "
+                                                 "(the default), or 'physical' for 
+                                                 "pixel coordinates.")
+parser.add_argument("--emin", help="The minimum energy of the photons to put in the "
+                                    "image, in keV.")
+parser.add_argument("--emax", help="The maximum energy of the photons to put in the "
+                                   "image, in keV.")
+parser.add_argument("--overwrite", action='store_true',
+                    help='Overwrite an existing file with the same name.')
+parser.add_argument("--expmap_file", type=str, 
+                    help="Supply an exposure map file to divide this image by "
+                         "to get a flux map.")
+
+args = parser.parse_args()
+
+ctr = np.array(args.ctr.split(',')).astype("float64")
+
+write_image(args.event_file, args.out_file, args.ctr, args.rmin,
+            args.rmax, args.nbins, ctr_type=args.ctr_type, 
+            emin=args.emin, emax=args.emax, overwrite=args.overwrite,
+            expmap_file=args.expmap_file)
