@@ -31,7 +31,7 @@ args = parser.parse_args()
 
 ctr = np.array(args.ctr.split(',')).astype("float64")
 
-write_image(args.event_file, args.out_file, args.ctr, args.rmin,
-            args.rmax, args.nbins, ctr_type=args.ctr_type, 
-            emin=args.emin, emax=args.emax, overwrite=args.overwrite,
-            expmap_file=args.expmap_file)
+write_radial_profile(args.event_file, args.out_file, args.ctr, args.rmin,
+                     args.rmax, args.nbins, ctr_type=args.ctr_type, 
+                     emin=args.emin, emax=args.emax, overwrite=args.overwrite,
+                     expmap_file=args.expmap_file)
