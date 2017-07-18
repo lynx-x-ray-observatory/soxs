@@ -29,6 +29,8 @@ This is a release with important new features and some bugfixes.
   for more details.
 * A bug that prevented one from adding new instrumental background spectra to the
   instrumental background spectrum registry has been fixed. 
+* A bug that resulted in spectra being plotted with the incorrect energies in 
+  :func:`~soxs.events.plot_spectrum` has been fixed.
 
 Version 1.2.0
 -------------
