@@ -264,8 +264,20 @@ You can also multiply a spectrum by a constant float number or divide it by one:
     spec3 = 6.0*spec2
     spec4 = spec1/4.4
 
-Getting the Flux of a Spectrum Within a Specific Energy Band
-------------------------------------------------------------
+.. _band-ops:
+
+Getting the Values and Total Flux of a Spectrum Within a Specific Energy Band
+-----------------------------------------------------------------------------
+
+A new :class:`~soxs.spectra.Spectrum` object can be created from a restricted
+energy band of an existing one by calling the :meth:`~soxs.spectra.Spectrum.new_spec_from_band`
+method:
+
+.. code-block:: python
+    
+    emin = 0.5
+    emax = 7.0
+    subspec = spec.new_spec_from_band(emin, emax)
 
 The :meth:`~soxs.spectra.Spectrum.get_flux_in_band` method can be used
 to quickly report on the total flux within a specific energy band:
@@ -282,7 +294,31 @@ which returns a tuple of the photon flux and the energy flux, showing:
 
     (<Quantity 2.2215588675210208e-07 ph / (cm2 s)>, 
      <Quantity 7.8742710307246895e-16 erg / (cm2 s)>)
+
+Finally, :class:`~soxs.spectra.Spectrum` objects are "callable", and if one
+supplies a single energy or array of energies, the values of the spectrum
+at these energies will be returned. AstroPy :class:`~astropy.units.Quantity`
+objects are detected and handled appropriately.
+
+.. code-block:: python
+
+    print(spec(3.0)) # energy assumed to be in keV
     
+.. code-block:: pycon
+
+    <Quantity 2.830468922349541e-10 ph / (cm2 keV s)>
+
+.. code-block:: python
+
+    from astropy.units import Quantity
+    # AstroPy quantity, units will be converted to keV internally
+    e = Quantity([1.6e-9, 3.2e-9, 8.0e-9], "erg")          
+    print(spec(e)) # energy assumed to be in keV
+    
+.. code-block:: pycon
+
+    <Quantity [  9.47745587e-10,  4.42138950e-10,  1.61370731e-10] ph / (cm2 keV s)>
+
 Rescaling the Normalization of a Spectrum
 -----------------------------------------
 
@@ -361,6 +397,8 @@ These photon energies can then be combined with sky positions at your discretion
 and be written to SIMPUT files for use in mock observations. See :ref:`simput` 
 for more information.
 
+.. _convolved-spectra:
+
 "Convolved" Spectra
 -------------------
 
@@ -377,7 +415,7 @@ object and an ARF:
     cspec = ConvolvedSpectrum(spec2, "xrs_hdxi_3x10.arf")
     
 The spectrum in this object has units of 
-:math:`{\rm photons}~{\rm s}^{-1}~{\rm keV}^{-1}`, and one can use all of 
+:math:`{\rm photons}~{\rm s}^{-1}~{\rm keV}^{-1}`, and one can use many of 
 :class:`~soxs.spectra.Spectrum`'s methods on it. For example, to determine the 
 count and energy rate within a particular band:
 
@@ -400,3 +438,23 @@ Or to generate an array of energies:
 :class:`~soxs.spectra.ConvolvedSpectrum` objects are not used directly in the 
 instrument simulator, but can be used for convenient when one wants to examine 
 the properties of a convolved spectrum.
+
+If one has already loaded a :class:`~soxs.instrument.AuxiliaryResponseFile`,
+then one can also generate a :class:`~soxs.spectra.ConvolvedSpectrum` by simply
+multiplying the ARF by a :class:`~soxs.spectra.Spectrum` object:
+
+.. code-block:: python
+
+    from soxs import AuxiliaryResponseFile
+    arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
+    # Assuming one created an ApecGenerator agen...
+    spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
+    cspec = spec2*arf
+
+To "deconvolve" a :class:`~soxs.spectra.ConvolvedSpectrum` object and return
+a :class:`~soxs.spectra.Spectrum` object, simply call 
+:meth:`~soxs.spectra.ConvolvedSpectrum.deconvolve`:
+
+.. code-block:: python
+
+    spec_new = cspec.deconvolve()

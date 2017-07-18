@@ -14,6 +14,13 @@ This is a release with important new features and some bugfixes.
 * The "square" and "circle" dither pattern options have been replaced with a single
   option, a Lissajous pattern like that used by *Chandra*. This is a backwards-incompatible
   change.
+* New methods have been added to create :class:`~soxs.spectra.ConvolvedSpectrum` objects
+  and deconvolve them to :class:`~soxs.spectra.Spectrum` objects. See 
+  :ref:`convolved-spectra` for more details.
+* A method to extract a subset of a spectrum and create a new one, 
+  :meth:`~soxs.spectra.Spectrum.new_spec_from_band`, has been added. 
+* :class:`~soxs.spectra.Spectrum` objects are now "callable", taking an energy
+  or an array of energies, at which the flux values will be interpolated.
 * :class:`~soxs.spectra.ApecGenerator` objects can now generate spectra that 
   vary the elemental abundances separately. See :ref:`thermal-spectra` and 
   :ref:`cmd-make-thermal-spectrum` for more details.
