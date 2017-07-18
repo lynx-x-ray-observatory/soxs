@@ -83,7 +83,10 @@ class Spectrum(object):
         return s
 
     def __call__(self, e):
-        e = parse_value(e, "keV")
+        if hasattr(e, "to_astropy"):
+            e = e.to_astropy()
+        if isinstance(e, u.Quantity):
+            e = e.to("keV").value
         return u.Quantity(self.func(e), self._units)
 
     def get_flux_in_band(self, emin, emax):
