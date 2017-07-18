@@ -467,10 +467,16 @@ def plot_spectrum(specfile, figsize=(10,10), plot_energy=True):
         xlabel = "Channel (%s)" % chantype
     y = hdu.data["COUNT_RATE"]
     yerr = np.sqrt(hdu.data["COUNTS"])/hdu.header["EXPOSURE"]
+    if plot_energy:
+        yunit = "keV"
+        y /= 2.0*xerr
+        yerr /= 2.0*xerr
+    else:
+        yunit = "bin"
     f.close()
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111)
     ax.errorbar(x, y, yerr=yerr, xerr=xerr)
     ax.set_xlabel(xlabel)
-    ax.set_ylabel("Count Rate (counts/s)")
+    ax.set_ylabel("Count Rate (counts/s/%s)" % yunit)
     return fig
