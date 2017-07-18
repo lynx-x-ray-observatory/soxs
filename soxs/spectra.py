@@ -743,7 +743,29 @@ class ConvolvedSpectrum(Spectrum):
         raise NotImplementedError
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
-        raise NotImplementedError
+        """
+        Rescale the flux of the convolved spectrum, optionally using 
+        a specific energy band.
+
+        Parameters
+        ----------
+        new_flux : float
+            The new flux in units of photons/s/cm**2.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy of the band to consider, 
+            in keV. Default: Use the minimum energy of 
+            the entire spectrum.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy of the band to consider, 
+            in keV. Default: Use the maximum energy of 
+            the entire spectrum.
+        flux_type : string, optional
+            The units of the flux to use in the rescaling:
+                "photons": photons/s
+                "energy": erg/s
+        """
+        super(ConvolvedSpectrum, self).rescale_flux(new_flux, emin=emin, emax=emax, 
+                                                    flux_type=flux_type)
 
     @classmethod
     def from_constant(cls, const_flux, emin=0.01, emax=50.0, nbins=10000):
