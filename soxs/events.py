@@ -429,7 +429,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
     hdu.writeto(out_file, overwrite=overwrite)
 
-def plot_spectrum(specfile, figsize=(10,10), plot_energy=True):
+def plot_spectrum(specfile, plot_energy=True, lw=2, fig=None, ax=None):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure is returned.
@@ -445,6 +445,18 @@ def plot_spectrum(specfile, figsize=(10,10), plot_energy=True):
         Whether to plot in energy or channel space. Default is
         to plot in energy, unless the RMF for the spectrum
         cannot be found. 
+    lw : float, optional
+        The width of the lines in the plots. Default: 2.0 px.
+    fig : :class:`~matplotlib.figure.Figure`, optional
+        A Figure instance to plot in. Default: None, one will be
+        created if not provided.
+    ax : :class:`~matplotlib.axes.Axes`, optional
+        An Axes instance to plot in. Default: None, one will be
+        created if not provided.
+
+    Returns
+    -------
+    The :class:`~matplotlib.figure.Figure` object.
     """
     import matplotlib.pyplot as plt
     from soxs.instrument import RedistributionMatrixFile
@@ -474,9 +486,11 @@ def plot_spectrum(specfile, figsize=(10,10), plot_energy=True):
     else:
         yunit = "bin"
     f.close()
-    fig = plt.figure(figsize=figsize)
-    ax = fig.add_subplot(111)
-    ax.errorbar(x, y, yerr=yerr, xerr=xerr)
+    if fig is None:
+        fig = plt.figure(figsize=(10, 10))
+    if ax is None:
+        ax = fig.add_subplot(111)
+    ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw)
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Count Rate (counts/s/%s)" % yunit)
     return fig
