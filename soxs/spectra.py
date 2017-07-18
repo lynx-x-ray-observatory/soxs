@@ -735,3 +735,27 @@ class ConvolvedSpectrum(Spectrum):
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)
         return energies
+
+    def apply_foreground_absorption(self, nH, model="wabs"):
+        raise NotImplementedError
+
+    def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
+        raise NotImplementedError
+
+    @classmethod
+    def from_constant(cls, const_flux, emin=0.01, emax=50.0, nbins=10000):
+        raise NotImplementedError
+
+    @classmethod
+    def from_powerlaw(cls, photon_index, redshift, norm,
+                      emin=0.01, emax=50.0, nbins=10000):
+        raise NotImplementedError
+
+    @classmethod
+    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0,
+                         nbins=10000):
+        raise NotImplementedError
+
+    @classmethod
+    def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
+        raise NotImplementedError
