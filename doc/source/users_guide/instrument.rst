@@ -234,63 +234,70 @@ gives (showing only a subset for brevity):
 .. code-block:: pycon
 
     Instrument: hdxi
-        num_pixels: 4096
-        fov: 20.0
-        bkgnd: acisi
-        psf: ['gaussian', 0.5]
         name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
-        focal_length: 10.0
-        dither: True
-    Instrument: mucal
-        num_pixels: 300
-        fov: 5.0
-        bkgnd: mucal
-        psf: ['gaussian', 0.5]
-        name: mucal_3x10
-        arf: xrs_mucal_3x10.arf
-        rmf: xrs_mucal.rmf
-        focal_length: 10.0
-        dither: True
-    Instrument: mucal_3x15
-        num_pixels: 300
-        fov: 5.0
-        bkgnd: mucal
-        psf: ['gaussian', 0.5]
-        name: mucal_3x15
-        arf: xrs_mucal_3x15.arf
-        rmf: xrs_mucal.rmf
-        focal_length: 15.0
-        dither: True
-    Instrument: hdxi_3x15
-        num_pixels: 4096
-        fov: 20.0
         bkgnd: acisi
-        psf: ['gaussian', 0.5]
-        name: hdxi_3x15
-        arf: xrs_hdxi_3x15.arf
-        rmf: xrs_hdxi.rmf
-        focal_length: 15.0
-        dither: True
-    Instrument: hdxi_3x10
-        num_pixels: 4096
         fov: 20.0
-        bkgnd: acisi
-        psf: ['gaussian', 0.5]
-        name: hdxi_3x10
-        arf: xrs_hdxi_3x10.arf
-        rmf: xrs_hdxi.rmf
+        num_pixels: 4096
+        aimpt_coords: [0.0, 0.0]
+        chips: None
         focal_length: 10.0
         dither: True
+        psf: ['gaussian', 0.5]
+    Instrument: athena_xifu
+        name: athena_xifu
+        arf: athena_xifu_1469_onaxis_pitch249um_v20160401.arf
+        rmf: athena_xifu_rmf_v20160401.rmf
+        bkgnd: athena_xifu
+        fov: 5.991992621478149
+        num_pixels: 84
+        aimpt_coords: [0.0, 0.0]
+        chips: [['Polygon', 
+                 [-33, 0, 33, 33, 0, -33], 
+                 [20, 38, 20, -20, -38, -20]]]
+        focal_length: 12.0
+        dither: False
+        psf: ['gaussian', 5.0]
+    Instrument: acisi_cy18
+        name: acisi_cy18
+        arf: acisi_aimpt_cy18.arf
+        rmf: acisi_aimpt_cy18.rmf
+        bkgnd: acisi
+        fov: 20.008
+        num_pixels: 2440
+        aimpt_coords: [86.0, 57.0]
+        chips: [['Box', -523, -523, 1024, 1024], 
+                ['Box', 523, -523, 1024, 1024], 
+                ['Box', -523, 523, 1024, 1024], 
+                ['Box', 523, 523, 1024, 1024]]
+        psf: ['gaussian', 0.5]
+        focal_length: 10.0
+        dither: True
+    Instrument: hitomi_sxs
+        name: hitomi_sxs
+        arf: hitomi_sxs_ptsrc.arf
+        rmf: hitomi_sxs.rmf
+        bkgnd: hitomi_sxs
+        num_pixels: 6
+        fov: 3.06450576
+        aimpt_coords: [0.0, 0.0]
+        chips: None
+        focal_length: 5.6
+        dither: False
+        psf: ['gaussian', 72.0]
     ...
 
 The various parts of each instrument specification are:
 
 * ``"name"``: The name of the instrument specification. 
 * ``"arf"``: The file containing the ARF.
+* ``"rmf"``: The file containing the RMF.
+* ``"fov"``: The field of view in arcminutes. This may represent a single chip
+  or an area within which chips are embedded.
 * ``"num_pixels"``: The number of resolution elements on a side of the field of 
   view.
+* ``"chips"``: The specification for multiple chips, if desired. 
 * ``"bkgnd"``: The name of the instrumental background to use, stored in the 
   background registry (see :ref:`background` for more details). This can also be
   set to ``None`` for no particle background.
@@ -298,8 +305,6 @@ The various parts of each instrument specification are:
   available is that of a Gaussian PSF, with a single parameter, the HPD of the 
   PSF. This is specified using a Python list, e.g. ``["gaussian", 0.5]``. This 
   can also be set to ``None`` for no PSF.
-* ``"rmf"``: The file containing the RMF.
-* ``"fov"``: The field of view in arcminutes. 
 * ``"focal_length"``: The focal length of the telescope in meters.
 * ``"dither"``: Whether or not the instrument dithers by default. 
 
@@ -351,3 +356,13 @@ file for editing using :func:`~soxs.instrument.write_instrument_json`:
     specifications:
     1. Python's ``None`` will convert to ``null``, and vice-versa.
     2. ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
+
+Defining Instruments with Multiple Chips
+++++++++++++++++++++++++++++++++++++++++
+
+If the ``"chips"`` entry in the instrument specification is ``None``, then there
+will only be one chip which covers the entire field of view. However, it is also 
+possible to specify multiple chips with essentially arbitary shapes. In this case, 
+the ``"chips"`` entry needs to be a list containing a set of lists, one for each
+chip, that specifies a region expression parseable by the 
+`pyregion <https://pyregion.readthedocs.io>`_ package. 
