@@ -80,16 +80,12 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
         bkg_events["chip_id"] = -np.ones(n_events, dtype='int')
         for i, chip in enumerate(event_params["chips"]):
             thisc = np.ones(n_events, dtype='bool')
-            for reg in chip["region"]:
-                rtype = reg[0]
-                mask = reg[1]
-                args = reg[2:]
-                r = getattr(filter, rtype)(*args)
-                inside = r.inside(bkg_events["detx"], bkg_events["dety"])
-                if not mask:
-                    inside = np.logical_not(inside)
-                thisc = np.logical_and(thisc, inside)
-            bkg_events["chip_id"][thisc] = chip["id"]
+            rtype = chip[0]
+            args = chip[1:]
+            r = getattr(filter, rtype)(*args)
+            inside = r.inside(bkg_events["detx"], bkg_events["dety"])
+            thisc = np.logical_and(thisc, inside)
+            bkg_events["chip_id"][thisc] = i
 
     keep = bkg_events["chip_id"] > -1
 

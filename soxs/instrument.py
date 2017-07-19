@@ -462,16 +462,12 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
                 events["chip_id"] = -np.ones(n_evt, dtype='int')
                 for i, chip in enumerate(event_params["chips"]):
                     thisc = np.ones(n_evt, dtype='bool')
-                    for reg in chip["region"]:
-                        rtype = reg[0]
-                        mask = reg[1]
-                        args = reg[2:]
-                        r = getattr(filter, rtype)(*args)
-                        inside = r.inside(cx, cy)
-                        if not mask:
-                            inside = np.logical_not(inside)
-                        thisc = np.logical_and(thisc, inside)
-                    events["chip_id"][thisc] = chip["id"]
+                    rtype = chip[0]
+                    args = chip[1:]
+                    r = getattr(filter, rtype)(*args)
+                    inside = r.inside(cx, cy)
+                    thisc = np.logical_and(thisc, inside)
+                    events["chip_id"][thisc] = i
                 keep = events["chip_id"] > -1
 
             mylog.info("%d events were rejected because " % (n_evt-keep.sum()) +
@@ -1007,26 +1003,21 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
     if instr["chips"] is None:
         rtypes = ["Box"]
-        masks = [True]
         args = [[0.0, 0.0, instr["num_pixels"], instr["num_pixels"]]]
     else:
         rtypes = []
-        masks = []
         args = []
         for i, chip in enumerate(instr["chips"]):
-            for reg in chip["region"]:
-                rtypes.append(reg[0])
-                masks.append(reg[1])
-                args.append(np.array(reg[2:]))
+            rtypes.append(chip[0])
+            args.append(np.array(chip[1:]))
 
     tmpmap = np.zeros((2*nx, 2*ny))
 
-    for rtype, mask, arg in zip(rtypes, masks, args):
-        if mask:
-            rfunc = getattr(filter, rtype)
-            new_args = parse_region_args(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
-            r = rfunc(*new_args)
-            tmpmap += r.mask(tmpmap)
+    for rtype, arg in zip(rtypes, args):
+        rfunc = getattr(filter, rtype)
+        new_args = parse_region_args(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
+        r = rfunc(*new_args)
+        tmpmap += r.mask(tmpmap)
 
     if dither_params["dither_on"]:
         expmap = np.zeros((2*nx, 2*ny))

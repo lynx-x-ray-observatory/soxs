@@ -9,7 +9,8 @@ instrument_registry = {}
 
 # Lynx
 
-# High-Definition X-ray Imager
+# High-Definition X-ray Imager (HDXI)
+
 instrument_registry["hdxi"] = {"name": "hdxi_3x10",
                                "arf": "xrs_hdxi_3x10.arf",
                                "rmf": "xrs_hdxi.rmf",
@@ -24,6 +25,7 @@ instrument_registry["hdxi"] = {"name": "hdxi_3x10",
 instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 
 # Micro-calorimeter
+
 instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "arf": "xrs_mucal_3x10.arf",
                                 "rmf": "xrs_mucal.rmf",
@@ -48,6 +50,8 @@ for det in ["hdxi", "mucal"]:
 
 # Athena
 
+# XIFU
+
 instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
                                       "rmf": "athena_xifu_rmf_v20160401.rmf",
@@ -55,16 +59,14 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "fov": 5.991992621478149,
                                       "num_pixels": 84,
                                       "aimpt_coords": [0.0, 0.0],
-                                      "chips": [{"id": 0,
-                                                 "region": [["Polygon", True,
-                                                             [-33, 0, 33,
-                                                              33, 0, -33],
-                                                             [20, 38, 20,
-                                                              -20, -38, -20]]]
-                                                             }],
+                                      "chips": [["Polygon", 
+                                                 [-33, 0, 33, 33, 0, -33],
+                                                 [20, 38, 20, -20, -38, -20]]],
                                       "focal_length": 12.0,
                                       "dither": False,
                                       "psf": ["gaussian", 5.0]}
+
+# WFI
 
 instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                      "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
@@ -77,6 +79,8 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                      "focal_length": 12.0,
                                      "dither": False,
                                      "psf": ["gaussian", 5.0]}
+
+# Old specs
 
 instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
                                           "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
@@ -92,6 +96,8 @@ instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
 
 # Chandra
 
+# ACIS-I, Cycle 0 
+
 instrument_registry["acisi_cy0"] = {"name": "acisi_cy0", 
                                     "arf": "acisi_aimpt_cy0.arf",
                                     "rmf": "acisi_aimpt_cy0.rmf",
@@ -99,27 +105,15 @@ instrument_registry["acisi_cy0"] = {"name": "acisi_cy0",
                                     "fov": 20.008,
                                     "num_pixels": 2440,
                                     "aimpt_coords": [86.0, 57.0],
-                                    "chips": [
-                                        {"id": 0,
-                                         "region": [["Box", True,
-                                                     -523, -523,
-                                                     1024, 1024]]},
-                                        {"id": 1,
-                                         "region": [["Box", True,
-                                                     523, -523,
-                                                     1024, 1024]]},
-                                        {"id": 2,
-                                         "region": [["Box", True,
-                                                     -523, 523,
-                                                     1024, 1024]]},
-                                        {"id": 3,
-                                         "region": [["Box", True,
-                                                     523, 523,
-                                                     1024, 1024]]},
-                                    ],
+                                    "chips": [["Box", -523, -523, 1024, 1024],
+                                              ["Box", 523, -523, 1024, 1024],
+                                              ["Box", -523, 523, 1024, 1024],
+                                              ["Box", 523, 523, 1024, 1024]],
                                     "psf": ["gaussian", 0.5],
                                     "focal_length": 10.0,
                                     "dither": True}
+
+# ACIS-I, Cycle 18
 
 instrument_registry["acisi_cy18"] = {"name": "acisi_cy18",
                                      "arf": "acisi_aimpt_cy18.arf",
@@ -128,27 +122,15 @@ instrument_registry["acisi_cy18"] = {"name": "acisi_cy18",
                                      "fov": 20.008,
                                      "num_pixels": 2440,
                                      "aimpt_coords": [86.0, 57.0],
-                                     "chips": [
-                                         {"id": 0,
-                                          "region": [["Box", True,
-                                                      -523, -523,
-                                                      1024, 1024]]},
-                                         {"id": 1,
-                                          "region": [["Box", True,
-                                                      523, -523,
-                                                      1024, 1024]]},
-                                         {"id": 2,
-                                          "region": [["Box", True,
-                                                      -523, 523,
-                                                      1024, 1024]]},
-                                         {"id": 3,
-                                          "region": [["Box", True,
-                                                      523, 523,
-                                                      1024, 1024]]},
-                                     ],
+                                     "chips": [["Box", -523, -523, 1024, 1024],
+                                               ["Box", 523, -523, 1024, 1024],
+                                               ["Box", -523, 523, 1024, 1024],
+                                               ["Box", 523, 523, 1024, 1024]],
                                      "psf": ["gaussian", 0.5],
                                      "focal_length": 10.0,
                                      "dither": True}
+
+# Old specs
 
 instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
                                         "arf": "acisi_aimpt_cy0.arf",
@@ -175,6 +157,8 @@ instrument_registry["acisi_cy18_old"] = {"name": "acisi_cy18",
                                          "dither": True}
 
 # Hitomi
+
+# SXS 
 
 instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
                                      "arf": "hitomi_sxs_ptsrc.arf",
@@ -278,7 +262,7 @@ def write_instrument_json(inst_name, filename):
     inst_name : string
         The instrument specification to write.
     filename : string
-        The filename to write to. 
+        The filename to write to.
     """
     inst_dict = instrument_registry[inst_name]
     fp = open(filename, 'w')
