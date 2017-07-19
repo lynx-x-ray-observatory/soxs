@@ -7,10 +7,10 @@ import shutil
 import tempfile
 import astropy.io.fits as pyfits
 from astropy.units import Quantity
-from soxs.events import write_radial_profile
+from soxs.events import write_radial_profile, make_exposure_map
 from soxs.simput import write_photon_list
 from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
-    AuxiliaryResponseFile, make_exposure_map
+    AuxiliaryResponseFile
 from soxs.instrument_registry import get_instrument_from_registry, \
     add_instrument_to_registry
 from numpy.random import RandomState
