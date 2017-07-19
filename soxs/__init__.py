@@ -14,8 +14,7 @@ from soxs.instrument import \
     AuxiliaryResponseFile, \
     RedistributionMatrixFile, \
     make_background_file, \
-    FlatResponse, simulate_spectrum, \
-    make_exposure_map
+    FlatResponse, simulate_spectrum
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \
@@ -38,7 +37,8 @@ from soxs.events import \
     write_spectrum, \
     write_image, \
     write_radial_profile, \
-    plot_spectrum
+    plot_spectrum, \
+    make_exposure_map
 
 from soxs.background import \
     add_instrumental_background
