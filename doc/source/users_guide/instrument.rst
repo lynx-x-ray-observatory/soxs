@@ -52,8 +52,9 @@ Coordinate Systems in SOXS
 The ``instrument`` Argument
 +++++++++++++++++++++++++++
 
-SOXS currently supports instrument configurations for *Lynx* and *Athena* "out 
-of the box". Any of these can be specified with the ``instrument`` argument:
+SOXS currently supports instrument configurations for *Lynx*, *Athena*, *Chandra*, 
+and *Hitomi* "out of the box". Any of these can be specified with the ``instrument`` 
+argument:
 
 Lynx
 ~~~~
