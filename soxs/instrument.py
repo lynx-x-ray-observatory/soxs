@@ -254,12 +254,12 @@ class RedistributionMatrixFile(object):
 
         return events
 
-def perform_dither(t, dither_params):
-    if dither_params["dither_on"]:
-        a = 2.0*np.pi/dither_params["x_period"]
-        b = 2.0*np.pi/dither_params["y_period"]
-        A = dither_params["x_amp"]/dither_params["plate_scale"]
-        B = dither_params["y_amp"]/dither_params["plate_scale"]
+def perform_dither(t, dither_dict):
+    if dither_dict["dither_on"]:
+        a = 2.0*np.pi/dither_dict["x_period"]
+        b = 2.0*np.pi/dither_dict["y_period"]
+        A = dither_dict["x_amp"]/dither_dict["plate_scale"]
+        B = dither_dict["y_amp"]/dither_dict["plate_scale"]
         x_offset = A*np.sin(a*t)
         y_offset = B*np.sin(b*t)
     else:
@@ -300,12 +300,12 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
         specification from the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
-    dither_shape : string
-        The shape of the dither. Currently "circle" or "square" 
-        Default: "square"
-    dither_size : float
-        The size of the dither in arcseconds. Width of square or radius
-        of circle. Default: 16.0
+    dither_params : array-like of floats, optional
+        The parameters to use to control the size and period of the dither
+        pattern. The first two numbers are the dither amplitude in x and y
+        detector coordinates in arcseconds, and the second two numbers are
+        the dither period in x and y detector coordinates in seconds. 
+        Default: [8.0, 8.0, 1000.0, 707.0].
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
     subpixel_res: boolean, optional
@@ -349,12 +349,13 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
     plate_scale_arcsec = plate_scale * 3600.0
 
     if dither_params is None:
-        dither_params = {"x_amp": 8.0,
-                         "y_amp": 8.0,
-                         "x_period": 1000.0,
-                         "y_period": 707.0}
-    dither_params["dither_on"] = instrument_spec["dither"]
-    dither_params["plate_scale"] = plate_scale_arcsec
+        dither_params = [8.0, 8.0, 1000.0, 707.0]
+    dither_dict = {"x_amp": dither_params[0],
+                   "y_amp": dither_params[1],
+                   "x_period": dither_params[2],
+                   "y_period": dither_params[3],
+                   "dither_on": instrument_spec["dither"],
+                   "plate_scale": plate_scale_arcsec}
 
     event_params = {}
     event_params["exposure_time"] = exp_time
@@ -373,7 +374,7 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
     event_params["fov"] = instrument_spec["fov"]
     event_params["chan_lim"] = [rmf.cmin, rmf.cmax]
     event_params["chips"] = instrument_spec["chips"]
-    event_params["dither_params"] = dither_params
+    event_params["dither_params"] = dither_dict
     event_params["aimpt_coords"] = instrument_spec["aimpt_coords"]
 
     w = pywcs.WCS(naxis=2)
@@ -431,7 +432,7 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
 
             # Apply dithering
 
-            x_offset, y_offset = perform_dither(events["time"], dither_params)
+            x_offset, y_offset = perform_dither(events["time"], dither_dict)
 
             detx -= x_offset
             dety -= y_offset
@@ -540,15 +541,15 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         Whether or not to include the Galactic foreground. Default: True
     instr_bkgnd : boolean, optional
         Whether or not to include the instrumental background. Default: True
+    dither_params : array-like of floats, optional
+        The parameters to use to control the size and period of the dither
+        pattern. The first two numbers are the dither amplitude in x and y
+        detector coordinates in arcseconds, and the second two numbers are
+        the dither period in x and y detector coordinates in seconds. 
+        Default: [8.0, 8.0, 1000.0, 707.0].
     ptsrc_bkgnd : boolean, optional
         Whether or not to include the point-source background. Default: True
         Default: 0.05
-    dither_shape : string
-        The shape of the dither. Currently "circle" or "square" 
-        Default: "square"
-    dither_size : float
-        The size of the dither in arcseconds. Width of square or radius
-        of circle. Default: 16.0
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
     subpixel_res: boolean, optional
@@ -610,19 +611,20 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         nx = instrument_spec["num_pixels"]
         events = defaultdict(list)
         if dither_params is None:
-            dither_params = {"x_amp": 16.0,
-                             "y_amp": 16.0,
-                             "x_period": 1000.0,
-                             "y_period": 707.0}
-        dither_params["dither_on"] = instrument_spec["dither"]
-        dither_params["plate_scale"] = instrument_spec["fov"]/nx*60.0
+            dither_params = [8.0, 8.0, 1000.0, 707.0]
+        dither_dict = {"x_amp": dither_params[0],
+                       "y_amp": dither_params[1],
+                       "x_period": dither_params[2],
+                       "y_period": dither_params[3],
+                       "dither_on": instrument_spec["dither"],
+                       "plate_scale": instrument_spec["fov"]/nx*60.0}
         event_params = {"exposure_time": exp_time, 
                         "fov": instrument_spec["fov"],
                         "num_pixels": nx,
                         "pix_center": np.array([0.5*(2*nx+1)]*2),
                         "channel_type": rmf.header["CHANTYPE"],
                         "sky_center": sky_center,
-                        "dither_params": dither_params,
+                        "dither_params": dither_dict,
                         "plate_scale": instrument_spec["fov"]/nx/60.0,
                         "chan_lim": [rmf.cmin, rmf.cmax],
                         "rmf": rmf_file, "arf": arf_file,
@@ -679,12 +681,12 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         Whether or not to include the instrumental background. Default: True
     ptsrc_bkgnd : boolean, optional
         Whether or not to include the point-source background. Default: True
-    dither_shape : string
-        The shape of the dither. Currently "circle" or "square" 
-        Default: "square"
-    dither_size : float
-        The size of the dither in arcseconds. Width of square or radius
-        of circle. Default: 16.0
+    dither_params : array-like of floats, optional
+        The parameters to use to control the size and period of the dither
+        pattern. The first two numbers are the dither amplitude in x and y
+        detector coordinates in arcseconds, and the second two numbers are
+        the dither period in x and y detector coordinates in seconds. 
+        Default: [8.0, 8.0, 1000.0, 707.0].
     subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
@@ -769,12 +771,12 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     bkgnd_file : string, optional
         If set, backgrounds will be loaded from this file and not generated
         on the fly. Default: None
-    dither_shape : string
-        The shape of the dither. Currently "circle" or "square" 
-        Default: "square"
-    dither_size : float
-        The size of the dither in arcseconds. Width of square or radius
-        of circle. Default: 16.0
+    dither_params : array-like of floats, optional
+        The parameters to use to control the size and period of the dither
+        pattern. The first two numbers are the dither amplitude in x and y
+        detector coordinates in arcseconds, and the second two numbers are
+        the dither period in x and y detector coordinates in seconds. 
+        Default: [8.0, 8.0, 1000.0, 707.0].
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
     subpixel_res: boolean, optional

@@ -13,7 +13,6 @@ from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
     AuxiliaryResponseFile
 from soxs.instrument_registry import get_instrument_from_registry, \
     add_instrument_to_registry
-from numpy.random import RandomState
 from sherpa.astro.ui import set_source, freeze, \
     fit, covar, get_covar_results, set_covar_opt, \
     load_data, set_stat, set_method
