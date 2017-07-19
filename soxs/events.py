@@ -397,6 +397,9 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     H, xedges, yedges = np.histogram2d(x, y, bins=[xbins, ybins])
 
     if expmap_file is not None:
+        if coord_type == "det":
+            raise RuntimeError("Cannot divide by an exposure map for images "
+                               "binned in detector coordinates!")
         f = pyfits.open(expmap_file)
         if f["EXPMAP"].shape != (nx, ny):
             raise RuntimeError("Exposure map and image do not have the same shape!!")
