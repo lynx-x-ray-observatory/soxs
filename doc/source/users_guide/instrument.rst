@@ -39,6 +39,14 @@ following:
  
 The ``overwrite`` argument allows an existing file to be overwritten.
 
+.. _coords:
+
+Coordinate Systems in SOXS
+--------------------------
+
+.. image:: ../images/det_schematic.png
+    :width: 800px
+
 .. _instrument-arg:
 
 The ``instrument`` Argument
