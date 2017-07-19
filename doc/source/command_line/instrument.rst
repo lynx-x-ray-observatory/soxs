@@ -190,3 +190,77 @@ Examples
 .. code-block:: bash
 
     [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha
+
+``make_exposure_map``
+---------------------
+
+This script takes an event file made by SOXS and makes a SOXS exposure map for it. 
+
+.. code-block:: text
+
+    usage: make_exposure_map [-h] [--energy ENERGY] [--weightsfile WEIGHTSFILE]
+                             [--asol_file ASOL_FILE] [--overwrite]
+                             [--nhistx NHISTX] [--nhisty NHISTY]
+                             [--normalize | --no_normalize]
+                             event_file expmap_file
+    
+    Make a SOXS exposure map from an event file.
+    
+    positional arguments:
+      event_file            The event file to use to make the exposure map.
+      expmap_file           The file to write the exposure map to.
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --energy ENERGY       The reference energy to use when making the exposure
+                            map. This parameter will be ignored if a 'weightsfile'
+                            is set.
+      --weightsfile WEIGHTSFILE
+                            A file containing two columns: energy and spectral
+                            weights, to create an exposure map weighted over an
+                            energy band.
+      --asol_file ASOL_FILE
+                            If set, write the aspect solution to this file.
+      --overwrite           Overwrite an existing file with the same name.
+      --nhistx NHISTX       The number of bins in the aspect histogram in the DETX
+                            direction. Default: 16
+      --nhisty NHISTY       The number of bins in the aspect histogram in the DETY
+                            direction. Default: 16
+      --normalize           Normalize the exposure map by the exposure time. This
+                            is the default.
+      --no_normalize        Don't normalize the exposure map by the exposure time.
+
+Examples
+++++++++
+
+Make an exposure map from an event file at a single energy of 3.0 keV.
+
+.. code-block:: bash
+
+    [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --overwrite
+
+Also write an aspect solution file.
+
+.. code-block:: bash
+
+    [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --asol_file=asol.fits --overwrite
+
+Make an exposure map, using an ASCII text file with two columns, energy and flux, 
+to weight the exposure. 
+
+.. code-block:: bash
+
+    [~]$ make_exposure_map evt.fits expmap.fits --weightsfile=spec.dat --overwrite
+
+Make an exposure map and change the binning of the aspect histogram. 
+
+.. code-block:: bash
+
+    [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --overwrite --nhistx=32 --nhisty=32
+
+Make an exposure map, but don't normalize by the exposure time. 
+
+.. code-block:: bash
+
+    [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --overwrite --no_normalize
+
