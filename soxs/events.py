@@ -450,17 +450,17 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     """
     rmin = parse_value(rmin, "arcsec")
     rmax = parse_value(rmax, "arcsec")
-    emin = parse_value(emin, "keV")
-    emax = parse_value(emax, "keV")
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]
     if emin is None:
         emin = e.min()
     else:
+        emin = parse_value(emin, "keV")
         emin *= 1000.
     if emax is None:
         emax = e.max()
     else:
+        emax = parse_value(emax, "keV")
         emax *= 1000.
     idxs = np.logical_and(e > emin, e < emax)
     x = f["EVENTS"].data["X"][idxs]
@@ -560,17 +560,17 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         Supply an exposure map file to divide this image by
         to get a flux map. Default: None
     """
-    emin = parse_value(emin, "keV")
-    emax = parse_value(emax, "keV")
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]
     if emin is None:
         emin = e.min()
     else:
+        emin = parse_value(emin, "keV")
         emin *= 1000.
     if emax is None:
         emax = e.max()
     else:
+        emax = parse_value(emax, "keV")
         emax *= 1000.
     idxs = np.logical_and(e > emin, e < emax)
     xcoord, ycoord, xcol, ycol = coord_types[coord_type]
