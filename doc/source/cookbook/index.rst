@@ -18,6 +18,7 @@ Python Notebooks
    make_background_file
    point_source_catalog
    cosmo_source_catalog
+   radial_profile
 
 Command Line Scripts
 --------------------
