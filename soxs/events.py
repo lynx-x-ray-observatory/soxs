@@ -258,7 +258,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         rfunc = getattr(rfilter, rtype)
         new_args = parse_region_args(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
         r = rfunc(*new_args)
-        tmpmap += r.mask(tmpmap)
+        tmpmap += r.mask(tmpmap).astype("float64")
 
     if dither_params["dither_on"]:
         expmap = np.zeros((2*nx, 2*ny))
@@ -276,7 +276,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     if normalize:
         expmap /= exp_time
 
-    rotate(expmap, roll, output=expmap, reshape=False)
+    if roll != 0.0:
+        rotate(expmap, roll, output=expmap, reshape=False)
 
     map_header = {"EXPOSURE": exp_time,
                   "MTYPE1": "EQPOS",
@@ -607,8 +608,9 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
             raise RuntimeError("Exposure map and image do not have the same shape!!")
         with np.errstate(divide='ignore'):
             H /= f["EXPMAP"].data.T
+        H[np.isinf(H)] = 0.0
         H = np.nan_to_num(H)
-        H[H < 0] = 0.0
+        H[H < 0.0] = 0.0
         f.close()
 
     hdu = pyfits.PrimaryHDU(H.T)
