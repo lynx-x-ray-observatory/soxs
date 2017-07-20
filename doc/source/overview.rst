@@ -87,8 +87,9 @@ The instrument simulator is called using either the |instrument_simulator_py|_ o
 |instrument_simulator_cmd|_. 
 
 Currently, the instrument simulator can simulate "default" instrument configurations for 
-*Lynx* and *Athena*, but one can also supply a modified instrument configuration for use
-with the instrument simulator, which is laid out in more detail in :ref:`instrument`. 
+*Lynx*, *Athena*, *Chandra*, and *Hitomi*, but one can also supply a modified instrument 
+configuration for use with the instrument simulator, which is laid out in more detail in 
+:ref:`instrument`. 
 
 Working with Other Tools
 ------------------------
