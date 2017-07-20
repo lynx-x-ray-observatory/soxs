@@ -61,11 +61,11 @@ also shown in Figure 1. In event files and images, standard world coordinate sys
 (WCS) keywords are used to translate between sky coordinates and RA and Dec. 
 
 .. figure:: ../images/det_schematic.png
-    :width: 800px
+    :width: 700px
 
-    Schematic showing the layout of sky and detector coordinate systems, as well
-    as multiple chips, for an example instrument similar to *Chandra*/ACIS-I. A 
-    roll angle of 45 degrees has been specified. 
+    Figure 1: Schematic showing the layout of sky and detector coordinate systems, 
+    as well as multiple chips, for an example instrument similar to *Chandra*/ACIS-I. 
+    A roll angle of 45 degrees has been specified. 
 
 If the ``roll_angle`` parameter of the instrument simulation is 0, the sky and detector
 coordinate systems will be aligned, but otherwise they will not. Figure 1 shows the 
