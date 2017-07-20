@@ -49,6 +49,7 @@ SOXS has the following Python dependencies:
 * `SciPy <http://www.scipy.org>`_
 * `h5py <http://www.h5py.org>`_
 * `tqdm <http://github.com/noamraph/tqdm>`_
+* `pyregion <http://pyregion.readthedocs.io>`_
 
 Using any installation method, these dependencies should automatically install 
 (if you do not already have them) provided you are connected to the internet.

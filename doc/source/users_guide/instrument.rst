@@ -48,13 +48,41 @@ Coordinate Systems in SOXS
 SOXS event files produced by the instrument simulator have two coordinate systems:
 the (X, Y) "sky" coordinate system and the (DETX, DETY) "detector" coordinate system.
 
-If the ``roll_angle`` parameter of the instrument simulation is 0, the sky and detector
-coordinate systems will be aligned, but otherwise they will not. The schematic in 
-Figure 1 shows the orientation of the detector in the sky coordinate system for a roll
-angle of 45 degrees.
+For a given instrument specification, the detector space is defined by the field of 
+view parameter ``fov``, which is in arcminutes, and is divided into ``num_pixels``
+pixels on a side. The field of view is shown in the schematic diagram in Figure 1 
+as the dashed red square. The center of the field of view has detector coordinates 
+0,0, as can be seen in Figure 1. 
 
-.. image:: ../images/det_schematic.png
+The sky coordinate system is defined to be twice the size of the ``fov`` parameter, with
+twice as many pixels. The center of the sky coordinate system is given by pixel 
+coordinates ``0.5*(num_pixels+1),0.5*(num_+pixels+1)``. The sky coordinate system is
+also shown in Figure 1. In event files and images, standard world coordinate system 
+(WCS) keywords are used to translate between sky coordinates and RA and Dec. 
+
+.. figure:: ../images/det_schematic.png
     :width: 800px
+
+    Schematic showing the layout of sky and detector coordinate systems, as well
+    as multiple chips, for an example instrument similar to *Chandra*/ACIS-I. A 
+    roll angle of 45 degrees has been specified. 
+
+If the ``roll_angle`` parameter of the instrument simulation is 0, the sky and detector
+coordinate systems will be aligned, but otherwise they will not. Figure 1 shows the 
+orientation of the detector in the sky coordinate system for a roll angle of 45 degrees. 
+For observations which have dither, the sky coordinates and the detector coordinates
+will not have a one-to-one mapping, but will change as a function of time. 
+
+Finally, Figure 1 also shows that multiple chips can be specified. In this case, only
+events which fall within the chip regions are detected. For more information on how
+multiple chips can be specified for a particlular instrument, see :ref:`chips`.
+
+.. warning::
+
+    At the present time, the coordinate systems specified in SOXS do not correspond 
+    directly to those systems in event files produced by actual X-ray observatories.
+    This is particularly true of detector coordinates. The conventions chosen by 
+    SOXS are mainly for convenience. 
 
 .. _instrument-arg:
 
