@@ -39,18 +39,17 @@ etc.
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
-      --dither_shape DITHER_SHAPE
-                            The shape of the dither pattern: square, circle, or
-                            None. Default: square
-      --dither_size DITHER_SIZE
-                            The size of the dither pattern in arcseconds. For a
-                            circle, thesize is the radius; for a square, the size
-                            is the width. Default: 16.0
       --input_sources INPUT_SOURCES
                             Use a previously written table of point sources as
                             input instead of generating them.
       --subpixel_res        Don't uniformly distribute event positions within
                             pixels.
+      --dither_params DITHER_PARAMS
+                            The parameters controlling the size and period of
+                            dither. Four floats joined by commas, in the form of
+                            x_amp,y_amp,x_period,y_period. The first two numbers
+                            are in arcseconds and the second are in seconds.
+                            Default: 8.0,8.0,1000.0,707.0
       --absorb_model ABSORB_MODEL
                             The absorption model to use for foreground galactic
                             absorption. Default: 'wabs'
@@ -98,17 +97,11 @@ This example uses a JSON file created by the user, which contains a custom instr
 Changing Dither
 ~~~~~~~~~~~~~~~
 
-Change the dither shape to a circle and make the dither radius 32 arcsec:
+Change the dither amplitudes to 32 arcseconds and the periods to 707 and 1200 seconds:
 
 .. code-block:: bash
 
-    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --overwrite
-
-Turn dithering off entirely:
-
-.. code-block:: bash
-
-    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --dither_shape=None --overwrite
+    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --dither_params=32.,32.,707.,1200. --overwrite
 
 Customizing the Background
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

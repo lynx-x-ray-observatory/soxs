@@ -17,7 +17,8 @@ creates a standard event file using the instrument simulator.
 1. Uses the effective area curve to determine which events will actually be 
    detected.
 2. Projects these events onto the detector plane and perform PSF blurring and 
-   dithering of their positions.
+   dithering of their positions (if dithering is enabled for that particular
+   instrument).
 3. Add background events.
 4. Convolves the event energies with the response matrix to produce channels.
 5. Writes everything to an event file.
@@ -160,24 +161,23 @@ Other Modifications
 
 You can also change other aspects of the observation with 
 :func:`~soxs.instrument.instrument_simulator`. For example, you can change the
-shape and size of the dither pattern. The default dither pattern is a square of
-width 16.0 arcseconds on a side. You can change it to be a circle dither pattern
-or turn off dithering entirely:
+size and period of the Lissajous dither pattern, for instruments which have 
+dithering enabled. The default dither pattern has amplitudes of 8.0 arcseconds 
+in the DETX and DETY directions, and a period of 1000.0 seconds in the DETX 
+direction and a period of 707.0 seconds in the DETY direction. You can change
+these numbers by supplying a list of parameters to the ``dither_params`` argument:
 
 .. code-block:: python
 
     import soxs
-    # this invocation makes the dither shape a circle and 
-    # sets the radius to 8 arcsec
+    # The order of dither_params is [x_amp, y_amp, x_period, y_period]
+    # the units of the amplitudes are in arcseconds and the periods are in
+    # seconds
+    dither_params = [8.0, 16.0, 1000.0, 2121.0]
     soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                              sky_center, overwrite=True, dither_shape="circle", 
-                              dither_size=8.0)
+                              sky_center, overwrite=True, 
+                              dither_params=dither_params)
     
-.. code-block:: python
-
-    # this invocation turns off dithering entirely
-    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                              sky_center, overwrite=True, dither_shape=None) 
 
 .. note:: 
 

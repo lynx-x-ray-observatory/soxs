@@ -42,13 +42,12 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
-      --dither_shape DITHER_SHAPE
-                            The shape of the dither pattern: square, circle, or
-                            None. Default: square
-      --dither_size DITHER_SIZE
-                            The size of the dither pattern in arcseconds. For a
-                            circle, thesize is the radius; for a square, the size
-                            is the width. Default: 16.0
+      --dither_params DITHER_PARAMS
+                            The parameters controlling the size and period of
+                            dither. Four floats joined by commas, in the form of
+                            x_amp,y_amp,x_period,y_period. The first two numbers
+                            are in arcseconds and the second are in seconds.
+                            Default: 8.0,8.0,1000.0,707.0
       --roll_angle ROLL_ANGLE
                             The roll angle in degrees. Default: 0.0
       --bkgnd_file BKGND_FILE
@@ -106,17 +105,11 @@ Change the roll angle to 45 degrees:
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --roll_angle=45.0 --overwrite
 
-Change the dither shape to a circle and make the dither radius 32 arcsec:
+Change the dither amplitudes to 32 arcseconds and the periods to 707 and 1200 seconds:
 
 .. code-block:: bash
 
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --dither_shape=circle --dither_size=32.0 --overwrite
-
-Turn dithering off entirely:
-
-.. code-block:: bash
-
-    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --dither_shape=None --overwrite
+    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --dither_params=32.,32.,707.,1200. --overwrite
 
 Customizing Backgrounds
 ~~~~~~~~~~~~~~~~~~~~~~~
