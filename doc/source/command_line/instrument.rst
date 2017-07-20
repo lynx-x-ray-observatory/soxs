@@ -110,13 +110,13 @@ Change the dither amplitudes to 32 arcseconds and the periods to 707 and 1200 se
 
 .. code-block:: bash
 
-    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --dither_params=32.,32.,707.,1200. --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --dither_params=32.,32.,707.,1200. --overwrite
 
 Turn dither off entirely:
 
 .. code-block:: bash
 
-    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --no_dither --overwrite
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --no_dither --overwrite
 
 Customizing Backgrounds
 ~~~~~~~~~~~~~~~~~~~~~~~
