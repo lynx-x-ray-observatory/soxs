@@ -139,7 +139,7 @@ def parse_region_args(rtype, args, dx, dy):
 
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False,
-                      nhistx=16, nhisty=16):
+                      reblock=1, nhistx=16, nhisty=16):
     """
     Make an exposure map for a SOXS event file, and optionally write
     an aspect solution file. The exposure map will be created by
@@ -536,7 +536,7 @@ coord_types = {"sky": ("X", "Y", 2, 3),
                "det": ("DETX", "DETY", 6, 7)}
 
 def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None, 
-                overwrite=False, expmap_file=None):
+                overwrite=False, expmap_file=None, reblock=1):
     r"""
     Generate a image by binning X-ray counts and write 
     it to a FITS file.
@@ -562,7 +562,14 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     expmap_file : string, optional
         Supply an exposure map file to divide this image by
         to get a flux map. Default: None
+    reblock : integer, optional
+        Change this value to reblock the image to larger 
+        pixel sizes (reblock >= 1). Only supported for
+        sky coordinates. Default: 1
     """
+    if coord_type == "det" and reblock > 1:
+        raise RuntimeError("Reblocking images is not supported "
+                           "for detector coordinates!")
     f = pyfits.open(evt_file)
     e = f["EVENTS"].data["ENERGY"]
     if emin is None:
@@ -587,14 +594,12 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     if coord_type == 'sky':
         xctr = f["EVENTS"].header["TCRVL%d" % xcol]
         yctr = f["EVENTS"].header["TCRVL%d" % ycol]
-        xdel = f["EVENTS"].header["TCDLT%d" % xcol]
-        ydel = f["EVENTS"].header["TCDLT%d" % ycol]
-        xpix = f["EVENTS"].header["TCRPX%d" % xcol]
-        ypix = f["EVENTS"].header["TCRPX%d" % ycol]
+        xdel = f["EVENTS"].header["TCDLT%d" % xcol]*reblock
+        ydel = f["EVENTS"].header["TCDLT%d" % ycol]*reblock
     f.close()
 
-    nx = int(xmax-xmin)
-    ny = int(ymax-ymin)
+    nx = int(xmax-xmin)//reblock
+    ny = int(ymax-ymin)//reblock
 
     xbins = np.linspace(xmin, xmax, nx+1, endpoint=True)
     ybins = np.linspace(ymin, ymax, ny+1, endpoint=True)
@@ -628,8 +633,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         hdu.header["CUNIT2"] = "deg"
         hdu.header["CDELT1"] = xdel
         hdu.header["CDELT2"] = ydel
-        hdu.header["CRPIX1"] = xpix
-        hdu.header["CRPIX2"] = ypix
+        hdu.header["CRPIX1"] = 0.5*(nx+1)
+        hdu.header["CRPIX2"] = 0.5*(ny+1)
     else:
         hdu.header["CUNIT1"] = "pixel"
         hdu.header["CUNIT2"] = "pixel"
