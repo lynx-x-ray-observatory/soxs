@@ -151,9 +151,10 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         The path to the event file to use for making the exposure map.
     expmap_file : string
         The path to write the exposure map file to.
-    energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+    energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, or NumPy array
         The energy in keV to use when computing the exposure map, or 
-        a set of energies to be used with the *weights* parameter. 
+        a set of energies to be used with the *weights* parameter. If
+        providing a set, it must be in keV.
     weights : array-like, optional
         The weights to use with a set of energies given in the
         *energy* parameter. Used to create a more accurate exposure
@@ -176,10 +177,10 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     import pyregion._region_filter as rfilter
     from scipy.ndimage.interpolation import rotate, shift
     from soxs.instrument import AuxiliaryResponseFile, perform_dither
-    if iterable(energy) and weights is None:
+    if isinstance(energy, np.ndarray) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if "
                            "you do not supply weights!")
-    if not iterable(energy):
+    if not isinstance(energy, np.ndarray):
         energy = parse_value(energy, "keV")
     f_evt = pyfits.open(event_file)
     hdu = f_evt["EVENTS"]

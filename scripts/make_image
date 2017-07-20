@@ -6,9 +6,9 @@ from soxs import write_image
 parser = argparse.ArgumentParser(description='Make a FITS image from a SOXS event file.')
 parser.add_argument("event_file", type=str, help="The event file to use to make the image.")
 parser.add_argument("out_file", type=str, help='The file to write the image to.')
-parser.add_argument("--coord_type", type=str, help="The type of coordinate to bin into "
-                                                   "the image. Can be 'sky' or 'det'. "
-                                                   "Default: 'sky'")
+parser.add_argument("--coord_type", type=str, default="sky",
+                    help="The type of coordinate to bin into the image. Can be 'sky' "
+                         "or 'det'. Default: 'sky'")
 parser.add_argument("--emin", help="The minimum energy of the photons to put in the "
                                     "image, in keV.")
 parser.add_argument("--emax", help="The maximum energy of the photons to put in the "

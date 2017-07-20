@@ -32,7 +32,7 @@ This script takes an event file made by SOXS and makes a SOXS exposure map for i
                             map. This parameter will be ignored if a 'weightsfile'
                             is set.
       --weightsfile WEIGHTSFILE
-                            A file containing two columns: energy and spectral
+                            A file containing two columns: energy in keV and spectral
                             weights, to create an exposure map weighted over an
                             energy band.
       --asol_file ASOL_FILE
