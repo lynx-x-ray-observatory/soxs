@@ -314,7 +314,8 @@ The various parts of each instrument specification are:
   or an area within which chips are embedded.
 * ``"num_pixels"``: The number of resolution elements on a side of the field of 
   view.
-* ``"chips"``: The specification for multiple chips, if desired. 
+* ``"chips"``: The specification for multiple chips, if desired. For more details
+  on how to specify chips, see :ref:`chips`. 
 * ``"bkgnd"``: The name of the instrumental background to use, stored in the 
   background registry (see :ref:`background` for more details). This can also be
   set to ``None`` for no particle background.
@@ -374,6 +375,8 @@ file for editing using :func:`~soxs.instrument.write_instrument_json`:
     1. Python's ``None`` will convert to ``null``, and vice-versa.
     2. ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
 
+.. _chips:
+
 Defining Instruments with Multiple Chips
 ++++++++++++++++++++++++++++++++++++++++
 
@@ -383,3 +386,58 @@ possible to specify multiple chips with essentially arbitary shapes. In this cas
 the ``"chips"`` entry needs to be a list containing a set of lists, one for each
 chip, that specifies a region expression parseable by the 
 `pyregion <https://pyregion.readthedocs.io>`_ package. 
+
+Three options are currently recognized by SOXS for chip shapes:
+
+* Rectangle shapes, which use the ``Box`` region. The four arguments are ``xc``
+  (center in the x-coordinate), ``yc`` (center in the y-coordinate), ``width``,
+  and ``height``.
+* Circle shapes, which use the ``Circle`` region. The three arguments are ``xc``
+  (center in the x-coordinate), ``yc`` (center in the y-coordinate), and ``radius``.
+* Generic polygon shapes, which use the ``Polygon`` region. The two arguments are
+  ``x`` and ``y``, which are lists of x and y coordinates for each point of the
+  polygon. 
+
+To create a chip, simply supply a list starting with the name of the region 
+type and followed by the arguments in order. All coordinates and distances are
+in detector coordinates. For example, a ``Box`` region at detector coordinates
+(0,0) with a width of 100 pixels and a height of 200 pixels would be specified
+as ``["Box", 0.0, 0.0, 100, 200]``. 
+
+For example, the *Chandra* ACIS-I instrument configurations have a list of four 
+``Box`` regions to specify the four I-array square-shaped chips:
+
+.. code-block:: python
+
+    instrument_registry["acisi_cy18"] = {"name": "acisi_cy18",
+                                         "arf": "acisi_aimpt_cy18.arf",
+                                         "rmf": "acisi_aimpt_cy18.rmf",
+                                         "bkgnd": "acisi",
+                                         "fov": 20.008,
+                                         "num_pixels": 2440,
+                                         "aimpt_coords": [86.0, 57.0],
+                                         "chips": [["Box", -523, -523, 1024, 1024],
+                                                   ["Box", 523, -523, 1024, 1024],
+                                                   ["Box", -523, 523, 1024, 1024],
+                                                   ["Box", 523, 523, 1024, 1024]],
+                                         "psf": ["gaussian", 0.5],
+                                         "focal_length": 10.0,
+                                         "dither": True}
+
+whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
+
+.. code-block:: python
+
+    instrument_registry["athena_xifu"] = {"name": "athena_xifu",
+                                          "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
+                                          "rmf": "athena_xifu_rmf_v20160401.rmf",
+                                          "bkgnd": "athena_xifu",
+                                          "fov": 5.991992621478149,
+                                          "num_pixels": 84,
+                                          "aimpt_coords": [0.0, 0.0],
+                                          "chips": [["Polygon", 
+                                                     [-33, 0, 33, 33, 0, -33],
+                                                     [20, 38, 20, -20, -38, -20]]],
+                                          "focal_length": 12.0,
+                                          "dither": False,
+                                          "psf": ["gaussian", 5.0]}
