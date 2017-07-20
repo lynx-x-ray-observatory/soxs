@@ -1,4 +1,4 @@
-__version__ = "1.3-dev"
+__version__ = "1.3.0"
 
 from soxs.simput import \
     write_photon_list, \
