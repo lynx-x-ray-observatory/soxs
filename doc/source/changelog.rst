@@ -8,6 +8,20 @@ Version 1.3.0
 
 This is a release with important new features and some bugfixes.
 
+* SOXS now includes the ability to implement instruments with more than one chip
+  with gaps in between, and chips which are not square in size. See :ref:`instrument`
+  for more information.
+* The *Chandra* ACIS-I instrument specifications have been changed so that they
+  implement 4 chips in a 2x2 array, using the new SOXS chip functionality.
+  The old specifications still exist in the instrument registry as ``"acisi_cy0_old"``
+  and ``"acisi_cy18_old"``.
+* The *Athena* WFI and X-IFU instrument specifications have been changed so that
+  they more closely match the current models, using the new SOXS chip functionality.
+  The old specifications still exist in the instrument registry as ``"athena_wfi_old"``
+  and ``"athena_xifu_old"``.
+* SOXS now has the ability to create exposure maps for SOXS simulations and use them
+  when making images and radial profiles. See :ref:`event-tools` and :ref:`cmd-events` 
+  for more information.
 * Many arguments to functions and command line scripts which have units (such as 
   exposure time, field of view, area, temperature, etc.) now accept arguments with
   units. See :ref:`units` and :ref:`cmd-units` for more information.
