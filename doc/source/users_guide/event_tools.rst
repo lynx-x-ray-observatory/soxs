@@ -76,7 +76,14 @@ keywords:
                            overwrite=True, nhistx=32, nhisty=32)
 
 Examples of images and exposure maps for a simulation of a galaxy cluster for *Chandra*/ACIS-I
-and *Athena*/XIFU are shown in Figures 1 and 2. 
+and *Athena*/XIFU are shown in Figure 1. 
+
+.. figure:: ../images/exposure_maps.png
+    :width: 700px
+
+    Figure 1: Images (left), exposure-corrected images (center) and exposure maps (right)
+    for mock observations of a galaxy cluster for *Chandra*/ACIS-I (top) and *Athena*/XIFU 
+    (bottom), simulated using SOXS.
 
 .. warning::
 
