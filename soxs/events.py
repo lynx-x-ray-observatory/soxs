@@ -513,8 +513,9 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         r = np.sqrt((x-ctr[0])**2 + (y-ctr[1])**2)
         f.close()
         E = np.histogram(r, bins=rr, weights=exp)[0] / np.histogram(r, bins=rr)[0]
-        F = R/E
-        Ferr = Rerr/E
+        with np.errstate(invalid='ignore', divide='ignore'):
+            F = R/E
+            Ferr = Rerr/E
         SF = F/A
         SFerr = Ferr/A
         col11 = pyfits.Column(name='MEAN_SRC_EXP', format='D', unit='cm**2', array=E)
@@ -607,7 +608,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         f = pyfits.open(expmap_file)
         if f["EXPMAP"].shape != (nx, ny):
             raise RuntimeError("Exposure map and image do not have the same shape!!")
-        with np.errstate(divide='ignore'):
+        with np.errstate(invalid='ignore', divide='ignore'):
             H /= f["EXPMAP"].data.T
         H[np.isinf(H)] = 0.0
         H = np.nan_to_num(H)

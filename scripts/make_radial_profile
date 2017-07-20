@@ -2,6 +2,7 @@
 
 import argparse
 from soxs import write_radial_profile
+import numpy as np
 
 parser = argparse.ArgumentParser(description='Make a FITS radial profile from a SOXS event file.')
 parser.add_argument("event_file", type=str, help="The event file to use to make the profile.")
@@ -12,7 +13,7 @@ parser.add_argument("ctr", help='The central coordinate of the profile. Can eith
                                  'argument must be explicity set to "physical".')
 parser.add_argument("rmin", help="The minimum radius of the profile, in arcseconds.")
 parser.add_argument("rmax", help="The maximum radius of the profile, in arcseconds.")
-parser.add_argument("nbins", help="The number of bins in the profile.")
+parser.add_argument("nbins", type=int, help="The number of bins in the profile.")
 parser.add_argument("--ctr_type", type=str, help="The type of center coordinate. Either "
                                                  "'celestial' for (RA, Dec) coordinates "
                                                  "(the default), or 'physical' for "
@@ -31,7 +32,7 @@ args = parser.parse_args()
 
 ctr = np.array(args.ctr.split(',')).astype("float64")
 
-write_radial_profile(args.event_file, args.out_file, args.ctr, args.rmin,
+write_radial_profile(args.event_file, args.out_file, ctr, args.rmin,
                      args.rmax, args.nbins, ctr_type=args.ctr_type, 
                      emin=args.emin, emax=args.emax, overwrite=args.overwrite,
                      expmap_file=args.expmap_file)
