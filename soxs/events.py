@@ -173,7 +173,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         The number of bins in the aspect histogram in the DETY
         direction. Default: 16
     """
-    import pyregion._region_filter as filter
+    import pyregion._region_filter as rfilter
     from scipy.ndimage.interpolation import rotate, shift
     from soxs.instrument import AuxiliaryResponseFile, perform_dither
     if iterable(energy) and weights is None:
@@ -255,7 +255,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     tmpmap = np.zeros((2*nx, 2*ny))
 
     for rtype, arg in zip(rtypes, args):
-        rfunc = getattr(filter, rtype)
+        rfunc = getattr(rfilter, rtype)
         new_args = parse_region_args(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
         r = rfunc(*new_args)
         tmpmap += r.mask(tmpmap)

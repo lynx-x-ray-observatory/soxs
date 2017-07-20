@@ -61,7 +61,7 @@ def add_background_from_file(events, event_params, bkg_file):
 
 def make_uniform_background(energy, event_params, rmf, prng=None):
     from soxs.instrument import perform_dither
-    import pyregion._region_filter as filter
+    import pyregion._region_filter as rfilter
 
     prng = parse_prng(prng)
 
@@ -82,7 +82,7 @@ def make_uniform_background(energy, event_params, rmf, prng=None):
             thisc = np.ones(n_events, dtype='bool')
             rtype = chip[0]
             args = chip[1:]
-            r = getattr(filter, rtype)(*args)
+            r = getattr(rfilter, rtype)(*args)
             inside = r.inside(bkg_events["detx"], bkg_events["dety"])
             thisc = np.logical_and(thisc, inside)
             bkg_events["chip_id"][thisc] = i
