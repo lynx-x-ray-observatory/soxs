@@ -267,7 +267,8 @@ def perform_dither(t, dither_dict):
         y_offset = np.zeros(t.size)
     return x_offset, y_offset
 
-def generate_events(input_events, exp_time, instrument, sky_center, dither_params=None, 
+def generate_events(input_events, exp_time, instrument, sky_center, 
+                    no_dither=False, dither_params=None, 
                     roll_angle=0.0, subpixel_res=False, prng=None):
     """
     Take unconvolved events and convolve them with instrumental responses. This 
@@ -300,6 +301,8 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
         specification from the instrument registry. 
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
+    no_dither : boolean, optional
+        If True, turn off dithering entirely. Default: False
     dither_params : array-like of floats, optional
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
@@ -348,13 +351,17 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
     plate_scale = instrument_spec["fov"]/nx/60. # arcmin to deg
     plate_scale_arcsec = plate_scale * 3600.0
 
+    if not instrument_spec["dither"]:
+        dither_on = False
+    else:
+        dither_on = not no_dither
     if dither_params is None:
         dither_params = [8.0, 8.0, 1000.0, 707.0]
     dither_dict = {"x_amp": dither_params[0],
                    "y_amp": dither_params[1],
                    "x_period": dither_params[2],
                    "y_period": dither_params[3],
-                   "dither_on": instrument_spec["dither"],
+                   "dither_on": dither_on,
                    "plate_scale": plate_scale_arcsec}
 
     event_params = {}
@@ -522,9 +529,9 @@ def generate_events(input_events, exp_time, instrument, sky_center, dither_param
 
 
 def make_background(exp_time, instrument, sky_center, foreground=True, 
-                    ptsrc_bkgnd=True, instr_bkgnd=True, dither_params=None, 
-                    roll_angle=0.0, subpixel_res=False, input_sources=None, 
-                    absorb_model="wabs", nH=0.05, prng=None):
+                    ptsrc_bkgnd=True, instr_bkgnd=True, no_dither=False,
+                    dither_params=None, roll_angle=0.0, subpixel_res=False, 
+                    input_sources=None, absorb_model="wabs", nH=0.05, prng=None):
     """
     Make background events. 
 
@@ -541,6 +548,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         Whether or not to include the Galactic foreground. Default: True
     instr_bkgnd : boolean, optional
         Whether or not to include the instrumental background. Default: True
+    no_dither : boolean, optional
+        If True, turn off dithering entirely. Default: False
     dither_params : array-like of floats, optional
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
@@ -602,6 +611,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         input_events["sources"].append("ptsrc_bkgnd")
         events, event_params = generate_events(input_events, exp_time,
                                                instrument, sky_center,
+                                               no_dither=no_dither,
                                                dither_params=dither_params, 
                                                roll_angle=roll_angle,
                                                subpixel_res=subpixel_res,
@@ -610,13 +620,17 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     else:
         nx = instrument_spec["num_pixels"]
         events = defaultdict(list)
+        if not instrument_spec["dither"]:
+            dither_on = False
+        else:
+            dither_on = not no_dither
         if dither_params is None:
             dither_params = [8.0, 8.0, 1000.0, 707.0]
         dither_dict = {"x_amp": dither_params[0],
                        "y_amp": dither_params[1],
                        "x_period": dither_params[2],
                        "y_period": dither_params[3],
-                       "dither_on": instrument_spec["dither"],
+                       "dither_on": dither_on,
                        "plate_scale": instrument_spec["fov"]/nx*60.0}
         event_params = {"exposure_time": exp_time, 
                         "fov": instrument_spec["fov"],
@@ -656,7 +670,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
 def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
-                         ptsrc_bkgnd=True, dither_params=None,
+                         ptsrc_bkgnd=True, no_dither=False, dither_params=None,
                          subpixel_res=False, input_sources=None, 
                          absorb_model="wabs", nH=0.05, prng=None):
     """
@@ -681,6 +695,8 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         Whether or not to include the instrumental background. Default: True
     ptsrc_bkgnd : boolean, optional
         Whether or not to include the point-source background. Default: True
+    no_dither : boolean, optional
+        If True, turn off dithering entirely. Default: False
     dither_params : array-like of floats, optional
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
@@ -710,6 +726,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            ptsrc_bkgnd=ptsrc_bkgnd, 
                                            foreground=foreground, 
                                            instr_bkgnd=instr_bkgnd,
+                                           no_dither=no_dither,
                                            dither_params=dither_params, 
                                            subpixel_res=subpixel_res,
                                            input_sources=input_sources,
@@ -720,9 +737,9 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, overwrite=False, instr_bkgnd=True, 
                          foreground=True, ptsrc_bkgnd=True, 
-                         bkgnd_file=None, dither_params=None, 
-                         roll_angle=0.0, subpixel_res=False,
-                         prng=None):
+                         bkgnd_file=None, no_dither=False, 
+                         dither_params=None, roll_angle=0.0, 
+                         subpixel_res=False, prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -771,6 +788,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     bkgnd_file : string, optional
         If set, backgrounds will be loaded from this file and not generated
         on the fly. Default: None
+    no_dither : boolean, optional
+        If True, turn off dithering entirely. Default: False
     dither_params : array-like of floats, optional
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
@@ -799,8 +818,9 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     mylog.info("Making observation of source in %s." % out_file)
     # Make the source first
     events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
-                                           dither_params=dither_params, roll_angle=roll_angle, 
-                                           subpixel_res=subpixel_res, prng=prng)
+                                           no_dither=no_dither, dither_params=dither_params, 
+                                           roll_angle=roll_angle, subpixel_res=subpixel_res, 
+                                           prng=prng)
     # If the user wants backgrounds, either make the background or add an already existing
     # background event file. It may be necessary to reproject events to a new coordinate system.
     if bkgnd_file is None:
@@ -810,9 +830,9 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             mylog.info("Adding background events.")
             bkg_events, _ = make_background(exp_time, instrument, sky_center,
                                             foreground=foreground, instr_bkgnd=instr_bkgnd, 
-                                            dither_params=dither_params, ptsrc_bkgnd=ptsrc_bkgnd, 
-                                            prng=prng, subpixel_res=subpixel_res, 
-                                            roll_angle=roll_angle)
+                                            no_dither=no_dither, dither_params=dither_params, 
+                                            ptsrc_bkgnd=ptsrc_bkgnd, prng=prng, 
+                                            subpixel_res=subpixel_res, roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:

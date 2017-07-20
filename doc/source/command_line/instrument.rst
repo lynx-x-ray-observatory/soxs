@@ -42,6 +42,7 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
+      --no_dither           Turn dithering off entirely.
       --dither_params DITHER_PARAMS
                             The parameters controlling the size and period of
                             dither. Four floats joined by commas, in the form of
@@ -110,6 +111,12 @@ Change the dither amplitudes to 32 arcseconds and the periods to 707 and 1200 se
 .. code-block:: bash
 
     [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --dither_params=32.,32.,707.,1200. --overwrite
+
+Turn dither off entirely:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --no_dither --overwrite
 
 Customizing Backgrounds
 ~~~~~~~~~~~~~~~~~~~~~~~

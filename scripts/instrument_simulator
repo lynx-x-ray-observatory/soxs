@@ -26,6 +26,7 @@ parser.add_argument("--bkgnd_file", type=str,
                     help='Use background stored in a file instead of generating one.')
 parser.add_argument("--subpixel_res", action='store_true',
                     help="Don't uniformly distribute event positions within pixels.")
+parser.add_argument("--no_dither", action="store_true", help="Turn dithering off entirely.")
 parser.add_argument("--dither_params", help="The parameters controlling the size and period of "
                                             "dither. Four floats joined by commas, in the form "
                                             "of x_amp,y_amp,x_period,y_period. The first two "
@@ -66,7 +67,8 @@ else:
 
 instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      instrument, sky_center, overwrite=args.overwrite,
-                     dither_params=dither_params, roll_angle=args.roll_angle, 
-                     instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd, 
-                     foreground=args.foreground, bkgnd_file=args.bkgnd_file, 
-                     subpixel_res=args.subpixel_res, prng=args.random_seed)
+                     no_dither=args.no_dither, dither_params=dither_params, 
+                     roll_angle=args.roll_angle, instr_bkgnd=args.instr_bkgnd, 
+                     ptsrc_bkgnd=args.ptsrc_bkgnd, foreground=args.foreground, 
+                     bkgnd_file=args.bkgnd_file, subpixel_res=args.subpixel_res, 
+                     prng=args.random_seed)

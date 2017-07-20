@@ -45,6 +45,14 @@ The ``overwrite`` argument allows an existing file to be overwritten.
 Coordinate Systems in SOXS
 --------------------------
 
+SOXS event files produced by the instrument simulator have two coordinate systems:
+the (X, Y) "sky" coordinate system and the (DETX, DETY) "detector" coordinate system.
+
+If the ``roll_angle`` parameter of the instrument simulation is 0, the sky and detector
+coordinate systems will be aligned, but otherwise they will not. The schematic in 
+Figure 1 shows the orientation of the detector in the sky coordinate system for a roll
+angle of 45 degrees.
+
 .. image:: ../images/det_schematic.png
     :width: 800px
 
@@ -92,13 +100,13 @@ Chandra
 For simulating *Chandra* observations, two instrument specifications are 
 available, both for the ACIS-I instrument. These specifications are almost 
 identical with a 10-meter focal length, 0.5-arcsecond Gaussian PSF, dithering, 
-0.492-arcsecond pixels, and roughly 16.9 arcminute field of view. However, The 
-two separate specifications, ``"acisi_cy0"`` and ``"acisi_cy18"``, use the 
-instrumental responses from shortly after launch ("Cycle 0") and from more 
-recently ("Cycle 18"), respectively. The main effect is that the effective area 
-at low energies for ``"acisi_cy18"`` is much lower due to the buildup of 
-contamination on the ACIS optical blocking filters compared to the 
-``"acisi_cy0"`` responses.
+0.492-arcsecond pixels, and field of view of roughly 20 arcminutes, laid out in
+four chips arranged 2x2. However, The two separate specifications, ``"acisi_cy0"`` 
+and ``"acisi_cy18"``, use the instrumental responses from shortly after launch 
+("Cycle 0") and from more recently ("Cycle 18"), respectively. The main effect 
+is that the effective area at low energies for ``"acisi_cy18"`` is much lower 
+due to the buildup of contamination on the ACIS optical blocking filters compared
+to the ``"acisi_cy0"`` responses.
 
 Hitomi
 ~~~~~~
@@ -178,6 +186,15 @@ these numbers by supplying a list of parameters to the ``dither_params`` argumen
                               sky_center, overwrite=True, 
                               dither_params=dither_params)
     
+To turn dithering off entirely for instruments that enable it, use the 
+``no_dither`` argument:
+
+.. code-block:: python
+
+    import soxs
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, 
+                              no_dither=True)
 
 .. note:: 
 
