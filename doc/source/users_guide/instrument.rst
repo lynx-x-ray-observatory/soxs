@@ -56,7 +56,7 @@ as the dashed red square. The center of the field of view has detector coordinat
 
 The sky coordinate system is defined to be twice the size of the ``fov`` parameter, with
 twice as many pixels. The center of the sky coordinate system is given by pixel 
-coordinates ``0.5*(num_pixels+1),0.5*(num_+pixels+1)``. The sky coordinate system is
+coordinates ``0.5*(2*num_pixels+1),0.5*(2*num_+pixels+1)``. The sky coordinate system is
 also shown in Figure 1. In event files and images, standard world coordinate system 
 (WCS) keywords are used to translate between sky coordinates and RA and Dec. 
 

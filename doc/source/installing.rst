@@ -21,9 +21,10 @@ may install SOXS using ``conda``:
 
 .. code-block:: bash
 
-    conda install -c jzuhone soxs
+    conda install -c jzuhone -c astropy soxs
   
-These methods install both the Python interface and the command-line scripts. 
+Note both the ``jzuhone`` and ``astropy`` channels are required. These methods 
+install both the Python interface and the command-line scripts. 
 
 Of course, you can always clone the source from 
 `GitHub <http://github.com/XRStools/soxs>`_ and install it manually:
