@@ -39,12 +39,13 @@ def check_file_location(fn, subdir):
     else:
         sto_fn = os.path.join(soxs_path, subdir, fn)
         if os.path.exists(sto_fn):
-            issue_deprecation_warning("It is now recommended to download the "
-                                      "response files from "
-                                      "http://hea-www.cfa.harvard.edu/~jzuhone/soxs "
-                                      "and place them in your current working "
-                                      "directory. In a future release the response "
-                                      "files will not be included in the SOXS bundle.")
+            if fn.endswith("rmf") or fn.endswith("arf"):
+                issue_deprecation_warning("It is now recommended to download the "
+                                          "response files from "
+                                          "http://hea-www.cfa.harvard.edu/~jzuhone/soxs "
+                                          "and place them in your current working "
+                                          "directory. In a future release the response "
+                                          "files will not be included in the SOXS bundle.")
             return sto_fn
     raise IOError("Could not find file %s! Please download it " % fn +
                   "from http://hea-www.cfa.harvard.edu/~jzuhone/soxs.")
