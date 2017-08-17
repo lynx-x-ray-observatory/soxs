@@ -9,6 +9,10 @@ from soxs.background.events import make_uniform_background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
 acisi_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(acisi_bkgnd_file, 10.0)
 
+# ACIS-S BI particle background
+aciss_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
+aciss_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(aciss_bkgnd_file, 10.0)
+
 # Athena-like microcalorimeter background 
 # (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
 mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.h5")
@@ -28,6 +32,7 @@ sxs_bkgnd_file = os.path.join(soxs_files_path, "hitomi_sxs_bkgnd.h5")
 hitomi_sxs_bkgnd = InstrumentalBackgroundSpectrum.from_file(sxs_bkgnd_file, 5.6)
 
 instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
+                          "aciss": aciss_particle_bkgnd,
                           "mucal": mucal_particle_bkgnd,
                           "athena_xifu": athena_xifu_bkgnd,
                           "athena_wfi": athena_wfi_bkgnd,
