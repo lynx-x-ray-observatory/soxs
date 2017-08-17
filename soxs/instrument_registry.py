@@ -7,7 +7,7 @@ import os
 
 instrument_registry = {}
 
-# Lynx
+## Lynx
 
 # High-Definition X-ray Imager (HDXI)
 
@@ -21,7 +21,8 @@ instrument_registry["hdxi"] = {"name": "hdxi_3x10",
                                "chips": None,
                                "focal_length": 10.0,
                                "dither": True,
-                               "psf": ["gaussian", 0.5]}
+                               "psf": ["gaussian", 0.5],
+                               "imaging": True}
 instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 
 # Micro-calorimeter
@@ -36,11 +37,12 @@ instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "chips": None,
                                 "focal_length": 10.0,
                                 "dither": True,
-                                "psf": ["gaussian", 0.5]}
+                                "psf": ["gaussian", 0.5],
+                                "imaging": True}
 
 instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
 
-# Account for different ARFs
+# Account for different ARFs in imager and microcalorimeter
 for det in ["hdxi", "mucal"]:
     for mirror in ["3x15", "3x20", "6x20"]:
         instrument_registry["%s_%s" % (det, mirror)] = instrument_registry[det].copy()
@@ -48,7 +50,16 @@ for det in ["hdxi", "mucal"]:
         instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf" % (det, mirror)
         instrument_registry["%s_%s" % (det, mirror)]["focal_length"] = float(mirror.split("x")[-1])
 
-# Athena
+# Gratings (for spectra only)
+
+instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
+                                        "arf": "xrs_cat.arf",
+                                        "rmf": "xrs_cat.rmf",
+                                        "bkgnd": "acisi",
+                                        "focal_length": 10.0,
+                                        "imaging": False}
+
+## Athena
 
 # XIFU
 
@@ -64,7 +75,8 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                                  [20, 38, 20, -20, -38, -20]]],
                                       "focal_length": 12.0,
                                       "dither": False,
-                                      "psf": ["gaussian", 5.0]}
+                                      "psf": ["gaussian", 5.0],
+                                      "imaging": True}
 
 # WFI
 
@@ -81,9 +93,10 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                                ["Box", 283, 283, 512, 512]],
                                      "focal_length": 12.0,
                                      "dither": False,
-                                     "psf": ["gaussian", 5.0]}
+                                     "psf": ["gaussian", 5.0],
+                                     "imaging": True}
 
-# Old specs
+# Old Athena specs
 
 instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
                                          "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
@@ -95,7 +108,8 @@ instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
                                          "chips": None,
                                          "focal_length": 12.0,
                                          "dither": False,
-                                         "psf": ["gaussian", 5.0]}
+                                         "psf": ["gaussian", 5.0],
+                                         "imaging": True}
 
 instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
                                           "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
@@ -107,9 +121,10 @@ instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
                                           "chips": None,
                                           "focal_length": 12.0,
                                           "dither": False,
-                                          "psf": ["gaussian", 5.0]}
+                                          "psf": ["gaussian", 5.0],
+                                          "imaging": True}
 
-# Chandra
+## Chandra
 
 # ACIS-I, Cycle 0 
 
@@ -126,13 +141,14 @@ instrument_registry["acisi_cy0"] = {"name": "acisi_cy0",
                                               ["Box", 523, 523, 1024, 1024]],
                                     "psf": ["gaussian", 0.5],
                                     "focal_length": 10.0,
-                                    "dither": True}
+                                    "dither": True,
+                                    "imaging": True}
 
-# ACIS-I, Cycle 18
+# ACIS-I, Cycle 19
 
-instrument_registry["acisi_cy18"] = {"name": "acisi_cy18",
-                                     "arf": "acisi_aimpt_cy18.arf",
-                                     "rmf": "acisi_aimpt_cy18.rmf",
+instrument_registry["acisi_cy19"] = {"name": "acisi_cy19",
+                                     "arf": "acisi_aimpt_cy19.arf",
+                                     "rmf": "acisi_aimpt_cy19.rmf",
                                      "bkgnd": "acisi",
                                      "fov": 20.008,
                                      "num_pixels": 2440,
@@ -143,9 +159,63 @@ instrument_registry["acisi_cy18"] = {"name": "acisi_cy18",
                                                ["Box", 523, 523, 1024, 1024]],
                                      "psf": ["gaussian", 0.5],
                                      "focal_length": 10.0,
-                                     "dither": True}
+                                     "dither": True,
+                                     "imaging": True}
 
-# Old specs
+# ACIS-S, Cycle 0
+
+instrument_registry["aciss_cy0"] = {"name": "aciss_cy0",
+                                    "arf": "aciss_aimpt_cy0.arf",
+                                    "rmf": "aciss_aimpt_cy0.rmf",
+                                    "bkgnd": "acisi",
+                                    "fov": 50.02,
+                                    "num_pixels": 6100,
+                                    "aimpt_coords": [206.0, 0.0],
+                                    "chips": [["Box", -2605, 0, 1024, 1024],
+                                              ["Box", -1563, 0, 1024, 1024],
+                                              ["Box", -521, 0, 1024, 1024],
+                                              ["Box", 521, 0, 1024, 1024],
+                                              ["Box", 1563, 0, 1024, 1024],
+                                              ["Box", 2605, 0, 1024, 1024]],
+                                    "psf": ["gaussian", 0.5],
+                                    "focal_length": 10.0,
+                                    "dither": True,
+                                    "imaging": True}
+
+# ACIS-S, Cycle 19
+
+instrument_registry["aciss_cy19"] = {"name": "aciss_cy19",
+                                     "arf": "aciss_aimpt_cy19.arf",
+                                     "rmf": "aciss_aimpt_cy19.rmf",
+                                     "bkgnd": "acisi",
+                                     "fov": 50.02,
+                                     "num_pixels": 6100,
+                                     "aimpt_coords": [206.0, 0.0],
+                                     "chips": [["Box", -2605, 0, 1024, 1024],
+                                               ["Box", -1563, 0, 1024, 1024],
+                                               ["Box", -521, 0, 1024, 1024],
+                                               ["Box", 521, 0, 1024, 1024],
+                                               ["Box", 1563, 0, 1024, 1024],
+                                               ["Box", 2605, 0, 1024, 1024]],
+                                     "psf": ["gaussian", 0.5],
+                                     "focal_length": 10.0,
+                                     "dither": True,
+                                     "imaging": True}
+
+
+# ACIS-S, Cycle 19, Gratings
+
+for energy in ["leg", "meg", "heg"]:
+    for order in range(-3, 4):
+        name = "aciss_%s%d_cy19" % (energy, order)
+        instrument_registry[name] = {"name": name,
+                                     "arf": "%s.garf" % name,
+                                     "rmf": "%s.grmf" % name,
+                                     "bkgnd": "aciss",
+                                     "focal_length": 10.0,
+                                     "imaging": False}
+
+# Old Chandra specs
 
 instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
                                         "arf": "acisi_aimpt_cy0.arf",
@@ -157,11 +227,12 @@ instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
                                         "chips": None,
                                         "psf": ["gaussian", 0.5],
                                         "focal_length": 10.0,
-                                        "dither": True}
+                                        "dither": True,
+                                        "imaging": True}
 
-instrument_registry["acisi_cy18_old"] = {"name": "acisi_cy18",
-                                         "arf": "acisi_aimpt_cy18.arf",
-                                         "rmf": "acisi_aimpt_cy18.rmf",
+instrument_registry["acisi_cy19_old"] = {"name": "acisi_cy19_old",
+                                         "arf": "acisi_aimpt_cy19.arf",
+                                         "rmf": "acisi_aimpt_cy19.rmf",
                                          "bkgnd": "acisi",
                                          "fov": 16.892,
                                          "num_pixels": 2060,
@@ -169,11 +240,12 @@ instrument_registry["acisi_cy18_old"] = {"name": "acisi_cy18",
                                          "chips": None,
                                          "psf": ["gaussian", 0.5],
                                          "focal_length": 10.0,
-                                         "dither": True}
+                                         "dither": True,
+                                         "imaging": True}
 
-# Hitomi
+## Hitomi
 
-# SXS 
+# SXS
 
 instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
                                      "arf": "hitomi_sxs_ptsrc.arf",
@@ -185,8 +257,8 @@ instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
                                      "chips": None,
                                      "focal_length": 5.6,
                                      "dither": False,
-                                     "psf": ["gaussian", 72.0]}
-
+                                     "psf": ["gaussian", 72.0],
+                                     "imaging": True}
 
 def add_instrument_to_registry(inst_spec):
     """
@@ -213,9 +285,10 @@ def add_instrument_to_registry(inst_spec):
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
     ...     "dither": True, # Whether or not to dither the instrument
-    ...     "psf": ["gaussian", 0.5] # The type of PSF and its HPD
-    ...     "chips": None # The specification for the chips
-    ...     "aimpt_coords": [0.0, 0.0] # The detector coordinates of the aimpoint
+    ...     "psf": ["gaussian", 0.5], # The type of PSF and its HPD
+    ...     "chips": None, # The specification for the chips
+    ...     "aimpt_coords": [0.0, 0.0], # The detector coordinates of the aimpoint
+    ...     "imaging": True # Whether or not the instrument can be used for imaging 
     ... }
     """
     if isinstance(inst_spec, dict):
@@ -227,20 +300,30 @@ def add_instrument_to_registry(inst_spec):
     name = inst["name"]
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
-    # Catch older JSON files without chip definitions
-    if "chips" not in inst:
-        mylog.warning("Instrument specifications must now include a 'chips' item, which details "
-                      "the layout of the chips if there are more that one. Assuming None for "
-                      "one chip that covers the entire field of view.")
-        inst["chips"] = None
-    # Catch older JSON files without aimpoint coordinates
-    if "aimpt_coords" not in inst:
-        mylog.warning("Instrument specifications must now include a 'aimpt_coords' item, which "
-                      "details the position in detector coordinates of the nominal aimpoint. "
-                      "Assuming [0.0, 0.0].")
-        inst["aimpt_coords"] = [0.0, 0.0]
-    default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
-                   "aimpt_coords", "focal_length", "num_pixels", "dither", "psf"}
+    # Catch older JSON files which don't distinguish between imaging and non-imaging
+    if "imaging" not in inst:
+        mylog.warning("Instrument specifications must now include an 'imaging' item, which "
+                      "determines whether or not this instrument can be used for imaging or "
+                      "generating spectra only. Default is True.")
+        inst["imaging"] = True
+    if inst['imaging']:
+        # Catch older JSON files without chip definitions
+        if "chips" not in inst:
+            mylog.warning("Instrument specifications must now include a 'chips' item, which details "
+                          "the layout of the chips if there are more that one. Assuming None for "
+                          "one chip that covers the entire field of view.")
+            inst["chips"] = None
+        # Catch older JSON files without aimpoint coordinates
+        if "aimpt_coords" not in inst:
+            mylog.warning("Instrument specifications must now include a 'aimpt_coords' item, which "
+                          "details the position in detector coordinates of the nominal aimpoint. "
+                          "Assuming [0.0, 0.0].")
+            inst["aimpt_coords"] = [0.0, 0.0]
+        default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
+                       "aimpt_coords", "focal_length", "num_pixels",
+                       "dither", "psf", "imaging"}
+    else:
+        default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "imaging"}
     my_keys = set(inst.keys())
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
