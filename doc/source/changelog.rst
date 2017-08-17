@@ -16,6 +16,9 @@ This is a release with important new features and some bugfixes.
   be called with an energy argument to get the values of the spectrum for arbitrary
   energies was not being regenerated if the spectrum was changed, say by foreground
   absorption. This has been fixed.
+* The ability to apply intrinsic foreground absorption to a :class:`~soxs.spectra.Spectrum`
+  has been added by adding an optional ``redshift`` argument to 
+  :meth:`~soxs.spectra.Spectrum.apply_foreground_absorption`. 
 
 Version 1.3.0
 -------------

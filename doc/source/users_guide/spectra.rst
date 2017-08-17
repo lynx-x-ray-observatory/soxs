@@ -364,7 +364,16 @@ parameter (default is ``"wabs"``):
     spec.apply_foreground_absorption(n_H, model="tbabs")
 
 The flux in the energy bins will be reduced according to the absorption at a
-given energy.
+given energy. Optionally, to model absorption intrinsic to a source or 
+from a source intermediate between us and the source, one can supply an
+optional ``redshift`` argument (default 0.0):
+
+.. code-block:: python
+
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
+                                  10.0, 10000)
+    n_H = 0.02
+    spec.apply_foreground_absorption(n_H, model="tbabs", redshift=0.05)
 
 Generating Photon Energies From a Spectrum
 ------------------------------------------

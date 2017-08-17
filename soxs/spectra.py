@@ -364,10 +364,10 @@ class Spectrum(object):
         np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
                    delimiter="\t", header=header)
 
-    def apply_foreground_absorption(self, nH, model="wabs"):
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0):
         """
         Given a hydrogen column density, apply
-        galactic foreground absorption to the spectrum. 
+        galactic foreground absorption to the spectrum.
 
         Parameters
         ----------
@@ -378,12 +378,15 @@ class Spectrum(object):
             (Wisconsin, Morrison and McCammon; ApJ 270, 119) or
             "tbabs" (Tuebingen-Boulder, Wilms, J., Allen, A., & 
             McCray, R. 2000, ApJ, 542, 914). Default: "wabs".
+        redshift : float, optional
+            The redshift of the absorbing material. Default: 0.0
         """
         nH = parse_value(nH, "1.0e22*cm**-2")
+        e = self.emid.value*(1.0+redshift)
         if model == "wabs":
-            sigma = wabs_cross_section(self.emid.value)
+            sigma = wabs_cross_section(e)
         elif model == "tbabs":
-            sigma = tbabs_cross_section(self.emid.value)
+            sigma = tbabs_cross_section(e)
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()
 
