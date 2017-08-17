@@ -25,6 +25,11 @@ mylog = soxsLogger
 
 mylog.setLevel('INFO')
 
+def issue_deprecation_warning(msg):
+    import warnings
+    from numpy import VisibleDeprecationWarning
+    warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
+
 soxs_path = os.path.abspath(os.path.dirname(__file__))
 soxs_files_path = os.path.join(soxs_path, "files")
 
@@ -34,8 +39,15 @@ def check_file_location(fn, subdir):
     else:
         sto_fn = os.path.join(soxs_path, subdir, fn)
         if os.path.exists(sto_fn):
+            issue_deprecation_warning("It is now recommended to download the "
+                                      "response files from "
+                                      "http://hea-www.cfa.harvard.edu/~jzuhone/soxs "
+                                      "and place them in your current working "
+                                      "directory. In a future release the response "
+                                      "files will not be included in the SOXS bundle.")
             return sto_fn
-    raise IOError("Could not find file %s!" % fn)
+    raise IOError("Could not find file %s! Please download it " % fn +
+                  "from http://hea-www.cfa.harvard.edu/~jzuhone/soxs.")
 
 def parse_prng(prng):
     if isinstance(prng, RandomState):
@@ -126,11 +138,6 @@ def convert_rmf(rmffile):
             matrix_new.header[key] = matrix.header[key]
 
     new_f.writeto(os.path.split(rmffile)[-1], overwrite=True)
-
-def issue_deprecation_warning(msg):
-    import warnings
-    from numpy import VisibleDeprecationWarning
-    warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
 
 def parse_value(value, default_units):
     if isinstance(value, string_types):
