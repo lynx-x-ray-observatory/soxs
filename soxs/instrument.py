@@ -850,8 +850,11 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     write_event_file(events, event_params, out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 
-def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
-                      prng=None):
+def simulate_spectrum(spec, instrument, exp_time, out_file,
+                      instr_bkgnd=False, foreground=False,
+                      ptsrc_bkgnd=False, bkgnd_area=(1.0, "arcmin**2"),
+                      absorb_model="wabs", nH=0.05,
+                      overwrite=False, prng=None):
     """
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
     by convolving it with responses. To be used if one wants to 
@@ -864,11 +867,28 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
         The spectrum to be convolved.
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry. 
+        specification from the instrument registry.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time in seconds.
     out_file : string
         The file to write the spectrum to.
+    instr_bkgnd : boolean, optional
+        Whether or not to include the instrumental/particle background. 
+        Default: False
+    foreground : boolean, optional
+        Whether or not to include the local foreground.
+        Default: False
+    ptsrc_bkgnd : boolean, optional
+        Whether or not to include the unresolved point-source background. 
+        Default: False
+    bkgnd_area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The area on the sky for the background components, in square arcminutes.
+        Default: 1 arcmin**2.
+    absorb_model : string, optional
+        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
+    nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2. 
+        Default: 0.05
     overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
@@ -887,8 +907,13 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     from soxs.instrument import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
+    from soxs.background.foreground import hm_astro_bkgnd
+    from soxs.background.instrument import instrument_backgrounds
+    from soxs.background.spectra import BackgroundSpectrum, \
+        ConvolvedBackgroundSpectrum
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
+    bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
@@ -898,14 +923,45 @@ def simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=False,
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
     cspec = ConvolvedSpectrum(spec, arf)
+
+    event_params = {}
+    event_params["arf"] = arf.filename
+    event_params["rmf"] = rmf.filename
+    event_params["exposure_time"] = exp_time
+    event_params["channel_type"] = rmf.header["CHANTYPE"]
+    event_params["telescope"] = rmf.header["TELESCOP"]
+    event_params["instrument"] = rmf.header["INSTRUME"]
+    event_params["mission"] = rmf.header.get("MISSION", "")
+
     events = {}
     events["energy"] = cspec.generate_energies(exp_time, prng=prng).value
+
+    if foreground:
+        mylog.info("Adding in astrophysical foreground.")
+        cspec_frgnd = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, arf)
+        e = cspec_frgnd.generate_energies(exp_time, bkgnd_area, prng=prng).value
+        events["energy"] = np.append(events["energy"], e)
+    if instr_bkgnd and instrument_spec["bkgnd"] is not None:
+        mylog.info("Adding in instrumental background.")
+        instr_spec = instrument_backgrounds[instrument_spec["bkgnd"]]
+        e = instr_spec.generate_energies(exp_time, bkgnd_area,
+                                         focal_length=instrument_spec["focal_length"],
+                                         prng=prng, quiet=True).value
+        events["energy"] = np.append(events["energy"], e)
+    if ptsrc_bkgnd:
+        mylog.info("Adding in background from unresolved point-sources.")
+        spec_plaw = BackgroundSpectrum.from_powerlaw(1.45, 0.0, 2.0e-7, emin=0.01,
+                                                     emax=10.0, nbins=300000)
+        spec_plaw.apply_foreground_absorption(nH, model=absorb_model)
+        cspec_plaw = ConvolvedBackgroundSpectrum(spec_plaw, arf)
+        e = cspec_plaw.generate_energies(exp_time, bkgnd_area, prng=prng).value
+        events["energy"] = np.append(events["energy"], e)
+
     events = rmf.scatter_energies(events, prng=prng)
-    events["arf"] = arf.filename
-    events["rmf"] = rmf.filename
-    events["exposure_time"] = exp_time
-    events["channel_type"] = rmf.header["CHANTYPE"]
-    events["telescope"] = rmf.header["TELESCOP"]
-    events["instrument"] = rmf.header["INSTRUME"]
-    events["mission"] = rmf.header.get("MISSION", "")
+
+    events['time'] = prng.uniform(size=events["energy"].size, low=0.0,
+                                  high=event_params["exposure_time"])
+
+    events.update(event_params)
+
     write_spectrum(events, out_file, overwrite=overwrite)

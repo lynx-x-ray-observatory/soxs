@@ -71,7 +71,7 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
     # Generate background events
 
     energy = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                          event_params["fov"], 
+                                          event_params["fov"],
                                           focal_length=focal_length,
                                           prng=prng, quiet=True).value
 
