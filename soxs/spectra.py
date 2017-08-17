@@ -44,7 +44,6 @@ class Spectrum(object):
         self.nbins = len(self.emid)
         self.de = self.ebins[1]-self.ebins[0]
         self._compute_total_flux()
-        self.func = InterpolatedUnivariateSpline(self.emid.value, self.flux.value)
 
     def _compute_total_flux(self):
         self.total_flux = self.flux.sum()*self.de
@@ -53,6 +52,7 @@ class Spectrum(object):
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
+        self.func = InterpolatedUnivariateSpline(self.emid.value, self.flux.value)
 
     def __add__(self, other):
         if self.nbins != other.nbins or \
