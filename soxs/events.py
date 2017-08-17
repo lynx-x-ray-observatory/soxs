@@ -726,8 +726,8 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     if plot_energy:
         if rmf is not None:
             rmf = RedistributionMatrixFile(rmf)
-            x = 0.5*(rmf.ebounds["E_MIN"]+rmf.ebounds["E_MAX"])
-            xerr = 0.5*(rmf.ebounds["E_MAX"]-rmf.ebounds["E_MIN"])
+            x = 0.5*(rmf.ebounds_data["E_MIN"]+rmf.ebounds_data["E_MAX"])
+            xerr = 0.5*(rmf.ebounds_data["E_MAX"]-rmf.ebounds_data["E_MIN"])
             xlabel = "Energy (keV)"
         else:
             raise RuntimeError("Cannot find the RMF associated with this "

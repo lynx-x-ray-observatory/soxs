@@ -172,7 +172,7 @@ class RedistributionMatrixFile(object):
         self.data = self.handle[self.mat_key].data
         self.header = self.handle[self.mat_key].header
         self.num_mat_columns = len(self.handle[self.mat_key].columns)
-        self.ebounds = self.handle["EBOUNDS"].data
+        self.ebounds_data = self.handle["EBOUNDS"].data
         self.ebounds_header = self.handle["EBOUNDS"].header
         self.weights = np.array([w.sum() for w in self.data["MATRIX"]])
         self.elo = self.data["ENERG_LO"]
@@ -180,14 +180,14 @@ class RedistributionMatrixFile(object):
         self.emid = 0.5*(self.elo+self.ehi)
         self.de = self.ehi-self.elo
         self.n_de = self.elo.size
-        self.n_ch = len(self.ebounds["CHANNEL"])
+        self.n_ch = self.header["DETCHANS"]
         num = 0
         for i in range(1, self.num_mat_columns+1):
             if self.header["TTYPE%d" % i] == "F_CHAN":
                 num = i
                 break
-        self.cmin = self.header["TLMIN%d" % num]
-        self.cmax = self.header["TLMAX%d" % num]
+        self.cmin = self.header.get("TLMIN%d" % num, 1)
+        self.cmax = self.header.get("TLMAX%d" % num, self.n_ch)
 
     def __str__(self):
         return self.filename
@@ -374,7 +374,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     event_params["telescope"] = rmf.header["TELESCOP"]
     event_params["instrument"] = instrument_spec['name']
     event_params["mission"] = rmf.header.get("MISSION", "")
-    event_params["nchan"] = rmf.ebounds_header["DETCHANS"]
+    event_params["nchan"] = rmf.n_ch
     event_params["roll_angle"] = roll_angle
     event_params["fov"] = instrument_spec["fov"]
     event_params["chan_lim"] = [rmf.cmin, rmf.cmax]
@@ -643,7 +643,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "telescope": rmf.header["TELESCOP"],
                         "instrument": instrument_spec['name'],
                         "mission": rmf.header.get("MISSION", ""),
-                        "nchan": rmf.ebounds_header["DETCHANS"],
+                        "nchan": rmf.n_ch,
                         "roll_angle": roll_angle,
                         "aimpt_coords": instrument_spec["aimpt_coords"]}
 
