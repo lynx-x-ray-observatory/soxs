@@ -735,7 +735,10 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     else:
         x = hdu.data[chantype]
         xlabel = "Channel (%s)" % chantype
-    y = hdu.data["COUNT_RATE"]
+    if "COUNT_RATE" in hdu.columns.names:
+        y = hdu.data["COUNT_RATE"]
+    else:
+        y = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]
     yerr = np.sqrt(hdu.data["COUNTS"])/hdu.header["EXPOSURE"]
     if plot_energy:
         yunit = "keV"
