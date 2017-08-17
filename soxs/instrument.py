@@ -5,7 +5,7 @@ import astropy.units as u
 import os
 from collections import defaultdict
 
-from soxs.constants import erg_per_keV
+from soxs.constants import erg_per_keV, sigma_to_fwhm
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, check_file_location, \
     ensure_numpy_array, parse_prng, parse_value, \
@@ -14,8 +14,6 @@ from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
-
-sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 
 class AuxiliaryResponseFile(object):
     r"""
