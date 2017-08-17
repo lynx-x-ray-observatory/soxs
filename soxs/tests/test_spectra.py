@@ -6,8 +6,8 @@ import tempfile
 import shutil
 
 def test_arithmetic():
-    spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4)
-    spec2 = Spectrum.from_powerlaw(2.0, 0.01, 1.0e-3)
+    spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4, 0.1, 10.0, 10000)
+    spec2 = Spectrum.from_powerlaw(2.0, 0.01, 1.0e-3, 0.1, 10.0, 10000)
     spec3 = spec1+spec2
     flux3 = spec1.flux+spec2.flux
 
@@ -26,7 +26,7 @@ def test_arithmetic():
 
     assert_allclose(spec6.flux, flux6)
 
-    spec7 = Spectrum.from_constant(1.0e-4)
+    spec7 = Spectrum.from_constant(1.0e-4, 0.1, 10.0, 10000)
     spec8 = spec1+spec7
 
     assert_allclose(spec8.flux.value, spec1.flux.value+1.0e-4)
@@ -37,7 +37,7 @@ def test_read_write():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4)
+    spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4, 0.1, 10.0, 10000)
     spec1.write_file("test_spec.dat", overwrite=True)
     spec2 = Spectrum.from_file("test_spec.dat")
 
@@ -50,7 +50,7 @@ def test_read_write():
     shutil.rmtree(tmpdir)
 
 def test_rescale_flux():
-    spec = Spectrum.from_powerlaw(2.0, 0.01, 1.0)
+    spec = Spectrum.from_powerlaw(2.0, 0.01, 1.0, 0.1, 10.0, 10000)
 
     spec.rescale_flux(1.0e-4, emin=0.5, emax=7.0, flux_type="photons")
     f = spec.get_flux_in_band(0.5, 7.0)[0]
@@ -62,8 +62,7 @@ def test_rescale_flux():
 
 def test_convolved_spectra():
     arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
-    spec1 = Spectrum.from_powerlaw(2.0, 0.01, 1.0, 
-                                   emin=0.1, emax=10.0, nbins=1000)
+    spec1 = Spectrum.from_powerlaw(2.0, 0.01, 1.0, 0.1, 10.0, 1000)
     cspec1 = ConvolvedSpectrum(spec1, arf)
     cspec2 = spec1*arf
     spec2 = cspec1.deconvolve()

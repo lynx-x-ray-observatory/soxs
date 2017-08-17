@@ -3,6 +3,20 @@
 ChangeLog
 =========
 
+Version 1.4.0
+-------------
+
+This is a release with important new features and some bugfixes.
+
+* A number of class methods for :class:`~soxs.spectra.Spectrum` and their associated
+  command-line scripts now have ``emin``, ``emax``, and ``nbins`` as required arguments.
+  Previously these were optional arguments. More information can be found at :ref:`spectra`
+  and :ref:`cmd-spectra`. These are backwards-incompatible changes.
+* The interpolating spline which allowed :class:`~soxs.spectra.Spectrum` objects to
+  be called with an energy argument to get the values of the spectrum for arbitrary
+  energies was not being regenerated if the spectrum was changed, say by foreground
+  absorption. This has been fixed.
+
 Version 1.3.0
 -------------
 

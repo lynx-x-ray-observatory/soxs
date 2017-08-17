@@ -115,7 +115,7 @@ class Spectrum(object):
         return pflux, eflux
 
     @classmethod
-    def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
+    def from_xspec_script(cls, infile, emin, emax, nbins):
         """
         Create a model spectrum using a script file as 
         input to XSPEC.
@@ -124,14 +124,12 @@ class Spectrum(object):
         ----------
         infile : string
             Path to the script file to use. 
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The minimum energy of the spectrum in keV. 
-            Default: 0.01
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The maximum energy of the spectrum in keV. 
-            Default: 50.0
-        nbins : integer, optional
-            The number of bins in the spectrum. Default: 10000
+        nbins : integer
+            The number of bins in the spectrum.
         """
         f = open(infile, "r")
         xspec_in = f.readlines()
@@ -139,8 +137,7 @@ class Spectrum(object):
         return cls._from_xspec(xspec_in, emin, emax, nbins)
 
     @classmethod
-    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0,
-                         nbins=10000):
+    def from_xspec_model(cls, model_string, params, emin, emax, nbins):
         """
         Create a model spectrum using a model string and parameters
         as input to XSPEC.
@@ -153,12 +150,12 @@ class Spectrum(object):
         params : list
             The list of parameters for the model. Must be in the order
             that XSPEC expects.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The minimum energy of the spectrum in keV. Default: 0.01
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The maximum energy of the spectrum in keV. Default: 50.0
-        nbins : integer, optional
-            The number of bins in the spectrum. Default: 10000
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the spectrum in keV
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the spectrum in keV
+        nbins : integer
+            The number of bins in the spectrum.
         """
         xspec_in = []
         model_str = "%s &" % model_string
@@ -169,11 +166,10 @@ class Spectrum(object):
         return cls._from_xspec(xspec_in, emin, emax, nbins)
 
     @classmethod
-    def from_xspec(cls, model_string, params, emin=0.01, emax=50.0,
-                   nbins=10000):
+    def from_xspec(cls, model_string, params, emin, emax, nbins):
         mylog.warning("The 'from_xspec' method has been deprecated: "
                       "use 'from_xspec_model' instead.")
-        cls.from_xspec_model(model_string, params, emin=emin, emax=emax, nbins=nbins)
+        cls.from_xspec_model(model_string, params, emin, emax, nbins)
 
     @classmethod
     def _from_xspec(cls, xspec_in, emin, emax, nbins):
@@ -205,8 +201,8 @@ class Spectrum(object):
         return cls(ebins, flux)
 
     @classmethod
-    def from_powerlaw(cls, photon_index, redshift, norm,
-                      emin=0.01, emax=50.0, nbins=10000):
+    def from_powerlaw(cls, photon_index, redshift, norm, emin, emax,
+                      nbins):
         """
         Create a spectrum from a power-law model.
 
@@ -220,14 +216,12 @@ class Spectrum(object):
             The normalization of the source in units of
             photons/s/cm**2/keV at 1 keV in the source 
             frame.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The minimum energy of the spectrum in keV. 
-            Default: 0.01
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The maximum energy of the spectrum in keV. 
-            Default: 50.0
-        nbins : integer, optional
-            The number of bins in the spectrum. Default: 10000
+        nbins : integer
+            The number of bins in the spectrum. 
         """
         emin = parse_value(emin, 'keV')
         emax = parse_value(emax, 'keV')
@@ -271,7 +265,7 @@ class Spectrum(object):
         return cls(ebins, flux)
 
     @classmethod
-    def from_constant(cls, const_flux, emin=0.01, emax=50.0, nbins=10000):
+    def from_constant(cls, const_flux, emin, emax, nbins):
         """
         Create a spectrum from a constant model using 
         XSPEC.
@@ -281,14 +275,12 @@ class Spectrum(object):
         const_flux : float
             The value of the constant flux in the units 
             of the spectrum. 
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The minimum energy of the spectrum in keV. 
-            Default: 0.01
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The maximum energy of the spectrum in keV. 
-            Default: 50.0
-        nbins : integer, optional
-            The number of bins in the spectrum. Default: 10000
+        nbins : integer
+            The number of bins in the spectrum.
         """
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')

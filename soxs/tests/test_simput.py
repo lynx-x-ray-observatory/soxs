@@ -20,7 +20,7 @@ def test_append():
     ra0 = 30.0
     dec0 = 45.0
 
-    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-4)
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-4, 0.1, 10.0, 10000)
 
     e1 = spec.generate_energies(exp_time, area, prng=prng)
 

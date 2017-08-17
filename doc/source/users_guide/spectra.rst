@@ -44,15 +44,16 @@ Creating a Constant Spectrum
 A simple constant spectrum can be created using the 
 :meth:`~soxs.spectra.Spectrum.from_constant` method. This takes as input the 
 value of the flux ``const_flux``, which is in units of 
-:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`:
+:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. The parameters
+``emin``, ``emax``, and ``nbins`` are used to control the binning. 
 
 .. code-block:: python
 
     const_flux = 1.0e-7
-    spec = Spectrum.from_constant(const_flux, emin=0.1, emax=10.0, nbins=20000)
-
-The optional parameters ``emin``, ``emax``, and ``nbins`` can be used to control
-the binning. 
+    emin = 0.1
+    emax = 10.0
+    nbins = 20000
+    spec = Spectrum.from_constant(const_flux, emin, emax, nbins)
 
 Creating a Power-Law Spectrum
 +++++++++++++++++++++++++++++
@@ -68,19 +69,20 @@ this is equivalent to:
 
     F_E = K\left[\frac{E(1+z)}{{\rm 1~keV}}\right]^{-\alpha}
     
-where :math:`\alpha` is the ``photon_index`` (note the sign convention). You can 
-set up a power-law spectrum like this:
+where :math:`\alpha` is the ``photon_index`` (note the sign convention). The 
+parameters ``emin``, ``emax``, and ``nbins`` are used to control the binning.
+
+You can set up a power-law spectrum like this:
 
 .. code-block:: python
 
     alpha = 1.2
     zobs = 0.05
     norm = 1.0e-7
-    spec = Spectrum.from_powerlaw(alpha, zobs, norm, emin=0.1, 
-                                  emax=10.0, nbins=20000)
-
-The optional parameters ``emin``, ``emax``, and ``nbins`` can be used to control
-the binning. 
+    emin = 0.1
+    emax = 10.0
+    nbins = 20000
+    spec = Spectrum.from_powerlaw(alpha, zobs, norm, emin, emax, nbins) 
 
 .. _thermal-spectra:
 
@@ -96,7 +98,10 @@ new :class:`~soxs.spectra.Spectrum` objects. You start by initializing an
 .. code-block:: python
 
     from soxs import ApecGenerator
-    agen = ApecGenerator(0.05, 50.0, 10000, apec_vers="2.0.2", broadening=True)
+    emin = 0.05
+    emax = 50.0
+    nbins = 10000
+    agen = ApecGenerator(emin, emax, nbins, apec_vers="2.0.2", broadening=True)
 
 The ``broadening`` parameter sets whether or not spectral lines will be 
 thermally and velocity broadened. The ``apec_vers`` parameter sets the version 
@@ -197,12 +202,14 @@ is by passing in a model string and a list of parameters to the
 
     model_string = "phabs*(mekal+powerlaw)" # A somewhat complicated model
     params = [0.02, 6.0, 1.0, 0.3, 0.03, 1, 0.01, 1.2, 1.0e-3]
-    spec = Spectrum.from_xspec_model(model_string, params, emin=0.1, 
-                                     emax=1.0, nbins=20000)
+    emin = 0.1
+    emax = 5.0
+    nbins = 20000
+    spec = Spectrum.from_xspec_model(model_string, params, emin, emax, nbins)
     
 Note that the parameters must be in the same order that they would be if you 
-were entering them in XSPEC. The ``emin``, ``emax``, and ``nbins`` keyword 
-arguments are used to control the energy binning.
+were entering them in XSPEC. The ``emin``, ``emax``, and ``nbins`` arguments
+are used to control the energy binning.
 
 The second way involves passing an XSPEC script file to the 
 :meth:`~soxs.spectra.Spectrum.from_xspec_script` method which defines an XSPEC
@@ -233,8 +240,10 @@ create a :class:`~soxs.spectra.Spectrum` like this:
 
 .. code-block:: python
 
-    spec = Spectrum.from_xspec_script("two_apec.xcm", emin=0.1, 
-                                      emax=1.0, nbins=20000)
+    emin = 0.1
+    emax = 5.0
+    nbins = 20000
+    spec = Spectrum.from_xspec_script("two_apec.xcm", emin, emax, nbins) 
 
 .. note::
 
@@ -250,7 +259,7 @@ they have the same energy binning:
 
 .. code-block:: python
  
-    spec1 = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9)
+    spec1 = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 10.0, 10000)
     spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
 
     total_spectrum = spec1 + spec2
@@ -350,7 +359,7 @@ parameter (default is ``"wabs"``):
 
 .. code-block:: python
 
-    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9)
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 10.0, 10000)
     n_H = 0.02
     spec.apply_foreground_absorption(n_H, model="tbabs")
 

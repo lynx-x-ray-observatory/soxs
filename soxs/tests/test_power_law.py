@@ -43,7 +43,7 @@ def plaw_fit(alpha_sim):
     area = 40000.0
     inst_name = "hdxi"
 
-    spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim)
+    spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 20000)
     spec.apply_foreground_absorption(nH_sim, model="tbabs")
     e = spec.generate_energies(exp_time, area, prng=prng)
 

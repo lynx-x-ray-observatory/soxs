@@ -11,12 +11,9 @@ parser.add_argument("norm", type=float,
                     help='The normalization of the source in units of '+
                          'photons/s/cm**2/keV at 1 keV in the source frame.')
 parser.add_argument("specfile", type=str, help="The filename to write the spectrum to.")
-parser.add_argument("--emin", default=0.01, 
-                    help='The minimum energy in keV. Default: 0.01')
-parser.add_argument("--emax", default=50.0, 
-                    help='The maximum energy in keV. Default: 50.0')
-parser.add_argument("--nbins", type=int, default=10000, 
-                    help='The number of bins in the spectrum. Default: 10000')
+parser.add_argument("emin", help='The minimum energy in keV.')
+parser.add_argument("emax", help='The maximum energy in keV.')
+parser.add_argument("nbins", type=int, help='The number of bins in the spectrum.')
 parser.add_argument("--absorb", type=str,
                     help='Apply foreground Galactic absorption. Default is "wabs".')
 parser.add_argument("--nh", default=0.02, 
@@ -27,7 +24,7 @@ parser.add_argument("--overwrite", action='store_true',
 args = parser.parse_args()
 
 spec = Spectrum.from_powerlaw(args.photon_index, args.redshift, args.norm,
-                              emin=args.emin, emax=args.emax, nbins=args.nbins)
+                              args.emin, args.emax, args.nbins)
 
 if args.absorb is not None:
     spec.apply_foreground_absorption(args.nh, model=args.absorb)
