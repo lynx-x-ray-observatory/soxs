@@ -638,7 +638,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
     hdu.writeto(out_file, overwrite=overwrite)
 
-def plot_spectrum(specfile, plot_energy=True, lw=2, fig=None, ax=None):
+def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
+                  xscale='log', yscale='log', fig=None, ax=None):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure is returned.
@@ -656,6 +657,16 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, fig=None, ax=None):
         cannot be found. 
     lw : float, optional
         The width of the lines in the plots. Default: 2.0 px.
+    emin : float, optional
+        The left-most energy (in keV) or channel to plot. Default is the 
+        minimum value in the spectrum. 
+    emax : float, optional
+        The right-most energy (in keV) or channel to plot. Default is the 
+        maximum value in the spectrum. 
+    xscale : string
+        The scaling of the x-axis of the plot. Default: "log"
+    yscale : string
+        The scaling of the y-axis of the plot. Default: "log"
     fig : :class:`~matplotlib.figure.Figure`, optional
         A Figure instance to plot in. Default: None, one will be
         created if not provided.
@@ -700,6 +711,9 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, fig=None, ax=None):
     if ax is None:
         ax = fig.add_subplot(111)
     ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw)
+    ax.set_xscale(xscale)
+    ax.set_yscale(yscale)
+    ax.set_xlim(emin, emax)
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Count Rate (counts/s/%s)" % yunit)
     return fig
