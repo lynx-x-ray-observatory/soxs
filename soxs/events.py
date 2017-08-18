@@ -638,7 +638,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
     hdu.writeto(out_file, overwrite=overwrite)
 
-def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
+def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                   ymin=None, ymax=None, xscale=None, yscale=None, 
                   label=None, fontsize=18, legend_kwargs=None, fig=None, 
                   ax=None):
@@ -659,10 +659,10 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
         cannot be found. 
     lw : float, optional
         The width of the lines in the plots. Default: 2.0 px.
-    emin : float, optional
+    xmin : float, optional
         The left-most energy (in keV) or channel to plot. Default is the 
         minimum value in the spectrum. 
-    emax : float, optional
+    xmax : float, optional
         The right-most energy (in keV) or channel to plot. Default is the 
         maximum value in the spectrum. 
     ymin : float, optional
@@ -738,7 +738,7 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
     ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw, label=label)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
-    ax.set_xlim(emin, emax)
+    ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylabel("Count Rate (counts/s/%s)" % yunit, fontsize=fontsize)

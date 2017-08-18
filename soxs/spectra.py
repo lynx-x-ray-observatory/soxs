@@ -428,7 +428,7 @@ class Spectrum(object):
         energies = Energies(energy, flux)
         return energies
 
-    def plot(self, lw=2, emin=None, emax=None, ymin=None, ymax=None,
+    def plot(self, lw=2, xmin=None, xmax=None, ymin=None, ymax=None,
              xscale=None, yscale=None, label=None, legend_kwargs=None,
              fontsize=18, fig=None, ax=None):
         """
@@ -439,10 +439,10 @@ class Spectrum(object):
         ----------
         lw : float, optional
             The width of the lines in the plots. Default: 2.0 px.
-        emin : float, optional
+        xmin : float, optional
             The left-most energy in keV to plot. Default is the 
             minimum value in the spectrum. 
-        emax : float, optional
+        xmax : float, optional
             The right-most energy in keV to plot. Default is the 
             maximum value in the spectrum. 
         ymin : float, optional
@@ -491,7 +491,7 @@ class Spectrum(object):
         ax.plot(self.emid, self.flux, lw=lw, label=label)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
-        ax.set_xlim(emin, emax)
+        ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)
         ax.set_xlabel("Energy (keV)", fontsize=fontsize)
         ax.set_ylabel("Spectrum (%s)" % u.Unit(self._units).to_string("latex"),
