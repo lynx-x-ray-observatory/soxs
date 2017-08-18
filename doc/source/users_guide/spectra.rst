@@ -463,8 +463,8 @@ Plotting Spectra
 ----------------
 
 All :class:`~soxs.spectra.Spectrum` objects and their associated subclasses have
-a :math:`~soxs.spectra.Spectrum.plot` method which can be used to make a 
-`Matplotlib <http://www.matplotlib.org>`_ plot. The :math:`~soxs.spectra.Spectrum.plot` 
+a :meth:`~soxs.spectra.Spectrum.plot` method which can be used to make a 
+`Matplotlib <http://www.matplotlib.org>`_ plot. The :meth:`~soxs.spectra.Spectrum.plot` 
 method has no required arguments, but has a number of optional arguments for plot
 customization. This method returns a tuple of the :class:`~matplotlib.figure.Figure` and 
 the :class:`~matplotlib.axes.Axes` objects to allow for further customization. This
@@ -486,8 +486,10 @@ zooming in on a section of it, and setting the energy scale to linear:
     agen = soxs.ApecGenerator(0.1, 10.0, 10000)
     spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
     spec2 = agen.get_spectrum(3.0, 0.3, 0.02, 1.0e-3)
-    fig, ax = spec1.plot(emin=0.7, emax=1.5, ymin=1.0e-4, ymax=3.0e-3, 
+    fig, ax = spec1.plot(xmin=0.7, xmax=1.5, ymin=1.0e-4, ymax=3.0e-3, 
                          xscale='linear', label="5 keV plasma")
     spec2.plot(fig=fig, ax=ax, label="3 keV plasma")
 
 .. image:: ../images/plot_two_spectra.png
+
+For other customizations, consult the :meth:`~soxs.spectra.Spectrum.plot` API. 

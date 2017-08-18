@@ -189,3 +189,34 @@ to a FITS file:
 This spectrum file can be read and fit with standard X-ray analysis software such as 
 `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_, `ISIS <http://space.mit.edu/CXC/ISIS/>`_, 
 and `Sherpa <http://cxc.harvard.edu/sherpa/>`_. 
+
+``plot_spectrum``
+-----------------
+
+:func:`~soxs.events.plot_spectrum` reads a spectrum stored in a FITS table file and makes
+a `Matplotlib <http://www.matplotlib.org>`_ plot. There are a number of options for 
+customizing the plot in the call to :func:`~soxs.events.plot_spectrum`, but the method 
+also returns a tuple of the :class:`~matplotlib.figure.Figure` and the 
+:class:`~matplotlib.axes.Axes` objects to allow for further customization. This example
+opens up a spectrum file and plots it between 0.5 and 7.0 keV:
+
+.. code-block:: python
+
+    from soxs import plot_spectrum
+    plot_spectrum("evt.pha", xmin=0.5, xmax=7.0)
+
+.. image:: ../images/mucal_plot.png
+
+If one wanted to plot the same spectrum in channel space instead of energy space, you
+would set ``plot_energy=False``:
+
+.. code-block:: python
+
+    from soxs import plot_spectrum
+    plot_spectrum("evt.pha", plot_energy=False, xmin=300, xmax=7000)
+
+.. image:: ../images/mucal_plot_channel.png
+
+where in that case the x-axis is now in channel space, so ``xmin`` and ``xmax`` had to
+be set accordingly. For other customizations, consult the :func:`~soxs.events.plot_spectrum`
+API. 
