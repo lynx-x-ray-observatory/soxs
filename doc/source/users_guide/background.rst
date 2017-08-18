@@ -35,6 +35,13 @@ This fit is based on the results of
 This background is diffuse and uniformly fills the entire field of view of the
 instrument you choose to simulate. 
 
+.. note::
+
+    This model is slightly different from that normally assumed, which adopts instead
+    a ``apec+phabs*apec`` model in addition to the power-law component from unresolved
+    point sources, which we model separately in SOXS. See, for example, the
+    `Athena Tools for Simulations <https://www.cosmos.esa.int/web/athena/resources-by-esa>`_.
+
 .. _ptsrc-bkgnd:
 
 Point Source Background Model
