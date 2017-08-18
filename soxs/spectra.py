@@ -571,8 +571,8 @@ class Spectrum(object):
         ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)
         ax.set_xlabel("Energy (keV)", fontsize=fontsize)
-        ax.set_ylabel("Spectrum (%s)" % u.Unit(self._units).to_string("latex"),
-                      fontsize=fontsize)
+        yunit = u.Unit(self._units).to_string("latex").replace("{}^{\\prime}", "arcmin")
+        ax.set_ylabel("Spectrum (%s)" % yunit, fontsize=fontsize)
         ax.tick_params(axis='both',labelsize=fontsize)
         ax.legend(**legend_kwargs)
         return fig, ax
