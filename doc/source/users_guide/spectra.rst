@@ -477,6 +477,8 @@ a :class:`~soxs.spectra.Spectrum` object, simply call
 
     spec_new = cspec.deconvolve()
 
+.. _spectra-plots:
+
 Plotting Spectra
 ----------------
 

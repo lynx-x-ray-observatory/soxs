@@ -211,6 +211,8 @@ This spectrum file can be read and fit with standard X-ray analysis software suc
 `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_, `ISIS <http://space.mit.edu/CXC/ISIS/>`_, 
 and `Sherpa <http://cxc.harvard.edu/sherpa/>`_. 
 
+.. _plot-spectrum:
+
 ``plot_spectrum``
 -----------------
 

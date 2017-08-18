@@ -6,7 +6,7 @@ ChangeLog
 Version 1.4.0
 -------------
 
-This is a release with important new features and some bugfixes.
+This is a release with a number of important new features and some bugfixes.
 
 * A number of class methods for :class:`~soxs.spectra.Spectrum` and their associated
   command-line scripts now have ``emin``, ``emax``, and ``nbins`` as required arguments.
@@ -19,6 +19,10 @@ This is a release with important new features and some bugfixes.
 * The ability to apply intrinsic foreground absorption to a :class:`~soxs.spectra.Spectrum`
   has been added by adding an optional ``redshift`` argument to 
   :meth:`~soxs.spectra.Spectrum.apply_foreground_absorption`. 
+* :func:`~soxs.events.plot_spectrum` has been given more options. see :ref:`plot-spectrum`
+  for details.
+* A method to easily plot :class:`~soxs.spectra.Spectrum` objects, 
+  :meth:`~soxs.spectra.Spectrum.plot`, has been added. See :ref:`spectra-plots` for details.
 
 Version 1.3.0
 -------------
