@@ -430,7 +430,7 @@ class Spectrum(object):
 
     def plot(self, lw=2, emin=None, emax=None, ymin=None, ymax=None,
              xscale='log', yscale='log', label=None, legend_kwargs=None,
-             fig=None, ax=None):
+             fontsize=18, fig=None, ax=None):
         """
         Make a quick Matplotlib plot of the spectrum. A Matplotlib
         figure and axis is returned.
@@ -457,6 +457,8 @@ class Spectrum(object):
             The label of the spectrum. Default: None
         legend_kwargs : dict, optional
             A dictionary of arguments to pass to the legend. 
+        fontsize : int
+            Font size for labels and axes. Default: 18
         fig : :class:`~matplotlib.figure.Figure`, optional
             A Figure instance to plot in. Default: None, one will be
             created if not provided.
@@ -481,8 +483,10 @@ class Spectrum(object):
         ax.set_yscale(yscale)
         ax.set_xlim(emin, emax)
         ax.set_ylim(ymin, ymax)
-        ax.set_xlabel("Energy (keV)")
-        ax.set_ylabel("Spectrum (%s)" % u.Unit(self._units).to_string("latex"))
+        ax.set_xlabel("Energy (keV)", fontsize=fontsize)
+        ax.set_ylabel("Spectrum (%s)" % u.Unit(self._units).to_string("latex"),
+                      fontsize=fontsize)
+        ax.tick_params(axis='both',labelsize=fontsize)
         ax.legend(**legend_kwargs)
         return fig, ax
 

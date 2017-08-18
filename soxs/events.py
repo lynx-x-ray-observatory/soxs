@@ -640,7 +640,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
 def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
                   ymin=None, ymax=None, xscale='log', yscale='log', 
-                  label=None, legend_kwargs=None, fig=None, ax=None):
+                  label=None, fontsize=18, legend_kwargs=None, fig=None, 
+                  ax=None):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure and axis is returned.
@@ -676,6 +677,8 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
         The label of the spectrum. Default: None
     legend_kwargs : dict, optional
         A dictionary of arguments to pass to the legend. 
+    fontsize : int
+        Font size for labels and axes. Default: 18
     fig : :class:`~matplotlib.figure.Figure`, optional
         A Figure instance to plot in. Default: None, one will be
         created if not provided.
@@ -727,7 +730,8 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
     ax.set_yscale(yscale)
     ax.set_xlim(emin, emax)
     ax.set_ylim(ymin, ymax)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel("Count Rate (counts/s/%s)" % yunit)
+    ax.set_xlabel(xlabel, fontsize=fontsize)
+    ax.set_ylabel("Count Rate (counts/s/%s)" % yunit, fontsize=fontsize)
+    ax.tick_params(axis='both', labelsize=fontsize)
     ax.legend(**legend_kwargs)
     return fig, ax
