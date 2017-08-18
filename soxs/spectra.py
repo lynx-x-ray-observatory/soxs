@@ -10,7 +10,7 @@ from soxs.utils import soxs_files_path, mylog, \
 from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
-    m_u, elem_names
+    m_u, elem_names, sigma_to_fwhm
 import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
@@ -388,6 +388,88 @@ class Spectrum(object):
         elif model == "tbabs":
             sigma = tbabs_cross_section(e)
         self.flux *= np.exp(-nH*1.0e22*sigma)
+        self._compute_total_flux()
+
+    def _compute_gaussian_line(self, line_center, line_width):
+        sigma = line_width/sigma_to_fwhm
+        x = (self.emid.value-line_center)/sigma
+        f = np.exp(-0.5*x*x)
+        f /= np.sqrt(2.*np.pi)*sigma
+        return f
+
+    def _compute_lorentzian_line(self, line_center, line_width):
+        half_width = 0.5*line_width
+        x = (self.emid.value-line_center)
+        f = half_width/np.pi
+        f /= x**2+half_width**2
+        return f
+
+    def add_emission_line(self, line_center, line_width, line_amp,
+                          redshift=0.0, line_type="gaussian"):
+        """
+        Add an emission line to this spectrum.
+
+        Parameters
+        ----------
+        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line center position in units of keV.
+        line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line width (FWHM) in units of keV.
+        line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line amplitude in the units of the spectrum.
+        redshift : float, optional
+            The redshift of the line emitter. Default: 0.0
+        line_type : string, optional
+            The line profile type. "gaussian" or "lorentzian".
+            Default: "gaussian"
+        """
+        line_center = parse_value(line_center, "keV")
+        line_width = parse_value(line_width, "keV")
+        line_amp = parse_value(line_amp, self._units)
+        line_center *= 1.0+redshift
+        line_width *= 1.0+redshift
+        if line_type == "gaussian":
+            f = self._compute_gaussian_line(line_center, line_width)
+        elif line_type == "lorentzian":
+            f = self._compute_lorentzian_line(line_center, line_width)
+        else:
+            raise NotImplementedError("Line profile type '%s' " % line_type +
+                                      "not implemented!")
+        self.flux += f*line_amp
+        self._compute_total_flux()
+
+    def add_absorption_line(self, line_center, line_width, line_depth,
+                            redshift=0.0, line_type="gaussian"):
+        """
+        Add an absorption line to this spectrum.
+
+        Parameters
+        ----------
+        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line center position in units of keV.
+        line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line width (FWHM) in units of keV.
+        line_depth : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line depth in units of keV.
+        redshift : float, optional
+            The redshift of the line absorber. Default: 0.0
+        line_type : string, optional
+            The line profile type. "gaussian" or "lorentzian".
+            Default: "gaussian"
+        """
+        line_center = parse_value(line_center, "keV")
+        line_width = parse_value(line_width, "keV")
+        line_depth = parse_value(line_depth, "keV")
+        line_center *= 1.0+redshift
+        line_width *= 1.0+redshift
+        if line_type == "gaussian":
+            f = self._compute_gaussian_line(line_center, line_width)
+        elif line_type == "lorentzian":
+            f = self._compute_lorentzian_line(line_center, line_width)
+        else:
+            raise NotImplementedError("Line profile type '%s' " % line_type +
+                                      "not implemented!")
+        self.flux *= np.exp(-line_depth*f)
         self._compute_total_flux()
 
     def generate_energies(self, t_exp, area, prng=None, quiet=False):
