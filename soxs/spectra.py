@@ -428,6 +428,64 @@ class Spectrum(object):
         energies = Energies(energy, flux)
         return energies
 
+    def plot(self, lw=2, emin=None, emax=None, ymin=None, ymax=None,
+             xscale='log', yscale='log', label=None, legend_kwargs=None,
+             fig=None, ax=None):
+        """
+        Make a quick Matplotlib plot of the spectrum. A Matplotlib
+        figure and axis is returned.
+
+        Parameters
+        ----------
+        lw : float, optional
+            The width of the lines in the plots. Default: 2.0 px.
+        emin : float, optional
+            The left-most energy in keV to plot. Default is the 
+            minimum value in the spectrum. 
+        emax : float, optional
+            The right-most energy in keV to plot. Default is the 
+            maximum value in the spectrum. 
+        ymin : float, optional
+            The lower extent of the y-axis. By default it is set automatically.
+        ymax : float, optional
+            The upper extent of the y-axis. By default it is set automatically.
+        xscale : string, optional
+            The scaling of the x-axis of the plot. Default: "log"
+        yscale : string, optional
+            The scaling of the y-axis of the plot. Default: "log"
+        label : string, optional
+            The label of the spectrum. Default: None
+        legend_kwargs : dict, optional
+            A dictionary of arguments to pass to the legend. 
+        fig : :class:`~matplotlib.figure.Figure`, optional
+            A Figure instance to plot in. Default: None, one will be
+            created if not provided.
+        ax : :class:`~matplotlib.axes.Axes`, optional
+            An Axes instance to plot in. Default: None, one will be
+            created if not provided.
+
+        Returns
+        -------
+        A tuple of the :class:`~matplotlib.figure.Figure` and the
+        :class:`~matplotlib.axes.Axes` objects.
+        """
+        import matplotlib.pyplot as plt
+        if legend_kwargs is None:
+            legend_kwargs = {}
+        if fig is None:
+            fig = plt.figure(figsize=(10, 10))
+        if ax is None:
+            ax = fig.add_subplot(111)
+        ax.plot(self.emid, self.flux, lw=lw, label=label)
+        ax.set_xscale(xscale)
+        ax.set_yscale(yscale)
+        ax.set_xlim(emin, emax)
+        ax.set_ylim(ymin, ymax)
+        ax.set_xlabel("Energy (keV)")
+        ax.set_ylabel("Spectrum (%s)" % u.Unit(self._units).to_string("latex"))
+        ax.legend(**legend_kwargs)
+        return fig, ax
+
 class ApecGenerator(object):
     r"""
     Initialize a thermal gas emission model from the 
