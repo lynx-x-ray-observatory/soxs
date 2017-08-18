@@ -639,7 +639,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     hdu.writeto(out_file, overwrite=overwrite)
 
 def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
-                  ymin=None, ymax=None, xscale='log', yscale='log', 
+                  ymin=None, ymax=None, xscale=None, yscale=None, 
                   label=None, fontsize=18, legend_kwargs=None, fig=None, 
                   ax=None):
     """
@@ -694,7 +694,7 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
     import matplotlib.pyplot as plt
     from soxs.instrument import RedistributionMatrixFile
     if legend_kwargs is None:
-        legend_kwargs = {}
+        legend_kwargs = {"fontsize": fontsize}
     f = pyfits.open(specfile)
     hdu = f["SPECTRUM"]
     chantype = hdu.header["CHANTYPE"]
@@ -723,6 +723,16 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
     f.close()
     if fig is None:
         fig = plt.figure(figsize=(10, 10))
+        if xscale is None:
+            if ax is None:
+                xscale = "log"
+            else:
+                xscale = ax.get_xscale()
+        if yscale is None:
+            if ax is None:
+                yscale = "log"
+            else:
+                yscale = ax.get_yscale()
     if ax is None:
         ax = fig.add_subplot(111)
     ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw, label=label)

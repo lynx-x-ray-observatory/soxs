@@ -429,7 +429,7 @@ class Spectrum(object):
         return energies
 
     def plot(self, lw=2, emin=None, emax=None, ymin=None, ymax=None,
-             xscale='log', yscale='log', label=None, legend_kwargs=None,
+             xscale=None, yscale=None, label=None, legend_kwargs=None,
              fontsize=18, fig=None, ax=None):
         """
         Make a quick Matplotlib plot of the spectrum. A Matplotlib
@@ -473,9 +473,19 @@ class Spectrum(object):
         """
         import matplotlib.pyplot as plt
         if legend_kwargs is None:
-            legend_kwargs = {}
+            legend_kwargs = {"fontsize": fontsize}
         if fig is None:
             fig = plt.figure(figsize=(10, 10))
+        if xscale is None:
+            if ax is None:
+                xscale = "log"
+            else:
+                xscale = ax.get_xscale()
+        if yscale is None:
+            if ax is None:
+                yscale = "log"
+            else:
+                yscale = ax.get_yscale()
         if ax is None:
             ax = fig.add_subplot(111)
         ax.plot(self.emid, self.flux, lw=lw, label=label)
