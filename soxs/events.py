@@ -639,10 +639,11 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     hdu.writeto(out_file, overwrite=overwrite)
 
 def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
-                  xscale='log', yscale='log', fig=None, ax=None):
+                  ymin=None, ymax=None, xscale='log', yscale='log', 
+                  label=None, legend_kwargs=None, fig=None, ax=None):
     """
     Make a quick Matplotlib plot of a convolved spectrum
-    from a file. A Matplotlib figure is returned.
+    from a file. A Matplotlib figure and axis is returned.
 
     Parameters
     ----------
@@ -663,10 +664,18 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
     emax : float, optional
         The right-most energy (in keV) or channel to plot. Default is the 
         maximum value in the spectrum. 
-    xscale : string
+    ymin : float, optional
+        The lower extent of the y-axis. By default it is set automatically.
+    ymax : float, optional
+        The upper extent of the y-axis. By default it is set automatically.
+    xscale : string, optional
         The scaling of the x-axis of the plot. Default: "log"
-    yscale : string
+    yscale : string, optional
         The scaling of the y-axis of the plot. Default: "log"
+    label : string, optional
+        The label of the spectrum. Default: None
+    legend_kwargs : dict, optional
+        A dictionary of arguments to pass to the legend. 
     fig : :class:`~matplotlib.figure.Figure`, optional
         A Figure instance to plot in. Default: None, one will be
         created if not provided.
@@ -676,10 +685,13 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
 
     Returns
     -------
-    The :class:`~matplotlib.figure.Figure` object.
+    A tuple of the :class:`~matplotlib.figure.Figure` and the
+    :class:`~matplotlib.axes.Axes` objects.
     """
     import matplotlib.pyplot as plt
     from soxs.instrument import RedistributionMatrixFile
+    if legend_kwargs is None:
+        legend_kwargs = {}
     f = pyfits.open(specfile)
     hdu = f["SPECTRUM"]
     chantype = hdu.header["CHANTYPE"]
@@ -690,7 +702,7 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
             rmf = RedistributionMatrixFile(rmf)
             x = 0.5*(rmf.ebounds["E_MIN"]+rmf.ebounds["E_MAX"])
             xerr = 0.5*(rmf.ebounds["E_MAX"]-rmf.ebounds["E_MIN"])
-            xlabel = "E (keV)"
+            xlabel = "Energy (keV)"
         else:
             raise RuntimeError("Cannot find the RMF associated with this "
                                "spectrum, so I cannot plot in energy!")
@@ -710,10 +722,12 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, emin=None, emax=None,
         fig = plt.figure(figsize=(10, 10))
     if ax is None:
         ax = fig.add_subplot(111)
-    ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw)
+    ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw, label=label)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     ax.set_xlim(emin, emax)
+    ax.set_ylim(ymin, ymax)
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Count Rate (counts/s/%s)" % yunit)
-    return fig
+    ax.legend(**legend_kwargs)
+    return fig, ax
