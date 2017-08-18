@@ -41,7 +41,10 @@ from soxs.events import \
     make_exposure_map
 
 from soxs.background import \
-    add_instrumental_background
+    add_instrumental_background, \
+    BackgroundSpectrum, \
+    ConvolvedBackgroundSpectrum, \
+    InstrumentalBackgroundSpectrum
 
 from soxs.cosmology import \
     make_cosmological_sources_file
