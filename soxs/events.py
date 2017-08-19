@@ -135,7 +135,7 @@ def parse_region_args(rtype, args, dx, dy):
                     [y + dy for y in args[1]]]
     else:
         raise NotImplementedError
-    return new_args
+    return np.array(new_args)
 
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False,
@@ -186,16 +186,18 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     hdu = f_evt["EVENTS"]
     arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
     exp_time = hdu.header["EXPOSURE"]
-    nx = int(hdu.header["TLMAX2"]-0.5)//2
-    ny = int(hdu.header["TLMAX3"]-0.5)//2
+    orig_nx = int(hdu.header["TLMAX2"]-0.5)//2
+    orig_ny = int(hdu.header["TLMAX3"]-0.5)//2
+    nx = orig_nx // reblock
+    ny = orig_ny // reblock
     ra0 = hdu.header["TCRVL2"]
     dec0 = hdu.header["TCRVL3"]
-    xdel = hdu.header["TCDLT2"]
-    ydel = hdu.header["TCDLT3"]
-    x0 = hdu.header["TCRPX2"]
-    y0 = hdu.header["TCRPX3"]
-    xdet0 = 0.5*(2*nx+1)
-    ydet0 = 0.5*(2*ny+1)
+    xdel = hdu.header["TCDLT2"]*reblock
+    ydel = hdu.header["TCDLT3"]*reblock
+    x0 = 0.5*(nx+1)
+    y0 = 0.5*(ny+1)
+    xdet0 = 0.5*(2*orig_nx+1)
+    ydet0 = 0.5*(2*orig_ny+1)
     xaim = hdu.header.get("AIMPT_X", 0.0)
     yaim = hdu.header.get("AIMPT_Y", 0.0)
     roll = hdu.header["ROLL_PNT"]
@@ -235,8 +237,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         y_edges = np.linspace(-y_amp, y_amp, nhisty+1, endpoint=True)
         asphist = np.histogram2d(x_off, y_off, (x_edges, y_edges))[0]
         asphist *= dt
-        x_mid = 0.5*(x_edges[1:]+x_edges[:-1])
-        y_mid = 0.5*(y_edges[1:]+y_edges[:-1])
+        x_mid = 0.5*(x_edges[1:]+x_edges[:-1])/reblock
+        y_mid = 0.5*(y_edges[1:]+y_edges[:-1])/reblock
 
     # Determine the effective area
     eff_area = arf.interpolate_area(energy).value
@@ -258,6 +260,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     for rtype, arg in zip(rtypes, args):
         rfunc = getattr(rfilter, rtype)
         new_args = parse_region_args(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
+        new_args /= reblock
         r = rfunc(*new_args)
         tmpmap += r.mask(tmpmap).astype("float64")
 
@@ -325,6 +328,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
             mylog.warning("Refusing to write an aspect solution file because "
                           "there was no dithering.")
+
 def write_spectrum(evtfile, specfile, overwrite=False):
     r"""
     Bin event energies into a spectrum and write it to 
