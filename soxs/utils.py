@@ -154,3 +154,24 @@ def get_rot_mat(roll_angle):
     rot_mat = np.array([[np.cos(roll_angle), -np.sin(roll_angle)],
                         [np.sin(roll_angle), np.cos(roll_angle)]])
     return rot_mat
+
+def downsample(myarr,factor,estimator=np.mean):
+    """
+    Downsample a 2D array by averaging over *factor* pixels in each axis.
+    Crops upper edge if the shape is not a multiple of factor.
+
+    This code is pure numpy and should be fast.
+
+    keywords:
+        estimator - default to mean.  You can downsample by summing or
+            something else if you want a different estimator
+            (e.g., downsampling error: you want to sum & divide by sqrt(n))
+    """
+    ys,xs = myarr.shape
+    crarr = myarr[:ys-(ys % int(factor)),:xs-(xs % int(factor))]
+    dsarr = estimator(np.concatenate([[crarr[i::factor,j::factor]
+                                       for i in range(factor)]
+                                      for j in range(factor)]), axis=0)
+    return dsarr
+
+
