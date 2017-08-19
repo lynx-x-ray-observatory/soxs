@@ -194,8 +194,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     dec0 = hdu.header["TCRVL3"]
     xdel = hdu.header["TCDLT2"]*reblock
     ydel = hdu.header["TCDLT3"]*reblock
-    x0 = 0.5*(nx+1)
-    y0 = 0.5*(ny+1)
+    x0 = 0.5*(2.0*nx+1)
+    y0 = 0.5*(2.0*ny+1)
     xdet0 = 0.5*(2*orig_nx+1)
     ydet0 = 0.5*(2*orig_ny+1)
     xaim = hdu.header.get("AIMPT_X", 0.0)
@@ -282,6 +282,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
     if roll != 0.0:
         rotate(expmap, roll, output=expmap, reshape=False)
+
+    expmap[expmap < 0.0] = 0.0
 
     map_header = {"EXPOSURE": exp_time,
                   "MTYPE1": "EQPOS",
