@@ -139,7 +139,7 @@ def parse_region_args(rtype, args, dx, dy):
 
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False,
-                      reblock=1, nhistx=16, nhisty=16):
+                      reblock=1, nhistx=16, nhisty=16, order=1):
     """
     Make an exposure map for a SOXS event file, and optionally write
     an aspect solution file. The exposure map will be created by
@@ -173,6 +173,9 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     nhisty : integer, optional
         The number of bins in the aspect histogram in the DETY
         direction. Default: 16
+    order : integer, optional
+        The interpolation order to use when making the exposure map. 
+        Default: 1
     """
     import pyregion._region_filter as rfilter
     from scipy.ndimage.interpolation import rotate, shift
@@ -270,7 +273,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
         for i in range(nhistx):
             for j in range(nhisty):
-                expmap += shift(tmpmap, (x_mid[i], y_mid[j]), order=0)*asphist[i, j]
+                expmap += shift(tmpmap, (x_mid[i], y_mid[j]), order=order)*asphist[i, j]
             pbar.update(nhisty)
         pbar.close()
     else:
