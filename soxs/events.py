@@ -239,8 +239,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         y_edges = np.linspace(-y_amp, y_amp, nhisty+1, endpoint=True)
         asphist = np.histogram2d(x_off, y_off, (x_edges, y_edges))[0]
         asphist *= dt
-        x_mid = 0.5*(x_edges[1:]+x_edges[:-1])
-        y_mid = 0.5*(y_edges[1:]+y_edges[:-1])
+        x_mid = 0.5*(x_edges[1:]+x_edges[:-1])/reblock
+        y_mid = 0.5*(y_edges[1:]+y_edges[:-1])/reblock
 
     # Determine the effective area
     eff_area = arf.interpolate_area(energy).value
@@ -265,8 +265,10 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         r = rfunc(*new_args)
         tmpmap += r.mask(tmpmap).astype("float64")
 
+    tmpmap = downsample(tmpmap, reblock)
+
     if dither_params["dither_on"]:
-        expmap = np.zeros((2*nx, 2*ny))
+        expmap = np.zeros(tmpmap.shape)
         niter = nhistx*nhisty
         pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
         for i in range(nhistx):
@@ -285,8 +287,6 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         rotate(expmap, roll, output=expmap, reshape=False)
 
     expmap[expmap < 0.0] = 0.0
-
-    expmap = downsample(expmap, reblock)
 
     map_header = {"EXPOSURE": exp_time,
                   "MTYPE1": "EQPOS",
