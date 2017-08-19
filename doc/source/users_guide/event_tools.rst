@@ -23,7 +23,9 @@ determines the effective area for a given input energy or range of energies weig
 spectrum, and then uses the aspect solution (the RA and Dec of the spacecraft pointing as
 a function of time) to create a histogram of aspect to determine how much time a given detector 
 coordinate spent on a given sky location. These pieces of information are then used to produce 
-a map of total exposure for the observation in sky coordinates. 
+a map of total exposure for the observation in sky coordinates. Exposure maps can be 
+"reblocked" to a lower resolution, and this will typically speed up the computation of the
+exposure map.
 
 To make an exposure map with the default parameters using an energy of 4.0 keV:
 
@@ -74,6 +76,15 @@ keywords:
     import soxs
     soxs.make_exposure_map("my_evt.fits", "my_expmap.fits", 4.0, 
                            overwrite=True, nhistx=32, nhisty=32)
+
+To create an exposure map with pixels 4 times larger on a side, set the ``reblock``
+parameter to 4:
+
+.. code-block:: python
+
+    import soxs
+    soxs.make_exposure_map("my_evt.fits", "my_expmap.fits", 4.0, 
+                           overwrite=True, reblock=4)
 
 Examples of images and exposure maps for a simulation of a galaxy cluster for *Chandra*/ACIS-I
 and *Athena*/XIFU are shown in Figure 1. 
@@ -126,6 +137,16 @@ flux image:
 
     write_image("my_evt.fits", "my_sky_img.fits", coord_type='sky', emin=0.5, emax=7.0,
                 expmap_file="my_expmap.fits")
+
+To bin at a pixel size 4 times larger than the native pixel size, set ``reblock`` to 4:
+
+.. code-block:: python
+
+    write_image("my_evt.fits", "my_sky_img.fits", coord_type='sky', emin=0.5, emax=7.0,
+                expmap_file="my_expmap.fits", reblock=4)
+
+Note that if you set ``reblock`` and supply an exposure map, it must have been made with
+the same value of ``reblock``.
 
 This image can then be viewed in `ds9 <http://ds9.si.edu>`_ or `APLpy <https://aplpy.github.io>`_.
 
