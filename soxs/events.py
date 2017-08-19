@@ -459,10 +459,13 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         Supply an exposure map file to determine fluxes. 
         Default: None
     """
+    import astropy.wcs as pywcs
     rmin = parse_value(rmin, "arcsec")
     rmax = parse_value(rmax, "arcsec")
     f = pyfits.open(evt_file)
-    e = f["EVENTS"].data["ENERGY"]
+    hdu = f["EVENTS"]
+    orig_dx = hdu.header["TCDLT3"]
+    e = hdu.data["ENERGY"]
     if emin is None:
         emin = e.min()
     else:
@@ -474,9 +477,9 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         emax = parse_value(emax, "keV")
         emax *= 1000.
     idxs = np.logical_and(e > emin, e < emax)
-    x = f["EVENTS"].data["X"][idxs]
-    y = f["EVENTS"].data["Y"][idxs]
-    exp_time = f["EVENTS"].header["EXPOSURE"]
+    x = hdu.data["X"][idxs]
+    y = hdu.data["Y"][idxs]
+    exp_time = hdu.header["EXPOSURE"]
     w = wcs_from_event_file(f)
     dtheta = np.abs(w.wcs.cdelt[1])*3600.0
     f.close()
@@ -511,17 +514,21 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     col9 = pyfits.Column(name='SUR_BRI', format='D', unit='count/s/arcsec**2', array=S)
     col10 = pyfits.Column(name='SUR_BRI_ERR', format='1D', unit='count/s/arcsec**2', array=Serr)
 
-
     coldefs = [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10]
 
     if expmap_file is not None:
         f = pyfits.open(expmap_file)
-        exp = f["EXPMAP"].data[:,:]
+        ehdu = f["EXPMAP"]
+        wexp = pywcs.WCS(header=ehdu.header)
+        cel = w.all_pix2world(ctr[0], ctr[1], 1)
+        ectr = wexp.all_world2pix(cel[0], cel[1], 1)
+        exp = ehdu.data[:,:]
         nx, ny = exp.shape
+        reblock = ehdu.header["CDELT2"]/orig_dx
         x, y = np.mgrid[1:nx+1,1:ny+1]
-        r = np.sqrt((x-ctr[0])**2 + (y-ctr[1])**2)
+        r = np.sqrt((x-ectr[0])**2 + (y-ectr[1])**2)
         f.close()
-        E = np.histogram(r, bins=rr, weights=exp)[0] / np.histogram(r, bins=rr)[0]
+        E = np.histogram(r, bins=rr/reblock, weights=exp)[0] / np.histogram(r, bins=rr/reblock)[0]
         with np.errstate(invalid='ignore', divide='ignore'):
             F = R/E
             Ferr = Rerr/E
