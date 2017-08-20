@@ -23,6 +23,9 @@ This is a release with a number of important new features and some bugfixes.
   for details.
 * A method to easily plot :class:`~soxs.spectra.Spectrum` objects, 
   :meth:`~soxs.spectra.Spectrum.plot`, has been added. See :ref:`spectra-plots` for details.
+* A ``reblock`` optional argument has been added to :func:`~soxs.events.write_image` and
+:func:`~soxs.events.make_exposure_map` to allow the binning of images and exposure maps to
+be changed. See :ref:`event-tools` for details.
 
 Version 1.3.0
 -------------
