@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+import numpy as np
 import argparse
 from soxs import ApecGenerator
 
@@ -28,6 +30,12 @@ parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--nolines", action='store_true',
                     help="Make a spectrum without lines.")
+parser.add_argument("--abund_table", type=str,
+                    help="The abundance table to be used for solar abundances. "
+                         "Either a string corresponding to a built-in table or "
+                         "an ASCII fiele containing a column of 30 floats "
+                         "corresponding to the abundances of each element relative "
+                         "to the abundance of H. Default is 'angr'.")
 feature_parser = parser.add_mutually_exclusive_group(required=False)
 feature_parser.add_argument("--broadening", dest='broadening', action='store_true',
                             help='Turn thermal and velocity broadening on. On by default.')
@@ -48,9 +56,13 @@ if len(unknown) > 0:
         var_elem.append(key)
         elem_abund[key] = float(value)
 
+if os.path.exists(args.abund_table):
+    abund_table = np.loadtxt(args.abund_table)
+else:
+    abund_table = args.abund_table
 agen = ApecGenerator(args.emin, args.emax, args.nbins, apec_vers=args.apec_vers, 
                      broadening=args.broadening, nolines=args.nolines, 
-                     var_elem=var_elem)
+                     var_elem=var_elem, abund_table=abund_table)
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
                          velocity=args.velocity, elem_abund=elem_abund)
 
