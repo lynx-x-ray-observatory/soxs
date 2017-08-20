@@ -680,7 +680,7 @@ class ApecGenerator(object):
             if len(abund_table) != 30:
                 raise RuntimeError("User-supplied abundance tables "
                                    "must be 30 elements long!")
-            self.atable = abund_table
+            self.atable = np.array(abund_table)
         else:
             self.atable = abund_tables[abund_table]
         self.atable /= abund_tables["angr"]
