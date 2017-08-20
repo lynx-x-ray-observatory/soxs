@@ -190,6 +190,45 @@ tables. This is done by setting ``nolines=True`` in the constructor for
 
     agen = ApecGenerator(0.05, 50.0, 10000, nolines=True)
 
+Changing Abundance Tables
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The abundance parameters discussed so far assume abundance of a particular 
+element or a number of elements relative to the Solar value. Underlying this
+are the values of the Solar abundances themselves. It is possible to change the
+Solar abundance table in SOXS via the optional ``abund_table`` argument to 
+class:`~soxs.spectra.ApecGenerator`. By default, SOXS assumes the 
+`Anders & Grevesse 1989 <http://adsabs.harvard.edu/abs/1989GeCoA..53..197A>`_ 
+abundances corresponding to a setting of ``"angr"`` for this parameter, but it 
+is possible to use other tables of solar abundances. The other tables included 
+with SOXS are:
+
+* ``"aspl"``: `Asplund et al. 2009 <http://adsabs.harvard.edu/abs/2009ARA%26A..47..481A>`_
+* ``"wilm"``: `Wilms et al. 2000 <http://adsabs.harvard.edu/abs/2000ApJ...542..914W>`_
+* ``"lodd"``: `Lodders 2003 <http://adsabs.harvard.edu/abs/2003ApJ...591.1220L>`_
+
+The Solar abundance table can be changed like this:
+
+.. code-block:: python
+
+    agen = ApecGenerator(0.05, 50.0, 10000, abund_table="aspl")
+
+Alternatively, one can supply their own abundance table by providing a NumPy array, list,
+or tuple of abundances 30 elements in length corresponding to the Solar abundances
+relative to hydrogen in the order of H, He, Li, Be, B, C, N, O, F, Ne, Na, Mg, Al, Si, P,
+S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, and Zn. An example:
+
+.. code-block:: python
+
+    my_abund = np.array([0.0, 1.00E+00, 8.51E-02, 1.12E-11, 2.40E-11, 5.01E-10,
+                         2.69E-04, 6.76E-05, 4.90E-04, 3.63E-08, 8.51E-05,
+                         1.74E-06, 3.98E-05, 2.82E-06, 3.24E-05, 2.57E-07,
+                         1.32E-05, 3.16E-07, 2.51E-06, 1.07E-07, 2.19E-06,
+                         1.41E-09, 8.91E-08, 8.51E-09, 4.37E-07, 2.69E-07,
+                         3.16E-05, 9.77E-08, 1.66E-06, 1.55E-08, 3.63E-08])
+
+    agen = ApecGenerator(0.05, 50.0, 10000, abund_table=my_abund)
+
 Generating a Spectrum from XSPEC
 ++++++++++++++++++++++++++++++++
 

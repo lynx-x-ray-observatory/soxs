@@ -19,6 +19,7 @@ using the AtomDB tables.
     usage: make_thermal_spectrum [-h] [--velocity VELOCITY]
                                  [--apec_vers APEC_VERS] [--absorb ABSORB]
                                  [--nh NH] [--overwrite] [--nolines]
+                                 [--abund_table ABUND_TABLE]
                                  [--broadening | --no_broadening]
                                  kT abund redshift norm specfile emin emax nbins
     
@@ -50,6 +51,12 @@ using the AtomDB tables.
                             Default: 0.02
       --overwrite           Overwrite an existing file with the same name.
       --nolines             Make a spectrum without lines.
+      --abund_table ABUND_TABLE
+                            The abundance table to be used for solar abundances.
+                            Either a string corresponding to a built-in table or
+                            an ASCII fiele containing a column of 30 floats
+                            corresponding to the abundances of each element
+                            relative to the abundance of H. Default is 'angr'.
       --broadening          Turn thermal and velocity broadening on. On by
                             default.
       --no_broadening       Turn thermal and velocity broadening off. On by
@@ -100,6 +107,18 @@ The same spectrum, but setting the abundances of elements oxygen and calcium sep
 .. code-block:: bash
 
     [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --O=0.5 --Ca=0.7 --overwrite
+
+The same spectrum, but using Asplund abundances instead of Anders & Grevesse.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --abund_table=aspl --overwrite
+
+The same spectrum, but using abundances drawn from an ASCII table file instead of Anders & Grevesse.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --abund_table=my_abund.dat --overwrite
 
 ``make_powerlaw_spectrum``
 --------------------------
