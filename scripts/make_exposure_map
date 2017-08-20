@@ -26,6 +26,9 @@ feature_parser.add_argument("--normalize", dest='normalize', action='store_true'
                             help='Normalize the exposure map by the exposure time. This is the default.')
 feature_parser.add_argument("--no_normalize", dest='normalize', action='store_false',
                             help="Don't normalize the exposure map by the exposure time.")
+parser.add_argument("--reblock", type=int, default=1,
+                    help="Supply an integer power of two to set the binning of the "
+                         "exposure map. Default: 1")
 parser.set_defaults(normalize=True)
 
 args = parser.parse_args()
@@ -42,4 +45,5 @@ else:
 
 make_exposure_map(args.event_file, args.expmap_file, energy, weights=weights,
                   asol_file=args.asol_file, normalize=args.normalize, 
-                  overwrite=args.overwrite, nhistx=args.nhistx, nhisty=args.nhisty)
+                  overwrite=args.overwrite, nhistx=args.nhistx, nhisty=args.nhisty,
+                  reblock=args.reblock)

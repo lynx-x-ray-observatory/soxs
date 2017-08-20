@@ -18,9 +18,13 @@ parser.add_argument("--overwrite", action='store_true',
 parser.add_argument("--expmap_file", type=str, 
                     help="Supply an exposure map file to divide this image by "
                          "to get a flux map.")
+parser.add_argument("--reblock", type=int, default=1, 
+                    help="Change this value to reblock the image to larger "
+                         "pixel sizes (reblock >= 1). Only supported for sky "
+                         "coordinates. Default: 1")
 
 args = parser.parse_args()
 
 write_image(args.event_file, args.out_file, coord_type=args.coord_type, 
             emin=args.emin, emax=args.emax, overwrite=args.overwrite,
-            expmap_file=args.expmap_file)
+            expmap_file=args.expmap_file, reblock=args.reblock)
