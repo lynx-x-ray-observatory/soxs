@@ -168,6 +168,9 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         so that the map's units are cm**2. Default: True
     overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
+    reblock : integer, optional
+        Supply an integer power of 2 here to make an exposure map 
+        with a different binning. Default: 1
     nhistx : integer, optional
         The number of bins in the aspect histogram in the DETX
         direction. Default: 16

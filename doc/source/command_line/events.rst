@@ -17,7 +17,7 @@ This script takes an event file made by SOXS and makes a SOXS exposure map for i
     usage: make_exposure_map [-h] [--energy ENERGY] [--weightsfile WEIGHTSFILE]
                              [--asol_file ASOL_FILE] [--overwrite]
                              [--nhistx NHISTX] [--nhisty NHISTY]
-                             [--normalize | --no_normalize]
+                             [--normalize | --no_normalize] [--reblock REBLOCK]
                              event_file expmap_file
     
     Make a SOXS exposure map from an event file.
@@ -32,9 +32,9 @@ This script takes an event file made by SOXS and makes a SOXS exposure map for i
                             map. This parameter will be ignored if a 'weightsfile'
                             is set.
       --weightsfile WEIGHTSFILE
-                            A file containing two columns: energy in keV and spectral
-                            weights, to create an exposure map weighted over an
-                            energy band.
+                            A file containing two columns: energy in keV and
+                            spectral weights, to create an exposure map weighted
+                            over an energy band.
       --asol_file ASOL_FILE
                             If set, write the aspect solution to this file.
       --overwrite           Overwrite an existing file with the same name.
@@ -45,6 +45,8 @@ This script takes an event file made by SOXS and makes a SOXS exposure map for i
       --normalize           Normalize the exposure map by the exposure time. This
                             is the default.
       --no_normalize        Don't normalize the exposure map by the exposure time.
+      --reblock REBLOCK     Supply an integer power of two to set the binning of
+                            the exposure map. Default: 1
 
 Examples
 ++++++++
@@ -80,6 +82,12 @@ Make an exposure map, but don't normalize by the exposure time.
 
     [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --overwrite --no_normalize
 
+Reblock the exposure map by 4.
+
+.. code-block:: bash
+
+    [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --overwrite --reblock=4
+
 ``make_image``
 --------------
 
@@ -87,6 +95,7 @@ Make an exposure map, but don't normalize by the exposure time.
 
     usage: make_image [-h] [--coord_type COORD_TYPE] [--emin EMIN] [--emax EMAX]
                       [--overwrite] [--expmap_file EXPMAP_FILE]
+                      [--reblock REBLOCK]
                       event_file out_file
     
     Make a FITS image from a SOXS event file.
@@ -108,6 +117,9 @@ Make an exposure map, but don't normalize by the exposure time.
       --expmap_file EXPMAP_FILE
                             Supply an exposure map file to divide this image by to
                             get a flux map.
+      --reblock REBLOCK     Change this value to reblock the image to larger pixel
+                            sizes (reblock >= 1). Only supported for sky
+                            coordinates. Default: 1
 
 Examples
 ++++++++
@@ -135,6 +147,12 @@ Make an image and divide it by an exposure map.
 .. code-block:: bash
 
     [~]$ make_image evt.fits flux_img.fits --overwrite --expmap_file=expmap.fits
+
+Reblock the image by 4.
+
+.. code-block:: bash
+
+    [~]$ make_image evt.fits img.fits --emin=0.5 --emax=7.0 --overwrite --reblock=4
 
 ``make_radial_profile``
 -----------------------
