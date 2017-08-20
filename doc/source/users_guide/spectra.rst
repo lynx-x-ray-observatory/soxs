@@ -190,6 +190,8 @@ tables. This is done by setting ``nolines=True`` in the constructor for
 
     agen = ApecGenerator(0.05, 50.0, 10000, nolines=True)
 
+.. _solar-abund-tables:
+
 Changing Abundance Tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
