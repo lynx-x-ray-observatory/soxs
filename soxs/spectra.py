@@ -10,12 +10,13 @@ from soxs.utils import soxs_files_path, mylog, \
 from soxs.cutils import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
-    m_u, elem_names, sigma_to_fwhm
+    m_u, elem_names, sigma_to_fwhm, abund_tables
 import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from soxs.instrument import AuxiliaryResponseFile
+from six import string_types
 
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
@@ -610,6 +611,19 @@ class ApecGenerator(object):
     nolines : boolean, optional
         Turn off lines entirely for generating spectra.
         Default: False
+    abund_table : string or array_like, optional
+        The abundance table to be used for solar abundances. 
+        Either a string corresponding to a built-in table or an array
+        of 30 floats corresponding to the abundances of each element
+        relative to the abundance of H. Default is "angr".
+        Built-in options are:
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+        Cosmochimica Acta 53, 197)
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+        P. (2009, ARAA, 47, 481)
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+        except for elements not listed which are given zero abundance)
+        "lodd" : from Lodders, K (2003, ApJ 591, 1220)
 
     Examples
     --------
@@ -617,7 +631,8 @@ class ApecGenerator(object):
     ...                            broadening=True)
     """
     def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
-                 apec_vers="3.0.8", broadening=True, nolines=False):
+                 apec_vers="3.0.8", broadening=True, nolines=False,
+                 abund_table="angr"):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
         self.emin = emin
@@ -661,6 +676,14 @@ class ApecGenerator(object):
                             if elem not in self.var_elem]
         self.metal_elem = [elem for elem in metal_elem
                            if elem not in self.var_elem]
+        if not isinstance(abund_table, string_types):
+            if len(abund_table) != 30:
+                raise RuntimeError("User-supplied abundance tables "
+                                   "must be 30 elements long!")
+            self.atable = abund_table
+        else:
+            self.atable = abund_tables[abund_table]
+        self.atable /= abund_tables["angr"]
 
     def _make_spectrum(self, kT, element, velocity, line_fields,
                        coco_fields, scale_factor):
@@ -673,7 +696,7 @@ class ApecGenerator(object):
                          (line_fields['lambda'] < self.maxlam))[0]
 
             E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
-            amp = line_fields['epsilon'][i].astype("float64")
+            amp = line_fields['epsilon'][i].astype("float64")*self.atable[element]
             if self.broadening:
                 sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
                 sigma += 2.0*velocity*velocity
@@ -690,17 +713,19 @@ class ApecGenerator(object):
         else:
             ind = ind[0]
 
+        de0 = self.de/scale_factor
+
         n_cont = coco_fields['N_Cont'][ind]
         e_cont = coco_fields['E_Cont'][ind][:n_cont]*scale_factor
-        continuum = coco_fields['Continuum'][ind][:n_cont]
+        continuum = coco_fields['Continuum'][ind][:n_cont]*self.atable[element]
 
-        tmpspec += np.interp(self.emid, e_cont, continuum)*self.de/scale_factor
+        tmpspec += np.interp(self.emid, e_cont, continuum)*de0
 
         n_pseudo = coco_fields['N_Pseudo'][ind]
         e_pseudo = coco_fields['E_Pseudo'][ind][:n_pseudo]*scale_factor
-        pseudo = coco_fields['Pseudo'][ind][:n_pseudo]
+        pseudo = coco_fields['Pseudo'][ind][:n_pseudo]*self.atable[element]
 
-        tmpspec += np.interp(self.emid, e_pseudo, pseudo)*self.de/scale_factor
+        tmpspec += np.interp(self.emid, e_pseudo, pseudo)*de0
 
         return tmpspec*scale_factor
 
@@ -708,8 +733,8 @@ class ApecGenerator(object):
         line_data = self.line_handle[index+2].data
         coco_data = self.coco_handle[index+2].data
         line_fields = ('element', 'lambda', 'epsilon')
-        coco_fields = ('Z', 'rmJ', 'N_Cont', 'E_Cont', 'Continuum', 'N_Pseudo',
-                       'E_Pseudo', 'Pseudo')
+        coco_fields = ('Z', 'rmJ', 'N_Cont', 'E_Cont', 'Continuum',
+                       'N_Pseudo','E_Pseudo', 'Pseudo')
         line_fields = {el: line_data.field(el) for el in line_fields}
         coco_fields = {el: coco_data.field(el) for el in coco_fields}
         return line_fields, coco_fields
