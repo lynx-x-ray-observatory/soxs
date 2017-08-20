@@ -439,40 +439,6 @@ class Spectrum(object):
         self.flux += f*line_amp
         self._compute_total_flux()
 
-    def add_absorption_line(self, line_center, line_width, line_depth,
-                            redshift=0.0, line_type="gaussian"):
-        """
-        Add an absorption line to this spectrum.
-
-        Parameters
-        ----------
-        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line center position in units of keV.
-        line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line width (FWHM) in units of keV.
-        line_depth : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line depth in units of keV.
-        redshift : float, optional
-            The redshift of the line absorber. Default: 0.0
-        line_type : string, optional
-            The line profile type. "gaussian" or "lorentzian".
-            Default: "gaussian"
-        """
-        line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV")
-        line_depth = parse_value(line_depth, "keV")
-        line_center *= 1.0+redshift
-        line_width *= 1.0+redshift
-        if line_type == "gaussian":
-            f = self._compute_gaussian_line(line_center, line_width)
-        elif line_type == "lorentzian":
-            f = self._compute_lorentzian_line(line_center, line_width)
-        else:
-            raise NotImplementedError("Line profile type '%s' " % line_type +
-                                      "not implemented!")
-        self.flux *= np.exp(-line_depth*f)
-        self._compute_total_flux()
-
     def generate_energies(self, t_exp, area, prng=None, quiet=False):
         """
         Generate photon energies from this spectrum 
