@@ -29,6 +29,7 @@ This is a release with a number of important new features and some bugfixes.
 * For APEC spectra created using :class:`~soxs.spectra.ApecGenerator`, it is now possible to
   use Solar abundance tables other than the implicitly assumed Anders & Grevesse 1989. See
   :ref:`solar-abund-tables` and :ref:`cmd-spectra` for details.
+* The accuracy of the ``TBabs`` model interpolation in SOXS has been improved.
 
 Version 1.3.0
 -------------

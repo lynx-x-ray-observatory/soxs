@@ -803,7 +803,8 @@ def tbabs_cross_section(E):
         f.close()
         _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
         _tbabs_spline = InterpolatedUnivariateSpline(_tbabs_emid,
-                                                     _tbabs_sigma, ext=1)
+                                                     _tbabs_sigma, k=5, 
+                                                     ext=1)
     return _tbabs_spline(E)
 
 def get_tbabs_absorb(e, nH):
