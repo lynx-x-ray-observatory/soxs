@@ -398,13 +398,6 @@ class Spectrum(object):
         f /= np.sqrt(2.*np.pi)*sigma
         return f
 
-    def _compute_lorentzian_line(self, line_center, line_width):
-        half_width = 0.5*line_width
-        x = (self.emid.value-line_center)
-        f = half_width/np.pi
-        f /= x**2+half_width**2
-        return f
-
     def add_emission_line(self, line_center, line_width, line_amp,
                           redshift=0.0, line_type="gaussian"):
         """
@@ -421,8 +414,7 @@ class Spectrum(object):
         redshift : float, optional
             The redshift of the line emitter. Default: 0.0
         line_type : string, optional
-            The line profile type. "gaussian" or "lorentzian".
-            Default: "gaussian"
+            The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
         line_width = parse_value(line_width, "keV")
@@ -431,8 +423,6 @@ class Spectrum(object):
         line_width *= 1.0+redshift
         if line_type == "gaussian":
             f = self._compute_gaussian_line(line_center, line_width)
-        elif line_type == "lorentzian":
-            f = self._compute_lorentzian_line(line_center, line_width)
         else:
             raise NotImplementedError("Line profile type '%s' " % line_type +
                                       "not implemented!")
