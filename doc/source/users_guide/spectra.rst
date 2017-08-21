@@ -416,6 +416,25 @@ optional ``redshift`` argument (default 0.0):
     n_H = 0.02
     spec.apply_foreground_absorption(n_H, model="tbabs", redshift=0.05)
 
+Adding Line Emission to a Spectrum
+----------------------------------
+
+The :meth:`~soxs.Spectrum.add_emission_line` method adds a single emission
+line to an existing :class:`~soxs.spectra.Spectrum` object. The line energy,
+line width, and amplitude of the line (the line strength or integral under
+the curve) must be specified. 
+
+.. code-block:: python
+
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
+                                  10.0, 10000)
+    line_center = (6.0, "keV")
+    line_width = (30.0, "eV")
+    line_amp = (1.0e-7, "photon/s/cm**2")
+    spec.add_emission_line(line_center, line_width, line_amp)
+ 
+Currently, this functionality only supports lines with a Gaussian shape.
+
 Generating Photon Energies From a Spectrum
 ------------------------------------------
 
