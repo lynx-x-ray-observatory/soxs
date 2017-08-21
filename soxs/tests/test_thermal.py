@@ -25,6 +25,8 @@ agen_var = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_de,
                          var_elem=["O", "Ca"], broadening=True)
 agen_nolines = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_de, 
                              broadening=True, nolines=True)
+agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_de, 
+                          broadening=True, abund_table="aspl")
 
 def mymodel(pars, x, xhi=None):
     dx = x[1]-x[0]
@@ -48,6 +50,13 @@ def mymodel_nolines(pars, x, xhi=None):
     eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
     return dx*wabs*apec.flux.value[eidxs]
 
+def mymodel_aspl(pars, x, xhi=None):
+    dx = x[1]-x[0]
+    wabs = get_wabs_absorb(x+0.5*dx, pars[0])
+    apec_aspl = agen_aspl.get_spectrum(pars[1], pars[2], pars[3], pars[4])
+    eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
+    return dx*wabs*apec_aspl.flux.value[eidxs]
+
 nH_sim = 0.02
 kT_sim = 6.0
 abund_sim = 0.4
@@ -68,6 +77,9 @@ spec_var.apply_foreground_absorption(nH_sim)
 
 spec_nolines = agen_nolines.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
 spec_nolines.apply_foreground_absorption(nH_sim)
+
+spec_aspl = agen_aspl.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
+spec_aspl.apply_foreground_absorption(nH_sim)
 
 def test_thermal():
 
@@ -184,7 +196,7 @@ def test_var_thermal_from_spectrum():
 
     load_user_model(mymodel_var, "wapec")
     add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm", "O", "Ca"],
-                  [nH_sim, 4.0, 0.2, redshift, norm_sim*0.8, 0.5, 0.3],
+                  [nH_sim, 4.0, 0.2, redshift, norm_sim*0.8, 0.3, 0.5],
                   parmins=[0.0, 0.1, 0.0, -20.0, 0.0, 0.0, 0.0],
                   parmaxs=[10.0, 20.0, 10.0, 20.0, 1.0e9, 10.0, 10.0],
                   parfrozen=[True, False, False, True, False, False, False])
@@ -251,8 +263,61 @@ def test_nolines_thermal_from_spectrum():
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
+def test_thermal_abund_table():
+
+    prng = RandomState(72)
+
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    e = spec_aspl.generate_energies(exp_time, area, prng=prng)
+
+    pt_src = PointSourceModel(30.0, 45.0, e.size)
+
+    write_photon_list("thermal_model_aspl", "thermal_model_aspl", e.flux, 
+                      pt_src.ra, pt_src.dec, e, overwrite=True)
+
+    instrument_simulator("thermal_model_aspl_simput.fits", "thermal_model_aspl_evt.fits", 
+                         exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
+                         instr_bkgnd=False, prng=prng)
+
+    inst = get_instrument_from_registry(inst_name)
+    arf = AuxiliaryResponseFile(inst["arf"])
+    rmf = RedistributionMatrixFile(inst["rmf"])
+    os.system("cp %s ." % arf.filename)
+    convert_rmf(rmf.filename)
+
+    write_spectrum("thermal_model_aspl_evt.fits", "thermal_model_aspl_evt.pha", overwrite=True)
+
+    load_user_model(mymodel_aspl, "wapec")
+    add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm"],
+                  [0.01, 4.0, 0.2, redshift, norm_sim*0.8],
+                  parmins=[0.0, 0.1, 0.0, -20.0, 0.0],
+                  parmaxs=[10.0, 20.0, 10.0, 20.0, 1.0e9],
+                  parfrozen=[False, False, False, True, False])
+
+    load_pha("thermal_model_aspl_evt.pha")
+    set_stat("cstat")
+    set_method("simplex")
+    set_model("wapec")
+    ignore(":0.6, 8.0:")
+    fit()
+    set_covar_opt("sigma", 1.645)
+    covar()
+    res = get_covar_results()
+
+    assert np.abs(res.parvals[0]-nH_sim) < res.parmaxes[0]
+    assert np.abs(res.parvals[1]-kT_sim) < res.parmaxes[1]
+    assert np.abs(res.parvals[2]-abund_sim) < res.parmaxes[2]
+    assert np.abs(res.parvals[3]-norm_sim) < res.parmaxes[3]
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
+
 if __name__ == "__main__":
     test_thermal()
     test_thermal_from_spectrum()
     test_var_thermal_from_spectrum()
     test_nolines_thermal_from_spectrum()
+    test_thermal_abund_table()
