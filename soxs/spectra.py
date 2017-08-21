@@ -638,8 +638,8 @@ class ApecGenerator(object):
                                    "must be 30 elements long!")
             self.atable = np.concatenate([0.0], np.array(abund_table))
         else:
-            self.atable = abund_tables[abund_table]
-        self.atable /= abund_tables["angr"]
+            self.atable = abund_tables[abund_table].copy()
+        self.atable[1:] /= abund_tables["angr"][1:]
 
     def _make_spectrum(self, kT, element, velocity, line_fields,
                        coco_fields, scale_factor):
