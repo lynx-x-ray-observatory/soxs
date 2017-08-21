@@ -32,6 +32,13 @@ This is a release with a number of important new features and some bugfixes.
 * The accuracy of the ``TBabs`` absorption model interpolation in SOXS has been improved.
 * A method to add individual Gaussian-shaped lines to a :class:`~soxs.spectra.Spectrum`, 
   :meth:`~soxs.spectra.Spectrum.add_emission_line`, has been added. 
+* Small improvements were made to reading parameters from RMFs, improving consistency
+  and allowing more corner cases to be supported.
+* If a ``COUNT_RATE`` column is not in a FITS table file containing a spectrum, the count 
+  rate will be generated automatically in :func:`~soxs.events.plot_spectrum`.
+* The ability to simulate background components has been added to 
+  :func:`~soxs.instrument.simulate_spectrum`. See :ref:`simulate-spectrum` and
+  :ref:`cmd-simulate-spectrum` for more details.
 
 Version 1.3.0
 -------------
