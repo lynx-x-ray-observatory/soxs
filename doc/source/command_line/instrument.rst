@@ -154,6 +154,8 @@ To use a background stored in an event file:
     entirely determined from the contents of this file and any of the above
     background flags will be ignored.
 
+.. _cmd-simulate-spectrum:
+
 ``simulate_spectrum``
 ---------------------
 

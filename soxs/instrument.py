@@ -933,8 +933,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     event_params["instrument"] = rmf.header["INSTRUME"]
     event_params["mission"] = rmf.header.get("MISSION", "")
 
-    events = {}
-    events["energy"] = cspec.generate_energies(exp_time, prng=prng).value
+    events = {"energy": cspec.generate_energies(exp_time, prng=prng).value}
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")

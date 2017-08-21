@@ -52,7 +52,7 @@ else:
     instrument = args.instrument
 
 if args.bkgnd_area is None:
-    bkgnd_area = (1.0, "arcmin")
+    bkgnd_area = (1.0, "arcmin**2")
 else:
     bkgnd_area = args.bkgnd_area
 
