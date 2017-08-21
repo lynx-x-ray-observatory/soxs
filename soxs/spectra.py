@@ -410,7 +410,7 @@ class Spectrum(object):
         line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The line width (FWHM) in units of keV.
         line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line amplitude in the units of the spectrum.
+            The integrated line amplitude in the units of the flux
         redshift : float, optional
             The redshift of the line emitter. Default: 0.0
         line_type : string, optional
@@ -418,7 +418,7 @@ class Spectrum(object):
         """
         line_center = parse_value(line_center, "keV")
         line_width = parse_value(line_width, "keV")
-        line_amp = parse_value(line_amp, self._units)
+        line_amp = parse_value(line_amp, "%s*keV" % self._units)
         line_center *= 1.0+redshift
         line_width *= 1.0+redshift
         if line_type == "gaussian":
@@ -426,7 +426,7 @@ class Spectrum(object):
         else:
             raise NotImplementedError("Line profile type '%s' " % line_type +
                                       "not implemented!")
-        self.flux += f*line_amp
+        self.flux += u.Quantity(f*line_amp, self._units)
         self._compute_total_flux()
 
     def generate_energies(self, t_exp, area, prng=None, quiet=False):
