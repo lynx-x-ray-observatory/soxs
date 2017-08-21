@@ -10,7 +10,7 @@ acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
 acisi_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(acisi_bkgnd_file, 10.0)
 
 # ACIS-S BI particle background
-aciss_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
+aciss_bkgnd_file = os.path.join(soxs_files_path, "aciss_particle_bkgnd.h5")
 aciss_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(aciss_bkgnd_file, 10.0)
 
 # Athena-like microcalorimeter background 
