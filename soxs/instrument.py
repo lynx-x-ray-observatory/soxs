@@ -605,6 +605,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if ptsrc_bkgnd:
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center,
+                                             area=1.2*arf.max_area,
                                              input_sources=input_sources, 
                                              absorb_model=absorb_model,
                                              nH=nH, prng=prng)
