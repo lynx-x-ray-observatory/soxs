@@ -59,38 +59,8 @@ def add_background_from_file(events, event_params, bkg_file):
 
     return all_events
 
-def make_uniform_background(energy, event_params, rmf, prng=None):
+def make_diffuse_background(bkg_events, event_params, rmf, prng=None):
     from soxs.instrument import perform_dither
-    import pyregion._region_filter as rfilter
-
-    prng = parse_prng(prng)
-
-    bkg_events = {}
-
-    n_events = energy.size
-
-    nx = event_params["num_pixels"]
-    bkg_events["detx"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
-    bkg_events["dety"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
-    bkg_events["energy"] = energy
-
-    if event_params["chips"] is None:
-        bkg_events["chip_id"] = np.zeros(n_events, dtype='int')
-    else:
-        bkg_events["chip_id"] = -np.ones(n_events, dtype='int')
-        for i, chip in enumerate(event_params["chips"]):
-            thisc = np.ones(n_events, dtype='bool')
-            rtype = chip[0]
-            args = chip[1:]
-            r = getattr(rfilter, rtype)(*args)
-            inside = r.inside(bkg_events["detx"], bkg_events["dety"])
-            thisc = np.logical_and(thisc, inside)
-            bkg_events["chip_id"][thisc] = i
-
-    keep = bkg_events["chip_id"] > -1
-
-    for key in bkg_events:
-        bkg_events[key] = bkg_events[key][keep]
 
     n_e = bkg_events["energy"].size
 

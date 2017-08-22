@@ -3,7 +3,9 @@ from soxs.utils import soxs_files_path, parse_prng, \
     parse_value, mylog
 from soxs.background.spectra import \
     InstrumentalBackgroundSpectrum
-from soxs.background.events import make_uniform_background
+from soxs.background.events import make_diffuse_background
+import numpy as np
+from six import string_types
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
@@ -64,20 +66,59 @@ def add_instrumental_background(name, filename, default_focal_length):
 
 def make_instrument_background(bkgnd_name, event_params, focal_length, rmf, 
                                prng=None):
+    import pyregion._region_filter as rfilter
+
     prng = parse_prng(prng)
 
-    bkgnd_spec = instrument_backgrounds[bkgnd_name]
-
-    # Generate background events
-
-    energy = bkgnd_spec.generate_energies(event_params["exposure_time"],
-                                          event_params["fov"],
-                                          focal_length=focal_length,
-                                          prng=prng, quiet=True).value
-
-    if energy.size == 0:
-        raise RuntimeError("No instrumental background events were detected!!!")
+    if event_params["chips"] is None:
+        bkgnd_spec = [instrument_backgrounds[bkgnd_name]]
     else:
-        mylog.info("Making %d events from the instrumental background." % energy.size)
+        nchips = len(event_params["chips"])
+        if isinstance(bkgnd_name, string_types):
+            bkgnd_spec = [instrument_backgrounds[bkgnd_name]]*nchips
+        else:
+            bkgnd_spec = [instrument_backgrounds[name] for name in bkgnd_name]
 
-    return make_uniform_background(energy, event_params, rmf, prng=prng)
+    bkg_events = {}
+
+    nx = event_params["num_pixels"]
+
+    if event_params["chips"] is None:
+        bkg_events["energy"] = bkgnd_spec[0].generate_energies(event_params["exposure_time"],
+                                                               event_params["fov"], prng=prng,
+                                                               quiet=True).value
+        n_events = bkg_events["energy"].size
+        bkg_events["chip_id"] = np.zeros(n_events, dtype='int')
+        bkg_events["detx"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
+        bkg_events["dety"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
+    else:
+        bkg_events["energy"] = []
+        bkg_events["detx"] = []
+        bkg_events["dety"] = []
+        bkg_events["chip_id"] = []
+        for i, chip in enumerate(event_params["chips"]):
+            e = bkgnd_spec[i].generate_energies(event_params["exposure_time"],
+                                                event_params["fov"], prng=prng,
+                                                quiet=True).value
+            n_events = e.size
+            detx = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
+            dety = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
+            thisc = np.ones(n_events, dtype='bool')
+            rtype = chip[0]
+            args = chip[1:]
+            r = getattr(rfilter, rtype)(*args)
+            inside = r.inside(detx, dety)
+            thisc = np.logical_and(thisc, inside)
+            bkg_events["energy"].append(e[thisc])
+            bkg_events["detx"].append(detx[thisc])
+            bkg_events["dety"].append(dety[thisc])
+            bkg_events["chip_id"].append(i*np.ones(thisc.sum()))
+        for key in bkg_events:
+            bkg_events[key] = np.concatenate(bkg_events[key])
+
+    if bkg_events["energy"].size == 0:
+        raise RuntimeError("No astrophysical foreground events were detected!!!")
+    else:
+        mylog.info("Making %d events from the astrophysical foreground." % bkg_events["energy"].size)
+
+    return make_diffuse_background(bkg_events, event_params, rmf, prng=prng)
