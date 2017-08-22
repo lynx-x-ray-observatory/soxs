@@ -39,6 +39,10 @@ This is a release with a number of important new features and some bugfixes.
 * The ability to simulate background components has been added to 
   :func:`~soxs.instrument.simulate_spectrum`. See :ref:`simulate-spectrum` and
   :ref:`cmd-simulate-spectrum` for more details.
+* New instrumental models for ACIS-S have been added to the instrument registry.
+* The ACIS-I instrument models for Cycle 18 have been replaced with Cycle 19 models.
+* When defining instrument specifications, it is now possible to specify a per-chip
+  particle background model. See :ref:`custom-instruments` for more details.
 
 Version 1.3.0
 -------------

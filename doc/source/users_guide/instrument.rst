@@ -359,6 +359,8 @@ The various parts of each instrument specification are:
 As SOXS matures, this list of specifications will likely expand, and the number 
 of options for some of them (e.g., the PSF) will also expand.
 
+.. _custom-instruments:
+
 Making Custom Instruments
 +++++++++++++++++++++++++
 
