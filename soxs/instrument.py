@@ -340,8 +340,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
-    if not instrument_spec["imaging"]:
-        raise RuntimeError("Instrument '%s' is not " % instrument_spec["imaging"] +
+    if instrument_spec["grating"]:
+        raise RuntimeError("Instrument '%s' is not " % instrument_spec["name"] +
                            "designed for imaging observations!")
 
     arf_file = check_file_location(instrument_spec["arf"], "files")
@@ -590,8 +590,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
-    if not instrument_spec["imaging"]:
-        raise RuntimeError("Instrument '%s' is not " % instrument_spec["imaging"] +
+    if instrument_spec["grating"]:
+        raise RuntimeError("Instrument '%s' is not " % instrument_spec["name"] +
                            "designed for imaging observations!")
     fov = instrument_spec["fov"]
 
