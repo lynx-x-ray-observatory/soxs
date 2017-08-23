@@ -921,8 +921,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     if instrument_spec["grating"]:
         if foreground or instr_bkgnd or ptsrc_bkgnd:
-            raise RuntimeError("Backgrounds cannot be included in simulations "
-                               "of gratings spectra at this time!")
+            raise NotImplementedError("Backgrounds cannot be included in simulations "
+                                      "of gratings spectra at this time!")
     arf_file = check_file_location(instrument_spec["arf"], "files")
     rmf_file = check_file_location(instrument_spec["rmf"], "files")
     arf = AuxiliaryResponseFile(arf_file)
