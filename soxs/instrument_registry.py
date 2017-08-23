@@ -55,7 +55,7 @@ for det in ["hdxi", "mucal"]:
 instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
                                         "arf": "xrs_cat.arf",
                                         "rmf": "xrs_cat.rmf",
-                                        "bkgnd": "acisi",
+                                        "bkgnd": None,
                                         "focal_length": 10.0,
                                         "imaging": False}
 
@@ -215,7 +215,7 @@ for energy in ["leg", "meg", "heg"]:
         instrument_registry[name] = {"name": name,
                                      "arf": "%s.garf" % name,
                                      "rmf": "%s.grmf" % name,
-                                     "bkgnd": "aciss",
+                                     "bkgnd": None,
                                      "focal_length": 10.0,
                                      "imaging": False}
 
