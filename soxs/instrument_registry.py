@@ -96,141 +96,84 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                      "psf": ["gaussian", 5.0],
                                      "grating": False}
 
-# Old Athena specs
-
-instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
-                                         "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
-                                         "rmf": "athena_wfi_rmf_v20150326.rmf",
-                                         "bkgnd": "athena_wfi",
-                                         "fov": 40.0,
-                                         "num_pixels": 1092,
-                                         "aimpt_coords": [0.0, 0.0],
-                                         "chips": None,
-                                         "focal_length": 12.0,
-                                         "dither": False,
-                                         "psf": ["gaussian", 5.0],
-                                         "grating": False}
-
-instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
-                                          "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
-                                          "rmf": "athena_xifu_rmf_v20160401.rmf",
-                                          "bkgnd": "athena_xifu",
-                                          "fov": 5.0,
-                                          "num_pixels": 70,
-                                          "aimpt_coords": [0.0, 0.0],
-                                          "chips": None,
-                                          "focal_length": 12.0,
-                                          "dither": False,
-                                          "psf": ["gaussian", 5.0],
-                                          "grating": False}
-
 ## Chandra
 
-# ACIS-I, Cycle 0 
+# ACIS-I, Cycle 0 and 19
 
-instrument_registry["acisi_cy0"] = {"name": "acisi_cy0", 
-                                    "arf": "acisi_aimpt_cy0.arf",
-                                    "rmf": "acisi_aimpt_cy0.rmf",
-                                    "bkgnd": "acisi",
-                                    "fov": 20.008,
-                                    "num_pixels": 2440,
-                                    "aimpt_coords": [86.0, 57.0],
-                                    "chips": [["Box", -523, -523, 1024, 1024],
-                                              ["Box", 523, -523, 1024, 1024],
-                                              ["Box", -523, 523, 1024, 1024],
-                                              ["Box", 523, 523, 1024, 1024]],
-                                    "psf": ["gaussian", 0.5],
-                                    "focal_length": 10.0,
-                                    "dither": True,
-                                    "grating": False}
+for cycle in [0, 19]:
+    name = "acisi_cy%d" % cycle
+    instrument_registry[name] = {"name": name, 
+                                 "arf": "acisi_aimpt_cy%d.arf" % cycle,
+                                 "rmf": "acisi_aimpt_cy%d.rmf" % cycle,
+                                 "bkgnd": "acisi",
+                                 "fov": 20.008,
+                                 "num_pixels": 2440,
+                                 "aimpt_coords": [86.0, 57.0],
+                                 "chips": [["Box", -523, -523, 1024, 1024],
+                                           ["Box", 523, -523, 1024, 1024],
+                                           ["Box", -523, 523, 1024, 1024],
+                                           ["Box", 523, 523, 1024, 1024]],
+                                 "psf": ["gaussian", 0.5],
+                                 "focal_length": 10.0,
+                                 "dither": True,
+                                 "grating": False}
 
-# ACIS-I, Cycle 19
+# ACIS-S, Cycle 0 and 19
 
-instrument_registry["acisi_cy19"] = {"name": "acisi_cy19",
-                                     "arf": "acisi_aimpt_cy19.arf",
-                                     "rmf": "acisi_aimpt_cy19.rmf",
-                                     "bkgnd": "acisi",
-                                     "fov": 20.008,
-                                     "num_pixels": 2440,
-                                     "aimpt_coords": [86.0, 57.0],
-                                     "chips": [["Box", -523, -523, 1024, 1024],
-                                               ["Box", 523, -523, 1024, 1024],
-                                               ["Box", -523, 523, 1024, 1024],
-                                               ["Box", 523, 523, 1024, 1024]],
-                                     "psf": ["gaussian", 0.5],
-                                     "focal_length": 10.0,
-                                     "dither": True,
-                                     "grating": False}
+for cycle in [0, 19]:
+    name = "aciss_cy%d" % cycle
+    instrument_registry[name] = {"name": name,
+                                 "arf": "aciss_aimpt_cy%d.arf" % cycle,
+                                 "rmf": "aciss_aimpt_cy%d.rmf" % cycle,
+                                 "bkgnd": ["acisi", "aciss",
+                                           "acisi", "aciss",
+                                           "acisi", "acisi"],
+                                 "fov": 50.02,
+                                 "num_pixels": 6100,
+                                 "aimpt_coords": [206.0, 0.0],
+                                 "chips": [["Box", -2605, 0, 1024, 1024],
+                                           ["Box", -1563, 0, 1024, 1024],
+                                           ["Box", -521, 0, 1024, 1024],
+                                           ["Box", 521, 0, 1024, 1024],
+                                           ["Box", 1563, 0, 1024, 1024],
+                                           ["Box", 2605, 0, 1024, 1024]],
+                                 "psf": ["gaussian", 0.5],
+                                 "focal_length": 10.0,
+                                 "dither": True,
+                                 "grating": False}
 
-# ACIS-S, Cycle 0
 
-instrument_registry["aciss_cy0"] = {"name": "aciss_cy0",
-                                    "arf": "aciss_aimpt_cy0.arf",
-                                    "rmf": "aciss_aimpt_cy0.rmf",
-                                    "bkgnd": ["acisi", "aciss",
-                                              "acisi", "aciss",
-                                              "acisi", "acisi"],
-                                    "fov": 50.02,
-                                    "num_pixels": 6100,
-                                    "aimpt_coords": [206.0, 0.0],
-                                    "chips": [["Box", -2605, 0, 1024, 1024],
-                                              ["Box", -1563, 0, 1024, 1024],
-                                              ["Box", -521, 0, 1024, 1024],
-                                              ["Box", 521, 0, 1024, 1024],
-                                              ["Box", 1563, 0, 1024, 1024],
-                                              ["Box", 2605, 0, 1024, 1024]],
-                                    "psf": ["gaussian", 0.5],
-                                    "focal_length": 10.0,
-                                    "dither": True,
-                                    "grating": False}
-
-# ACIS-S, Cycle 19
-
-instrument_registry["aciss_cy19"] = {"name": "aciss_cy19",
-                                     "arf": "aciss_aimpt_cy19.arf",
-                                     "rmf": "aciss_aimpt_cy19.rmf",
-                                     "bkgnd": ["acisi", "aciss", 
-                                               "acisi", "aciss", 
-                                               "acisi", "acisi"],
-                                     "fov": 50.02,
-                                     "num_pixels": 6100,
-                                     "aimpt_coords": [206.0, 0.0],
-                                     "chips": [["Box", -2605, 0, 1024, 1024],
-                                               ["Box", -1563, 0, 1024, 1024],
-                                               ["Box", -521, 0, 1024, 1024],
-                                               ["Box", 521, 0, 1024, 1024],
-                                               ["Box", 1563, 0, 1024, 1024],
-                                               ["Box", 2605, 0, 1024, 1024]],
-                                     "psf": ["gaussian", 0.5],
-                                     "focal_length": 10.0,
-                                     "dither": True,
-                                     "grating": False}
-
-# ACIS-S, Cycle 0, Gratings
+# ACIS-S, Cycle 0 and 19 HETG
 
 for energy in ["meg", "heg"]:
     for order in [-1, 1]:
-        name = "aciss_%s%d_cy0" % (energy, order)
-        instrument_registry[name] = {"name": name,
-                                     "arf": "%s.garf" % name,
-                                     "rmf": "%s.grmf" % name,
-                                     "bkgnd": None,
-                                     "focal_length": 10.0,
-                                     "grating": True}
+        for cycle in [0, 19]:
+            name = "aciss_%s%d_cy%d" % (energy, order, cycle)
+            instrument_registry[name] = {"name": name,
+                                         "arf": "%s.garf" % name,
+                                         "rmf": "%s.grmf" % name,
+                                         "bkgnd": None,
+                                         "focal_length": 10.0,
+                                         "grating": True}
 
-# ACIS-S, Cycle 19, Gratings
+## Hitomi
 
-for energy in ["meg", "heg"]:
-    for order in [-1, 1]:
-        name = "aciss_%s%d_cy19" % (energy, order)
-        instrument_registry[name] = {"name": name,
-                                     "arf": "%s.garf" % name,
-                                     "rmf": "%s.grmf" % name,
-                                     "bkgnd": None,
-                                     "focal_length": 10.0,
-                                     "grating": True}
+# SXS
 
-# Old Chandra specs
+instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
+                                     "arf": "hitomi_sxs_ptsrc.arf",
+                                     "rmf": "hitomi_sxs.rmf",
+                                     "bkgnd": "hitomi_sxs",
+                                     "num_pixels": 6,
+                                     "fov": 3.06450576,
+                                     "aimpt_coords": [0.0, 0.0],
+                                     "chips": None,
+                                     "focal_length": 5.6,
+                                     "dither": False,
+                                     "psf": ["gaussian", 72.0],
+                                     "grating": False}
+
+# Old specs
 
 instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
                                         "arf": "acisi_aimpt_cy0.arf",
@@ -258,22 +201,31 @@ instrument_registry["acisi_cy19_old"] = {"name": "acisi_cy19_old",
                                          "dither": True,
                                          "grating": False}
 
-## Hitomi
+instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
+                                         "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
+                                         "rmf": "athena_wfi_rmf_v20150326.rmf",
+                                         "bkgnd": "athena_wfi",
+                                         "fov": 40.0,
+                                         "num_pixels": 1092,
+                                         "aimpt_coords": [0.0, 0.0],
+                                         "chips": None,
+                                         "focal_length": 12.0,
+                                         "dither": False,
+                                         "psf": ["gaussian", 5.0],
+                                         "grating": False}
 
-# SXS
-
-instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
-                                     "arf": "hitomi_sxs_ptsrc.arf",
-                                     "rmf": "hitomi_sxs.rmf",
-                                     "bkgnd": "hitomi_sxs",
-                                     "num_pixels": 6,
-                                     "fov": 3.06450576,
-                                     "aimpt_coords": [0.0, 0.0],
-                                     "chips": None,
-                                     "focal_length": 5.6,
-                                     "dither": False,
-                                     "psf": ["gaussian", 72.0],
-                                     "grating": False}
+instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
+                                          "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
+                                          "rmf": "athena_xifu_rmf_v20160401.rmf",
+                                          "bkgnd": "athena_xifu",
+                                          "fov": 5.0,
+                                          "num_pixels": 70,
+                                          "aimpt_coords": [0.0, 0.0],
+                                          "chips": None,
+                                          "focal_length": 12.0,
+                                          "dither": False,
+                                          "psf": ["gaussian", 5.0],
+                                          "grating": False}
 
 def add_instrument_to_registry(inst_spec):
     """
