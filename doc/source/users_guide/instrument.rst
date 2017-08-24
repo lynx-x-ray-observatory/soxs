@@ -127,16 +127,32 @@ the specification of the *Athena* instruments assumed here, consult
 Chandra
 ~~~~~~~
 
-For simulating *Chandra* observations, two instrument specifications are 
-available, both for the ACIS-I instrument. These specifications are almost 
-identical with a 10-meter focal length, 0.5-arcsecond Gaussian PSF, dithering, 
-0.492-arcsecond pixels, and field of view of roughly 20 arcminutes, laid out in
-four chips arranged 2x2. However, The two separate specifications, ``"acisi_cy0"`` 
-and ``"acisi_cy18"``, use the instrumental responses from shortly after launch 
-("Cycle 0") and from more recently ("Cycle 18"), respectively. The main effect 
-is that the effective area at low energies for ``"acisi_cy18"`` is much lower 
-due to the buildup of contamination on the ACIS optical blocking filters compared
-to the ``"acisi_cy0"`` responses.
+For simulating *Chandra* observations, a number of instrument specifications are 
+available. All specifications assume a 10-meter focal length, 0.5-arcsecond Gaussian 
+PSF, dithering, and 0.492-arcsecond pixels.
+ 
+ACIS-I
+######
+
+The two ACIS-I specifications have a square field of view of roughly 20 
+arcminutes, laid out in four chips 8 arcminutes on a side arranged 2x2. However,
+The two separate specifications, ``"acisi_cy0"`` and ``"acisi_cy19"``, use the 
+instrumental responses from shortly after launch ("Cycle 0") and from more 
+recently ("Cycle 19"), respectively. The main effect is that the effective area
+at low energies for ``"acisi_cy19"`` is much lower due to the buildup of 
+contamination on the ACIS optical blocking filters compared to the 
+``"acisi_cy0"`` responses.
+
+ACIS-S
+######
+
+The two ACIS-S specifications have 6 chips 8 arcminutes on a side in a single row.
+As in the ACIS-I case, the two specifications are for Cycle 0 ``"aciss_cy0"``, and
+Cycle 19, ``"aciss_cy19"``. 
+
+Gratings
+########
+
 
 Hitomi
 ~~~~~~
