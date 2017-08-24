@@ -115,7 +115,7 @@ class AuxiliaryResponseFile(object):
         ax.loglog(self.emid, self.eff_area)
         ax.set_xlabel("E (keV)")
         ax.set_ylabel("$\mathrm{A\ (cm^2)}$")
-        return fig
+        return fig, ax
 
 class FlatResponse(AuxiliaryResponseFile):
     """
