@@ -22,7 +22,7 @@ instrument_registry["hdxi"] = {"name": "hdxi_3x10",
                                "focal_length": 10.0,
                                "dither": True,
                                "psf": ["gaussian", 0.5],
-                               "grating": False}
+                               "imaging": True}
 instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 
 # Micro-calorimeter
@@ -38,7 +38,7 @@ instrument_registry["mucal"] = {"name": "mucal_3x10",
                                 "focal_length": 10.0,
                                 "dither": True,
                                 "psf": ["gaussian", 0.5],
-                                "grating": False}
+                                "imaging": True}
 
 instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
 
@@ -57,7 +57,7 @@ instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
                                         "rmf": "xrs_cat.rmf",
                                         "bkgnd": None,
                                         "focal_length": 10.0,
-                                        "grating": True}
+                                        "imaging": False}
 
 ## Athena
 
@@ -76,7 +76,7 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                       "focal_length": 12.0,
                                       "dither": False,
                                       "psf": ["gaussian", 5.0],
-                                      "grating": False}
+                                      "imaging": True}
 
 # WFI
 
@@ -94,7 +94,7 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                      "focal_length": 12.0,
                                      "dither": False,
                                      "psf": ["gaussian", 5.0],
-                                     "grating": False}
+                                     "imaging": True}
 
 ## Chandra
 
@@ -116,7 +116,7 @@ for cycle in [0, 19]:
                                  "psf": ["gaussian", 0.5],
                                  "focal_length": 10.0,
                                  "dither": True,
-                                 "grating": False}
+                                 "imaging": True}
 
 # ACIS-S, Cycle 0 and 19
 
@@ -140,7 +140,7 @@ for cycle in [0, 19]:
                                  "psf": ["gaussian", 0.5],
                                  "focal_length": 10.0,
                                  "dither": True,
-                                 "grating": False}
+                                 "imaging": True}
 
 
 # ACIS-S, Cycle 0 and 19 HETG
@@ -154,7 +154,7 @@ for energy in ["meg", "heg"]:
                                          "rmf": "%s.grmf" % name,
                                          "bkgnd": None,
                                          "focal_length": 10.0,
-                                         "grating": True}
+                                         "imaging": False}
 
 ## Hitomi
 
@@ -171,7 +171,7 @@ instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
                                      "focal_length": 5.6,
                                      "dither": False,
                                      "psf": ["gaussian", 72.0],
-                                     "grating": False}
+                                     "imaging": True}
 
 # Old specs
 
@@ -186,7 +186,7 @@ instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
                                         "psf": ["gaussian", 0.5],
                                         "focal_length": 10.0,
                                         "dither": True,
-                                        "grating": False}
+                                        "imaging": True}
 
 instrument_registry["acisi_cy19_old"] = {"name": "acisi_cy19_old",
                                          "arf": "acisi_aimpt_cy19.arf",
@@ -199,7 +199,7 @@ instrument_registry["acisi_cy19_old"] = {"name": "acisi_cy19_old",
                                          "psf": ["gaussian", 0.5],
                                          "focal_length": 10.0,
                                          "dither": True,
-                                         "grating": False}
+                                         "imaging": True}
 
 instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
                                          "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
@@ -212,7 +212,7 @@ instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
                                          "focal_length": 12.0,
                                          "dither": False,
                                          "psf": ["gaussian", 5.0],
-                                         "grating": False}
+                                         "imaging": True}
 
 instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
                                           "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
@@ -225,7 +225,7 @@ instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
                                           "focal_length": 12.0,
                                           "dither": False,
                                           "psf": ["gaussian", 5.0],
-                                          "grating": False}
+                                          "imaging": True}
 
 def add_instrument_to_registry(inst_spec):
     """
@@ -255,7 +255,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "psf": ["gaussian", 0.5], # The type of PSF and its HPD
     ...     "chips": None, # The specification for the chips
     ...     "aimpt_coords": [0.0, 0.0], # The detector coordinates of the aimpoint
-    ...     "grating": False # Whether or not this is a gratings instrument
+    ...     "imaging": True # Whether or not this is a imaging instrument
     ... }
     """
     if isinstance(inst_spec, dict):
@@ -267,13 +267,13 @@ def add_instrument_to_registry(inst_spec):
     name = inst["name"]
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
-    # Catch older JSON files which don't distinguish between gratings and non-gratings
-    if "grating" not in inst:
-        mylog.warning("Instrument specifications must now include an 'grating' item, which "
-                      "determines whether or not this instrument specification corresponds "
-                      "to a grating. Default is False.")
-        inst["grating"] = False
-    if not inst['grating']:
+    # Catch older JSON files which don't distinguish between imagings and non-imagings
+    if "imaging" not in inst:
+        mylog.warning("Instrument specifications must now include an 'imaging' item, which "
+                      "determines whether or not this instrument specification supports "
+                      "imaging. Default is True.")
+        inst["imaging"] = True
+    if inst['imaging']:
         # Catch older JSON files without chip definitions
         if "chips" not in inst:
             mylog.warning("Instrument specifications must now include a 'chips' item, which details "
@@ -288,9 +288,9 @@ def add_instrument_to_registry(inst_spec):
             inst["aimpt_coords"] = [0.0, 0.0]
         default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
                        "aimpt_coords", "focal_length", "num_pixels",
-                       "dither", "psf", "grating"}
+                       "dither", "psf", "imaging"}
     else:
-        default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "grating"}
+        default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "imaging"}
     my_keys = set(inst.keys())
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
