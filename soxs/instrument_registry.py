@@ -206,11 +206,22 @@ instrument_registry["aciss_cy19"] = {"name": "aciss_cy19",
                                      "dither": True,
                                      "grating": False}
 
+# ACIS-S, Cycle 0, Gratings
+
+for energy in ["meg", "heg"]:
+    for order in [-1, 1]:
+        name = "aciss_%s%d_cy0" % (energy, order)
+        instrument_registry[name] = {"name": name,
+                                     "arf": "%s.garf" % name,
+                                     "rmf": "%s.grmf" % name,
+                                     "bkgnd": None,
+                                     "focal_length": 10.0,
+                                     "grating": True}
 
 # ACIS-S, Cycle 19, Gratings
 
-for energy in ["leg", "meg", "heg"]:
-    for order in range(-3, 4):
+for energy in ["meg", "heg"]:
+    for order in [-1, 1]:
         name = "aciss_%s%d_cy19" % (energy, order)
         instrument_registry[name] = {"name": name,
                                      "arf": "%s.garf" % name,
