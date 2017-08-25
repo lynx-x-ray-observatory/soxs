@@ -268,7 +268,54 @@ command "fakeit" does.
     simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=True)
 
 This spectrum file then can be read in and analyzed by standard software such as
-XSPEC, Sherpa, ISIS, etc.
+XSPEC, Sherpa, ISIS, etc. 
+
+The different background components that can be included in the 
+:func:`~soxs.instrument.instrument_simulator` can also be used with 
+:func:`~soxs.instrument.simulate_spectrum`. Because in this case the components
+are assumed to be diffuse, it is necessary to specify an area on the sky
+that the background was "extracted" from using the ``bkgnd_area`` parameter. 
+Here is an example invocation:
+
+.. code-block:: python
+
+    spec = soxs.Spectrum.from_file("lots_of_lines.dat")
+    instrument = "mucal"
+    out_file = "lots_of_lines.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file, 
+                      ptsrc_bkgnd=True, foreground=True, 
+                      instr_bkgnd=True, overwrite=True, 
+                      bkgnd_area=(1.0, "arcmin**2"))
+
+However, there are a couple of differences. The first difference is that 
+backgrounds are turned off in :func:`~soxs.instrument.simulate_spectrum` by 
+default, unlike in :func:`~soxs.instrument.instrument_simulator`. The second 
+difference is that while for the :func:`~soxs.instrument.instrument_simulator` 
+the point-source background is resolved into invdividual point sources, it is 
+not resolved for :func:`~soxs.instrument.simulate_spectrum`, and instead is 
+modeled using an absorbed power-law with the following parameters:
+
+* Power-law index :math:`alpha = 1.45`
+* Normalization at 1 keV of :math:`2.0 \times 10^{-7} photons~cm^{-2}~keV^{-1}`
+
+The foreground galactic absorption parameter ``nH`` and the absorption model
+``absorb_model`` can be set by hand:
+
+.. code-block:: python
+
+    spec = soxs.Spectrum.from_file("lots_of_lines.dat")
+    instrument = "mucal"
+    out_file = "lots_of_lines.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file, 
+                      ptsrc_bkgnd=True, foreground=True, 
+                      instr_bkgnd=True, overwrite=True, nH=0.02,
+                      absorb_model="tbabs", bkgnd_area=(1.0, "arcmin**2"))
+
+Instrument specifications with the ``"imaging"`` keyword set to ``False`` can 
+only be used with :func:`~soxs.instrument.simulate_spectrum` and not 
+:func:`~soxs.instrument.instrument_simulator`. Currently, this includes grating 
+instruments. Also, adding backgrounds to non-imaging instrument specifications 
+with :func:`~soxs.instrument.simulate_spectrum` is not supported at this time. 
 
 .. _instrument-registry:
 
