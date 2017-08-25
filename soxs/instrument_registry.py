@@ -12,7 +12,6 @@ instrument_registry = {}
 # High-Definition X-ray Imager (HDXI)
 
 instrument_registry["hdxi"] = {"name": "hdxi_3x10",
-                               "mission": "lynx",
                                "arf": "xrs_hdxi_3x10.arf",
                                "rmf": "xrs_hdxi.rmf",
                                "bkgnd": "acisi",
@@ -29,7 +28,6 @@ instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
 # Micro-calorimeter
 
 instrument_registry["mucal"] = {"name": "mucal_3x10",
-                                "mission": "lynx",
                                 "arf": "xrs_mucal_3x10.arf",
                                 "rmf": "xrs_mucal.rmf",
                                 "bkgnd": "mucal",
@@ -55,7 +53,6 @@ for det in ["hdxi", "mucal"]:
 # Gratings (for spectra only)
 
 instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
-                                        "mission": "lynx",
                                         "arf": "xrs_cat.arf",
                                         "rmf": "xrs_cat.rmf",
                                         "bkgnd": None,
@@ -67,7 +64,6 @@ instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
 # XIFU
 
 instrument_registry["athena_xifu"] = {"name": "athena_xifu",
-                                      "mission": "athena",
                                       "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
                                       "rmf": "athena_xifu_rmf_v20160401.rmf",
                                       "bkgnd": "athena_xifu",
@@ -85,7 +81,6 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
 # WFI
 
 instrument_registry["athena_wfi"] = {"name": "athena_wfi",
-                                     "mission": "athena",
                                      "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
                                      "rmf": "athena_wfi_rmf_v20150326.rmf",
                                      "bkgnd": "athena_wfi",
@@ -107,8 +102,7 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
 
 for cycle in [0, 19]:
     name = "acisi_cy%d" % cycle
-    instrument_registry[name] = {"name": name,
-                                 "mission": "chandra",
+    instrument_registry[name] = {"name": name, 
                                  "arf": "acisi_aimpt_cy%d.arf" % cycle,
                                  "rmf": "acisi_aimpt_cy%d.rmf" % cycle,
                                  "bkgnd": "acisi",
@@ -129,7 +123,6 @@ for cycle in [0, 19]:
 for cycle in [0, 19]:
     name = "aciss_cy%d" % cycle
     instrument_registry[name] = {"name": name,
-                                 "mission": "chandra",
                                  "arf": "aciss_aimpt_cy%d.arf" % cycle,
                                  "rmf": "aciss_aimpt_cy%d.rmf" % cycle,
                                  "bkgnd": ["acisi", "aciss",
@@ -157,7 +150,6 @@ for energy in ["meg", "heg"]:
         for cycle in [0, 19]:
             name = "aciss_%s%d_cy%d" % (energy, order, cycle)
             instrument_registry[name] = {"name": name,
-                                         "mission": "chandra",
                                          "arf": "%s.garf" % name,
                                          "rmf": "%s.grmf" % name,
                                          "bkgnd": None,
@@ -169,7 +161,6 @@ for energy in ["meg", "heg"]:
 # SXS
 
 instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
-                                     "mission": "hitomi",
                                      "arf": "hitomi_sxs_ptsrc.arf",
                                      "rmf": "hitomi_sxs.rmf",
                                      "bkgnd": "hitomi_sxs",
@@ -185,7 +176,6 @@ instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
 ## AXIS
 
 instrument_registry["axis"] = {"name": "axis",
-                               "mission": "axis",
                                "arf": "axis.arf",
                                "rmf": "axis.rmf",
                                "bkgnd": "axis",
@@ -201,7 +191,6 @@ instrument_registry["axis"] = {"name": "axis",
 # Old specs
 
 instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
-                                        "mission": "chandra",
                                         "arf": "acisi_aimpt_cy0.arf",
                                         "rmf": "acisi_aimpt_cy0.rmf",
                                         "bkgnd": "acisi",
@@ -215,7 +204,6 @@ instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",
                                         "imaging": True}
 
 instrument_registry["acisi_cy19_old"] = {"name": "acisi_cy19_old",
-                                         "mission": "chandra",
                                          "arf": "acisi_aimpt_cy19.arf",
                                          "rmf": "acisi_aimpt_cy19.rmf",
                                          "bkgnd": "acisi",
@@ -229,7 +217,6 @@ instrument_registry["acisi_cy19_old"] = {"name": "acisi_cy19_old",
                                          "imaging": True}
 
 instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
-                                         "mission": "athena",
                                          "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
                                          "rmf": "athena_wfi_rmf_v20150326.rmf",
                                          "bkgnd": "athena_wfi",
@@ -243,7 +230,6 @@ instrument_registry["athena_wfi_old"] = {"name": "athena_wfi_old",
                                          "imaging": True}
 
 instrument_registry["athena_xifu_old"] = {"name": "athena_xifu_old",
-                                          "mission": "athena",
                                           "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
                                           "rmf": "athena_xifu_rmf_v20160401.rmf",
                                           "bkgnd": "athena_xifu",
@@ -274,7 +260,6 @@ def add_instrument_to_registry(inst_spec):
 
     >>> {
     ...     "name": "hdxi_3x10", # The short name of the instrument
-    ...     "mission": "lynx", # The lowercase name of the mission
     ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf", # The file containing the RMF
     ...     "bkgnd": "acisi", # The name of the particle background
@@ -297,9 +282,6 @@ def add_instrument_to_registry(inst_spec):
     name = inst["name"]
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
-    if "mission" not in inst:
-        raise RuntimeError("Instrument specifications must now include a 'mission' keyword "
-                           "argument giving the name of the mission.")
     # Catch older JSON files which don't distinguish between imagings and non-imagings
     if "imaging" not in inst:
         mylog.warning("Instrument specifications must now include an 'imaging' item, which "
@@ -321,9 +303,9 @@ def add_instrument_to_registry(inst_spec):
             inst["aimpt_coords"] = [0.0, 0.0]
         default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
                        "aimpt_coords", "focal_length", "num_pixels",
-                       "dither", "psf", "imaging", "mission"}
+                       "dither", "psf", "imaging"}
     else:
-        default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "imaging", "mission"}
+        default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "imaging"}
     my_keys = set(inst.keys())
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
