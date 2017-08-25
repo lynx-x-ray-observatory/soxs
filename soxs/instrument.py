@@ -106,6 +106,12 @@ class AuxiliaryResponseFile(object):
             The figure to place the plot in. If not supplied, one will be created.
         ax : :class:`~matplotlib.axes.Axes`, optional
             The axes to place the plot in. If not supplied, one will be created.
+
+        Returns
+        -------
+
+        A tuple of the :class:`~matplotlib.figure.Figure` and
+        :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
         if fig is None:
