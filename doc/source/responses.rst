@@ -137,3 +137,9 @@ SXS
 
 * ARF: `hitomi_sxs_ptsrc.arf <../responses/hitomi/hitomi_sxs_ptsrc.arf>`_
 * RMF: `hitomi_sxs.rmf <../responses/hitomi/hitomi_sxs.rmf>`_
+
+AXIS
+----
+
+* ARF: `axis.arf <../responses/axis/axis.arf>`_
+* RMF: `axis.rmf <../responses/axis/axis.rmf>`_
