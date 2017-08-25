@@ -24,7 +24,8 @@ parser.add_argument("--nh", default=0.05,
                          'Default: 0.05')
 parser.add_argument("--bkgnd_area",
                     help="The area on the sky for the background components, "
-                         "in square arcminutes. Default: 1 arcmin**2.")
+                         "in square arcminutes. Default: None. Must be specified "
+                         "if any of the background components are turned on.")
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
 ptsrc_parser = parser.add_mutually_exclusive_group(required=False)
@@ -51,13 +52,9 @@ if args.instrument not in instrument_registry and os.path.exists(args.instrument
 else:
     instrument = args.instrument
 
-if args.bkgnd_area is None:
-    bkgnd_area = (1.0, "arcmin**2")
-else:
-    bkgnd_area = args.bkgnd_area
-
 spec = Spectrum.from_file(args.spec_file)
 simulate_spectrum(spec, instrument, args.exp_time, args.out_file, 
                   overwrite=args.overwrite, foreground=args.foreground,
                   instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd,
-                  absorb_model=args.absorb_model, nH=args.nh, prng=args.random_seed)
+                  absorb_model=args.absorb_model, nH=args.nh, bkgnd_area=args.bkgnd_area,
+                  prng=args.random_seed)
