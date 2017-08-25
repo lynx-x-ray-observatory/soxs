@@ -853,7 +853,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 
 def simulate_spectrum(spec, instrument, exp_time, out_file,
                       instr_bkgnd=False, foreground=False,
-                      ptsrc_bkgnd=False, bkgnd_area=(1.0, "arcmin**2"),
+                      ptsrc_bkgnd=False, bkgnd_area=None,
                       absorb_model="wabs", nH=0.05,
                       overwrite=False, prng=None):
     """
@@ -884,7 +884,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         Default: False
     bkgnd_area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The area on the sky for the background components, in square arcminutes.
-        Default: 1 arcmin**2.
+        Default: None, necessary to specify if any of the background components
+        are turned on. 
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, optional
@@ -914,15 +915,19 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         ConvolvedBackgroundSpectrum
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
-    bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
-    if not instrument_spec["imaging"]:
-        if foreground or instr_bkgnd or ptsrc_bkgnd:
+    if foreground or instr_bkgnd or ptsrc_bkgnd:
+        if not instrument_spec["imaging"]:
             raise NotImplementedError("Backgrounds cannot be included in simulations "
                                       "of non-imaging spectra at this time!")
+        if bkgnd_area is None:
+            raise RuntimeError("The 'bkgnd_area' argument must be set if one wants "
+                               "to simulate backgrounds! Specify a value in square "
+                               "arcminutes.")
+        bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     arf_file = check_file_location(instrument_spec["arf"], "files")
     rmf_file = check_file_location(instrument_spec["rmf"], "files")
     arf = AuxiliaryResponseFile(arf_file)
