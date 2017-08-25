@@ -173,6 +173,21 @@ instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
                                      "psf": ["gaussian", 72.0],
                                      "imaging": True}
 
+## AXIS
+
+instrument_registry["axis"] = {"name": "axis",
+                               "arf": "axis.arf",
+                               "rmf": "axis.rmf",
+                               "bkgnd": "axis",
+                               "num_pixels": 5200,
+                               "fov": 15.0,
+                               "aimpt_coords": [0.0, 0.0],
+                               "chips": None,
+                               "focal_length": 9.5,
+                               "dither": False,
+                               "psf": ["gaussian", 0.3],
+                               "imaging": True}
+
 # Old specs
 
 instrument_registry["acisi_cy0_old"] = {"name": "acisi_cy0_old",

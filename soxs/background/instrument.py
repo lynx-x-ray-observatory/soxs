@@ -33,12 +33,17 @@ athena_wfi_bkgnd = InstrumentalBackgroundSpectrum.from_file(wfi_bkgnd_file, 12.0
 sxs_bkgnd_file = os.path.join(soxs_files_path, "hitomi_sxs_bkgnd.h5")
 hitomi_sxs_bkgnd = InstrumentalBackgroundSpectrum.from_file(sxs_bkgnd_file, 5.6)
 
+# AXIS wide-field imager background
+axis_bkgnd_file = os.path.join(soxs_files_path, "axis_leo_bkgnd.h5")
+axis_bkgnd = InstrumentalBackgroundSpectrum.from_file(axis_bkgnd_file, 9.5)
+
 instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
                           "aciss": aciss_particle_bkgnd,
                           "mucal": mucal_particle_bkgnd,
                           "athena_xifu": athena_xifu_bkgnd,
                           "athena_wfi": athena_wfi_bkgnd,
-                          "hitomi_sxs": hitomi_sxs_bkgnd}
+                          "hitomi_sxs": hitomi_sxs_bkgnd,
+                          "axis": axis_bkgnd}
 
 def add_instrumental_background(name, filename, default_focal_length):
     """
