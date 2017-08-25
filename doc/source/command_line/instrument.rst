@@ -162,17 +162,25 @@ To use a background stored in an event file:
 Generate a PI or PHA spectrum from a spectrum in an ASCII table (such as 
 one made by one of the commands detailed in :ref:`cmd-spectra`) by convolving
 it with responses. To be used if one wants to create a spectrum without 
-worrying about spatial response. Similar to XSPEC's "fakeit". 
+worrying about spatial response, or if the underlying instrument supports
+only simulating spectra. Similar to XSPEC's "fakeit". 
 
 .. code-block:: bash
 
-    usage: simulate_spectrum [-h] [--overwrite] [--random_seed RANDOM_SEED]
+    usage: simulate_spectrum [-h] [--overwrite] [--absorb_model ABSORB_MODEL]
+                             [--nh NH] [--bkgnd_area BKGND_AREA]
+                             [--random_seed RANDOM_SEED]
+                             [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
+                             [--instr_bkgnd | --no_instr_bkgnd]
+                             [--foreground | --no_foreground]
                              spec_file instrument exp_time out_file
     
-    Run the instrument simulator and produce a simulated event file.
+    Convolve a spectrum with an ARF and RMF and produce a PHA or PI spectrum.
     
     positional arguments:
-      spec_file             The file containing the spectrum to be used.
+      spec_file             The file containing the spectrum to be used. If None,
+                            then only a simulated background may be generated if
+                            they are turned on.
       instrument            The name of the instrument to use, or alternatively
                             the name of a JSON file which contains an instrument
                             specification.
@@ -182,13 +190,50 @@ worrying about spatial response. Similar to XSPEC's "fakeit".
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
+      --absorb_model ABSORB_MODEL
+                            The absorption model to use for foreground galactic
+                            absorption. Default: 'wabs'
+      --nh NH               The galactic hydrogen column in units of 10**22
+                            atoms/cm**2. Default: 0.05
+      --bkgnd_area BKGND_AREA
+                            The area on the sky for the background components, in
+                            square arcminutes. Default: None. Must be specified if
+                            any of the background components are turned on.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.
+      --ptsrc_bkgnd         Turn the unresolved point-source background on.
+      --no_ptsrc_bkgnd      Turn the unresolved point-source background off.
+      --instr_bkgnd         Turn the instrumental background on.
+      --no_instr_bkgnd      Turn the instrumental background off.
+      --foreground          Turn the galactic foreground on.
+      --no_foreground       Turn the galactic foreground off.
 
 Examples
 ++++++++
 
+Simulate a Lynx microcalorimeter spectrum.
+
 .. code-block:: bash
 
     [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha
+
+The same spectrum, but with point-source, foreground, and instrumental backgrounds
+added. Two square arcminutes of background assumed. 
+
+.. code-block:: bash
+
+    [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
+
+The same spectrum with backgrounds, but adjusting the galactic hydrogen column and
+absorption model.
+
+.. code-block:: bash
+
+    [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd --nh 0.02 --absorb_model tbabs
+
+Simulate backgrounds only.
+
+.. code-block:: bash
+
+    [~]$ simulate_spectrum None mucal 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
