@@ -96,7 +96,10 @@ argument:
 Lynx
 ~~~~
 
-For *Lynx*, there are currently two base instruments, ``"hdxi"`` for the 
+Imaging
+#######
+
+For *Lynx*, there are currently two base imaging instruments, ``"hdxi"`` for the 
 High-Definition X-ray Imager, and ``"mucal"`` for the microcalorimeter. There 
 are also variations on these instruments which use different mirror parameters. 
 The different variations on mirror parameters available are:
@@ -110,6 +113,14 @@ Where :math:`d` is the diameter of the outermost mirror shell, and :math:`f` is
 the focal length. To use a different case other than the default, append it to 
 the instrument string in a ``dxf`` pattern, e.g. ``"hdxi_3x20"``, 
 ``"mucal_6x20"``.
+
+Gratings
+########
+
+A single gratings instrument specification for *Lynx* is included with SOXS,
+``lynx_gratings``, which currently only allows simulations of spectra. It 
+corresponds approximately to the :math:`d = 3 m, f = 10 m` mirror system, 
+50% coverage of the input aperture by the gratings, and :math:`R = 5000`.
 
 Athena
 ~~~~~~
@@ -150,9 +161,21 @@ The two ACIS-S specifications have 6 chips 8 arcminutes on a side in a single ro
 As in the ACIS-I case, the two specifications are for Cycle 0 ``"aciss_cy0"``, and
 Cycle 19, ``"aciss_cy19"``. 
 
-Gratings
-########
+HETG
+####
 
+Eight gratings specifications have been included for ACIS-S and the HETG, for both
+Cycle 0 and Cycle 19. These simulate spectra only for the MEG and HEG, for the 
+:math:`\pm` first order spectra. They are named:
+
+* ``"aciss_meg-1_cy0"``
+* ``"aciss_meg1_cy0"``
+* ``"aciss_heg-1_cy0"``
+* ``"aciss_heg1_cy0"``
+* ``"aciss_meg-1_cy19"``
+* ``"aciss_meg1_cy19"``
+* ``"aciss_heg-1_cy19"``
+* ``"aciss_heg1_cy19"``
 
 Hitomi
 ~~~~~~
@@ -166,6 +189,15 @@ The ARF was produced using ``aharfgen`` for the full field of view response to
 a point source observed on axis, assuming an empty filter position and the gate 
 valve open. HEASOFT v6.20 FTOOLS were used, along with Hitomi CALDB v5 (release 
 date 2016-12-23).
+
+AXIS
+~~~~
+
+A single instrument specification ``axis`` is available for 
+`*AXIS* <http://axis.astro.umd.edu>`_, the Advanced X-ray Imaging Satellite. 
+The specification is for the wide-field imaging instrument, with a 15' field of 
+view, 9.5 m focal length, and a 0.3" PSF. Response files and backgrounds provided
+by Eric Miller of MIT.
 
 .. _bkgnds:
 
