@@ -1,5 +1,6 @@
 from soxs.instrument import make_background, AuxiliaryResponseFile, \
-    instrument_simulator, make_background_file
+    instrument_simulator, make_background_file, simulate_spectrum, \
+    RedistributionMatrixFile
 from soxs.background.foreground import hm_astro_bkgnd
 from soxs.background.instrument import acisi_particle_bkgnd
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
@@ -28,6 +29,37 @@ def test_uniform_bkgnd_scale():
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]
     b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
     assert np.abs(S-b_sum) < 1.645*dS
+
+def test_simulate_bkgnd_spectrum():
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    prng = RandomState(29)
+
+    hdxi_arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
+    hdxi_rmf = RedistributionMatrixFile("xrs_hdxi.rmf")
+
+    exp_time = 50000.0
+    fov = 3600.0
+    simulate_spectrum(None, "hdxi", exp_time, "test_bkgnd.pha",
+                      instr_bkgnd=True, foreground=True, prng=prng,
+                      overwrite=True, bkgnd_area=(fov, "arcsec**2"))
+    ch_min = hdxi_rmf.e_to_ch(0.7)-hdxi_rmf.cmin
+    ch_max = hdxi_rmf.e_to_ch(2.0)-hdxi_rmf.cmin
+    f = pyfits.open("test_bkgnd.pha")
+    ncts = f["SPECTRUM"].data["COUNTS"][ch_min:ch_max].sum()
+    f.close()
+    S = ncts/exp_time/fov
+    dS = np.sqrt(ncts)/exp_time/fov
+    foreground = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, hdxi_arf)
+    f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
+    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]
+    b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
+    assert np.abs(S-b_sum) < 1.645*dS
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
 
 def test_add_background():
     tmpdir = tempfile.mkdtemp()
@@ -131,3 +163,4 @@ if __name__ == "__main__":
     test_add_background()
     test_uniform_bkgnd_scale()
     test_ptsrc()
+    test_simulate_bkgnd_spectrum()

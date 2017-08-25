@@ -205,6 +205,10 @@ class RedistributionMatrixFile(object):
                 trueChannel += list(range(start, start + nchan))
         return np.array(trueChannel)
 
+    def e_to_ch(self, energy):
+        energy = parse_value(energy, "keV")
+        return np.searchsorted(self.ebounds_data["E_MIN"], energy)-1
+
     def scatter_energies(self, events, prng=None):
         """
         Scatter photon energies with the RMF and produce the 
