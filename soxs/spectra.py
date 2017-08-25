@@ -815,7 +815,7 @@ def tbabs_cross_section(E):
     global _tbabs_sigma
     global _tbabs_spline
     if _tbabs_spline is None:
-        filename = check_file_location("tbabs_table.h5", "files")
+        filename = os.path.join(soxs_files_path, "tbabs_table.h5")
         f = h5py.File(filename, "r")
         _tbabs_sigma = f["cross_section"][:]
         nbins = _tbabs_sigma.size
