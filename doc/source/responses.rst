@@ -3,15 +3,20 @@
 Response Files
 ==============
 
-Here you can download the response files you will need to fit spectra that you 
-make with SOXS. For ARFs, :math:`d` is the diameter of the outermost mirror 
-shell, and :math:`f` is the focal length. 
+Here you can download the response files you will need to simulate event files
+with SOXS, and then analyze the data products afterwards. The response files may
+be downloaded individually or as a complete package. 
+
+`All response files <../soxs_responses.tar.gz>`_
 
 Lynx
 ----
 
 High-Definition X-ray Imager
 ++++++++++++++++++++++++++++
+
+For these ARFs, :math:`d` is the diameter of the outermost mirror shell, and 
+:math:`f` is the focal length.
 
 * ARFs:
 
@@ -24,6 +29,9 @@ High-Definition X-ray Imager
 
 Microcalorimeter
 ++++++++++++++++
+
+For these ARFs, :math:`d` is the diameter of the outermost mirror shell, and 
+:math:`f` is the focal length.
 
 * ARFs:
 
