@@ -52,7 +52,8 @@ This is a major new release with a number of important new features and some bug
 * An instrument specification for the `*AXIS* <http://axis.astro.umd.edu>`_ mission
   concept has been added.
 * The ability to write :class:`~soxs.spectra.Spectrum` objects to HDF5 files has
-  been added via the :meth:`~soxs.spectra.Spectrum.write_h5_file` method.
+  been added via the :meth:`~soxs.spectra.Spectrum.write_h5_file` method. See
+  :ref:`write-spectra` for details.
 
 Version 1.3.0
 -------------

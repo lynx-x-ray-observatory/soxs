@@ -573,3 +573,29 @@ zooming in on a section of it, and setting the energy scale to linear:
 .. image:: ../images/plot_two_spectra.png
 
 For other customizations, consult the :meth:`~soxs.spectra.Spectrum.plot` API. 
+
+.. _write-spectra:
+
+Writing a Spectrum to Disk
+--------------------------
+
+:class:`~soxs.spectra.Spectrum` objects can be written to disk to either an 
+ASCII text file or an HDF5 file. To write a spectrum to an ASCII file, use the
+:meth:`~soxs.spectra.Spectrum.write_file`:
+
+.. code-block:: python
+
+    agen = soxs.ApecGenerator(0.1, 10.0, 10000)
+    spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
+    spec1.write_file("my_spec.dat", overwrite=True)
+
+To write a spectrum to an HDF5 file, use :meth:`~soxs.spectra.Spectrum.write_h5_file`:
+
+.. code-block:: python
+
+    agen = soxs.ApecGenerator(0.1, 10.0, 10000)
+    spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
+    spec1.write_h5_file("my_spec.h5", overwrite=True)
+
+Then, the spectrum can be read back in again in either case using 
+:meth:`~soxs.spectra.Spectrum.from_file`.

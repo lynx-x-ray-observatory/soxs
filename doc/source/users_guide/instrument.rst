@@ -1,7 +1,7 @@
 .. _instrument:
 
-The Instrument Simulator
-========================
+Instrument Simulation in SOXS
+=============================
 
 Running the Instrument Simulator
 --------------------------------
