@@ -9,7 +9,9 @@ from soxs.instrument_registry import \
 
 parser = argparse.ArgumentParser(description='Convolve a spectrum with an ARF and RMF and '
                                              'produce a PHA or PI spectrum.')
-parser.add_argument("spec_file", type=str, help="The file containing the spectrum to be used.")
+parser.add_argument("spec_file", type=str, help="The file containing the spectrum to be used. "
+                                                "If None, then only a simulated background "
+                                                "may be generated if they are turned on.")
 parser.add_argument("instrument", type=str, help='The name of the instrument to use, '
                                                  'or alternatively the name of a JSON file '
                                                  'which contains an instrument specification.')
@@ -52,7 +54,11 @@ if args.instrument not in instrument_registry and os.path.exists(args.instrument
 else:
     instrument = args.instrument
 
-spec = Spectrum.from_file(args.spec_file)
+if args.spec_file == "None":
+    spec = None
+else:
+    spec = Spectrum.from_file(args.spec_file)
+
 simulate_spectrum(spec, instrument, args.exp_time, args.out_file, 
                   overwrite=args.overwrite, foreground=args.foreground,
                   instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd,

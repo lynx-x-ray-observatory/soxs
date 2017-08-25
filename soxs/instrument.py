@@ -865,7 +865,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     Parameters
     ----------
     spec : :class:`~soxs.spectra.Spectrum`
-        The spectrum to be convolved.
+        The spectrum to be convolved. If None is supplied, only backgrounds
+        will be simulated (if they are turned on).
     instrument : string
         The name of the instrument to use, which picks an instrument
         specification from the instrument registry.
@@ -928,11 +929,12 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
                                "to simulate backgrounds! Specify a value in square "
                                "arcminutes.")
         bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
+    elif spec is None:
+        raise RuntimeError("You have specified no source spectrum and no backgrounds!")
     arf_file = check_file_location(instrument_spec["arf"], "files")
     rmf_file = check_file_location(instrument_spec["rmf"], "files")
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
-    cspec = ConvolvedSpectrum(spec, arf)
 
     event_params = {}
     event_params["arf"] = arf.filename
@@ -943,7 +945,11 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     event_params["instrument"] = rmf.header["INSTRUME"]
     event_params["mission"] = rmf.header.get("MISSION", "")
 
-    events = {"energy": cspec.generate_energies(exp_time, prng=prng).value}
+    if spec is None:
+        events = {"energy": np.array([])}
+    else:
+        cspec = ConvolvedSpectrum(spec, arf)
+        events = {"energy": cspec.generate_energies(exp_time, prng=prng).value}
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
