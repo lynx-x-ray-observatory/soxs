@@ -387,6 +387,7 @@ gives (showing only a subset for brevity):
         focal_length: 10.0
         dither: True
         psf: ['gaussian', 0.5]
+        imaging: True
     Instrument: athena_xifu
         name: athena_xifu
         arf: athena_xifu_1469_onaxis_pitch249um_v20160401.arf
@@ -400,7 +401,8 @@ gives (showing only a subset for brevity):
                  [20, 38, 20, -20, -38, -20]]]
         focal_length: 12.0
         dither: False
-        psf: ['gaussian', 5.0]
+        psf: ['gaussian', 5.0]        
+        imaging: True
     Instrument: acisi_cy19
         name: acisi_cy19
         arf: acisi_aimpt_cy19.arf
@@ -416,6 +418,7 @@ gives (showing only a subset for brevity):
         psf: ['gaussian', 0.5]
         focal_length: 10.0
         dither: True
+        imaging: True
     Instrument: hitomi_sxs
         name: hitomi_sxs
         arf: hitomi_sxs_ptsrc.arf
@@ -428,6 +431,7 @@ gives (showing only a subset for brevity):
         focal_length: 5.6
         dither: False
         psf: ['gaussian', 72.0]
+        imaging: True
     ...
 
 The various parts of each instrument specification are:
@@ -450,6 +454,8 @@ The various parts of each instrument specification are:
   can also be set to ``None`` for no PSF.
 * ``"focal_length"``: The focal length of the telescope in meters.
 * ``"dither"``: Whether or not the instrument dithers by default. 
+* ``"imaging"``: Whether or not the instrument supports imaging. If ``False``, 
+  only spectra can be simulated using this instrument specification. 
 
 As SOXS matures, this list of specifications will likely expand, and the number 
 of options for some of them (e.g., the PSF) will also expand.
@@ -536,9 +542,9 @@ For example, the *Chandra* ACIS-I instrument configurations have a list of four
 
 .. code-block:: python
 
-    instrument_registry["acisi_cy18"] = {"name": "acisi_cy18",
-                                         "arf": "acisi_aimpt_cy18.arf",
-                                         "rmf": "acisi_aimpt_cy18.rmf",
+    instrument_registry["acisi_cy19"] = {"name": "acisi_cy19",
+                                         "arf": "acisi_aimpt_cy19.arf",
+                                         "rmf": "acisi_aimpt_cy19.rmf",
                                          "bkgnd": "acisi",
                                          "fov": 20.008,
                                          "num_pixels": 2440,
@@ -549,7 +555,8 @@ For example, the *Chandra* ACIS-I instrument configurations have a list of four
                                                    ["Box", 523, 523, 1024, 1024]],
                                          "psf": ["gaussian", 0.5],
                                          "focal_length": 10.0,
-                                         "dither": True}
+                                         "dither": True,
+                                         "imaging": True}
 
 whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
 
@@ -567,4 +574,5 @@ whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
                                                      [20, 38, 20, -20, -38, -20]]],
                                           "focal_length": 12.0,
                                           "dither": False,
-                                          "psf": ["gaussian", 5.0]}
+                                          "psf": ["gaussian", 5.0],
+                                          "imaging": True}
