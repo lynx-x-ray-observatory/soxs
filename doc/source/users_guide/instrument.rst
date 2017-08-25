@@ -322,10 +322,10 @@ gives (showing only a subset for brevity):
         focal_length: 12.0
         dither: False
         psf: ['gaussian', 5.0]
-    Instrument: acisi_cy18
-        name: acisi_cy18
-        arf: acisi_aimpt_cy18.arf
-        rmf: acisi_aimpt_cy18.rmf
+    Instrument: acisi_cy19
+        name: acisi_cy19
+        arf: acisi_aimpt_cy19.arf
+        rmf: acisi_aimpt_cy19.rmf
         bkgnd: acisi
         fov: 20.008
         num_pixels: 2440
