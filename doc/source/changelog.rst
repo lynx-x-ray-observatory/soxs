@@ -8,6 +8,9 @@ Version 2.0.0
 
 This is a major new release with a number of important new features and some bugfixes.
 
+* An instrument specification for the *Lynx* gratings has been added to the instrument registry.
+* Instrument specifications for *Chandra*/ACIS-S with the HETG have been added to the instrument
+  registry. The instrument models correspond to the MEG and HEG :math:`\pm` first order.
 * A number of class methods for :class:`~soxs.spectra.Spectrum` and their associated
   command-line scripts now have ``emin``, ``emax``, and ``nbins`` as required arguments.
   Previously these were optional arguments. More information can be found at :ref:`spectra`
@@ -39,14 +42,14 @@ This is a major new release with a number of important new features and some bug
 * The ability to simulate background components has been added to 
   :func:`~soxs.instrument.simulate_spectrum`. See :ref:`simulate-spectrum` and
   :ref:`cmd-simulate-spectrum` for more details.
-* Instrumental models for ACIS-S have been added to the instrument registry.
-* The ACIS-I instrument models for Cycle 18 have been replaced with Cycle 19 models.
+* Instrumental models for *Chandra*/ACIS-S have been added to the instrument registry.
+* The *Chandra*/ACIS-I instrument models for Cycle 18 have been replaced with Cycle 19 models.
 * When defining instrument specifications, it is now possible to specify a per-chip
   particle background model. See :ref:`custom-instruments` for more details.
 * The :meth:`~soxs.instrument.AuxiliaryResponseFile.plot` method of 
   :class:`~soxs.instrument.AuxiliaryResponseFile` now returns both a 
   :class:`~matplotlib.figure.Figure` and :class:`~matplotlib.axes.Axes` objects.
-* An instrument specification for the `AXIS <http://axis.astro.umd.edu>`_ mission
+* An instrument specification for the `*AXIS* <http://axis.astro.umd.edu>`_ mission
   concept has been added.
 * The ability to write :class:`~soxs.spectra.Spectrum` objects to HDF5 files has
   been added via the :meth:`~soxs.spectra.Spectrum.write_h5_file` method.
