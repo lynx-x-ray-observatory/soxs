@@ -357,13 +357,33 @@ class Spectrum(object):
             The filename to write the file to.
         overwrite : boolean, optional
             Whether or not to overwrite an existing 
-            file. Default: False
+            file with the same name. Default: False
         """
         if os.path.exists(specfile) and not overwrite:
             raise IOError("File %s exists and overwrite=False!" % specfile)
         header = "Energy\tFlux\nkeV\t%s" % self._units
         np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
                    delimiter="\t", header=header)
+
+    def write_h5_file(self, specfile, overwrite=False):
+        """
+        Write the spectrum to an HDF5 file.
+
+        Parameters
+        ----------
+        specfile : string
+            The filename to write the file to.
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing 
+            file with the same name. Default: False
+        """
+        if os.path.exists(specfile) and not overwrite:
+            raise IOError("File %s exists and overwrite=False!" % specfile)
+        f = h5py.File(specfile, "w")
+        f.create_dataset("emin", data=self.ebins[0].value)
+        f.create_dataset("emax", data=self.ebins[-1].value)
+        f.create_dataset("spectrum", data=self.flux.value)
+        f.close()
 
     def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0):
         """
