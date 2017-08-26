@@ -7,10 +7,11 @@ import glob
 scripts = glob.glob("scripts/*")
 
 cython_extensions = [
-    Extension("soxs.cutils",
-              sources=["soxs/cutils.pyx"],
+    Extension("soxs.lib.broaden_lines",
+              ["soxs/lib/broaden_lines.pyx"],
               language="c", libraries=["m"],
-              include_dirs=[np.get_include()])]
+              include_dirs=[np.get_include()])
+]
 
 setup(name='soxs',
       packages=find_packages(),

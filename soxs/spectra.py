@@ -6,8 +6,8 @@ import tempfile
 import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
-    parse_prng, check_file_location, parse_value
-from soxs.cutils import broaden_lines
+    parse_prng, parse_value
+from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
     m_u, elem_names, sigma_to_fwhm, abund_tables
