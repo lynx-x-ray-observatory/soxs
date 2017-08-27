@@ -6,6 +6,38 @@ from copy import copy
 from numpy.random import RandomState
 from astropy.units import Quantity
 from six import string_types
+from six.moves import configparser
+import warnings
+
+# Configuration
+
+soxs_cfg_defaults = {"response_path": "/does/not/exist"}
+
+CONFIG_DIR = os.environ.get(
+    'XDG_CONFIG_HOME', os.path.join(os.path.expanduser('~'), '.config', 'soxs'))
+if not os.path.exists(CONFIG_DIR):
+    try:
+        os.makedirs(CONFIG_DIR)
+    except OSError:
+        warnings.warn("unable to create soxs config directory")
+
+CURRENT_CONFIG_FILE = os.path.join(CONFIG_DIR, 'soxs.cfg')
+
+if not os.path.exists(CURRENT_CONFIG_FILE):
+    cp = configparser.ConfigParser()
+    cp.add_section("soxs")
+    try:
+        with open(CURRENT_CONFIG_FILE, 'w') as new_cfg:
+            cp.write(new_cfg)
+    except IOError:
+        warnings.warn("unable to write new config file")
+
+soxs_cfg = configparser.ConfigParser(soxs_cfg_defaults)
+soxs_cfg.read([CURRENT_CONFIG_FILE, 'soxs.cfg'])
+if not soxs_cfg.has_section("soxs"):
+    soxs_cfg.add_section("soxs")
+
+# Logging
 
 soxsLogger = logging.getLogger("soxs")
 
@@ -33,23 +65,6 @@ def issue_deprecation_warning(msg):
 soxs_path = os.path.abspath(os.path.dirname(__file__))
 soxs_files_path = os.path.join(soxs_path, "files")
 
-def check_file_location(fn, subdir):
-    if os.path.exists(fn):
-        return os.path.abspath(fn)
-    else:
-        sto_fn = os.path.join(soxs_path, subdir, fn)
-        if os.path.exists(sto_fn):
-            if fn.endswith("rmf") or fn.endswith("arf"):
-                issue_deprecation_warning("It is now recommended to download the "
-                                          "response files from "
-                                          "http://hea-www.cfa.harvard.edu/~jzuhone/soxs "
-                                          "and place them in your current working "
-                                          "directory. In a future release the response "
-                                          "files will not be included in the SOXS bundle.")
-            return sto_fn
-    raise IOError("Could not find file %s! Please download it " % fn +
-                  "from http://hea-www.cfa.harvard.edu/~jzuhone/soxs.")
-
 def parse_prng(prng):
     if isinstance(prng, RandomState):
         return prng
@@ -58,11 +73,13 @@ def parse_prng(prng):
 
 def iterable(obj):
     """
-    Grabbed from Python Cookbook / matploblib.cbook.
+    Grabbed from Python Cookbook / matplotlib.cbook.
     Returns true/false for *obj* iterable.
     """
-    try: len(obj)
-    except: return False
+    try:
+        len(obj)
+    except:
+        return False
     return True
 
 def ensure_list(obj):
@@ -181,5 +198,3 @@ def downsample(myarr,factor,estimator=np.mean):
                                        for i in range(factor)]
                                       for j in range(factor)]), axis=0)
     return dsarr
-
-

@@ -7,7 +7,7 @@ Here you can download the response files you will need to simulate event files
 with SOXS, and then analyze the data products afterwards. The response files may
 be downloaded individually or as a complete package. 
 
-`All response files <../soxs_responses.tar.gz>`_
+`All response files (96 MB) <../soxs_responses.tar.gz>`_
 
 Lynx
 ----

@@ -1,5 +1,7 @@
 __version__ = "1.3.0"
 
+from soxs.utils import soxs_cfg
+
 from soxs.simput import \
     write_photon_list, \
     read_simput_catalog

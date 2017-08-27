@@ -7,13 +7,27 @@ from collections import defaultdict
 
 from soxs.constants import erg_per_keV, sigma_to_fwhm
 from soxs.simput import read_simput_catalog
-from soxs.utils import mylog, check_file_location, \
-    ensure_numpy_array, parse_prng, parse_value, \
-    get_rot_mat
+from soxs.utils import mylog, ensure_numpy_array, \
+    parse_prng, parse_value, get_rot_mat, soxs_cfg
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
+
+def get_response_path(fn):
+    if os.path.exists(fn):
+        return os.path.abspath(fn)
+    else:
+        resp_path = soxs_cfg.get("soxs", "response_path")
+        if not os.path.exists(resp_path):
+            raise IOError("The SOXS response directory %s does not exist!" % resp_path)
+        resp_fn = os.path.join(resp_path, fn)
+        if os.path.exists(resp_fn):
+            return resp_fn
+    raise IOError("Could not find file %s! Please download it from " % fn +
+                  "http://hea-www.cfa.harvard.edu/~jzuhone/soxs/responses.html "
+                  "and place it in the current working directory or place it in "
+                  "the SOXS response directory %s." % resp_path)
 
 class AuxiliaryResponseFile(object):
     r"""
@@ -29,7 +43,7 @@ class AuxiliaryResponseFile(object):
     >>> arf = AuxiliaryResponseFile("xrs_mucal_3x10.arf")
     """
     def __init__(self, filename):
-        self.filename = check_file_location(filename, "files")
+        self.filename = get_response_path(filename)
         f = pyfits.open(self.filename)
         self.elo = f["SPECRESP"].data.field("ENERG_LO")
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
@@ -165,7 +179,7 @@ class RedistributionMatrixFile(object):
     >>> rmf = RedistributionMatrixFile("xrs_hdxi.rmf")
     """
     def __init__(self, filename):
-        self.filename = check_file_location(filename, "files")
+        self.filename = get_response_path(filename)
         self.handle = pyfits.open(self.filename)
         if "MATRIX" in self.handle:
             self.mat_key = "MATRIX"
@@ -174,7 +188,7 @@ class RedistributionMatrixFile(object):
         else:
             raise RuntimeError("Cannot find the response matrix in the RMF "
                                "file %s! " % filename+"It should be named "
-                                                      "\"MATRIX\" or \"SPECRESP MATRIX\".")
+                               "\"MATRIX\" or \"SPECRESP MATRIX\".")
         self.data = self.handle[self.mat_key].data
         self.header = self.handle[self.mat_key].header
         self.num_mat_columns = len(self.handle[self.mat_key].columns)
@@ -354,8 +368,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         raise RuntimeError("Instrument '%s' is not " % instrument_spec["name"] +
                            "designed for imaging observations!")
 
-    arf_file = check_file_location(instrument_spec["arf"], "files")
-    rmf_file = check_file_location(instrument_spec["rmf"], "files")
+    arf_file = get_response_path(instrument_spec["arf"])
+    rmf_file = get_response_path(instrument_spec["rmf"])
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
@@ -607,9 +621,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     input_events = defaultdict(list)
 
-    arf_file = check_file_location(instrument_spec["arf"], "files")
+    arf_file = get_response_path(instrument_spec["arf"])
     arf = AuxiliaryResponseFile(arf_file)
-    rmf_file = check_file_location(instrument_spec["rmf"], "files")
+    rmf_file = get_response_path(instrument_spec["rmf"])
     rmf = RedistributionMatrixFile(rmf_file)
 
     if ptsrc_bkgnd:
@@ -941,8 +955,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     elif spec is None:
         raise RuntimeError("You have specified no source spectrum and no backgrounds!")
-    arf_file = check_file_location(instrument_spec["arf"], "files")
-    rmf_file = check_file_location(instrument_spec["rmf"], "files")
+    arf_file = get_response_path(instrument_spec["arf"])
+    rmf_file = get_response_path(instrument_spec["rmf"])
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
