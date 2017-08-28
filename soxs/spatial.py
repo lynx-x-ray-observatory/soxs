@@ -50,7 +50,7 @@ class SpatialModel(object):
         self.dec0 = parse_value(dec0, "deg")
         self.w = construct_wcs(self.ra0, self.dec0)
 
-    def _generate_sample(self, num_events, prng)
+    def _generate_sample(self, num_events, prng):
         pass
 
     def generate_sample(self, num_events, prng=None):
@@ -60,9 +60,9 @@ class SpatialModel(object):
 
         Parameters
         ----------
-        num_events : integer                                                                                                                       
-            The number of events to generate.                                                                                                              
-        prng : :class:`~numpy.random.RandomState` object, integer, or None                                                                            
+        num_events : integer
+            The number of events to generate.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None                            
             A pseudo-random number generator. Typically will only                                                                                   
             be specified if you have a reason to generate the same                                                                                         
             set of random numbers, such as for a test. Default is None,                                                                                   
@@ -126,7 +126,7 @@ class RadialFunctionModel(SpatialModel):
         self.func = func
         self.ellipticity = ellipticity
 
-    def _generate_sample(num_events, prng)
+    def _generate_sample(self, num_events, prng):
         x, y = generate_radial_events(num_events, self.func, prng,
                                       ellipticity=self.ellipticity)
         coords = rotate_xy(self.theta, x, y)
@@ -294,7 +294,7 @@ class RectangleModel(SpatialModel):
         self.height = parse_value(height, "arcsec")
         self.theta = parse_value(theta, "deg")
 
-    def _generate_sample(num_events, prng):
+    def _generate_sample(self, num_events, prng):
         x = prng.uniform(low=-0.5*self.width, high=0.5*self.width, size=num_events)
         y = prng.uniform(low=-0.5*self.height, high=0.5*self.height, size=num_events)
         coords = rotate_xy(self.theta, x, y)
