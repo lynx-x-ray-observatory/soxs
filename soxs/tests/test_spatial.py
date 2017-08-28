@@ -121,6 +121,8 @@ def test_beta_model():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
+    prng = 32
+
     r_c = 20.0
     beta = 1.0
 
