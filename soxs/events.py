@@ -769,5 +769,8 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylabel("Count Rate (counts/s/%s)" % yunit, fontsize=fontsize)
     ax.tick_params(axis='both', labelsize=fontsize)
-    ax.legend(**legend_kwargs)
+    num_labels = len([label for label in ax.get_labels()
+                      if not label.startswith("_line")])
+    if num_labels > 0:
+        ax.legend(**legend_kwargs)
     return fig, ax
