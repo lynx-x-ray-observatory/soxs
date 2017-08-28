@@ -62,6 +62,8 @@ outputs can be used to compare simulations made with SOXS to simulations of othe
 past, current, and future, and likewise SIMPUT catalogs with photon lists not created with SOXS 
 can be used as inputs to SOXS's instrument simulator.
 
+For more information, visit :ref:`simput`.
+
 The Instrument Simulator
 ------------------------
 

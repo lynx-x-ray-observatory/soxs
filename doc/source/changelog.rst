@@ -8,6 +8,9 @@ Version 2.0.0
 
 This is a major new release with a number of important new features and some bugfixes.
 
+Most Important New Features and Changes
++++++++++++++++++++++++++++++++++++++++
+
 * Beginning with this version and going forward, response files will not be included
   when SOXS is installed, primarily due to space considerations. Response files should
   be downloaded from the :ref:`responses` page either separately or as a whole.
@@ -16,6 +19,8 @@ This is a major new release with a number of important new features and some bug
   configuration file. See :ref:`config`, :ref:`response-path`, and :ref:`cmd-response-path`
   for more details.
 * A configuration file can now be used with SOXS. See :ref:`config` for more details.
+* The ability to simulate gratings spectra with :func:`~soxs.instrument.simulate_spectrum`
+  and the ``simulate_spectrum`` command-line tool has been added. 
 
 Changes to Simulation of Spectra
 ++++++++++++++++++++++++++++++++
