@@ -4,7 +4,7 @@ import shutil
 import tempfile
 from soxs.spectra import Spectrum, get_tbabs_absorb
 from soxs.spatial import PointSourceModel
-from soxs.simput import write_photon_list
+from soxs.simput import PhotonList, SimputCatalog
 from soxs.instrument_registry import \
     get_instrument_from_registry
 from soxs.instrument import instrument_simulator, \
@@ -45,12 +45,11 @@ def plaw_fit(alpha_sim):
 
     spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 20000)
     spec.apply_foreground_absorption(nH_sim, model="tbabs")
-    e = spec.generate_energies(exp_time, area, prng=prng)
 
-    pt_src = PointSourceModel(30.0, 45.0, e.size)
-
-    write_photon_list("plaw_model", "plaw_model", e.flux, pt_src.ra, pt_src.dec,
-                      e, overwrite=True)
+    pt_src_pos = PointSourceModel(30.0, 45.0)
+    sim_cat = SimputCatalog.from_models("plaw_model", spec, pt_src_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("plaw_model", overwrite=True)
 
     instrument_simulator("plaw_model_simput.fits", "plaw_model_evt.fits", exp_time, 
                          inst_name, [30.0, 45.0], instr_bkgnd=False, ptsrc_bkgnd=False,

@@ -7,7 +7,7 @@ from soxs.instrument import instrument_simulator, \
 from soxs.instrument_registry import \
     get_instrument_from_registry
 from soxs.spatial import PointSourceModel
-from soxs.simput import write_photon_list
+from soxs.simput import SimputCatalog
 from soxs.spectra import Spectrum
 from soxs.utils import convert_rmf
 from numpy.random import RandomState
@@ -34,12 +34,11 @@ def test_single_line():
 
     spec = Spectrum.from_constant(const_flux, 1.0, 10.0, 20000)
     spec.add_emission_line(line_pos, line_width, line_amp)
-    e = spec.generate_energies(exp_time, area, prng=prng)
 
-    pt_src = PointSourceModel(30.0, 45.0, e.size)
-
-    write_photon_list("line_model", "line_model", e.flux, pt_src.ra, pt_src.dec,
-                      e, overwrite=True)
+    pt_src_pos = PointSourceModel(30.0, 45.0)
+    sim_cat = SimputCatalog.from_models("line_model", spec, pt_src_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("line_model", overwrite=True)
 
     instrument_simulator("line_model_simput.fits", "line_model_evt.fits", exp_time,
                          inst_name, [30.0, 45.0], instr_bkgnd=False, ptsrc_bkgnd=False,
