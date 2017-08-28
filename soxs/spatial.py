@@ -29,21 +29,6 @@ def rotate_xy(theta, x, y):
     coords = np.dot(get_rot_mat(theta), np.array([x, y]))
     return coords
 
-class EventCoordinates(object):
-    def __init__(self, ra, dec, x, y, w):
-        self.ra = u.Quantity(ra, "deg")
-        self.dec = u.Quantity(dec, "deg")
-        self.x = u.Quantity(x, "arcsec")
-        self.y = u.Quantity(y, "arcsec")
-        self.w = w
-        self.num_events = self.ra.size
-
-    def __add__(self, other):
-        ra = np.concatenate([self.ra.value, other.ra.value])
-        dec = np.concatenate([self.dec.value, other.dec.value])
-        x, y = self.w.all_world2pix(ra, dec, 1)
-        return EventCoordinates(ra, dec, x, y, self.w)
-
 class SpatialModel(object):
     def __init__(self, ra0, dec0):
         self.ra0 = parse_value(ra0, "deg")
@@ -71,7 +56,7 @@ class SpatialModel(object):
         prng = parse_prng(prng)
         x, y = self._generate_sample(num_events, prng)
         ra, dec = self.w.wcs_pix2world(x, y, 1)
-        return EventCoordinates(ra, dec, x, y, self.w)
+        return u.Quantity(ra, "deg"), u.Quantity(dec, "deg")
 
 class PointSourceModel(SpatialModel):
     """

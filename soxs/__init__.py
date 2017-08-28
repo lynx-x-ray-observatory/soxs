@@ -4,7 +4,8 @@ from soxs.utils import soxs_cfg
 
 from soxs.simput import \
     write_photon_list, \
-    read_simput_catalog
+    read_simput_catalog, \
+    PhotonList, SimputCatalog
 
 from soxs.spectra import \
     Spectrum, \
@@ -33,7 +34,8 @@ from soxs.spatial import \
     AnnulusModel, \
     BetaModel, \
     FillFOVModel, \
-    RectangleModel
+    RectangleModel, \
+    SpatialModel
 
 from soxs.events import \
     write_spectrum, \

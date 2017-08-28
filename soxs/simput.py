@@ -1,6 +1,10 @@
 import astropy.io.fits as pyfits
 import numpy as np
 import os
+from soxs.utils import parse_prng, parse_value, \
+    ensure_list, mylog
+from soxs.spatial import construct_wcs
+from astropy.units import Quantity
 
 def read_simput_catalog(simput_file):
     r"""
@@ -120,7 +124,7 @@ def handle_simput_catalog(simput_prefix, phfiles, flux, emin, emax,
     wrhdu.writeto(simputfile, overwrite=(overwrite or append))
 
 def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
-                      src_name=None, append=False, overwrite=False):
+                      append=False, overwrite=False):
     r"""
     Write events to a new SIMPUT photon list. It can be 
     associated with a new or existing SIMPUT catalog. 
@@ -140,10 +144,6 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
         The declination of the photons, in degrees.
     energy : NumPy array or array-like thing
         The energy of the photons, in keV.
-    src_name : string, optional
-        The name of the source in the catalog. If not given,
-        the source will be assigned the name "soxs_src_n" where
-        "n" is the nth source in the catalog. 
     append : boolean, optional
         If True, append a new source an existing SIMPUT 
         catalog. Default: False
@@ -185,4 +185,104 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     tbhdu.writeto(phfile, overwrite=overwrite)
 
     handle_simput_catalog(simput_prefix, [phfile], [flux], [emin], 
-                          [emax], [src_name], append, overwrite)
+                          [emax], [phlist_prefix], append, overwrite)
+
+class SimputCatalog(object):
+
+    @classmethod
+    def from_file(cls, simput_file):
+        photon_lists = []
+        events, parameters = read_simput_catalog(simput_file)
+        for i, params in enumerate(parameters):
+            ra = Quantity(events[i]["ra"], "deg")
+            dec = Quantity(events[i]["dec"], "deg")
+            energy = Quantity(events[i]["energy"], "keV")
+            phlist = PhotonList(params["sources"][i], ra, dec, energy,
+                                params[i]["flux"])
+            photon_lists.append(phlist)
+
+        return cls(photon_lists)
+
+    def __init__(self, photon_lists):
+        self.photon_lists = ensure_list(photon_lists)
+
+    def write_catalog(self, simput_prefix, overwrite=False):
+        for i, phlist in enumerate(self.photon_lists):
+            if i == 0:
+                append = False
+                mylog.info("Writing SIMPUT catalog file %s_simput.fits." % simput_prefix)
+            else:
+                append = True
+            mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % phlist.name)
+            phlist.write_photon_list(simput_prefix, phlist.name,
+                                     src_name=phlist.name, append=append,
+                                     overwrite=overwrite)
+
+class PhotonList(object):
+
+    @classmethod
+    def from_models(cls, name, spectral_model, spatial_model,
+                    t_exp, area, prng=None):
+        prng = parse_prng(prng)
+        t_exp = parse_value(t_exp, "s")
+        area = parse_value(area, "cm**2")
+        e = spectral_model.generate_energies(t_exp, area, prng=prng)
+        ra, dec = spatial_model.generate_sample(e.size, prng=prng)
+        return cls(name, ra, dec, e, e.flux)
+
+    def __init__(self, name, ra, dec, energy, flux):
+        self.name = name
+        self.ra = ra
+        self.dec = dec
+        self.energy = energy
+        self.emin = energy.value.min()
+        self.emax = energy.value.max()
+        self.flux = flux
+        self.num_events = energy.size
+
+    def write_photon_list(self, simput_prefix, phlist_prefix, append=False,
+                          overwrite=False):
+        write_photon_list(simput_prefix, phlist_prefix, self.flux,
+                          self.ra, self.dec, self.energy,
+                          append=append, overwrite=overwrite)
+
+    def plot(self, center, width, s=None, marker=None, stride=1,
+             emin=None, emax=None, label=None, legend_kwargs=None,
+             fontsize=18, fig=None, ax=None, **kwargs):
+        import matplotlib.pyplot as plt
+        try:
+            from wcsaxes import WCSAxes
+        except ImportError:
+            raise ImportError("Using the plot functionality for PhotonList "
+                              "requires the WCSAxes package to be installed.")
+        if legend_kwargs is None:
+            legend_kwargs = {"fontsize": fontsize}
+        if fig is None:
+            fig = plt.figure(figsize=(10, 10))
+        if ax is None:
+            wcs = construct_wcs(center[0], center[1])
+            ax = WCSAxes(fig, [0.15, 0.1, 0.8, 0.8], wcs=wcs)
+            fig.add_axes(ax)
+        else:
+            wcs = ax.wcs
+        if emin is None:
+            emin = self.energy.value.min()
+        if emax is None:
+            emax = self.energy.value.max()
+        idxs = np.logical_and(self.energy.value >= emin, self.energy.value <= emax)
+        ra = self.ra[idxs][::stride]
+        dec = self.dec[idxs][::stride]
+        x, y = wcs.wcs_world2pix(ra, dec, 1)
+        ax.scatter(x, y, s=s, marker=marker, label=label, **kwargs)
+        x0, y0 = wcs.wcs_world2pix(center[0], center[1], 1)
+        width = parse_value(width, "arcmin")*60.0
+        ax.set_xlim(x0-0.5*width, x0+0.5*width)
+        ax.set_ylim(y0-0.5*width, y0+0.5*width)
+        ax.set_xlabel("RA")
+        ax.set_ylabel("Dec")
+        ax.tick_params(axis='both', labelsize=fontsize)
+        num_labels = len([line for line in ax.lines
+                          if not line.get_label().startswith("_line")])
+        if num_labels > 0:
+            ax.legend(**legend_kwargs)
+        return fig, ax
