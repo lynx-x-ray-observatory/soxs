@@ -78,6 +78,7 @@ Documentation Contents
 
    installing
    overview
+   configuration
    responses
    users_guide/index
    command_line/index

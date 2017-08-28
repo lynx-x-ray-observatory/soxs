@@ -3,6 +3,25 @@
 General Information Regarding the Python Interface to SOXS
 ==========================================================
 
+.. _response-path:
+
+Path to the Response Files
+--------------------------
+
+To use either the :func:`~soxs.instrument.instrument_simulator` or 
+:func:`~soxs.instrument.simulate_spectrum`, it is necessary to download the 
+response files from the :ref:`responses` page and place them in an appropriate
+location, of which there are two. The first is simply to place the response 
+files needed for the instrument simulator in the current working directory
+from which you run SOXS. However, it is probably more convenient to place the
+response files in a default path, which can be specified in the SOXS
+configuration file like this:
+
+.. code-block:: text
+
+    [soxs]
+    response_path = /Users/jzuhone/Data/soxs_responses
+
 .. _units:
 
 Special Argument Handling for Quantities with Units

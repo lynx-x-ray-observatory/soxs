@@ -8,6 +8,14 @@ Version 2.0.0
 
 This is a major new release with a number of important new features and some bugfixes.
 
+* Beginning with this version and going forward, response files will not be included
+  when SOXS is installed, primarily due to space considerations. Response files should
+  be downloaded from the :ref:`responses` page either separately or as a whole.
+  Instrument simulation can be performed with the response files located in the current
+  working directory or in the default ``response_path`` specified in the SOXS 
+  configuration file. See :ref:`config`, :ref:`response-path`, and :ref:`cmd-response-path`
+  for more details.
+* A configuration file can now be used with SOXS. See :ref:`config` for more details.
 * An instrument specification for the *Lynx* gratings has been added to the instrument registry.
 * Instrument specifications for *Chandra*/ACIS-S with the HETG have been added to the instrument
   registry. The instrument models correspond to the MEG and HEG :math:`\pm` first order.
