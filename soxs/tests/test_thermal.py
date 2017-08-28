@@ -4,7 +4,7 @@ import shutil
 import tempfile
 from soxs.spectra import ApecGenerator, get_wabs_absorb
 from soxs.spatial import PointSourceModel
-from soxs.simput import write_photon_list
+from soxs.simput import SimputCatalog
 from soxs.instrument_registry import \
     get_instrument_from_registry
 from soxs.instrument import instrument_simulator, \
@@ -89,12 +89,10 @@ def test_thermal():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    e = spec.generate_energies(exp_time, area, prng=prng)
-
-    pt_src = PointSourceModel(30.0, 45.0, e.size)
-
-    write_photon_list("thermal_model", "thermal_model", e.flux, pt_src.ra, pt_src.dec,
-                      e, overwrite=True)
+    pt_src_pos = PointSourceModel(30.0, 45.0)
+    sim_cat = SimputCatalog.from_models("thermal_model", spec, pt_src_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("thermal_model", overwrite=True)
 
     instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", exp_time, 
                          inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
@@ -271,12 +269,10 @@ def test_thermal_abund_table():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    e = spec_aspl.generate_energies(exp_time, area, prng=prng)
-
-    pt_src = PointSourceModel(30.0, 45.0, e.size)
-
-    write_photon_list("thermal_model_aspl", "thermal_model_aspl", e.flux, 
-                      pt_src.ra, pt_src.dec, e, overwrite=True)
+    pt_src_pos = PointSourceModel(30.0, 45.0)
+    sim_cat = SimputCatalog.from_models("thermal_mode_aspl", spec_aspl, pt_src_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("thermal_model_aspl", overwrite=True)
 
     instrument_simulator("thermal_model_aspl_simput.fits", "thermal_model_aspl_evt.fits", 
                          exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,

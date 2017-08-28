@@ -8,7 +8,7 @@ import tempfile
 import astropy.io.fits as pyfits
 from astropy.units import Quantity
 from soxs.events import write_radial_profile, make_exposure_map
-from soxs.simput import write_photon_list
+from soxs.simput import SimputCatalog
 from soxs.instrument import instrument_simulator, sigma_to_fwhm, \
     AuxiliaryResponseFile
 from soxs.instrument_registry import get_instrument_from_registry, \
@@ -39,12 +39,10 @@ def test_point_source():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    e = spec.generate_energies(exp_time, area, prng=prng)
-
-    pt_src = PointSourceModel(ra0, dec0, e.size)
-
-    write_photon_list("pt_src", "pt_src", e.flux, pt_src.ra, pt_src.dec,
-                      e, overwrite=True)
+    pt_src_pos = PointSourceModel(ra0, dec0)
+    sim_cat = SimputCatalog.from_models("pt_src", spec, pt_src_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("pt_src", overwrite=True)
 
     inst = get_instrument_from_registry("hdxi")
     inst["name"] = "hdxi_big_psf"
@@ -82,12 +80,11 @@ def test_annulus():
     r_in = 10.0
     r_out = 30.0
 
-    e = spec.generate_energies(exp_time, area, prng=prng)
+    ann_pos = AnnulusModel(ra0, dec0, r_in, r_out)
 
-    ann_src = AnnulusModel(ra0, dec0, r_in, r_out, e.size, prng=prng)
-
-    write_photon_list("ann", "ann", e.flux, ann_src.ra, ann_src.dec,
-                      e, overwrite=True)
+    sim_cat = SimputCatalog.from_models("ann", spec, ann_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("ann", overwrite=True)
 
     instrument_simulator("ann_simput.fits", "ann_evt.fits", exp_time,
                          "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
@@ -129,12 +126,10 @@ def test_beta_model():
 
     exp_time = Quantity(500.0, "ks")
 
-    e = spec.generate_energies(exp_time, area, prng=prng)
-
-    beta_src = BetaModel(ra0, dec0, r_c, beta, e.size, prng=prng)
-
-    write_photon_list("beta", "beta", e.flux, beta_src.ra, beta_src.dec,
-                      e, overwrite=True)
+    beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
+    sim_cat = SimputCatalog.from_models("beta", spec, beta_src_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("beta", overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
                          "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
@@ -181,12 +176,10 @@ def test_beta_model_flux():
 
     prng = 34
 
-    e = spec.generate_energies(exp_time, area, prng=prng)
-
-    beta_src = BetaModel(ra0, dec0, r_c, beta, e.size, prng=prng)
-
-    write_photon_list("beta", "beta", e.flux, beta_src.ra, beta_src.dec,
-                      e, overwrite=True)
+    beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
+    sim_cat = SimputCatalog.from_models("beta", spec, beta_src_pos,
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("beta", overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
                          "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
