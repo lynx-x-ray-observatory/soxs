@@ -484,7 +484,7 @@ class Spectrum(object):
 
     def plot(self, lw=2, xmin=None, xmax=None, ymin=None, ymax=None,
              xscale=None, yscale=None, label=None, legend_kwargs=None,
-             fontsize=18, fig=None, ax=None):
+             fontsize=18, fig=None, ax=None, **kwargs):
         """
         Make a quick Matplotlib plot of the spectrum. A Matplotlib
         figure and axis is returned.
@@ -542,7 +542,7 @@ class Spectrum(object):
                 yscale = ax.get_yscale()
         if ax is None:
             ax = fig.add_subplot(111)
-        ax.plot(self.emid, self.flux, lw=lw, label=label)
+        ax.plot(self.emid, self.flux, lw=lw, label=label, **kwargs)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
         ax.set_xlim(xmin, xmax)
@@ -551,8 +551,8 @@ class Spectrum(object):
         yunit = u.Unit(self._units).to_string("latex").replace("{}^{\\prime}", "arcmin")
         ax.set_ylabel("Spectrum (%s)" % yunit, fontsize=fontsize)
         ax.tick_params(axis='both',labelsize=fontsize)
-        num_labels = len([label for label in ax.get_labels() 
-                          if not label.startswith("_line")])
+        num_labels = len([line for line in ax.lines 
+                          if not line.get_label().startswith("_line")])
         if num_labels > 0:
             ax.legend(**legend_kwargs)
         return fig, ax

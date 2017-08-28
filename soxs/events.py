@@ -664,7 +664,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                   ymin=None, ymax=None, xscale=None, yscale=None, 
                   label=None, fontsize=18, legend_kwargs=None, fig=None, 
-                  ax=None):
+                  ax=None, **kwargs):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure and axis is returned.
@@ -761,7 +761,7 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                 yscale = ax.get_yscale()
     if ax is None:
         ax = fig.add_subplot(111)
-    ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw, label=label)
+    ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw, label=label, **kwargs)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     ax.set_xlim(xmin, xmax)
@@ -769,8 +769,8 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylabel("Count Rate (counts/s/%s)" % yunit, fontsize=fontsize)
     ax.tick_params(axis='both', labelsize=fontsize)
-    num_labels = len([label for label in ax.get_labels()
-                      if not label.startswith("_line")])
+    num_labels = len([line for line in ax.lines
+                      if not line.get_label().startswith("_line")])
     if num_labels > 0:
         ax.legend(**legend_kwargs)
     return fig, ax
