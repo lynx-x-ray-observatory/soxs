@@ -16,9 +16,10 @@ This is a major new release with a number of important new features and some bug
   configuration file. See :ref:`config`, :ref:`response-path`, and :ref:`cmd-response-path`
   for more details.
 * A configuration file can now be used with SOXS. See :ref:`config` for more details.
-* An instrument specification for the *Lynx* gratings has been added to the instrument registry.
-* Instrument specifications for *Chandra*/ACIS-S with the HETG have been added to the instrument
-  registry. The instrument models correspond to the MEG and HEG :math:`\pm` first order.
+
+Changes to Simulation of Spectra
+++++++++++++++++++++++++++++++++
+
 * A number of class methods for :class:`~soxs.spectra.Spectrum` and their associated
   command-line scripts now have ``emin``, ``emax``, and ``nbins`` as required arguments.
   Previously these were optional arguments. More information can be found at :ref:`spectra`
@@ -30,19 +31,26 @@ This is a major new release with a number of important new features and some bug
 * The ability to apply intrinsic foreground absorption to a :class:`~soxs.spectra.Spectrum`
   has been added by adding an optional ``redshift`` argument to 
   :meth:`~soxs.spectra.Spectrum.apply_foreground_absorption`. 
-* :func:`~soxs.events.plot_spectrum` has been given more options. see :ref:`plot-spectrum`
-  for details.
 * A method to easily plot :class:`~soxs.spectra.Spectrum` objects, 
   :meth:`~soxs.spectra.Spectrum.plot`, has been added. See :ref:`spectra-plots` for details.
-* A ``reblock`` optional argument has been added to :func:`~soxs.events.write_image` and
-  :func:`~soxs.events.make_exposure_map` to allow the binning of images and exposure maps to
-  be changed. See :ref:`event-tools` for details.
 * For APEC spectra created using :class:`~soxs.spectra.ApecGenerator`, it is now possible to
   use Solar abundance tables other than the implicitly assumed Anders & Grevesse 1989. See
   :ref:`solar-abund-tables` and :ref:`cmd-spectra` for details.
 * The accuracy of the ``TBabs`` absorption model interpolation in SOXS has been improved.
 * A method to add individual Gaussian-shaped lines to a :class:`~soxs.spectra.Spectrum`, 
   :meth:`~soxs.spectra.Spectrum.add_emission_line`, has been added. 
+* The ability to write :class:`~soxs.spectra.Spectrum` objects to HDF5 files has
+  been added via the :meth:`~soxs.spectra.Spectrum.write_h5_file` method. See
+  :ref:`write-spectra` for details.
+
+Changes to Instrument Simulation
+++++++++++++++++++++++++++++++++
+
+* :func:`~soxs.events.plot_spectrum` has been given more options. see :ref:`plot-spectrum`
+  for details.
+* A ``reblock`` optional argument has been added to :func:`~soxs.events.write_image` and
+  :func:`~soxs.events.make_exposure_map` to allow the binning of images and exposure maps to
+  be changed. See :ref:`event-tools` for details.
 * Small improvements were made to reading parameters from RMFs, improving consistency
   and allowing more corner cases to be supported.
 * If a ``COUNT_RATE`` column is not in a FITS table file containing a spectrum, the count 
@@ -50,18 +58,23 @@ This is a major new release with a number of important new features and some bug
 * The ability to simulate background components has been added to 
   :func:`~soxs.instrument.simulate_spectrum`. See :ref:`simulate-spectrum` and
   :ref:`cmd-simulate-spectrum` for more details.
-* Instrumental models for *Chandra*/ACIS-S have been added to the instrument registry.
-* The *Chandra*/ACIS-I instrument models for Cycle 18 have been replaced with Cycle 19 models.
-* When defining instrument specifications, it is now possible to specify a per-chip
-  particle background model. See :ref:`custom-instruments` for more details.
 * The :meth:`~soxs.instrument.AuxiliaryResponseFile.plot` method of 
   :class:`~soxs.instrument.AuxiliaryResponseFile` now returns both a 
   :class:`~matplotlib.figure.Figure` and :class:`~matplotlib.axes.Axes` objects.
+
+Changes to Instrument Specifications
+++++++++++++++++++++++++++++++++++++
+
+* An instrument specification for the *Lynx* gratings has been added to the instrument registry.
+* Instrument specifications for *Chandra*/ACIS-S with the HETG have been added to the instrument
+  registry. The instrument models correspond to the MEG and HEG :math:`\pm` first order.
+* Instrument specifications for *Chandra*/ACIS-S have been added to the instrument registry.
+* The *Chandra*/ACIS-I instrument specifications for Cycle 18 have been replaced with Cycle 19 
+  specifications.
+* When defining instrument specifications, it is now possible to specify a per-chip
+  particle background model. See :ref:`custom-instruments` for more details.
 * An instrument specification for the `*AXIS* <http://axis.astro.umd.edu>`_ mission
   concept has been added.
-* The ability to write :class:`~soxs.spectra.Spectrum` objects to HDF5 files has
-  been added via the :meth:`~soxs.spectra.Spectrum.write_h5_file` method. See
-  :ref:`write-spectra` for details.
 
 Version 1.3.0
 -------------
