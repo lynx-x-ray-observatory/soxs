@@ -190,6 +190,14 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
 class SimputCatalog(object):
 
     @classmethod
+    def from_models(cls, name, spectral_model, spatial_model,
+                    t_exp, area, prng=None):
+        photon_list = PhotonList.from_models(name, spectral_model, 
+                                             spatial_model, t_exp,
+                                             area, prng=prng)
+        return cls(photon_list)
+
+    @classmethod
     def from_file(cls, simput_file):
         photon_lists = []
         events, parameters = read_simput_catalog(simput_file)
@@ -214,8 +222,7 @@ class SimputCatalog(object):
             else:
                 append = True
             mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % phlist.name)
-            phlist.write_photon_list(simput_prefix, phlist.name,
-                                     src_name=phlist.name, append=append,
+            phlist.write_photon_list(simput_prefix, phlist.name, append=append,
                                      overwrite=overwrite)
 
 class PhotonList(object):
