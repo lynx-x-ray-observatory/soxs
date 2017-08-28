@@ -198,11 +198,11 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
         e = spec.generate_energies(exp_time, area, prng=prng, quiet=True)
         beta_model = BetaModel(ra0[halo], dec0[halo], rc[halo], beta[halo], 
                                ellipticity=ellip[halo], theta=theta[halo])
-        halo_pos = beta_model.generate_sample(e.size, prng=prng)
+        xsky, ysky = beta_model.generate_sample(e.size, prng=prng)
         tot_flux += e.flux
         ee.append(e.value)
-        ra.append(halo_pos.ra.value)
-        dec.append(halo_pos.dec.value)
+        ra.append(xsky.value)
+        dec.append(ysky.value)
         pbar.update()
     pbar.close()
 
