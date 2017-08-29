@@ -298,7 +298,7 @@ class FillFOVModel(RectangleModel):
     fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The width of the field of view in arcminutes.
     """
-    def __init__(self, ra0, dec0, fov, num_events, prng=None):
+    def __init__(self, ra0, dec0, fov):
         fov = parse_value(fov, "arcmin")
         width = fov*60.0
         height = fov*60.0
