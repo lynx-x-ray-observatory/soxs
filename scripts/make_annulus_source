@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from soxs import Spectrum, write_photon_list, AnnulusModel
+from soxs import Spectrum, PhotonList, AnnulusModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of an annulus source with '+
                                              'uniform surface brightness from a spectrum supplied in a file.')
@@ -37,13 +37,10 @@ parser.add_argument("--random_seed", type=int,
 args = parser.parse_args()
 
 spec = Spectrum.from_file(args.specfile)
-energy = spec.generate_energies(args.exp_time, args.area, 
-                                prng=args.random_seed)
-n_evt = energy.size
 
-ann_src = AnnulusModel(args.ra0, args.dec0, args.r_in, args.r_out, n_evt, 
-                       theta=args.theta, ellipticity=args.ellipticity, 
-                       prng=args.random_seed)
+ann_src = AnnulusModel(args.ra0, args.dec0, args.r_in, args.r_out, 
+                       theta=args.theta, ellipticity=args.ellipticity)
 
-write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux, ann_src.ra,
-                  ann_src.dec, energy, append=args.append, overwrite=args.overwrite)
+phlist = PhotonList.from_models(args.phlist_prefix, spec, ann_src, args.exp_time,
+                                args.area, prng=args.random_seed)
+phlist.write_photon_list(args.simput_prefix, append=args.append, overwrite=args.overwrite)

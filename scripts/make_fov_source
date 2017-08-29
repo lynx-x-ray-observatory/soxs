@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from soxs import Spectrum, write_photon_list, FillFOVModel
+from soxs import Spectrum, PhotonList, FillFOVModel
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a uniformly filled '+
                                              'field of view source from a spectrum supplied in a file.')
@@ -27,12 +27,7 @@ parser.add_argument("--random_seed", type=int,
 args = parser.parse_args()
 
 spec = Spectrum.from_file(args.specfile)
-energy = spec.generate_energies(args.exp_time, args.area, 
-                                prng=args.random_seed)
-n_evt = energy.size
-fov_src = FillFOVModel(args.ra0, args.dec0, args.fov, n_evt, 
-                       prng=args.random_seed)
-
-write_photon_list(args.simput_prefix, args.phlist_prefix, energy.flux,
-                  fov_src.ra, fov_src.dec, energy, append=args.append,
-                  overwrite=args.overwrite)
+fov_src = FillFOVModel(args.ra0, args.dec0, args.fov)
+phlist = PhotonList.from_models(args.phlist_prefix, spec, fov_src, args.exp_time,
+                                args.area, prng=args.random_seed)
+phlist.write_photon_list(args.simput_prefix, append=args.append, overwrite=args.overwrite)
