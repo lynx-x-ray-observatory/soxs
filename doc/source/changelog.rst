@@ -23,6 +23,9 @@ Most Important New Features and Changes
   and the ``simulate_spectrum`` command-line tool has been added. See :ref:`gratings` for 
   more information and :ref:`custom-non-imaging` for instructions on how to make a custom
   gratings instrument specification.
+* The :class:`~soxs.simput.SimputCatalog` and :class:`~soxs.simput.PhotonList` classes
+  have been added for improved SIMPUT catalog handling, which greatly simplifies the 
+  simulation of sources. See :ref:`simput` for more information. 
 
 Changes to Simulation of Spectra
 ++++++++++++++++++++++++++++++++

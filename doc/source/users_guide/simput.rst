@@ -124,6 +124,17 @@ An existing SIMPUT catalog can be read in from disk using
     import soxs
     sim_cat = soxs.SimputCatalog.from_file("my_sources_simput.fits")
 
+If you have one or more :class:`~soxs.simput.PhotonList` objects, they
+can be used to create a :class:`~soxs.simput.SimputCatalog` object on the
+fly:
+
+.. code-block:: python
+
+    import soxs
+    ...
+    clusters = [cluster1, cluster2] # A list of PhotonList objects
+    sim_cat = soxs.SimputCatalog("clusters", clusters)
+
 Finally, an existing :class:`~soxs.simput.PhotonList` can be appended to an 
 existing :class:`~soxs.simput.SimputCatalog` using 
 :meth:`~soxs.simput.SimputCatalog.append`:
