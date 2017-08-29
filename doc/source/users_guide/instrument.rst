@@ -346,8 +346,39 @@ The foreground galactic absorption parameter ``nH`` and the absorption model
 Instrument specifications with the ``"imaging"`` keyword set to ``False`` can 
 only be used with :func:`~soxs.instrument.simulate_spectrum` and not 
 :func:`~soxs.instrument.instrument_simulator`. Currently, this includes grating 
-instruments. Also, adding backgrounds to non-imaging instrument specifications 
-with :func:`~soxs.instrument.simulate_spectrum` is not supported at this time. 
+instruments.
+
+.. _gratings:
+
+A Note About Simulations with Grating Instruments
+-------------------------------------------------
+
+Currently in SOXS, simulations of sources observed by grating instruments are 
+not supported with the :func:`~soxs.instrument.instrument_simulator`. Gratings
+observations can be generated using :class:`~soxs.spectra.Spectrum` objects
+and :func:`~soxs.instrument.simulate_spectrum`, which produces a mock gratings
+spectrum:
+
+.. code-block:: python
+
+    import soxs
+    
+    # Create an absorbed power-law spectrum
+    spec = soxs.Spectrum.from_powerlaw(2.0, 0.0, 0.1, 0.1, 10.0, 100000)
+    spec.apply_foreground_absorption(0.1, absorb_model='tbabs')
+    
+    # Simulate the observed spectrum with Chandra/ACIS HETG: MEG, -1 order, Cycle 19
+    soxs.simulate_spectrum(spec, "aciss_meg_m1_cy19", (100.0, "ks"), 
+                           "soxs_meg_m1.pha", overwrite=True)
+                           
+    # Plot the spectrum
+    soxs.plot_spectrum("soxs_meg_m1.pha")
+    
+.. image:: ../images/gratings_spectrum.png
+
+Adding backgrounds to grating instrument specifications in 
+:func:`~soxs.instrument.simulate_spectrum` is not supported at this time, but will
+be in a future release.
 
 .. _instrument-registry:
 
@@ -388,6 +419,7 @@ gives (showing only a subset for brevity):
         dither: True
         psf: ['gaussian', 0.5]
         imaging: True
+        grating: False
     Instrument: athena_xifu
         name: athena_xifu
         arf: athena_xifu_1469_onaxis_pitch249um_v20160401.arf
@@ -403,6 +435,7 @@ gives (showing only a subset for brevity):
         dither: False
         psf: ['gaussian', 5.0]        
         imaging: True
+        grating: False
     Instrument: acisi_cy19
         name: acisi_cy19
         arf: acisi_aimpt_cy19.arf
@@ -419,6 +452,7 @@ gives (showing only a subset for brevity):
         focal_length: 10.0
         dither: True
         imaging: True
+        grating: False
     Instrument: hitomi_sxs
         name: hitomi_sxs
         arf: hitomi_sxs_ptsrc.arf
@@ -432,6 +466,7 @@ gives (showing only a subset for brevity):
         dither: False
         psf: ['gaussian', 72.0]
         imaging: True
+        grating: False
     ...
 
 The various parts of each instrument specification are:
@@ -456,6 +491,8 @@ The various parts of each instrument specification are:
 * ``"dither"``: Whether or not the instrument dithers by default. 
 * ``"imaging"``: Whether or not the instrument supports imaging. If ``False``, 
   only spectra can be simulated using this instrument specification. 
+* ``"grating"``: Whether or not this instrument specification corresponds to 
+  a gratings instrument. 
 
 As SOXS matures, this list of specifications will likely expand, and the number 
 of options for some of them (e.g., the PSF) will also expand.
@@ -508,6 +545,26 @@ file for editing using :func:`~soxs.instrument.write_instrument_json`:
     1. Python's ``None`` will convert to ``null``, and vice-versa.
     2. ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
 
+.. _custom-non-imaging:
+
+Making Custom Non-Imaging and Grating Instruments
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Non-imaging and grating instrument specifications are far simpler than imaging
+instrument specifications, and require fewer keywords. The ``"lynx_grating"``
+instrument specification provides an example of the minimum number of keywords
+required for such instruments:
+
+.. code-block:: python
+
+    instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
+                                            "arf": "xrs_cat.arf",
+                                            "rmf": "xrs_cat.rmf",
+                                            "bkgnd": None,
+                                            "focal_length": 10.0,
+                                            "imaging": False,
+                                            "grating": True}
+
 .. _chips:
 
 Defining Instruments with Multiple Chips
@@ -556,7 +613,8 @@ For example, the *Chandra* ACIS-I instrument configurations have a list of four
                                          "psf": ["gaussian", 0.5],
                                          "focal_length": 10.0,
                                          "dither": True,
-                                         "imaging": True}
+                                         "imaging": True,
+                                         "grating": False}
 
 whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
 
@@ -575,4 +633,5 @@ whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
                                           "focal_length": 12.0,
                                           "dither": False,
                                           "psf": ["gaussian", 5.0],
-                                          "imaging": True}
+                                          "imaging": True,
+                                          "grating": False}

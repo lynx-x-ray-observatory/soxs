@@ -945,9 +945,9 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
     if foreground or instr_bkgnd or ptsrc_bkgnd:
-        if not instrument_spec["imaging"]:
+        if instrument_spec["grating"]:
             raise NotImplementedError("Backgrounds cannot be included in simulations "
-                                      "of non-imaging spectra at this time!")
+                                      "of gratings spectra at this time!")
         if bkgnd_area is None:
             raise RuntimeError("The 'bkgnd_area' argument must be set if one wants "
                                "to simulate backgrounds! Specify a value in square "

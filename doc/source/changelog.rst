@@ -20,7 +20,9 @@ Most Important New Features and Changes
   for more details.
 * A configuration file can now be used with SOXS. See :ref:`config` for more details.
 * The ability to simulate gratings spectra with :func:`~soxs.instrument.simulate_spectrum`
-  and the ``simulate_spectrum`` command-line tool has been added. 
+  and the ``simulate_spectrum`` command-line tool has been added. See :ref:`gratings` for 
+  more information and :ref:`custom-non-imaging` for instructions on how to make a custom
+  gratings instrument specification.
 
 Changes to Simulation of Spectra
 ++++++++++++++++++++++++++++++++
