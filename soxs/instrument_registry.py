@@ -145,13 +145,16 @@ for cycle in [0, 19]:
 
 # ACIS-S, Cycle 0 and 19 HETG
 
+orders = {"p1": 1, "m1": -1}
+
 for energy in ["meg", "heg"]:
-    for order in [-1, 1]:
+    for order in ["p1", "m1"]:
         for cycle in [0, 19]:
-            name = "aciss_%s%d_cy%d" % (energy, order, cycle)
+            name = "aciss_%s_%s_cy%d" % (energy, order, cycle)
+            resp_name = "aciss_%s%d_cy%d" % (energy, orders[order], cycle)
             instrument_registry[name] = {"name": name,
-                                         "arf": "%s.garf" % name,
-                                         "rmf": "%s.grmf" % name,
+                                         "arf": "%s.garf" % resp_name,
+                                         "rmf": "%s.grmf" % resp_name,
                                          "bkgnd": None,
                                          "focal_length": 10.0,
                                          "imaging": False}

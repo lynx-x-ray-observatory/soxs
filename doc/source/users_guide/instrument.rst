@@ -168,14 +168,14 @@ Eight gratings specifications have been included for ACIS-S and the HETG, for bo
 Cycle 0 and Cycle 19. These simulate spectra only for the MEG and HEG, for the 
 :math:`\pm` first order spectra. They are named:
 
-* ``"aciss_meg-1_cy0"``
-* ``"aciss_meg1_cy0"``
-* ``"aciss_heg-1_cy0"``
-* ``"aciss_heg1_cy0"``
-* ``"aciss_meg-1_cy19"``
-* ``"aciss_meg1_cy19"``
-* ``"aciss_heg-1_cy19"``
-* ``"aciss_heg1_cy19"``
+* ``"aciss_meg_m1_cy0"``
+* ``"aciss_meg_p1_cy0"``
+* ``"aciss_heg_m1_cy0"``
+* ``"aciss_heg_p1_cy0"``
+* ``"aciss_meg_m1_cy19"``
+* ``"aciss_meg_p1_cy19"``
+* ``"aciss_heg_m1_cy19"``
+* ``"aciss_heg_p1_cy19"``
 
 Hitomi
 ~~~~~~
