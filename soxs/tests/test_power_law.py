@@ -47,7 +47,7 @@ def plaw_fit(alpha_sim):
     spec.apply_foreground_absorption(nH_sim, model="tbabs")
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("plaw_model", spec, pt_src_pos,
+    sim_cat = SimputCatalog.from_models("plaw_model", "plaw_model", spec, pt_src_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog("plaw_model", overwrite=True)
 

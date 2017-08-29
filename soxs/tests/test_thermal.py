@@ -90,7 +90,7 @@ def test_thermal():
     os.chdir(tmpdir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model", spec, pt_src_pos,
+    sim_cat = SimputCatalog.from_models("thermal_model", "thermal_mdoe", spec, pt_src_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog("thermal_model", overwrite=True)
 

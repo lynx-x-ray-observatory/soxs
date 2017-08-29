@@ -1,102 +1,140 @@
 .. _simput:
 
-Working with SIMPUT Files
-=========================
+Working with SIMPUT Catalogs
+============================
 
 The default storage format for unconvolved events in SOXS is SIMPUT, which is 
-fast becoming a standard for making mock X-ray observations. There are two 
-functions to read and write SIMPUT files in SOXS.
+fast becoming a standard for making mock X-ray observations. SOXS provides 
+two classes to handle SIMPUT I/O, :class:`~soxs.simput.PhotonList` and 
+:class:`~soxs.simput.SimputCatalog`.
 
-Writing SIMPUT Files
---------------------
+.. _photon-lists:
 
-If you have created a set of simulated events which you wish to convolve with 
-the instrument simulator or with some other tool, you can write them to a SIMPUT 
-file using :func:`~soxs.simput.write_photon_list`. This will produce two files: 
-the SIMPUT filecontaining the parameters for the source, and a photon list file 
-linked to the SIMPUT file which contains the actual event energies and 
-positions. For example, say we have created a :class:`~soxs.spectra.Spectrum` 
-object named ``spec`` which we've generated energies from, and that we're going 
-to assign these energies to a point source. We can then create the SIMPUT file 
-and photon list file like this:
+Photon Lists
+------------
+
+Spectral and spatial models for X-ray sources can be combined to produce a list 
+of photon coordinates and energies using the :class:`~soxs.simput.PhotonList` class. 
+Specifically, one can generate a :class:`~soxs.simput.PhotonList` using the 
+:meth:`~soxs.simput.PhotonList.from_models` method. This requires a 
+:class:`~soxs.spectra.Spectrum` for the spectral model, a 
+:class:`~soxs.spatial.SpatialModel` for modeling the spatial extent of the source,
+an exposure time, and a flat effective area. The goal of producing a 
+:class:`~soxs.simput.PhotonList` is to generate a large sample of candidate events
+which can be used as a Monte-Carlo sample by either the
+:func:`~soxs.instrument.instrument_simulator` or another tool such as MARX, SIMX, or
+SIXTE to produce a mock X-ray observation. 
 
 .. code-block:: python
 
-    from soxs import write_photon_list, PointSource
+    from soxs import PhotonList, PointSource, Spectrum
     
-    exp_time = (500.0, "ks")
-    area = (3.0, "m**2")
-    energies = spec.generate_energies(exp_time, area)
-    num_events = len(energies)
+    # Create the spectral model
+    spec = Spectrum.from_powerlaw(1.0, 0.01, 1.0e-2, 0.1, 10.0, 100000)
+    spec.apply_foreground_absorption(0.04)
+    
+    # Create the spatial model
     pt_src = PointSource(30.0, 45.0)
     
-    write_photon_list("point_source", "source1", energies.flux,
-                      pt_src.ra, pt_src.dec, energies, overwrite=True)
+    # Set the parameters
+    exp_time = (500.0, "ks")
+    area = (3.0, "m**2")
+
+    # Create the photon list
+    phlist = PhotonList.from_models('pt_src', spec, pt_src, exp_time, area)
                          
-The ``energies`` returned by :meth:`~soxs.spectra.Spectrum.generate_energies` 
-is an augmented NumPy array with unit information and the value of the flux 
-for that set of energies. This flux needs to be passed to 
-:func:`~soxs.simput.write_photon_list` as the third argument.
+In this example, we've given the :class:`~soxs.simput.PhotonList` the name
+`'pt_src'`, which will be used as the prefix for any file that is written
+from this :class:`~soxs.simput.PhotonList`. To write the photon list to a
+FITS file and the corresponding SIMPUT catalog file, use 
+:meth:`~soxs.simput.PhotonList.write_photon_list`. In this case, no SIMPUT
+catalog file yet exists, so a new one will be created:
+
+.. code-block:: python
+
+    simput_prefix = "my_sources"
+    phlist.write_photon_list(simput_prefix, overwrite=True)
 
 Alternatively, you may already have a SIMPUT file associated with a photon 
 list file, but want to add another source to the same SIMPUT catalog. You can
 accomplish this by making the same call to 
-:func:`~soxs.simput.write_photon_list` but setting ``append=True``:
+:meth:`~soxs.simput.PhotonList.write_photon_list`, but setting ``append=True``:
 
 .. code-block:: python
 
-    write_photon_list("point_source", "source2" energies2.flux,
-                      pt2.ra, pt2.dec, energies2, append=True) 
+    simput_prefix = "my_sources"
+    phlist.write_photon_list(simput_prefix, append=True, overwrite=True)
 
-SOXS will give each photon list source a name in the catalog, determined by the
-scheme ``"soxs_src_n"`` where ``n`` is the n-th source in the file, but you can 
-supply an alternative name for the source in the call to 
-:func:`~soxs.simput.write_photon_list` using the ``src_name`` keyword argument: 
+The files written are ``"my_sources_simput.fits"`` and ``"pt_src_phlist.fits"``.
 
-.. code-block:: python
+.. _simput-catalogs:
 
-    write_photon_list("point_source", "source2" energies2.flux,
-                      pt2.ra, pt2.dec, energies2, append=True, 
-                      src_name="my_point_source") 
+SIMPUT Catalogs
+---------------
 
-Reading SIMPUT Files
---------------------
-
-A SIMPUT catalog can be read using :func:`~soxs.simput.read_simput_catalog`:
+A SIMPUT catalog can be worked with directly using the :class:`~soxs.simput.SimputCatalog`
+class. A :class:`~soxs.simput.SimputCatalog` object associated with a single
+:class:`~soxs.simput.PhotonList` can be generated using the 
+:meth:`~soxs.simput.SimputCatalog.from_models` method in the same way as the
+:meth:`~soxs.simput.PhotonList.from_models` method:
 
 .. code-block:: python
 
-    from soxs import read_simput_catalog
-    events, parameters = read_simput_catalog("point_source_simput.fits")
+    from soxs import SimputCatalog, PointSource, Spectrum
     
-It returns two arguments, ``events`` and ``parameters``. ``events`` is a list of 
-Python dictionaries, one for each source in the file. Each dictionary contains 
-NumPy arrays for the positions and energies of the events. For example, for a 
-catalog which only has one source they would look like this:
+    # Create the spectral model
+    spec = Spectrum.from_powerlaw(1.0, 0.01, 1.0e-2, 0.1, 10.0, 100000)
+    spec.apply_foreground_absorption(0.04)
+    
+    # Create the spatial model
+    pt_src = PointSource(30.0, 45.0)
+    
+    # Set the parameters
+    exp_time = (500.0, "ks")
+    area = (3.0, "m**2")
+
+    # Create the SIMPUT catalog
+    sim_cat = SimputCatalog.from_models("my_sources", 'pt_src', spec, pt_src, 
+                                        exp_time, area)
+
+You can write this catalog and its photon list file to disk using 
+:meth:`~soxs.simput.SimputCatalog.write_catalog`:
 
 .. code-block:: python
 
-    print(events)
-    
-.. code-block:: pycon
+    sim_cat.write_catalog(overwrite=True)
 
-    [{'dec': array([ 44.98377818,  44.99404092,  44.99444754, ...,  45.00548515,
-             45.0052105 ,  45.00658426]),
-      'energy': array([ 5.11127663,  0.58575863,  2.00386882, ...,  1.09081411,
-             1.31414783,  2.21034932], dtype=float32),
-      'ra': array([ 30.2032835 ,  29.95447951,  29.95380409, ...,  30.04756871,
-             30.04568841,  30.04643141])}]
+The files written are ``"my_sources_simput.fits"`` and ``"pt_src_phlist.fits"``.
+
+An existing SIMPUT catalog can be read in from disk using
+:meth:`~soxs.simput.SimputCatalog.from_file`:
 
 .. code-block:: python
 
-    print(parameters)
+    import soxs
+    sim_cat = soxs.SimputCatalog.from_file("my_sources_simput.fits")
+
+Finally, an existing :class:`~soxs.simput.PhotonList` can be appended to an 
+existing :class:`~soxs.simput.SimputCatalog` using 
+:meth:`~soxs.simput.SimputCatalog.append`:
+
+.. code-block:: python
+
+    import soxs
     
-.. code-block:: pycon
+    # Create the spectral model
+    agen = soxs.ApecGenerator(0.05, 20.0, 200000)
+    spec = agen.get_spectrum(4.0, 0.3, 0.05, 1.0e-3)
+    spec.apply_foreground_absorption(0.04)
+    
+    # Create the spatial model
+    beta_src = BetaModel(30.0, 45.0, 20.0, 1.666667)
+        
+    # Set the parameters
+    exp_time = (500.0, "ks")
+    area = (3.0, "m**2")
 
-    {'emax': array([ 10.99995703]), 
-     'flux': array([  1.12239243e-11]), 
-     'emin': array([ 0.12598762])}
+    # Create the photon list
+    cluster = PhotonList.from_models('cluster', spec, beta_src, exp_time, area)
 
-Energies are in keV, flux is in :math:`{\rm erg~s^{-1}~cm^{-2}}`, and sky 
-coordinates are in degrees. :func:`~soxs.simput.read_simput_catalog` is used by
-the instrument simulator to read sources from a SIMPUT catalog. 
+    sim_cat.append(cluster)

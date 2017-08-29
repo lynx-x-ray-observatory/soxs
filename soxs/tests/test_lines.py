@@ -36,7 +36,7 @@ def test_single_line():
     spec.add_emission_line(line_pos, line_width, line_amp)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("line_model", spec, pt_src_pos,
+    sim_cat = SimputCatalog.from_models("line_model", "line_model", spec, pt_src_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog("line_model", overwrite=True)
 

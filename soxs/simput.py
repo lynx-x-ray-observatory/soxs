@@ -190,7 +190,7 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
 class SimputCatalog(object):
 
     @classmethod
-    def from_models(cls, name, spectral_model, spatial_model,
+    def from_models(cls, name, phlist_name, spectral_model, spatial_model,
                     t_exp, area, prng=None):
         """
         Generate a SIMPUT catalog object and a single photon list
@@ -199,9 +199,13 @@ class SimputCatalog(object):
         Parameters
         ----------
         name : string
-            The name of the photon list and SIMPUT catalog. This
-            will be the prefix of any photon list file and SIMPUT
-            catalog file that are written from this SIMPUT catalog.
+            The name of the SIMPUT catalog. This will be the prefix of 
+            the SIMPUT catalog file that is written from this SIMPUT 
+            catalog.
+        phlist_name : string
+            The name of the photon list. This will be the prefix of 
+            the photon list file which is created from the PhotonList 
+            object which is created here.
         spectral_model : :class:`~soxs.spectra.Spectrum`
             The spectral model to use to generate the event energies.
         spatial_model :class:`~soxs.spatial.SpatialModel`
@@ -219,10 +223,10 @@ class SimputCatalog(object):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
-        photon_list = PhotonList.from_models(name, spectral_model, 
+        photon_list = PhotonList.from_models(phlist_name, spectral_model, 
                                              spatial_model, t_exp,
                                              area, prng=prng)
-        return cls(photon_list)
+        return cls(name, photon_list)
 
     @classmethod
     def from_file(cls, simput_file):
@@ -237,6 +241,7 @@ class SimputCatalog(object):
             catalog and photon lists from. 
         """
         photon_lists = []
+        name = simput_file.split("_simput.fits")[0]
         events, parameters = read_simput_catalog(simput_file)
         for i, params in enumerate(parameters):
             ra = Quantity(events[i]["ra"], "deg")
@@ -246,28 +251,30 @@ class SimputCatalog(object):
                                 params[i]["flux"])
             photon_lists.append(phlist)
 
-        return cls(photon_lists)
+        return cls(name, photon_lists)
 
-    def __init__(self, photon_lists):
+    def __init__(self, name, photon_lists):
         """
         Create a SIMPUT catalog from a single photon list or multiple
         photon lists.
 
         Parameters
         ----------
+        name : string
+            The name of the SIMPUT catalog. This will also be the prefix 
+            of any SIMPUT catalog file that is written from this object.
         photon_lists : single or list of :class:`~soxs.simput.PhotonList` instances
             The photon list(s) to create this catalog with.
         """
+        self.name = name
         self.photon_lists = ensure_list(photon_lists)
 
-    def write_catalog(self, simput_prefix, overwrite=False):
+    def write_catalog(self, overwrite=False):
         """
         Write the SIMPUT catalog and associated photon lists to disk.
 
         Parameters
         ----------
-        simput_prefix : string
-            The prefix of the SIMPUT catalog file to write.
         overwrite : boolean, optional
             Whether or not to overwrite an existing file with 
             the same name. Default: False
@@ -275,11 +282,11 @@ class SimputCatalog(object):
         for i, phlist in enumerate(self.photon_lists):
             if i == 0:
                 append = False
-                mylog.info("Writing SIMPUT catalog file %s_simput.fits." % simput_prefix)
+                mylog.info("Writing SIMPUT catalog file %s_simput.fits." % self.name)
             else:
                 append = True
             mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % phlist.name)
-            phlist.write_photon_list(simput_prefix, append=append, overwrite=overwrite)
+            phlist.write_photon_list(self.name, append=append, overwrite=overwrite)
 
     def append(self, photon_list):
         """

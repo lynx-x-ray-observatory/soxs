@@ -40,7 +40,7 @@ def test_point_source():
     os.chdir(tmpdir)
 
     pt_src_pos = PointSourceModel(ra0, dec0)
-    sim_cat = SimputCatalog.from_models("pt_src", spec, pt_src_pos,
+    sim_cat = SimputCatalog.from_models("pt_src", "pt_src", spec, pt_src_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog("pt_src", overwrite=True)
 
@@ -82,7 +82,7 @@ def test_annulus():
 
     ann_pos = AnnulusModel(ra0, dec0, r_in, r_out)
 
-    sim_cat = SimputCatalog.from_models("ann", spec, ann_pos,
+    sim_cat = SimputCatalog.from_models("ann", "ann", spec, ann_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog("ann", overwrite=True)
 
@@ -129,7 +129,7 @@ def test_beta_model():
     exp_time = Quantity(500.0, "ks")
 
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
-    sim_cat = SimputCatalog.from_models("beta", spec, beta_src_pos,
+    sim_cat = SimputCatalog.from_models("beta", "beta", spec, beta_src_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog("beta", overwrite=True)
 
@@ -179,7 +179,7 @@ def test_beta_model_flux():
     prng = 34
 
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
-    sim_cat = SimputCatalog.from_models("beta", spec, beta_src_pos,
+    sim_cat = SimputCatalog.from_models("beta", "beta", spec, beta_src_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog("beta", overwrite=True)
 
