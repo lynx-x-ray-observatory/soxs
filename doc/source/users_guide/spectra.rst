@@ -471,9 +471,10 @@ flux of energies:
     Unit("keV")
     <Quantity 1.1256362913845828e-15 erg / (cm2 s)>
 
-These photon energies can then be combined with sky positions at your discretion
-and be written to SIMPUT files for use in mock observations. See :ref:`simput` 
-for more information.
+Normally, :meth:`~soxs.spectra.Spectrum.generate_energies` will not need to be 
+called by the end-user but will be used "under the hood" in the generation of
+a :class:`~soxs.simput.PhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
+See :ref:`simput` for more information.
 
 .. _convolved-spectra:
 

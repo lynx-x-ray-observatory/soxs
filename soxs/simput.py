@@ -192,6 +192,33 @@ class SimputCatalog(object):
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
                     t_exp, area, prng=None):
+        """
+        Generate a SIMPUT catalog object and a single photon list
+        from a spectral and a spatial model. 
+
+        Parameters
+        ----------
+        name : string
+            The name of the photon list and SIMPUT catalog. This
+            will be the prefix of any photon list file and SIMPUT
+            catalog file that are written from this SIMPUT catalog.
+        spectral_model : :class:`~soxs.spectra.Spectrum`
+            The spectral model to use to generate the event energies.
+        spatial_model :class:`~soxs.spatial.SpatialModel`
+            The spatial model to use to generate the event coordinates.
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The exposure time in seconds.
+        area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The effective area in cm**2. If one is creating 
+            events for a SIMPUT file, a constant should be 
+            used and it must be large enough so that a 
+            sufficiently large sample is drawn for the ARF.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
+        """
         photon_list = PhotonList.from_models(name, spectral_model, 
                                              spatial_model, t_exp,
                                              area, prng=prng)
@@ -199,6 +226,16 @@ class SimputCatalog(object):
 
     @classmethod
     def from_file(cls, simput_file):
+        """
+        Generate a SIMPUT catalog object by reading it in from
+        disk. 
+
+        Parameters
+        ----------
+        simput_file : string
+            The name of the SIMPUT catalog file to read the 
+            catalog and photon lists from. 
+        """
         photon_lists = []
         events, parameters = read_simput_catalog(simput_file)
         for i, params in enumerate(parameters):
@@ -212,9 +249,29 @@ class SimputCatalog(object):
         return cls(photon_lists)
 
     def __init__(self, photon_lists):
+        """
+        Create a SIMPUT catalog from a single photon list or multiple
+        photon lists.
+
+        Parameters
+        ----------
+        photon_lists : single or list of :class:`~soxs.simput.PhotonList` instances
+            The photon list(s) to create this catalog with.
+        """
         self.photon_lists = ensure_list(photon_lists)
 
     def write_catalog(self, simput_prefix, overwrite=False):
+        """
+        Write the SIMPUT catalog and associated photon lists to disk.
+
+        Parameters
+        ----------
+        simput_prefix : string
+            The prefix of the SIMPUT catalog file to write.
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing file with 
+            the same name. Default: False
+        """
         for i, phlist in enumerate(self.photon_lists):
             if i == 0:
                 append = False
@@ -222,14 +279,50 @@ class SimputCatalog(object):
             else:
                 append = True
             mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % phlist.name)
-            phlist.write_photon_list(simput_prefix, phlist.name, append=append,
-                                     overwrite=overwrite)
+            phlist.write_photon_list(simput_prefix, append=append, overwrite=overwrite)
+
+    def append(self, photon_list):
+        """
+        Add a photon list to this catalog.
+
+        Parameters
+        ----------
+        photon_list : :class:`~soxs.simput.PhotonList`
+            The photon list to append to this catalog.
+        """
+        self.photon_lists.append(photon_list)
 
 class PhotonList(object):
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
                     t_exp, area, prng=None):
+        """
+        Generate a single photon list from a spectral and a spatial
+        model. 
+
+        Parameters
+        ----------
+        name : string
+            The name of the photon list. This will also be the prefix 
+            of any photon list file that is written from this photon list.
+        spectral_model : :class:`~soxs.spectra.Spectrum`
+            The spectral model to use to generate the event energies.
+        spatial_model :class:`~soxs.spatial.SpatialModel`
+            The spatial model to use to generate the event coordinates.
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The exposure time in seconds.
+        area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The effective area in cm**2. If one is creating 
+            events for a SIMPUT file, a constant should be 
+            used and it must be large enough so that a 
+            sufficiently large sample is drawn for the ARF.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
+        """
         prng = parse_prng(prng)
         t_exp = parse_value(t_exp, "s")
         area = parse_value(area, "cm**2")
@@ -247,15 +340,71 @@ class PhotonList(object):
         self.flux = flux
         self.num_events = energy.size
 
-    def write_photon_list(self, simput_prefix, phlist_prefix, append=False,
-                          overwrite=False):
-        write_photon_list(simput_prefix, phlist_prefix, self.flux,
+    def write_photon_list(self, simput_prefix, append=False, overwrite=False):
+        """
+        Write the photon list to disk, attaching it to a SIMPUT catalog.
+
+        Parameters
+        ----------
+        simput_prefix : string
+            The prefix of the SIMPUT catalog file to associate this
+            photon list with. If it does not exist, it will be created.
+        append : boolean, optional
+            If True, append to an existing SIMPUT catalog. If False,
+            overwrite an existing SIMPUT catalog with this name (if it
+            exists) and create a new one with this photon list. Default: False
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing file with 
+            the same name. Default: False
+        """
+        write_photon_list(simput_prefix, self.name, self.flux,
                           self.ra, self.dec, self.energy,
                           append=append, overwrite=overwrite)
 
-    def plot(self, center, width, s=None, marker=None, stride=1,
+    def plot(self, center, width, s=None, c=None, marker=None, stride=1,
              emin=None, emax=None, label=None, legend_kwargs=None,
              fontsize=18, fig=None, ax=None, **kwargs):
+        """
+        Plot event coordinates from this photon list in a scatter plot, 
+        optionally restricting the photon energies which are plotted
+        and using only a subset of the photons. 
+
+        This functionality requires the WCSAxes package to be installed.
+        See http://wcsaxes.readthedocs.io/ for more information.
+
+        Parameters
+        ----------
+        center : array-like
+            The RA, Dec of the center of the plot in degrees.
+        width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The width of the plot in arcminutes.
+        s : integer, optional
+            Size of the scatter marker in points^2.
+        c : string, optional
+            The color of the points.
+        marker : string, optional
+            The marker to use for the points in the scatter plot. Default: 'o'
+        stride : integer, optional
+            Plot every *stride* events. Default: 1
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the photons to plot. Default is
+            the minimum energy in the list.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the photons to plot. Default is
+            the maximum energy in the list.
+        label : string, optional
+            The label of the spectrum. Default: None
+        legend_kwargs : dict, optional
+            A dictionary of arguments to pass to the legend. 
+        fontsize : int
+            Font size for labels and axes. Default: 18
+        fig : :class:`~matplotlib.figure.Figure`, optional
+            A Figure instance to plot in. Default: None, one will be
+            created if not provided.
+        ax : :class:`~matplotlib.axes.Axes`, optional
+            An Axes instance to plot in. Default: None, one will be
+            created if not provided.
+        """
         import matplotlib.pyplot as plt
         try:
             from wcsaxes import WCSAxes
@@ -274,13 +423,17 @@ class PhotonList(object):
             wcs = ax.wcs
         if emin is None:
             emin = self.energy.value.min()
+        else:
+            emin = parse_value(emin, "keV")
         if emax is None:
             emax = self.energy.value.max()
+        else:
+            emax = parse_value(emax, "keV")
         idxs = np.logical_and(self.energy.value >= emin, self.energy.value <= emax)
-        ra = self.ra[idxs][::stride]
-        dec = self.dec[idxs][::stride]
+        ra = self.ra[idxs][::stride].value
+        dec = self.dec[idxs][::stride].value
         x, y = wcs.wcs_world2pix(ra, dec, 1)
-        ax.scatter(x, y, s=s, marker=marker, label=label, **kwargs)
+        ax.scatter(x, y, s=s, c=c, marker=marker, label=label, **kwargs)
         x0, y0 = wcs.wcs_world2pix(center[0], center[1], 1)
         width = parse_value(width, "arcmin")*60.0
         ax.set_xlim(x0-0.5*width, x0+0.5*width)
