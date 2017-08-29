@@ -67,6 +67,16 @@ accomplish this by making the same call to
 
 The files written are ``"my_sources_simput.fits"`` and ``"pt_src_phlist.fits"``.
 
+Plotting Photon Lists
++++++++++++++++++++++
+
+The event positions from a :class:`~soxs.simput.PhotonList` can be plotted using
+the :meth:`~soxs.simput.PhotonList.plot` method. This functionality requires the
+`WCSAxes <http://wcsaxes.readthedocs.io/>`_ Python package to be installed. This
+will make a scatter plot of the photon RA and Dec on the sky, optionally filtered
+within an energy band. For an example of how to use this method, see the 
+:ref:`two-clusters` cookbook example.
+
 .. _simput-catalogs:
 
 SIMPUT Catalogs
