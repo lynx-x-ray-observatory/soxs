@@ -35,10 +35,10 @@ class SpatialModel(object):
         self.dec0 = parse_value(dec0, "deg")
         self.w = construct_wcs(self.ra0, self.dec0)
 
-    def _generate_sample(self, num_events, prng):
+    def _generate_coords(self, num_events, prng):
         pass
 
-    def generate_sample(self, num_events, prng=None):
+    def generate_coords(self, num_events, prng=None):
         """
         Generate a sample of photon positions from this 
         spatial model. 
@@ -54,7 +54,7 @@ class SpatialModel(object):
             which sets the seed based on the system time.
         """
         prng = parse_prng(prng)
-        x, y = self._generate_sample(num_events, prng)
+        x, y = self._generate_coords(num_events, prng)
         ra, dec = self.w.wcs_pix2world(x, y, 1)
         return u.Quantity(ra, "deg"), u.Quantity(dec, "deg")
 
@@ -73,7 +73,7 @@ class PointSourceModel(SpatialModel):
     def __init__(self, ra0, dec0):
         super(PointSourceModel, self).__init__(ra0, dec0)
 
-    def _generate_sample(self, num_events, prng):
+    def _generate_coords(self, num_events, prng):
         return (np.zeros(num_events),)*2
  
 class RadialFunctionModel(SpatialModel):
@@ -111,7 +111,7 @@ class RadialFunctionModel(SpatialModel):
         self.func = func
         self.ellipticity = ellipticity
 
-    def _generate_sample(self, num_events, prng):
+    def _generate_coords(self, num_events, prng):
         x, y = generate_radial_events(num_events, self.func, prng,
                                       ellipticity=self.ellipticity)
         coords = rotate_xy(self.theta, x, y)
@@ -279,7 +279,7 @@ class RectangleModel(SpatialModel):
         self.height = parse_value(height, "arcsec")
         self.theta = parse_value(theta, "deg")
 
-    def _generate_sample(self, num_events, prng):
+    def _generate_coords(self, num_events, prng):
         x = prng.uniform(low=-0.5*self.width, high=0.5*self.width, size=num_events)
         y = prng.uniform(low=-0.5*self.height, high=0.5*self.height, size=num_events)
         coords = rotate_xy(self.theta, x, y)

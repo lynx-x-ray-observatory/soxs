@@ -234,7 +234,7 @@ class PhotonList(object):
         t_exp = parse_value(t_exp, "s")
         area = parse_value(area, "cm**2")
         e = spectral_model.generate_energies(t_exp, area, prng=prng)
-        ra, dec = spatial_model.generate_sample(e.size, prng=prng)
+        ra, dec = spatial_model.generate_coords(e.size, prng=prng)
         return cls(name, ra, dec, e, e.flux)
 
     def __init__(self, name, ra, dec, energy, flux):

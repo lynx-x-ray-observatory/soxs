@@ -24,11 +24,11 @@ def test_append():
 
     e1 = spec.generate_energies(exp_time, area, prng=prng)
 
-    ra1, dec1 = PointSourceModel(ra0+0.05, dec0+0.05).generate_sample(e1.size, prng=prng)
+    ra1, dec1 = PointSourceModel(ra0+0.05, dec0+0.05).generate_coords(e1.size, prng=prng)
 
     e2 = spec.generate_energies(exp_time, area, prng=prng)
 
-    ra2, dec2 = PointSourceModel(ra0-0.05, dec0-0.05).generate_sample(e1.size, prng=prng)
+    ra2, dec2 = PointSourceModel(ra0-0.05, dec0-0.05).generate_coords(e1.size, prng=prng)
 
     write_photon_list("pt_src", "pt_src1", e1.flux, ra1, dec1, e1, overwrite=True)
 
