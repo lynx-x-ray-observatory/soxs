@@ -254,6 +254,9 @@ def add_instrument_to_registry(inst_spec):
                       "determines whether or not this instrument specification corresponds "
                       "to a gratings instrument. Default is False.")
         inst["grating"] = False
+    if inst["grating"] and inst["imaging"]:
+        raise RuntimeError("Currently, gratings instrument specifications cannot have "
+                           "'imaging' == True!")
     if inst['imaging']:
         # Catch older JSON files without chip definitions
         if "chips" not in inst:
