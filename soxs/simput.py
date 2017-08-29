@@ -362,8 +362,8 @@ class PhotonList(object):
                           append=append, overwrite=overwrite)
 
     def plot(self, center, width, s=None, c=None, marker=None, stride=1,
-             emin=None, emax=None, label=None, legend_kwargs=None,
-             fontsize=18, fig=None, ax=None, **kwargs):
+             emin=None, emax=None, label=None, fontsize=18, fig=None, 
+             ax=None, **kwargs):
         """
         Plot event coordinates from this photon list in a scatter plot, 
         optionally restricting the photon energies which are plotted
@@ -394,8 +394,6 @@ class PhotonList(object):
             the maximum energy in the list.
         label : string, optional
             The label of the spectrum. Default: None
-        legend_kwargs : dict, optional
-            A dictionary of arguments to pass to the legend. 
         fontsize : int
             Font size for labels and axes. Default: 18
         fig : :class:`~matplotlib.figure.Figure`, optional
@@ -411,8 +409,6 @@ class PhotonList(object):
         except ImportError:
             raise ImportError("Using the plot functionality for PhotonList "
                               "requires the WCSAxes package to be installed.")
-        if legend_kwargs is None:
-            legend_kwargs = {"fontsize": fontsize}
         if fig is None:
             fig = plt.figure(figsize=(10, 10))
         if ax is None:
@@ -441,8 +437,4 @@ class PhotonList(object):
         ax.set_xlabel("RA")
         ax.set_ylabel("Dec")
         ax.tick_params(axis='both', labelsize=fontsize)
-        num_labels = len([line for line in ax.lines
-                          if not line.get_label().startswith("_line")])
-        if num_labels > 0:
-            ax.legend(**legend_kwargs)
         return fig, ax

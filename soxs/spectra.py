@@ -483,8 +483,8 @@ class Spectrum(object):
         return energies
 
     def plot(self, lw=2, xmin=None, xmax=None, ymin=None, ymax=None,
-             xscale=None, yscale=None, label=None, legend_kwargs=None,
-             fontsize=18, fig=None, ax=None, **kwargs):
+             xscale=None, yscale=None, label=None, fontsize=18, 
+             fig=None, ax=None, **kwargs):
         """
         Make a quick Matplotlib plot of the spectrum. A Matplotlib
         figure and axis is returned.
@@ -509,8 +509,6 @@ class Spectrum(object):
             The scaling of the y-axis of the plot. Default: "log"
         label : string, optional
             The label of the spectrum. Default: None
-        legend_kwargs : dict, optional
-            A dictionary of arguments to pass to the legend. 
         fontsize : int
             Font size for labels and axes. Default: 18
         fig : :class:`~matplotlib.figure.Figure`, optional
@@ -526,8 +524,6 @@ class Spectrum(object):
         :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
-        if legend_kwargs is None:
-            legend_kwargs = {"fontsize": fontsize}
         if fig is None:
             fig = plt.figure(figsize=(10, 10))
         if xscale is None:
@@ -551,10 +547,6 @@ class Spectrum(object):
         yunit = u.Unit(self._units).to_string("latex").replace("{}^{\\prime}", "arcmin")
         ax.set_ylabel("Spectrum (%s)" % yunit, fontsize=fontsize)
         ax.tick_params(axis='both',labelsize=fontsize)
-        num_labels = len([line for line in ax.lines 
-                          if not line.get_label().startswith("_line")])
-        if num_labels > 0:
-            ax.legend(**legend_kwargs)
         return fig, ax
 
 class ApecGenerator(object):

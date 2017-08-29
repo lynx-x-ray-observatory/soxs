@@ -663,8 +663,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
 def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                   ymin=None, ymax=None, xscale=None, yscale=None, 
-                  label=None, fontsize=18, legend_kwargs=None, fig=None, 
-                  ax=None, **kwargs):
+                  label=None, fontsize=18, fig=None, ax=None, **kwargs):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure and axis is returned.
@@ -698,8 +697,6 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
         The scaling of the y-axis of the plot. Default: "log"
     label : string, optional
         The label of the spectrum. Default: None
-    legend_kwargs : dict, optional
-        A dictionary of arguments to pass to the legend. 
     fontsize : int
         Font size for labels and axes. Default: 18
     fig : :class:`~matplotlib.figure.Figure`, optional
@@ -716,8 +713,6 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     """
     import matplotlib.pyplot as plt
     from soxs.instrument import RedistributionMatrixFile
-    if legend_kwargs is None:
-        legend_kwargs = {"fontsize": fontsize}
     f = pyfits.open(specfile)
     hdu = f["SPECTRUM"]
     chantype = hdu.header["CHANTYPE"]
@@ -749,16 +744,16 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     f.close()
     if fig is None:
         fig = plt.figure(figsize=(10, 10))
-        if xscale is None:
-            if ax is None:
-                xscale = "log"
-            else:
-                xscale = ax.get_xscale()
-        if yscale is None:
-            if ax is None:
-                yscale = "log"
-            else:
-                yscale = ax.get_yscale()
+    if xscale is None:
+        if ax is None:
+            xscale = "log"
+        else:
+            xscale = ax.get_xscale()
+    if yscale is None:
+        if ax is None:
+            yscale = "log"
+        else:
+            yscale = ax.get_yscale()
     if ax is None:
         ax = fig.add_subplot(111)
     ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw, label=label, **kwargs)
@@ -769,8 +764,4 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     ax.set_xlabel(xlabel, fontsize=fontsize)
     ax.set_ylabel("Count Rate (counts/s/%s)" % yunit, fontsize=fontsize)
     ax.tick_params(axis='both', labelsize=fontsize)
-    num_labels = len([line for line in ax.lines
-                      if not line.get_label().startswith("_line")])
-    if num_labels > 0:
-        ax.legend(**legend_kwargs)
     return fig, ax
