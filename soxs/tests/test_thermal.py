@@ -92,7 +92,7 @@ def test_thermal():
     pt_src_pos = PointSourceModel(30.0, 45.0)
     sim_cat = SimputCatalog.from_models("thermal_model", "thermal_mdoe", spec, pt_src_pos,
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog("thermal_model", overwrite=True)
+    sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", exp_time, 
                          inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,

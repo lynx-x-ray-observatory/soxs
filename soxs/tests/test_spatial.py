@@ -42,7 +42,7 @@ def test_point_source():
     pt_src_pos = PointSourceModel(ra0, dec0)
     sim_cat = SimputCatalog.from_models("pt_src", "pt_src", spec, pt_src_pos,
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog("pt_src", overwrite=True)
+    sim_cat.write_catalog(overwrite=True)
 
     inst = get_instrument_from_registry("hdxi")
     inst["name"] = "hdxi_big_psf"
@@ -84,7 +84,7 @@ def test_annulus():
 
     sim_cat = SimputCatalog.from_models("ann", "ann", spec, ann_pos,
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog("ann", overwrite=True)
+    sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("ann_simput.fits", "ann_evt.fits", exp_time,
                          "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
@@ -131,7 +131,7 @@ def test_beta_model():
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
     sim_cat = SimputCatalog.from_models("beta", "beta", spec, beta_src_pos,
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog("beta", overwrite=True)
+    sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
                          "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
@@ -181,7 +181,7 @@ def test_beta_model_flux():
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
     sim_cat = SimputCatalog.from_models("beta", "beta", spec, beta_src_pos,
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog("beta", overwrite=True)
+    sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
                          "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
