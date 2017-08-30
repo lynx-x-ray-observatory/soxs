@@ -122,8 +122,8 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
             bkg_events[key] = np.concatenate(bkg_events[key])
 
     if bkg_events["energy"].size == 0:
-        raise RuntimeError("No astrophysical foreground events were detected!!!")
+        raise RuntimeError("No instrumental background events were detected!!!")
     else:
-        mylog.info("Making %d events from the astrophysical foreground." % bkg_events["energy"].size)
+        mylog.info("Making %d events from the instrumental background." % bkg_events["energy"].size)
 
     return make_diffuse_background(bkg_events, event_params, rmf, prng=prng)

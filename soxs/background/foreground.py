@@ -21,10 +21,6 @@ def make_foreground(event_params, arf, rmf, prng=None):
     energy = conv_frgnd_spec.generate_energies(event_params["exposure_time"],
                                                event_params["fov"], prng=prng, 
                                                quiet=True).value
-    if energy.size == 0:
-        raise RuntimeError("No astrophysical foreground events were detected!!!")
-    else:
-        mylog.info("Making %d events from the astrophysical foreground." % energy.size)
 
     prng = parse_prng(prng)
 

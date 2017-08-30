@@ -30,7 +30,7 @@ parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--nolines", action='store_true',
                     help="Make a spectrum without lines.")
-parser.add_argument("--abund_table", type=str,
+parser.add_argument("--abund_table", type=str, default="angr",
                     help="The abundance table to be used for solar abundances. "
                          "Either a string corresponding to a built-in table or "
                          "an ASCII fiele containing a column of 30 floats "
