@@ -22,7 +22,8 @@ Most Important New Features and Changes
 * The ability to simulate gratings spectra with :func:`~soxs.instrument.simulate_spectrum`
   and the ``simulate_spectrum`` command-line tool has been added. See :ref:`gratings` for 
   more information and :ref:`custom-non-imaging` for instructions on how to make a custom
-  gratings instrument specification.
+  gratings instrument specification. Special thanks to `Lia Corrales <http://www.liacorrales.com/>`_
+  for useful discussions and advice with respect to gratings spectra. 
 * The :class:`~soxs.simput.SimputCatalog` and :class:`~soxs.simput.PhotonList` classes
   have been added for improved SIMPUT catalog handling, which greatly simplifies the 
   simulation of sources. See :ref:`simput` for more information. 
@@ -76,9 +77,10 @@ Changes to Instrument Specifications
 ++++++++++++++++++++++++++++++++++++
 
 * An instrument specification for the *Lynx* gratings has been added to the instrument registry.
+* Instrument specifications for *Chandra*/ACIS-S have been added to the instrument registry.
+  Special thanks to Andrea Botteon for supplying the model for the ACIS-S particle background.
 * Instrument specifications for *Chandra*/ACIS-S with the HETG have been added to the instrument
   registry. The instrument models correspond to the MEG and HEG :math:`\pm` first order.
-* Instrument specifications for *Chandra*/ACIS-S have been added to the instrument registry.
 * The *Chandra*/ACIS-I instrument specifications for Cycle 18 have been replaced with Cycle 19 
   specifications.
 * When defining instrument specifications, it is now possible to specify a per-chip

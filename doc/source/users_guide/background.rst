@@ -122,7 +122,12 @@ Chandra
 ~~~~~~~
 
 The default instrumental background in SOXS for the *Chandra* ACIS-I models is 
-the *Chandra*/ACIS-I particle background, named ``"acisi"``.
+the *Chandra*/ACIS-I particle background, named ``"acisi"``. For ACIS-S, the
+``"acisi"`` background is used for the front-illuminated chips, and a model
+provided by Andrea Botteon from 
+`Botteon et al. 2017 <http://adsabs.harvard.edu/abs/2017arXiv170707038B>`_ 
+is used for the back-illuminated chips, called ``"aciss"``. Currently, the 
+gratings instrument models do not have instrumental backgrounds included.
 
 Adding Your Own Instrumental Backgrounds to SOXS
 ++++++++++++++++++++++++++++++++++++++++++++++++
