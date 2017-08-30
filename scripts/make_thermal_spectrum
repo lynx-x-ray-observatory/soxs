@@ -22,8 +22,8 @@ parser.add_argument("--velocity", default=0.0,
                     help='The velocity broadening parameter, in units of km/s. Default: 0.0')
 parser.add_argument("--apec_vers", type=str, default="3.0.8", 
                     help='The version of the AtomDB tables to use. Default: 3.0.8')
-parser.add_argument("--absorb", type=str,
-                    help='Apply foreground Galactic absorption. Default is "wabs".')
+parser.add_argument("--absorb_model", type=str,
+                    help='Model for applying foreground Galactic absorption.')
 parser.add_argument("--nh", default=0.02, 
                     help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
 parser.add_argument("--overwrite", action='store_true', 
@@ -66,7 +66,7 @@ agen = ApecGenerator(args.emin, args.emax, args.nbins, apec_vers=args.apec_vers,
 spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
                          velocity=args.velocity, elem_abund=elem_abund)
 
-if args.absorb is not None:
-    spec.apply_foreground_absorption(args.nh, model=args.absorb)
+if args.absorb_model is not None:
+    spec.apply_foreground_absorption(args.nh, model=args.absorb_model)
 
 spec.write_file(args.specfile, overwrite=args.overwrite)

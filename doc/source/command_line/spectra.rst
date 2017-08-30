@@ -17,8 +17,9 @@ using the AtomDB tables.
 .. code-block:: text
 
     usage: make_thermal_spectrum [-h] [--velocity VELOCITY]
-                                 [--apec_vers APEC_VERS] [--absorb ABSORB]
-                                 [--nh NH] [--overwrite] [--nolines]
+                                 [--apec_vers APEC_VERS]
+                                 [--absorb_model ABSORB_MODEL] [--nh NH]
+                                 [--overwrite] [--nolines]
                                  [--abund_table ABUND_TABLE]
                                  [--broadening | --no_broadening]
                                  kT abund redshift norm specfile emin emax nbins
@@ -45,8 +46,8 @@ using the AtomDB tables.
       --apec_vers APEC_VERS
                             The version of the AtomDB tables to use. Default:
                             3.0.8
-      --absorb ABSORB       Apply foreground Galactic absorption. Default is
-                            "wabs".
+      --absorb_model ABSORB_MODEL
+                            Model for applying foreground Galactic absorption.
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
                             Default: 0.02
       --overwrite           Overwrite an existing file with the same name.
@@ -88,7 +89,7 @@ with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
-    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --absorb "wabs" --nh 0.04 --overwrite
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --absorb_model="wabs" --nh 0.04 --overwrite
 
 The same spectrum, but with a different APEC version.
 
@@ -132,29 +133,31 @@ form:
 
 .. code-block:: text
 
-    usage: make_powerlaw_spectrum [-h] [--absorb ABSORB] [--nh NH] [--overwrite]
+    usage: make_powerlaw_spectrum [-h] [--absorb_model ABSORB_MODEL] [--nh NH]
+                                  [--overwrite]
                                   photon_index redshift norm specfile emin emax
                                   nbins
     
     Create a power-law spectrum and write it to a file.
     
     positional arguments:
-      photon_index     The spectral index of the power law.
-      redshift         The redshift of the source.
-      norm             The normalization of the source in units of
-                       photons/s/cm**2/keV at 1 keV in the source frame.
-      specfile         The filename to write the spectrum to.
-      emin             The minimum energy in keV.
-      emax             The maximum energy in keV.
-      nbins            The number of bins in the spectrum.
+      photon_index          The spectral index of the power law.
+      redshift              The redshift of the source.
+      norm                  The normalization of the source in units of
+                            photons/s/cm**2/keV at 1 keV in the source frame.
+      specfile              The filename to write the spectrum to.
+      emin                  The minimum energy in keV.
+      emax                  The maximum energy in keV.
+      nbins                 The number of bins in the spectrum.
     
     optional arguments:
-      -h, --help       show this help message and exit
-      --absorb ABSORB  Apply foreground Galactic absorption. Default is "wabs".
-      --nh NH          The hydrogen column in units of 10**22 atoms/cm**2.
-                       Default: 0.02
-      --overwrite      Overwrite an existing file with the same name.
-                 
+      -h, --help            show this help message and exit
+      --absorb_model ABSORB_MODEL
+                            Model for applying foreground Galactic absorption.
+      --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
+                            Default: 0.02
+      --overwrite           Overwrite an existing file with the same name.
+
 Examples
 ++++++++
 
@@ -169,5 +172,5 @@ with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
-    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat 0.1 10.0 10000 --absorb "tbabs" --nh 0.04 --overwrite
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat 0.1 10.0 10000 --absorb_model="tbabs" --nh 0.04 --overwrite
 
