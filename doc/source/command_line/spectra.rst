@@ -85,7 +85,7 @@ The same spectrum, but with velocity and thermal broadening turned off.
     [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --no_broadening --overwrite
 
 The same spectrum, but with foreground galactic absorption using the "wabs" model
-with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
+with :math:`N_H = 0.04~\times~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
