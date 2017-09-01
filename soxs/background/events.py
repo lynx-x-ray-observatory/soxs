@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import astropy.io.fits as pyfits
-from soxs.utils import mylog, parse_prng, get_rot_mat
+from soxs.utils import mylog, get_rot_mat
 
 key_map = {"telescope": "TELESCOP",
            "mission": "MISSION",
@@ -10,9 +10,21 @@ key_map = {"telescope": "TELESCOP",
            "nchan": "PHA_BINS"}
 
 def add_background_from_file(events, event_params, bkg_file):
+    from soxs.instrument import perform_dither
     f = pyfits.open(bkg_file)
 
     hdu = f["EVENTS"]
+
+    dither_params = {}
+    if "DITHXAMP" in hdu.header:
+        dither_params["x_amp"] = hdu.header["DITHXAMP"]
+        dither_params["y_amp"] = hdu.header["DITHYAMP"]
+        dither_params["x_period"] = hdu.header["DITHXPER"]
+        dither_params["y_period"] = hdu.header["DITHYPER"]
+        dither_params["plate_scale"] = hdu.header["TCDLT3"]*3600.0
+        dither_params["dither_on"] = True
+    else:
+        dither_params["dither_on"] = False
 
     sexp = event_params["exposure_time"]
     bexp = hdu.header["EXPOSURE"]
@@ -43,8 +55,16 @@ def add_background_from_file(events, event_params, bkg_file):
         ypix = hdu.data["Y"][idxs]
     else:
         rot_mat = get_rot_mat(event_params["roll_angle"])
-        xpix, ypix = np.dot(rot_mat.T, np.array([hdu.data["DETX"][idxs], 
-                                                 hdu.data["DETY"][idxs]]))
+        if dither_params["dither_on"]:
+            t = hdu.data["TIME"][idxs]
+            x_off, y_off = perform_dither(t, dither_params)
+        else:
+            x_off = 0.0
+            y_off = 0.0
+        det = np.array([hdu.data["DETX"][idxs] + x_off - event_params["aimpt_coords"][0],
+                        hdu.data["DETY"][idxs] + y_off - event_params["aimpt_coords"][1]])
+        xpix, ypix = np.dot(rot_mat.T, det)
+
         xpix += hdu.header["TCRPX2"]
         ypix += hdu.header["TCRPX3"]
 
