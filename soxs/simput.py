@@ -376,9 +376,6 @@ class PhotonList(object):
         optionally restricting the photon energies which are plotted
         and using only a subset of the photons. 
 
-        This functionality requires the WCSAxes package to be installed.
-        See http://wcsaxes.readthedocs.io/ for more information.
-
         Parameters
         ----------
         center : array-like
@@ -411,11 +408,7 @@ class PhotonList(object):
             created if not provided.
         """
         import matplotlib.pyplot as plt
-        try:
-            from wcsaxes import WCSAxes
-        except ImportError:
-            raise ImportError("Using the plot functionality for PhotonList "
-                              "requires the WCSAxes package to be installed.")
+        from astropy.visualization.wcsaxes import WCSAxes
         if fig is None:
             fig = plt.figure(figsize=(10, 10))
         if ax is None:

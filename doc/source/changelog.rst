@@ -27,6 +27,8 @@ Most Important New Features and Changes
 * The :class:`~soxs.simput.SimputCatalog` and :class:`~soxs.simput.PhotonList` classes
   have been added for improved SIMPUT catalog handling, which greatly simplifies the 
   simulation of sources. See :ref:`simput` for more information. 
+* A bug that prevented backgrounds from being added from a file properly to simulations
+  with a non-zero roll angle has been fixed. 
 
 Changes to Simulation of Spectra
 ++++++++++++++++++++++++++++++++

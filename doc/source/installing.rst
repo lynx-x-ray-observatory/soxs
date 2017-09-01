@@ -46,7 +46,7 @@ SOXS Dependencies
 SOXS has the following Python dependencies:
 
 * `NumPy <http://www.numpy.org>`_
-* `AstroPy (v1.3) <http://www.astropy.org>`_
+* `AstroPy (v2.0 or higher) <http://www.astropy.org>`_
 * `SciPy <http://www.scipy.org>`_
 * `h5py <http://www.h5py.org>`_
 * `tqdm <http://github.com/noamraph/tqdm>`_
@@ -61,9 +61,6 @@ Optional Packages
 There are also a number of optional packages which may be used with SOXS to
 enhance its capabilities. 
 
-* Using the :meth:`~soxs.simput.PhotonList.plot` method of the 
-  :class:`~soxs.simput.PhotonList` class requires the 
-  `WCSAxes <http://wcsaxes.readthedocs.io>`_ package.
 * To make mock X-ray observations from 3D hydrodynamics models and other models
   of astrophysical sources, use the `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_
   package with SOXS.
