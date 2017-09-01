@@ -12,6 +12,20 @@ class BackgroundSpectrum(Spectrum):
 
     @classmethod
     def from_spectrum(cls, spec, fov):
+        """
+        Create a background spectrum from a regular
+        :class:`~soxs.spectra.Spectrum` object and the width
+        of a field of view on a side.
+
+        Parameters
+        ----------
+        spec : :class:`~soxs.spectra.Spectrum`
+            The spectrum to be used.
+        fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The width of the field of view on a side in 
+            arcminutes.
+        """
+        fov = parse_value(fov, "arcmin")
         flux = spec.flux.value/fov/fov
         return cls(spec.flux.ebins.value, flux)
 

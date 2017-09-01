@@ -520,8 +520,7 @@ class Spectrum(object):
 
         Returns
         -------
-        A tuple of the :class:`~matplotlib.figure.Figure` and the
-        :class:`~matplotlib.axes.Axes` objects.
+        A tuple of the :class:`~matplotlib.figure.Figure` and the :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
         if fig is None:

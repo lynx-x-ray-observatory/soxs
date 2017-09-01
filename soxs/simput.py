@@ -208,20 +208,20 @@ class SimputCatalog(object):
             object which is created here.
         spectral_model : :class:`~soxs.spectra.Spectrum`
             The spectral model to use to generate the event energies.
-        spatial_model :class:`~soxs.spatial.SpatialModel`
+        spatial_model : :class:`~soxs.spatial.SpatialModel`
             The spatial model to use to generate the event coordinates.
         t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
         area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The effective area in cm**2. If one is creating 
-            events for a SIMPUT file, a constant should be 
-            used and it must be large enough so that a 
-            sufficiently large sample is drawn for the ARF.
+            The effective area in cm**2. If one is creating  events for a 
+            SIMPUT file, a constant should be used and it must be large 
+            enough so that a sufficiently large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
             A pseudo-random number generator. Typically will only 
             be specified if you have a reason to generate the same 
             set of random numbers, such as for a test. Default is None, 
-            which sets the seed based on the system time. 
+            which sets the seed based on the system time.
+
         """
         photon_list = PhotonList.from_models(phlist_name, spectral_model, 
                                              spatial_model, t_exp,
@@ -315,7 +315,7 @@ class PhotonList(object):
             of any photon list file that is written from this photon list.
         spectral_model : :class:`~soxs.spectra.Spectrum`
             The spectral model to use to generate the event energies.
-        spatial_model :class:`~soxs.spatial.SpatialModel`
+        spatial_model : :class:`~soxs.spatial.SpatialModel`
             The spatial model to use to generate the event coordinates.
         t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.

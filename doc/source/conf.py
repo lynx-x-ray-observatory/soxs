@@ -362,5 +362,6 @@ intersphinx_mapping = {'http://docs.python.org/': None,
                        'http://docs.scipy.org/doc/numpy/': None,
                        'http://matplotlib.org/': None,
                        'http://yt-project.org/doc/': None,
+                       'http://docs.astropy.org/en/stable': None,
                        'http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim/': None
                        }

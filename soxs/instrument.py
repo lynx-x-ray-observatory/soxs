@@ -124,8 +124,7 @@ class AuxiliaryResponseFile(object):
         Returns
         -------
 
-        A tuple of the :class:`~matplotlib.figure.Figure` and
-        :class:`~matplotlib.axes.Axes` objects.
+        A tuple of the :class:`~matplotlib.figure.Figure` and :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
         if fig is None:

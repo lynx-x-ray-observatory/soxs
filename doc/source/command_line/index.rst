@@ -14,3 +14,4 @@ This section documents the various command-line scripts included with SOXS.
    source_catalogs
    instrument     
    background
+   events

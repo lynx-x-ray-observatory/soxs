@@ -119,7 +119,7 @@ Gratings
 
 A single gratings instrument specification for *Lynx* is included with SOXS,
 ``lynx_gratings``, which currently only allows simulations of spectra. It 
-corresponds approximately to the :math:`d = 3 m, f = 10 m` mirror system, 
+corresponds approximately to the :math:`d = 3~m, f = 10~m` mirror system, 
 50% coverage of the input aperture by the gratings, and :math:`R = 5000`.
 
 Athena
@@ -194,10 +194,10 @@ AXIS
 ~~~~
 
 A single instrument specification ``axis`` is available for 
-`*AXIS* <http://axis.astro.umd.edu>`_, the Advanced X-ray Imaging Satellite. 
+`AXIS <http://axis.astro.umd.edu>`_, the Advanced X-ray Imaging Satellite. 
 The specification is for the wide-field imaging instrument, with a 15' field of 
-view, 9.5 m focal length, and a 0.3" PSF. Response files and backgrounds provided
-by Eric Miller of MIT.
+view, 9.5 m focal length, and a 0.3" PSF. Response files and backgrounds were 
+provided by Eric Miller of MIT.
 
 .. _bkgnds:
 
@@ -327,8 +327,8 @@ the point-source background is resolved into invdividual point sources, it is
 not resolved for :func:`~soxs.instrument.simulate_spectrum`, and instead is 
 modeled using an absorbed power-law with the following parameters:
 
-* Power-law index :math:`alpha = 1.45`
-* Normalization at 1 keV of :math:`2.0 \times 10^{-7} photons~cm^{-2}~keV^{-1}`
+* Power-law index :math:`\alpha = 1.45`
+* Normalization at 1 keV of :math:`2.0 \times 10^{-7} \rm{photons~cm^{-2}~keV^{-1}}`
 
 The foreground galactic absorption parameter ``nH`` and the absorption model
 ``absorb_model`` can be set by hand:

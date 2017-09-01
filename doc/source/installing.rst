@@ -54,3 +54,16 @@ SOXS has the following Python dependencies:
 
 Using any installation method, these dependencies should automatically install 
 (if you do not already have them) provided you are connected to the internet.
+
+Optional Packages
+=================
+
+There are also a number of optional packages which may be used with SOXS to
+enhance its capabilities. 
+
+* Using the :meth:`~soxs.simput.PhotonList.plot` method of the 
+  :class:`~soxs.simput.PhotonList` class requires the 
+  `WCSAxes <http://wcsaxes.readthedocs.io>`_ package.
+* To make mock X-ray observations from 3D hydrodynamics models and other models
+  of astrophysical sources, use the `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_
+  package with SOXS.

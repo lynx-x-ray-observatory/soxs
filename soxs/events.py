@@ -708,8 +708,7 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
 
     Returns
     -------
-    A tuple of the :class:`~matplotlib.figure.Figure` and the
-    :class:`~matplotlib.axes.Axes` objects.
+    A tuple of the :class:`~matplotlib.figure.Figure` and the :class:`~matplotlib.axes.Axes` objects.
     """
     import matplotlib.pyplot as plt
     from soxs.instrument import RedistributionMatrixFile

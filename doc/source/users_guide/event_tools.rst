@@ -48,9 +48,9 @@ exposure map. This example uses a :class:`~soxs.spectra.Spectrum` object ``spec`
     soxs.make_exposure_map("my_evt.fits", "my_expmap.fits", energy, weights=weights,
                            overwrite=True)
 
-By default, exposure maps are computed in units of :math:`cm^2 \times s` and then 
-divided by the exposure time to get a map in units of :math:`cm^2`. To turn off this
-normalization and get a map in units of :math:`cm^2 \times s`, set ``normalize=False``:
+By default, exposure maps are computed in units of :math:`\rm{cm^2} \times \rm{s}` and then 
+divided by the exposure time to get a map in units of :math:`\rm{cm}^2`. To turn off this
+normalization and get a map in units of :math:`\rm{cm^2} \times \rm{s}`, set ``normalize=False``:
 
 .. code-block:: python
 

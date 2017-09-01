@@ -22,6 +22,9 @@ configuration file like this:
     [soxs]
     response_path = /Users/jzuhone/Data/soxs_responses
 
+See :ref:`config` for more information about the location of the configuration file
+and how to set its parameters.
+
 .. _units:
 
 Special Argument Handling for Quantities with Units
