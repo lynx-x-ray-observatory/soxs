@@ -1,4 +1,4 @@
-.. _point-source-catalog:
+.. _point-source-catalog-notebook:
  
 Point Source Catalog
 ====================

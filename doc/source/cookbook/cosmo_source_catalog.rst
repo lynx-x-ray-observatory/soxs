@@ -1,4 +1,4 @@
-.. _cosmo-source-catalog:
+.. _cosmo-source-catalog-notebook:
  
 Cosmological Source Catalog
 ===========================

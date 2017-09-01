@@ -1,6 +1,8 @@
 SIMPUT API
 ==========
 
-.. automodule:: soxs.simput
+.. autoclass:: soxs.simput.SimputCatalog
     :members:
-    :undoc-members: handle_simput_catalog
+
+.. autoclass:: soxs.simput.PhotonList
+    :members:

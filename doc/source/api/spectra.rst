@@ -1,7 +1,12 @@
 Spectrum API
 ============
 
-.. automodule:: soxs.spectra
+.. autoclass:: soxs.spectra.Spectrum
     :members:
-    :undoc-members:
-    :exclude-members: wabs_cross_section, from_xspec, Energies, get_wabs_absorb, tbabs_cross_section, get_tbabs_absorb
+    :exclude-members: from_xspec
+
+.. autoclass:: soxs.spectra.ApecGenerator
+    :members: 
+
+.. autoclass:: soxs.spectra.ConvolvedSpectrum
+    :members: deconvolve, generate_energies, rescale_flux

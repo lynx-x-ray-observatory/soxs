@@ -21,15 +21,15 @@ If you have a spectrum tabulated in an ASCII text or HDF5 file, this can
 be read in using the :meth:`~soxs.spectra.Spectrum.from_file` method. 
 
 * If the file is ASCII, it must be comprised of two columns, the first 
-being the energies of the bins in keV and the second being the photon flux 
-in units of :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. 
-The binning must be linear and the bins must be equally spaced. 
+  being the energies of the bins in keV and the second being the photon flux 
+  in units of :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. 
+  The binning must be linear and the bins must be equally spaced. 
 
 * If the file is HDF5, it must have one array dataset, named ``"spectrum"``, 
-which is the spectrum in units of 
-:math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`, and two 
-scalar datasets, ``"emin"`` and ``"emax"``, which are the minimum and 
-maximum energies in keV.
+  which is the spectrum in units of 
+  :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`, and two 
+  scalar datasets, ``"emin"`` and ``"emax"``, which are the minimum and 
+  maximum energies in keV.
 
 For example:
 
@@ -124,7 +124,7 @@ generate thermal spectra. The parameters are:
   See :ref:`var-abund` below for more fine-grained control of abundances.
 * ``redshift``: The redshift of the plasma
 * ``norm``: The normalization of the model, assuming the standard prescription of
-  :math:`10^{-14}\int{n_en_p}dV/[4*\pi*(1+z)**2*D_A**2]` where :math:`n_e` and 
+  :math:`10^{-14}\int{n_en_p}dV/[4\pi(1+z)^2D_A^2]` where :math:`n_e` and 
   :math`n_p` are the electron and proton number densities, :math:`z` is the 
   redshift, and :math:`D_A` is the angular diameter distance to the source. All
   units are in cgs. 
