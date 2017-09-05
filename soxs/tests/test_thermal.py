@@ -62,8 +62,8 @@ kT_sim = 6.0
 abund_sim = 0.4
 norm_sim = 1.0e-3
 redshift = 0.05
-O_sim = 0.3
-Ca_sim = 0.5
+O_sim = 0.2
+Ca_sim = 0.7
 
 exp_time = 5.0e4
 area = 40000.0
@@ -194,10 +194,10 @@ def test_var_thermal_from_spectrum():
 
     load_user_model(mymodel_var, "wapec")
     add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm", "O", "Ca"],
-                  [nH_sim, 4.0, 0.2, redshift, norm_sim*0.8, 0.3, 0.5],
+                  [nH_sim, 4.0, abund_sim, redshift, norm_sim*0.8, 0.3, 0.5],
                   parmins=[0.0, 0.1, 0.0, -20.0, 0.0, 0.0, 0.0],
                   parmaxs=[10.0, 20.0, 10.0, 20.0, 1.0e9, 10.0, 10.0],
-                  parfrozen=[True, False, False, True, False, False, False])
+                  parfrozen=[True, False, True, True, False, False, False])
 
     load_pha("var_thermal_model_evt.pha")
     set_stat("cstat")
@@ -210,10 +210,9 @@ def test_var_thermal_from_spectrum():
     res = get_covar_results()
 
     assert np.abs(res.parvals[0]-kT_sim) < res.parmaxes[0]
-    assert np.abs(res.parvals[1]-abund_sim) < res.parmaxes[1]
-    assert np.abs(res.parvals[2]-norm_sim) < res.parmaxes[2]
-    assert np.abs(res.parvals[3]-O_sim) < res.parmaxes[3]
-    assert np.abs(res.parvals[4]-Ca_sim) < res.parmaxes[4]
+    assert np.abs(res.parvals[1]-norm_sim) < res.parmaxes[1]
+    assert np.abs(res.parvals[2]-O_sim) < res.parmaxes[2]
+    assert np.abs(res.parvals[3]-Ca_sim) < res.parmaxes[3]
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
