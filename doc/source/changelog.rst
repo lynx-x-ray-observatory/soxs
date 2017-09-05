@@ -87,7 +87,7 @@ Changes to Instrument Specifications
   specifications.
 * When defining instrument specifications, it is now possible to specify a per-chip
   particle background model. See :ref:`custom-instruments` for more details.
-* An instrument specification for the `*AXIS* <http://axis.astro.umd.edu>`_ mission
+* An instrument specification for the `AXIS <http://axis.astro.umd.edu>`_ mission
   concept has been added.
 
 Version 1.3.0
