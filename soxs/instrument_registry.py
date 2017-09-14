@@ -167,6 +167,16 @@ for energy in ["meg", "heg"]:
                                          "imaging": False,
                                          "grating": True}
 
+## ARCUS
+
+instrument_registry["arcus"] = {"name": "arcus",
+                                "arf": ".arf",
+                                "rmf": ".rmf",
+                                "bkgnd": None,
+                                "focal_length": 12.0,
+                                "imaging": False,
+                                "grating": True}
+
 ## Hitomi
 
 # SXS
