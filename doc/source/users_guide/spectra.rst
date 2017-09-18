@@ -199,9 +199,10 @@ The abundance parameters discussed so far assume abundance of a particular
 element or a number of elements relative to the Solar value. Underlying this
 are the values of the Solar abundances themselves. It is possible to change the
 Solar abundance table in SOXS via the optional ``abund_table`` argument to 
-:class:`~soxs.spectra.ApecGenerator`. By default, SOXS assumes the 
+:class:`~soxs.spectra.ApecGenerator`. By default, SOXS uses the abundance table
+set in the :ref:`config`, which are the
 `Anders & Grevesse 1989 <http://adsabs.harvard.edu/abs/1989GeCoA..53..197A>`_ 
-abundances corresponding to a setting of ``"angr"`` for this parameter, but it 
+abundances. This corresponds to a setting of ``"angr"`` for this parameter, but it 
 is possible to use other tables of solar abundances. The other tables included 
 with SOXS are:
 

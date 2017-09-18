@@ -33,9 +33,10 @@ parser.add_argument("--nolines", action='store_true',
 parser.add_argument("--abund_table", type=str, default="angr",
                     help="The abundance table to be used for solar abundances. "
                          "Either a string corresponding to a built-in table or "
-                         "an ASCII fiele containing a column of 30 floats "
+                         "an ASCII file containing a column of 30 floats "
                          "corresponding to the abundances of each element relative "
-                         "to the abundance of H. Default is 'angr'.")
+                         "to the abundance of H. Default is set in the SOXS "
+                         "configuration file, the default for which is 'angr'.")
 feature_parser = parser.add_mutually_exclusive_group(required=False)
 feature_parser.add_argument("--broadening", dest='broadening', action='store_true',
                             help='Turn thermal and velocity broadening on. On by default.')

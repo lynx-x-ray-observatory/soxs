@@ -57,7 +57,8 @@ using the AtomDB tables.
                             Either a string corresponding to a built-in table or
                             an ASCII fiele containing a column of 30 floats
                             corresponding to the abundances of each element
-                            relative to the abundance of H. Default is 'angr'.
+                            relative to the abundance of H. Default is set in the 
+                            SOXS configuration file, the default for which is "angr".
       --broadening          Turn thermal and velocity broadening on. On by
                             default.
       --no_broadening       Turn thermal and velocity broadening off. On by
