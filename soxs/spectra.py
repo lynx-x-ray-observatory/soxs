@@ -6,7 +6,7 @@ import tempfile
 import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
-    parse_prng, parse_value, soxs_cfg
+    parse_prng, parse_value, soxs_cfg, line_width_equiv
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -428,14 +428,15 @@ class Spectrum(object):
         line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The line center position in units of keV, in the observer frame.
         line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line width (FWHM) in units of keV, in the observer frame.
+            The line width (FWHM) in units of keV, in the observer frame. Can also
+            input the line width in units of velocity in the rest frame. 
         line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The integrated line amplitude in the units of the flux 
         line_type : string, optional
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV")
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
         line_amp = parse_value(line_amp, "%s*keV" % self._units)
         if line_type == "gaussian":
             f = self._compute_gaussian_line(line_center, line_width)
@@ -455,14 +456,15 @@ class Spectrum(object):
         line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The line center position in units of keV, in the observer frame.
         line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line width (FWHM) in units of keV, in the observer frame.
+            The line width (FWHM) in units of keV, in the observer frame. Can also
+            input the line width in units of velocity in the rest frame. 
         equiv_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The equivalent width of the line, in units of keV
         line_type : string, optional
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV")
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
         equiv_width = parse_value(equiv_width, "keV")
         if line_type == "gaussian":
             f = self._compute_gaussian_line(line_center, line_width)
