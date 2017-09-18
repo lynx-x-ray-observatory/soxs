@@ -44,6 +44,7 @@ install:
     - source activate test
 
     # CORE DEPENDENCIES
+    - conda config --add channels conda-forge
     - conda config --add channels https://conda.anaconda.org/sherpa
     - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy sherpa scipy cython h5py tqdm pyyaml
     - conda install --yes -c astropy pyregion
