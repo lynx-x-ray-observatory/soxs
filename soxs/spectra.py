@@ -6,7 +6,7 @@ import tempfile
 import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
-    parse_prng, parse_value
+    parse_prng, parse_value, soxs_cfg
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -585,7 +585,8 @@ class ApecGenerator(object):
         The abundance table to be used for solar abundances. 
         Either a string corresponding to a built-in table or an array
         of 30 floats corresponding to the abundances of each element
-        relative to the abundance of H. Default is "angr".
+        relative to the abundance of H. Default is set in the SOXS
+        configuration file, the default for which is "angr".
         Built-in options are:
         "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
         Cosmochimica Acta 53, 197)
@@ -602,7 +603,7 @@ class ApecGenerator(object):
     """
     def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
                  apec_vers="3.0.8", broadening=True, nolines=False,
-                 abund_table="angr"):
+                 abund_table=None):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
         self.emin = emin
@@ -646,6 +647,8 @@ class ApecGenerator(object):
                             if elem not in self.var_elem]
         self.metal_elem = [elem for elem in metal_elem
                            if elem not in self.var_elem]
+        if abund_table is None:
+            abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, string_types):
             if len(abund_table) != 30:
                 raise RuntimeError("User-supplied abundance tables "
