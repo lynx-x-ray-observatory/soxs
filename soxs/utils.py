@@ -4,6 +4,7 @@ import astropy.io.fits as pyfits
 import numpy as np
 from copy import copy
 from numpy.random import RandomState
+import astropy.units as u
 from astropy.units import Quantity
 from six import string_types
 from six.moves import configparser
@@ -158,7 +159,7 @@ def convert_rmf(rmffile):
 
     new_f.writeto(os.path.split(rmffile)[-1], overwrite=True)
 
-def parse_value(value, default_units):
+def parse_value(value, default_units, equivalence=None):
     if isinstance(value, string_types):
         v = value.split(",")
         if len(v) == 2:
@@ -168,12 +169,12 @@ def parse_value(value, default_units):
     if hasattr(value, "to_astropy"):
         value = value.to_astropy()
     if isinstance(value, Quantity):
-        q = Quantity(value.value, value.unit).to(default_units)
+        q = Quantity(value.value, value.unit)
     elif iterable(value):
-        q = Quantity(value[0], value[1]).to(default_units)
+        q = Quantity(value[0], value[1])
     else:
         q = Quantity(value, default_units)
-    return q.value
+    return q.to(default_units, equivalencies=equivalence).value
 
 def get_rot_mat(roll_angle):
     roll_angle = np.deg2rad(roll_angle)
@@ -199,3 +200,10 @@ def downsample(myarr,factor,estimator=np.mean):
                                        for i in range(factor)]
                                       for j in range(factor)]), axis=0)
     return dsarr
+
+def line_width_equiv(rest):
+    from astropy.constants import c
+    ckms = c.to_value('km/s')
+    forward = lambda x: rest*x/ckms
+    backward = lambda x: x/rest*ckms
+    return [(u.km/u.s, u.keV, forward, backward)]
