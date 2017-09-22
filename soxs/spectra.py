@@ -17,7 +17,7 @@ import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from soxs.instrument import AuxiliaryResponseFile
 from six import string_types
-from astropy.modeling.functional_models import \ 
+from astropy.modeling.functional_models import \
     Gaussian1D
 
 class Energies(u.Quantity):
