@@ -17,6 +17,8 @@ import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from soxs.instrument import AuxiliaryResponseFile
 from six import string_types
+from astropy.modeling.functional_models import \ 
+    Gaussian1D
 
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
@@ -411,13 +413,6 @@ class Spectrum(object):
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()
 
-    def _compute_gaussian_line(self, line_center, line_width):
-        sigma = line_width/sigma_to_fwhm
-        x = (self.emid.value-line_center)/sigma
-        f = np.exp(-0.5*x*x)
-        f /= sqrt2pi*sigma
-        return f
-
     def add_emission_line(self, line_center, line_width, line_amp,
                           line_type="gaussian"):
         """
@@ -427,9 +422,11 @@ class Spectrum(object):
         ----------
         line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The line center position in units of keV, in the observer frame.
-        line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The line width (FWHM) in units of keV, in the observer frame. Can also
-            input the line width in units of velocity in the rest frame. 
+            input the line width in units of velocity in the rest frame. For the Voigt
+            profile, a list, tuple, or array of two values should be provided since there
+            are two line widths, the Lorentzian and the Gaussian (in that order).
         line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The integrated line amplitude in the units of the flux 
         line_type : string, optional
@@ -437,13 +434,15 @@ class Spectrum(object):
         """
         line_center = parse_value(line_center, "keV")
         line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
-        line_amp = parse_value(line_amp, "%s*keV" % self._units)
+        line_amp = parse_value(line_amp, self._units)
         if line_type == "gaussian":
-            f = self._compute_gaussian_line(line_center, line_width)
+            sigma = line_width / sigma_to_fwhm
+            line_amp /= sqrt2pi * sigma
+            f = Gaussian1D(line_amp, line_center, sigma)
         else:
             raise NotImplementedError("Line profile type '%s' " % line_type +
                                       "not implemented!")
-        self.flux += u.Quantity(f*line_amp, self._units)
+        self.flux += u.Quantity(f(self.emid.value), self._units)
         self._compute_total_flux()
 
     def add_absorption_line(self, line_center, line_width, equiv_width, 
@@ -455,23 +454,29 @@ class Spectrum(object):
         ----------
         line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The line center position in units of keV, in the observer frame.
-        line_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The line width (FWHM) in units of keV, in the observer frame. Can also
-            input the line width in units of velocity in the rest frame. 
+            input the line width in units of velocity in the rest frame. For the Voigt
+            profile, a list, tuple, or array of two values should be provided since there
+            are two line widths, the Lorentzian and the Gaussian (in that order).
         equiv_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The equivalent width of the line, in units of keV
+            The equivalent width of the line, in units of milli-Angstrom
         line_type : string, optional
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
         line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
-        equiv_width = parse_value(equiv_width, "keV")
+        equiv_width = parse_value(equiv_width, "1.0e-3*angstrom") # in milliangstroms
+        equiv_width *= 1.0e-3 # convert to angstroms
         if line_type == "gaussian":
-            f = self._compute_gaussian_line(line_center, line_width)
+            sigma = line_width / sigma_to_fwhm
+            B = equiv_width*line_center*line_center
+            B /= hc * sqrt2pi * sigma
+            f = Gaussian1D(B, line_center, sigma)
         else:
             raise NotImplementedError("Line profile type '%s' " % line_type +
                                       "not implemented!")
-        self.flux *= 1.0-f*equiv_width
+        self.flux *= np.exp(-f(self.emid.value))
         self._compute_total_flux()
 
     def generate_energies(self, t_exp, area, prng=None, quiet=False):

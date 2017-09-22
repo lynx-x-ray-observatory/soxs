@@ -451,6 +451,37 @@ The line width may also be specified in units of velocity, if that is more conve
 
 Currently, this functionality only supports emission lines with a Gaussian shape.
 
+.. _absorb_lines:
+
+Adding Absorption Lines to a Spectrum
+-------------------------------------
+
+The :meth:`~soxs.Spectrum.add_absorption_line` method adds a single absorption
+line to an existing :class:`~soxs.spectra.Spectrum` object. The line energy,
+line width, and equivalent width of the line must be specified. 
+
+.. code-block::
+
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
+                                  10.0, 10000)
+    line_center = (1.0, "keV")
+    line_width = (30.0, "eV")
+    equiv_width = 2 # defaults to units of milli-Angstroms
+    spec.add_absorption_line(line_center, line_width, equiv_width)
+
+The line width may also be specified in units of velocity, if that is more convenient:
+
+.. code-block::
+
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
+                                  10.0, 10000)
+    line_center = (1.0, "keV")
+    line_width = (500.0, "km/s")
+    equiv_width = (3.0e-3, "Angstrom")
+    spec.add_absorption_line(line_center, line_width, equiv_width)
+
+Currently, this functionality only supports absorption lines with a Gaussian shape.
+
 Generating Photon Energies From a Spectrum
 ------------------------------------------
 
