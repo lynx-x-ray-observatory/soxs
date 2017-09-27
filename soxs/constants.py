@@ -11,6 +11,7 @@ eV_per_erg = 1.0 / erg_per_eV
 
 hc = (h*c).to("keV*angstrom").value
 clight = c.to("cm/s").value
+ckms = c.to_value("km/s")
 
 sigma_to_fwhm = 2.*np.sqrt(2.*np.log(2.))
 sqrt2pi = np.sqrt(2.*np.pi)
