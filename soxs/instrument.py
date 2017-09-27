@@ -898,6 +898,33 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     write_event_file(events, event_params, out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 
+def _simulate_spectrum(spec, out_file, exp_time, events, arf, rmf, prng, overwrite):
+    from soxs.events import write_spectrum
+    from soxs.spectra import ConvolvedSpectrum
+
+    if spec is not None:
+        cspec = ConvolvedSpectrum(spec, arf)
+        e = cspec.generate_energies(exp_time, prng=prng).value
+        events["energy"] = np.append(events["energy"], e)
+
+    event_params = {}
+    event_params["arf"] = arf.filename
+    event_params["rmf"] = rmf.filename
+    event_params["exposure_time"] = exp_time
+    event_params["channel_type"] = rmf.header["CHANTYPE"]
+    event_params["telescope"] = rmf.header["TELESCOP"]
+    event_params["instrument"] = rmf.header["INSTRUME"]
+    event_params["mission"] = rmf.header.get("MISSION", "")
+
+    events = rmf.scatter_energies(events, prng=prng)
+
+    events['time'] = prng.uniform(size=events["energy"].size, low=0.0,
+                                  high=event_params["exposure_time"])
+
+    events.update(event_params)
+
+    write_spectrum(events, out_file, overwrite=overwrite)
+
 def simulate_spectrum(spec, instrument, exp_time, out_file,
                       instr_bkgnd=False, foreground=False,
                       ptsrc_bkgnd=False, bkgnd_area=None,
@@ -907,7 +934,9 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
     by convolving it with responses. To be used if one wants to 
     create a spectrum without worrying about spatial response. Similar
-    to XSPEC's "fakeit". 
+    to XSPEC's "fakeit". Note that gratings spectra cannot be simulated
+    with this function, and must be simulated with 
+    :func:`~soxs.instrument.simulate_gratings_spectrum` instead.
 
     Parameters
     ----------
@@ -967,10 +996,11 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         instrument_spec = instrument_registry[instrument]
     except KeyError:
         raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
+    if instrument_spec["grating"]:
+        raise NotImplementedError("You cannot simulate a gratings spectrum with "
+                                  "'simulate_spectrum', use 'simulate_gratings_spectrum' "
+                                  "instead!")
     if foreground or instr_bkgnd or ptsrc_bkgnd:
-        if instrument_spec["grating"] and (foreground or ptsrc_bkgnd):
-            raise NotImplementedError("Only instrumental backgrounds can be included "
-                                      "with simulations of gratings spectra!")
         if bkgnd_area is None:
             raise RuntimeError("The 'bkgnd_area' argument must be set if one wants "
                                "to simulate backgrounds! Specify a value in square "
@@ -978,6 +1008,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     elif spec is None:
         raise RuntimeError("You have specified no source spectrum and no backgrounds!")
+
     arf_file = get_response_path(instrument_spec["arf"])
     rmf_file = get_response_path(instrument_spec["rmf"])
     arf = AuxiliaryResponseFile(arf_file)
@@ -1020,3 +1051,73 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
 
     _write_spectrum(bins, out_spec, exp_time, rmf.header["CHANTYPE"], 
                     event_params, out_file, overwrite=overwrite)
+
+def simulate_gratings_spectrum(spec, instrument, exp_time, out_file, bkgnd=False,
+                               overwrite=False, prng=None):
+    """
+    Generate a PI or PHA gratings spectrum from a :class:`~soxs.spectra.Spectrum`
+    by convolving it with gratings responses. To be used if one wants to 
+    create a spectrum without worrying about spatial response. Similar
+    to XSPEC's "fakeit". Note that non-gratings spectra cannot be simulated
+    with this function, and must be simulated with 
+    :func:`~soxs.instrument.simulate_spectrum` instead.
+
+    Parameters
+    ----------
+    spec : :class:`~soxs.spectra.Spectrum`
+        The spectrum to be convolved. If None is supplied, only the background
+        will be simulated (if it is turned on).
+    instrument : string
+        The name of the gratings instrument to use, which picks an instrument
+        specification from the instrument registry.
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The exposure time in seconds.
+    out_file : string
+        The file to write the spectrum to.
+    bkgnd : boolean, optional
+        Whether or not to include background. Default: False
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file. Default: False
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
+
+    Examples
+    --------
+    >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
+    >>> soxs.simulate_spectrum(spec, "mucal", 100000.0, 
+    ...                        "my_spec.pi", overwrite=True)
+    """
+    from soxs.instrument import RedistributionMatrixFile, \
+        AuxiliaryResponseFile
+    from soxs.background.instrument import instrument_backgrounds
+    prng = parse_prng(prng)
+    exp_time = parse_value(exp_time, "s")
+    try:
+        instrument_spec = instrument_registry[instrument]
+    except KeyError:
+        raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
+    if not instrument_spec["grating"]:
+        raise NotImplementedError("You cannot simulate a non-gratings spectrum with "
+                                  "'simulate_gratings_spectrum', use 'simulate_spectrum' "
+                                  "instead!")
+    if not bkgnd and spec is None:
+        raise RuntimeError("You have specified no source spectrum and no backgrounds!")
+
+    arf_file = get_response_path(instrument_spec["arf"])
+    rmf_file = get_response_path(instrument_spec["rmf"])
+    arf = AuxiliaryResponseFile(arf_file)
+    rmf = RedistributionMatrixFile(rmf_file)
+
+    events = {"energy": np.array([])}
+
+    if bkgnd and instrument_spec["bkgnd"] is not None:
+        mylog.info("Adding in gratings background.")
+        instr_spec = instrument_backgrounds[instrument_spec["bkgnd"]]
+        e = instr_spec.generate_energies(exp_time, focal_length=instrument_spec["focal_length"],
+                                         prng=prng, quiet=True).value
+        events["energy"] = np.append(events["energy"], e)
+
+    _simulate_spectrum(spec, out_file, exp_time, events, arf, rmf, prng, overwrite)
