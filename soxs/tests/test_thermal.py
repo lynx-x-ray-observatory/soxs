@@ -20,12 +20,12 @@ from numpy.random import RandomState
 inst_name = "mucal"
 
 rmf = RedistributionMatrixFile("xrs_%s.rmf" % inst_name)
-agen = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_de, broadening=True)
-agen_var = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_de, 
+agen = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, broadening=True)
+agen_var = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, 
                          var_elem=["O", "Ca"], broadening=True)
-agen_nolines = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_de, 
+agen_nolines = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, 
                              broadening=True, nolines=True)
-agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_de, 
+agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, 
                           broadening=True, abund_table="aspl")
 
 def mymodel(pars, x, xhi=None):

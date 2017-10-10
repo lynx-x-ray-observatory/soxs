@@ -198,7 +198,7 @@ class RedistributionMatrixFile(object):
         self.ehi = self.data["ENERG_HI"]
         self.emid = 0.5*(self.elo+self.ehi)
         self.de = self.ehi-self.elo
-        self.n_de = self.elo.size
+        self.n_e = self.elo.size
         self.n_ch = self.header["DETCHANS"]
         num = 0
         for i in range(1, self.num_mat_columns+1):
