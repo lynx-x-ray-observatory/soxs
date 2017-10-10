@@ -166,11 +166,48 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
             focal_length = self.default_focal_length
         else:
             focal_length = parse_value(focal_length, "m")
-        flux = self.flux.value*fov*fov
-        flux *= (focal_length/self.default_focal_length)**2
+        flux = self.flux.value * fov * fov
+        flux *= (focal_length / self.default_focal_length) ** 2
         arf = FlatResponse(self.ebins.value[0], self.ebins.value[-1],
-                           1.0, self.ebins.size-1)
+                           1.0, self.ebins.size - 1)
         return ConvolvedSpectrum(Spectrum(self.ebins.value, flux), arf)
+
+class GratingsBackgroundSpectrum(InstrumentalBackgroundSpectrum):
+    _units = "photon/(s*keV)"
+
+    def generate_energies(self, t_exp, focal_length=None,
+                          prng=None, quiet=False):
+        """
+        Generate photon energies from this gratings 
+        background spectrum given an exposure time and 
+        effective area.
+
+        Parameters
+        ----------
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The exposure time in seconds.
+        focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The focal length in meters. Default is to use
+            the default focal length of the instrument
+            configuration.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
+        quiet : boolean, optional
+            If True, log messages will not be displayed when 
+            creating energies. Useful if you have to loop over 
+            a lot of spectra. Default: False
+        """
+        t_exp = parse_value(t_exp, "s")
+        prng = parse_prng(prng)
+        rate = self.total_flux.value
+        rate *= (focal_length/self.default_focal_length)**2
+        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
+        flux = np.sum(energy)*erg_per_keV/t_exp
+        energies = Energies(energy, flux)
+        return energies
 
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
