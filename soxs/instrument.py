@@ -179,7 +179,7 @@ class RedistributionMatrixFile(object):
     """
     def __init__(self, filename):
         self.filename = get_response_path(filename)
-        self.handle = pyfits.open(self.filename)
+        self.handle = pyfits.open(self.filename, memmap=True)
         if "MATRIX" in self.handle:
             self.mat_key = "MATRIX"
         elif "SPECRESP MATRIX" in self.handle:
