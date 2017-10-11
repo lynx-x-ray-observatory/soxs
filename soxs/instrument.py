@@ -188,10 +188,8 @@ class RedistributionMatrixFile(object):
             raise RuntimeError("Cannot find the response matrix in the RMF "
                                "file %s! " % filename+"It should be named "
                                "\"MATRIX\" or \"SPECRESP MATRIX\".")
-        self.data = self.handle[self.mat_key].data
         self.header = self.handle[self.mat_key].header
         self.num_mat_columns = len(self.handle[self.mat_key].columns)
-        self.ebounds_data = self.handle["EBOUNDS"].data
         self.ebounds_header = self.handle["EBOUNDS"].header
         self.weights = np.array([w.sum() for w in self.data["MATRIX"]])
         self.elo = self.data["ENERG_LO"]
@@ -207,6 +205,14 @@ class RedistributionMatrixFile(object):
                 break
         self.cmin = self.header.get("TLMIN%d" % num, 1)
         self.cmax = self.header.get("TLMAX%d" % num, self.n_ch)
+
+    @property
+    def data(self):
+        return self.handle[self.mat_key].data
+
+    @property
+    def ebounds_data(self):
+        return self.handle["EBOUNDS"].data
 
     def __str__(self):
         return self.filename
