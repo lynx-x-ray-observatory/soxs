@@ -68,6 +68,11 @@ class BackgroundSpectrum(Spectrum):
         energies = Energies(energy, flux)
         return energies
 
+    def to_spectrum(self, fov):
+        fov = parse_value(fov, "arcmin")
+        flux = self.flux.value*fov*fov
+        return Spectrum(self.ebins.value, flux)
+
 class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
     def __init__(self, ebins, flux, default_focal_length):
@@ -153,6 +158,16 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         flux = np.sum(energy)*erg_per_keV/t_exp
         energies = Energies(energy, flux)
         return energies
+
+    def to_scaled_spectrum(self, fov, focal_length=None):
+        fov = parse_value(fov, "arcmin")
+        if focal_length is None:
+            focal_length = self.default_focal_length
+        else:
+            focal_length = parse_value(focal_length, "m")
+        flux = self.flux.value*fov*fov
+        flux *= (focal_length/self.default_focal_length)**2
+        return ConvolvedSpectrum(self.ebins.value, flux)
 
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"

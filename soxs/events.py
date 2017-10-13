@@ -336,6 +336,47 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
             mylog.warning("Refusing to write an aspect solution file because "
                           "there was no dithering.")
+
+def _write_spectrum(bins, spec, exp_time, spectype, parameters,
+                    specfile, overwrite=False):
+
+    col1 = pyfits.Column(name='CHANNEL', format='1J', array=bins)
+    col2 = pyfits.Column(name=spectype.upper(), format='1D', array=bins.astype("float64"))
+    col3 = pyfits.Column(name='COUNTS', format='1J', array=spec.astype("int32"))
+    col4 = pyfits.Column(name='COUNT_RATE', format='1D', array=spec/exp_time)
+
+    coldefs = pyfits.ColDefs([col1, col2, col3, col4])
+
+    tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+    tbhdu.name = "SPECTRUM"
+
+    tbhdu.header["DETCHANS"] = spec.size
+    tbhdu.header["TOTCTS"] = spec.sum()
+    tbhdu.header["EXPOSURE"] = exp_time
+    tbhdu.header["LIVETIME"] = exp_time
+    tbhdu.header["CONTENT"] = spectype
+    tbhdu.header["HDUCLASS"] = "OGIP"
+    tbhdu.header["HDUCLAS1"] = "SPECTRUM"
+    tbhdu.header["HDUCLAS2"] = "TOTAL"
+    tbhdu.header["HDUCLAS3"] = "TYPE:I"
+    tbhdu.header["HDUCLAS4"] = "COUNT"
+    tbhdu.header["HDUVERS"] = "1.1.0"
+    tbhdu.header["HDUVERS1"] = "1.1.0"
+    tbhdu.header["CHANTYPE"] = spectype
+    tbhdu.header["BACKFILE"] = "none"
+    tbhdu.header["CORRFILE"] = "none"
+    tbhdu.header["POISSERR"] = True
+    for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
+        tbhdu.header[key] = parameters[key]
+    tbhdu.header["AREASCAL"] = 1.0
+    tbhdu.header["CORRSCAL"] = 0.0
+    tbhdu.header["BACKSCAL"] = 1.0
+
+    hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
+
+    hdulist.writeto(specfile, overwrite=overwrite)
+
+
 def write_spectrum(evtfile, specfile, overwrite=False):
     r"""
     Bin event energies into a spectrum and write it to 
@@ -383,41 +424,8 @@ def write_spectrum(evtfile, specfile, overwrite=False):
         spec = spec[1:]
     bins = (np.arange(rmf.n_ch)+rmf.cmin).astype("int32")
 
-    col1 = pyfits.Column(name='CHANNEL', format='1J', array=bins)
-    col2 = pyfits.Column(name=spectype.upper(), format='1D', array=bins.astype("float64"))
-    col3 = pyfits.Column(name='COUNTS', format='1J', array=spec.astype("int32"))
-    col4 = pyfits.Column(name='COUNT_RATE', format='1D', array=spec/exp_time)
-
-    coldefs = pyfits.ColDefs([col1, col2, col3, col4])
-
-    tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-    tbhdu.name = "SPECTRUM"
-
-    tbhdu.header["DETCHANS"] = spec.size
-    tbhdu.header["TOTCTS"] = spec.sum()
-    tbhdu.header["EXPOSURE"] = exp_time
-    tbhdu.header["LIVETIME"] = exp_time
-    tbhdu.header["CONTENT"] = spectype
-    tbhdu.header["HDUCLASS"] = "OGIP"
-    tbhdu.header["HDUCLAS1"] = "SPECTRUM"
-    tbhdu.header["HDUCLAS2"] = "TOTAL"
-    tbhdu.header["HDUCLAS3"] = "TYPE:I"
-    tbhdu.header["HDUCLAS4"] = "COUNT"
-    tbhdu.header["HDUVERS"] = "1.1.0"
-    tbhdu.header["HDUVERS1"] = "1.1.0"
-    tbhdu.header["CHANTYPE"] = spectype
-    tbhdu.header["BACKFILE"] = "none"
-    tbhdu.header["CORRFILE"] = "none"
-    tbhdu.header["POISSERR"] = True
-    for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
-        tbhdu.header[key] = parameters[key]
-    tbhdu.header["AREASCAL"] = 1.0
-    tbhdu.header["CORRSCAL"] = 0.0
-    tbhdu.header["BACKSCAL"] = 1.0
-
-    hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
-
-    hdulist.writeto(specfile, overwrite=overwrite)
+    _write_spectrum(bins, spec, exp_time, spectype, parameters,
+                    specfile, overwrite=overwrite)
 
 def write_radial_profile(evt_file, out_file, ctr, rmin, 
                          rmax, nbins, ctr_type="celestial", 

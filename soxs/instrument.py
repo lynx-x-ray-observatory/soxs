@@ -281,6 +281,23 @@ class RedistributionMatrixFile(object):
 
         return events
 
+    def convolve_spectrum(self, cspec, exp_time, prng=None):
+        prng = parse_prng(prng)
+        exp_time = parse_value(exp_time, "s")
+        spec = cspec(self.emid).value * exp_time * self.de
+        conv_spec = np.zeros(self.n_ch)
+        pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
+        for k in range(self.n_e):
+            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+            mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+            for f, n in zip(f_chan, n_chan):
+                mat_size = min(n, self.n_ch-f)
+                conv_spec[f:f+n] += spec[k]*mat[:mat_size]
+            pbar.update()
+        pbar.close()
+        return prng.poisson(lam=conv_spec)
+
 def perform_dither(t, dither_dict):
     if dither_dict["dither_on"]:
         a = 2.0*np.pi/dither_dict["x_period"]
@@ -935,7 +952,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     >>> soxs.simulate_spectrum(spec, "mucal", 100000.0, 
     ...                        "my_spec.pi", overwrite=True)
     """
-    from soxs.events import write_spectrum
+    from soxs.events import _write_spectrum
     from soxs.instrument import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
@@ -966,46 +983,39 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     rmf = RedistributionMatrixFile(rmf_file)
 
     event_params = {}
-    event_params["arf"] = arf.filename
-    event_params["rmf"] = rmf.filename
-    event_params["exposure_time"] = exp_time
-    event_params["channel_type"] = rmf.header["CHANTYPE"]
-    event_params["telescope"] = rmf.header["TELESCOP"]
-    event_params["instrument"] = rmf.header["INSTRUME"]
-    event_params["mission"] = rmf.header.get("MISSION", "")
+    event_params["RESPFILE"] = os.path.split(rmf.filename)[-1]
+    event_params["ANCRFILE"] = os.path.split(arf.filename)[-1]
+    event_params["TELESCOP"] = rmf.header["TELESCOP"]
+    event_params["INSTRUME"] = rmf.header["INSTRUME"]
+    event_params["MISSION"] = rmf.header.get("MISSION", "")
 
-    if spec is None:
-        events = {"energy": np.array([])}
-    else:
+    out_spec = np.zeros(rmf.n_ch)
+
+    if spec is not None:
         cspec = ConvolvedSpectrum(spec, arf)
-        events = {"energy": cspec.generate_energies(exp_time, prng=prng).value}
+        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng)
+
+    fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
-        cspec_frgnd = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, arf)
-        e = cspec_frgnd.generate_energies(exp_time, bkgnd_area, prng=prng).value
-        events["energy"] = np.append(events["energy"], e)
+        cspec_frgnd = ConvolvedSpectrum(hm_astro_bkgnd.to_spectrum(fov), arf)
+        out_spec += rmf.convolve_spectrum(cspec_frgnd, exp_time, prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
         instr_spec = instrument_backgrounds[instrument_spec["bkgnd"]]
-        e = instr_spec.generate_energies(exp_time, bkgnd_area,
-                                         focal_length=instrument_spec["focal_length"],
-                                         prng=prng, quiet=True).value
-        events["energy"] = np.append(events["energy"], e)
+        cspec_instr = instr_spec.to_scaled_spectrum(fov,
+                                                    instrument_spec["focal_length"])
+        out_spec += rmf.convolve_spectrum(cspec_instr, exp_time, prng=prng)
     if ptsrc_bkgnd:
         mylog.info("Adding in background from unresolved point-sources.")
         spec_plaw = BackgroundSpectrum.from_powerlaw(1.45, 0.0, 2.0e-7, emin=0.01,
                                                      emax=10.0, nbins=300000)
         spec_plaw.apply_foreground_absorption(nH, model=absorb_model)
-        cspec_plaw = ConvolvedBackgroundSpectrum(spec_plaw, arf)
-        e = cspec_plaw.generate_energies(exp_time, bkgnd_area, prng=prng).value
-        events["energy"] = np.append(events["energy"], e)
+        cspec_plaw = ConvolvedBackgroundSpectrum(spec_plaw.to_spectrum(fov), arf)
+        out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
 
-    events = rmf.scatter_energies(events, prng=prng)
+    bins = (np.arange(rmf.n_ch)+rmf.cmin).astype("int32")
 
-    events['time'] = prng.uniform(size=events["energy"].size, low=0.0,
-                                  high=event_params["exposure_time"])
-
-    events.update(event_params)
-
-    write_spectrum(events, out_file, overwrite=overwrite)
+    _write_spectrum(bins, out_spec, exp_time, rmf.header["CHANTYPE"], 
+                    event_params, out_file, overwrite=overwrite)
