@@ -285,6 +285,7 @@ class RedistributionMatrixFile(object):
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
         spec = cspec(self.emid).value * exp_time * self.de
+        np.clip(spec, 0.0, None, out=spec)
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
         for k in range(self.n_e):

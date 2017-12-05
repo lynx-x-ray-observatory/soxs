@@ -57,7 +57,7 @@ class Spectrum(object):
 
     def __add__(self, other):
         if self.nbins != other.nbins or \
-            not np.isclose(self.ebins.value, other.ebins.value).all():
+           not np.isclose(self.ebins.value, other.ebins.value).all():
             raise RuntimeError("Energy binning for these two "
                                "spectra is not the same!!")
         if self._units != other._units:

@@ -160,6 +160,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         return energies
 
     def to_scaled_spectrum(self, fov, focal_length=None):
+        from soxs.instrument import FlatResponse
         fov = parse_value(fov, "arcmin")
         if focal_length is None:
             focal_length = self.default_focal_length
@@ -167,7 +168,9 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
             focal_length = parse_value(focal_length, "m")
         flux = self.flux.value*fov*fov
         flux *= (focal_length/self.default_focal_length)**2
-        return ConvolvedSpectrum(self.ebins.value, flux)
+        arf = FlatResponse(self.ebins.value[0], self.ebins.value[-1],
+                           1.0, self.ebins.size-1)
+        return ConvolvedSpectrum(Spectrum(self.ebins.value, flux), arf)
 
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
