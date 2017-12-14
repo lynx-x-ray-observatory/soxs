@@ -3,6 +3,14 @@
 ChangeLog
 =========
 
+Version 2.1.0
+-------------
+
+This release of SOXS provides new features, bugfixes, and optimizations.
+
+* Generating spectra without imaging is now faster, especially for high-resolution
+  instruments such as microcalorimeters and gratings.
+
 Version 2.0.0
 -------------
 
