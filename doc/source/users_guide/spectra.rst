@@ -200,7 +200,7 @@ element or a number of elements relative to the Solar value. Underlying this
 are the values of the Solar abundances themselves. It is possible to change the
 Solar abundance table in SOXS via the optional ``abund_table`` argument to 
 :class:`~soxs.spectra.ApecGenerator`. By default, SOXS uses the abundance table
-set in the :ref:`config`, which are the
+set in the :ref:`config`, which by default are the
 `Anders & Grevesse 1989 <http://adsabs.harvard.edu/abs/1989GeCoA..53..197A>`_ 
 abundances. This corresponds to a setting of ``"angr"`` for this parameter, but it 
 is possible to use other tables of solar abundances. The other tables included 
@@ -210,7 +210,9 @@ with SOXS are:
 * ``"wilm"``: `Wilms et al. 2000 <http://adsabs.harvard.edu/abs/2000ApJ...542..914W>`_
 * ``"lodd"``: `Lodders 2003 <http://adsabs.harvard.edu/abs/2003ApJ...591.1220L>`_
 
-The Solar abundance table can be changed like this:
+The easiest way to ensure that you always use a particular abundance table is to
+set it in the :ref:`config`. However, the Solar abundance table can be changed 
+on-the-fly like this:
 
 .. code-block:: python
 
