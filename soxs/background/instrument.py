@@ -91,6 +91,7 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
     if event_params["chips"] is None:
         bkg_events["energy"] = bkgnd_spec[0].generate_energies(event_params["exposure_time"],
                                                                event_params["fov"], prng=prng,
+                                                               focal_length=focal_length,
                                                                quiet=True).value
         n_events = bkg_events["energy"].size
         bkg_events["chip_id"] = np.zeros(n_events, dtype='int')
@@ -104,6 +105,7 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
         for i, chip in enumerate(event_params["chips"]):
             e = bkgnd_spec[i].generate_energies(event_params["exposure_time"],
                                                 event_params["fov"], prng=prng,
+                                                focal_length=focal_length,
                                                 quiet=True).value
             n_events = e.size
             detx = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
