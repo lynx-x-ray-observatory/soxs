@@ -282,8 +282,8 @@ def test_thermal_abund_table():
     shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":
-    #test_thermal()
-    #test_thermal_from_spectrum()
+    test_thermal()
+    test_thermal_from_spectrum()
     test_var_thermal()
-    #test_nolines_thermal_from_spectrum()
-    #test_thermal_abund_table()
+    test_nolines_thermal_from_spectrum()
+    test_thermal_abund_table()
