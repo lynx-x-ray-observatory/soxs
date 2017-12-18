@@ -3,6 +3,7 @@ from .point_sources import make_ptsrc_background, \
     make_point_sources_file, make_point_source_list
 from .instrument import make_instrument_background, \
     add_instrumental_background
+from .gratings import add_gratings_background
 from .spectra import BackgroundSpectrum, \
     ConvolvedBackgroundSpectrum, \
     InstrumentalBackgroundSpectrum
