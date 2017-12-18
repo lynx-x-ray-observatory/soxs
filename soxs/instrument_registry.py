@@ -52,16 +52,6 @@ for det in ["hdxi", "mucal"]:
         instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf" % (det, mirror)
         instrument_registry["%s_%s" % (det, mirror)]["focal_length"] = float(mirror.split("x")[-1])
 
-# Gratings (for spectra only)
-
-instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
-                                        "arf": "xrs_cat.arf",
-                                        "rmf": "xrs_cat.rmf",
-                                        "bkgnd": None,
-                                        "focal_length": 10.0,
-                                        "imaging": False,
-                                        "grating": True}
-
 ## Athena
 
 # XIFU
@@ -150,33 +140,6 @@ for cycle in [0, 19]:
                                  "grating": False}
 
 
-# ACIS-S, Cycle 0 and 19 HETG
-
-orders = {"p1": 1, "m1": -1}
-
-for energy in ["meg", "heg"]:
-    for order in ["p1", "m1"]:
-        for cycle in [0, 19]:
-            name = "aciss_%s_%s_cy%d" % (energy, order, cycle)
-            resp_name = "aciss_%s%d_cy%d" % (energy, orders[order], cycle)
-            instrument_registry[name] = {"name": name,
-                                         "arf": "%s.garf" % resp_name,
-                                         "rmf": "%s.grmf" % resp_name,
-                                         "bkgnd": None,
-                                         "focal_length": 10.0,
-                                         "imaging": False,
-                                         "grating": True}
-
-## ARCUS
-
-instrument_registry["arcus"] = {"name": "arcus",
-                                "arf": ".arf",
-                                "rmf": ".rmf",
-                                "bkgnd": None,
-                                "focal_length": 12.0,
-                                "imaging": False,
-                                "grating": True}
-
 ## Hitomi
 
 # SXS
@@ -212,6 +175,45 @@ instrument_registry["axis"] = {"name": "axis",
                                "grating": False}
 
 
+# Gratings instruments (for spectra only)
+
+## Lynx
+
+instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
+                                        "arf": "xrs_cat.arf",
+                                        "rmf": "xrs_cat.rmf",
+                                        "bkgnd": None,
+                                        "focal_length": 10.0,
+                                        "imaging": False,
+                                        "grating": True}
+
+## ARCUS
+
+instrument_registry["arcus"] = {"name": "arcus",
+                                "arf": ".arf",
+                                "rmf": ".rmf",
+                                "bkgnd": None,
+                                "focal_length": 12.0,
+                                "imaging": False,
+                                "grating": True}
+
+## ACIS-S, Cycle 0 and 19 HETG
+
+orders = {"p1": 1, "m1": -1}
+
+for energy in ["meg", "heg"]:
+    for order in ["p1", "m1"]:
+        for cycle in [0, 19]:
+            name = "aciss_%s_%s_cy%d" % (energy, order, cycle)
+            resp_name = "aciss_%s%d_cy%d" % (energy, orders[order], cycle)
+            instrument_registry[name] = {"name": name,
+                                         "arf": "%s.garf" % resp_name,
+                                         "rmf": "%s.grmf" % resp_name,
+                                         "bkgnd": None,
+                                         "focal_length": 10.0,
+                                         "imaging": False,
+                                         "grating": True}
+
 def add_instrument_to_registry(inst_spec):
     """
     Add an instrument specification to the registry, contained
@@ -232,7 +234,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "name": "hdxi_3x10", # The short name of the instrument
     ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf", # The file containing the RMF
-    ...     "bkgnd": "acisi", # The name of the particle background
+    ...     "bkgnd": "acisi", # The name of the intrinsic background
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
