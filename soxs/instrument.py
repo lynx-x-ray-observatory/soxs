@@ -1051,8 +1051,9 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     _write_spectrum(bins, out_spec, exp_time, rmf.header["CHANTYPE"], 
                     event_params, out_file, overwrite=overwrite)
 
-def simulate_gratings_spectrum(spec, instrument, exp_time, out_file, bkgnd=False,
-                               overwrite=False, prng=None):
+
+def simulate_gratings_spectrum(spec, instrument, exp_time, out_file,
+                               bkgnd=False, overwrite=False, prng=None):
     """
     Generate a PI or PHA gratings spectrum from a :class:`~soxs.spectra.Spectrum`
     by convolving it with gratings responses. To be used if one wants to 
@@ -1092,6 +1093,8 @@ def simulate_gratings_spectrum(spec, instrument, exp_time, out_file, bkgnd=False
     from soxs.instrument import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.background.instrument import instrument_backgrounds
+    from soxs.spectra import ConvolvedSpectrum
+    from soxs.events import _write_spectrum
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
     try:
@@ -1110,13 +1113,25 @@ def simulate_gratings_spectrum(spec, instrument, exp_time, out_file, bkgnd=False
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
-    events = {"energy": np.array([])}
+    event_params = {}
+    event_params["RESPFILE"] = os.path.split(rmf.filename)[-1]
+    event_params["ANCRFILE"] = os.path.split(arf.filename)[-1]
+    event_params["TELESCOP"] = rmf.header["TELESCOP"]
+    event_params["INSTRUME"] = rmf.header["INSTRUME"]
+    event_params["MISSION"] = rmf.header.get("MISSION", "")
+
+    out_spec = np.zeros(rmf.n_ch)
+
+    if spec is not None:
+        cspec = ConvolvedSpectrum(spec, arf)
+        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng)
 
     if bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in gratings background.")
         instr_spec = instrument_backgrounds[instrument_spec["bkgnd"]]
-        e = instr_spec.generate_energies(exp_time, focal_length=instrument_spec["focal_length"],
-                                         prng=prng, quiet=True).value
-        events["energy"] = np.append(events["energy"], e)
+        out_spec += rmf.convolve_spectrum(instr_spec, exp_time, prng=prng)
 
-    _simulate_spectrum(spec, out_file, exp_time, events, arf, rmf, prng, overwrite)
+    bins = (np.arange(rmf.n_ch)+rmf.cmin).astype("int32")
+
+    _write_spectrum(bins, out_spec, exp_time, rmf.header["CHANTYPE"],
+                    event_params, out_file, overwrite=overwrite)
