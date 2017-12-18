@@ -172,24 +172,54 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
                            1.0, self.ebins.size - 1)
         return ConvolvedSpectrum(Spectrum(self.ebins.value, flux), arf)
 
-class GratingsBackgroundSpectrum(InstrumentalBackgroundSpectrum):
+class GratingsBackgroundSpectrum(BackgroundSpectrum):
     _units = "photon/(s*keV)"
 
-    def generate_energies(self, t_exp, focal_length=None,
-                          prng=None, quiet=False):
+    @classmethod
+    def from_file(cls, filename):
         """
-        Generate photon energies from this gratings 
-        background spectrum given an exposure time and 
+        Read an instrumental background spectrum from 
+        an ASCII or HDF5 file.
+
+        If ASCII: accepts a file with two columns,
+        the first being the center energy of the bin in 
+        keV and the second being the spectrum in the
+        appropriate units, assuming a linear binning 
+        with constant bin widths.
+
+        If HDF5: accepts a file with one array dataset, 
+        named "spectrum", which is the spectrum in the 
+        appropriate units, and two scalar datasets, 
+        "emin" and "emax", which are the minimum and 
+        maximum energies in keV.
+
+        Parameters
+        ----------
+        filename : string
+            The path to the file containing the spectrum.
+        """
+        if filename.endswith(".h5"):
+            f = h5py.File(filename)
+            flux = f["spectrum"].value
+            nbins = flux.size
+            ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
+            f.close()
+        else:
+            emid, flux = np.loadtxt(filename, unpack=True)
+            de = np.diff(emid)[0]
+            ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+        return cls(ebins, flux)
+
+    def generate_energies(self, t_exp, prng=None, quiet=False):
+        """
+        Generate photon energies from this gratings
+        background spectrum given an exposure time and
         effective area.
 
         Parameters
         ----------
         t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
-        focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The focal length in meters. Default is to use
-            the default focal length of the instrument
-            configuration.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
             A pseudo-random number generator. Typically will only 
             be specified if you have a reason to generate the same 
@@ -203,7 +233,6 @@ class GratingsBackgroundSpectrum(InstrumentalBackgroundSpectrum):
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
         rate = self.total_flux.value
-        rate *= (focal_length/self.default_focal_length)**2
         energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
         flux = np.sum(energy)*erg_per_keV/t_exp
         energies = Energies(energy, flux)
