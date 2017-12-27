@@ -55,7 +55,7 @@ class Spectrum(object):
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
-        self.func = InterpolatedUnivariateSpline(self.emid.value, self.flux.value)
+        self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
 
     def __add__(self, other):
         if self.nbins != other.nbins or \
