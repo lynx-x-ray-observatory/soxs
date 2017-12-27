@@ -141,7 +141,7 @@ def test_thermal():
 
 def test_thermal_from_spectrum():
 
-    prng = RandomState(65)
+    prng = RandomState(89)
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
