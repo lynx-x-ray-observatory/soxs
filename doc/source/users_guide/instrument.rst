@@ -565,6 +565,9 @@ required for such instruments:
                                             "imaging": False,
                                             "grating": True}
 
+For non-imaging instruments, ``"imaging"`` must be set to ``False``. For gratings 
+instruments, ``"grating"`` must be set to ``True``.
+
 .. _chips:
 
 Defining Instruments with Multiple Chips

@@ -424,18 +424,29 @@ optional ``redshift`` argument (default 0.0):
 Adding Emission Lines to a Spectrum
 -----------------------------------
 
-The :meth:`~soxs.Spectrum.add_emission_line` method adds a single emission
-line to an existing :class:`~soxs.spectra.Spectrum` object. The line energy,
-line width, and amplitude of the line (the line strength or integral under
-the curve) must be specified. 
+The :meth:`~soxs.Spectrum.add_emission_line` method adds a single Gaussian 
+emission line to an existing :class:`~soxs.spectra.Spectrum` object. The 
+line energy, line width, and amplitude of the line (the line strength or 
+integral under the curve) must be specified. The formula for the emission 
+line is:
+
+.. math::
+
+    f(E) = \frac{A}{\sqrt{2\pi\sigma^2}}\exp{\left[-\frac{(E-E_0)^2}{2\sigma^2}\right]}
+
+where :math:`E_0` is the line center and the line width is
+
+.. math::
+
+    {\rm FWHM} = 2\sqrt{2\ln{2}}\sigma
 
 .. code-block:: python
 
     spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
                                   10.0, 10000)
-    line_center = (6.0, "keV")
-    line_width = (30.0, "eV")
-    line_amp = (1.0e-7, "photon/s/cm**2")
+    line_center = (6.0, "keV") # "E_0" above
+    line_width = (30.0, "eV") # "FWHM" above
+    line_amp = (1.0e-7, "photon/s/cm**2") # "A" above
     spec.add_emission_line(line_center, line_width, line_amp)
 
 The line width may also be specified in units of velocity, if that is more convenient:
@@ -456,22 +467,48 @@ Currently, this functionality only supports emission lines with a Gaussian shape
 Adding Absorption Lines to a Spectrum
 -------------------------------------
 
-The :meth:`~soxs.Spectrum.add_absorption_line` method adds a single absorption
-line to an existing :class:`~soxs.spectra.Spectrum` object. The line energy,
-line width, and equivalent width of the line must be specified. 
+The :meth:`~soxs.Spectrum.add_absorption_line` method adds a single Gaussian 
+absorption line to an existing :class:`~soxs.spectra.Spectrum` object. The 
+line energy, line width, and equivalent width of the line must be specified. 
+The formula for the absorption line is given in terms of the optical depth
+:math:`\tau(E)`:
 
-.. code-block::
+.. math::
+
+    \tau(E) = \frac{B}{\sqrt{2\pi\sigma^2}}\exp{\left[-\frac{(E-E_0)^2}{2\sigma^2}\right]}
+
+where :math:`E_0` is the line center and the line width is
+
+.. math::
+
+    {\rm FWHM} = 2\sqrt{2\ln{2}}\sigma
+
+and the strength of the absorption :math:`B` is
+
+.. math::
+
+    B = E_0^2\frac{\rm EW}{hc}
+
+where :math:`{\rm EW}` is the equivalent width in angstroms. Then the unabsorbed 
+spectrum :math:`f_0(E)` is multiplied by the absorption like so to produce the 
+absorbed spectrum :math:`f(E)`:
+
+.. math::
+
+    f(E) = e^{-\tau(E)}f_0(E)
+
+.. code-block:: python
 
     spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
                                   10.0, 10000)
-    line_center = (1.0, "keV")
-    line_width = (30.0, "eV")
+    line_center = (1.0, "keV") # "E_0" above
+    line_width = (30.0, "eV") # "FWHM" above
     equiv_width = 2 # defaults to units of milli-Angstroms
     spec.add_absorption_line(line_center, line_width, equiv_width)
 
 The line width may also be specified in units of velocity, if that is more convenient:
 
-.. code-block::
+.. code-block:: python
 
     spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
                                   10.0, 10000)

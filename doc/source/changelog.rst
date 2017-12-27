@@ -8,8 +8,9 @@ Version 2.1.0
 
 This release of SOXS provides new features, bugfixes, and optimizations.
 
-* Generating spectra without imaging is now faster, especially for high-resolution
-  instruments such as microcalorimeters and gratings.
+* Generating spectra without imaging using (see :ref:`simulate-spectrum`) is now
+  faster, especially for high-resolution instruments such as microcalorimeters 
+  and gratings.
 * The default abundance table used when generating thermal spectra can now be set in
   the SOXS configuration file. See :ref:`solar-abund-tables` for more information.
 * Absorption lines can now be added to spectra. See :ref:`absorb_lines` for more
