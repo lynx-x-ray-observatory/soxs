@@ -671,12 +671,26 @@ class ApecGenerator(object):
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
-        if var_elem is None:
-            self.var_elem = []
-        else:
+        self.var_elem = []
+        self.var_elem_names = []
+        self.var_ion = []
+        if var_elem is not None:
+            if len(var_elem) != len(set(var_elem)):
+                raise RuntimeError("Duplicates were found in the \"var_elem\" list! %s" % var_elem)
+            for elem in var_elem:
+                if "^" in elem:
+                    el = elem.split("^")
+                    e = el[0]
+                    ion = int(el[1])
+                else:
+                    e = elem
+                    ion = 0
+                self.var_elem.append(elem_names.index(e))
+                self.var_ion.append(ion)
             self.var_elem = [elem_names.index(elem) for elem in var_elem]
-        self.var_elem.sort()
-        self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
+            self.var_elem.sort()
+            self.var_ion.sort(key=lambda x: self.var_elem)
+            self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
         self.num_var_elem = len(self.var_elem)
         self.cosmic_elem = [elem for elem in cosmic_elem 
                             if elem not in self.var_elem]
@@ -693,15 +707,18 @@ class ApecGenerator(object):
             self.atable = abund_tables[abund_table].copy()
         self.atable[1:] /= abund_tables["angr"][1:]
 
-    def _make_spectrum(self, kT, element, velocity, line_fields,
+    def _make_spectrum(self, kT, element, ion, velocity, line_fields,
                        coco_fields, scale_factor):
 
         tmpspec = np.zeros(self.nbins)
 
         if not self.nolines:
-            i = np.where((line_fields['element'] == element) &
-                         (line_fields['lambda'] > self.minlam) &
-                         (line_fields['lambda'] < self.maxlam))[0]
+            loc = (line_fields['element'] == element) & \
+                  (line_fields['lambda'] > self.minlam) & \
+                  (line_fields['lambda'] < self.maxlam)
+            if ion > 0:
+                loc &= (line_fields['ion_drv'] - 1 == ion)
+            i = np.where(loc)[0]
 
             E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
             amp = line_fields['epsilon'][i].astype("float64")*self.atable[element]
@@ -715,7 +732,8 @@ class ApecGenerator(object):
             tmpspec += vec
 
         ind = np.where((coco_fields['Z'] == element) &
-                       (coco_fields['rmJ'] == 0))[0]
+                       (coco_fields['rmJ'] == ion))[0]
+
         if len(ind) == 0:
             return tmpspec
         else:
@@ -740,7 +758,7 @@ class ApecGenerator(object):
     def _preload_data(self, index):
         line_data = self.line_handle[index+2].data
         coco_data = self.coco_handle[index+2].data
-        line_fields = ('element', 'lambda', 'epsilon')
+        line_fields = ('element', 'lambda', 'epsilon', 'ion_drv')
         coco_fields = ('Z', 'rmJ', 'N_Cont', 'E_Cont', 'Continuum',
                        'N_Pseudo','E_Pseudo', 'Pseudo')
         line_fields = {el: line_data.field(el) for el in line_fields}
@@ -759,18 +777,18 @@ class ApecGenerator(object):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H,He, and trace elements
             for elem in self.cosmic_elem:
-                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
+                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, 0, velocity, line_fields,
                                                   coco_fields, scale_factor)
             # Next do the metals
             for elem in self.metal_elem:
-                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, velocity, line_fields,
+                mspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, 0, velocity, line_fields,
                                                   coco_fields, scale_factor)
             # Now do any metals that we wanted to vary freely from the abund
             # parameter
             if self.num_var_elem > 0:
                 for j, elem in enumerate(self.var_elem):
-                    vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem, velocity, 
-                                                       line_fields, coco_fields, scale_factor)
+                    vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem, self.var_ion[j],
+                                                       velocity, line_fields, coco_fields, scale_factor)
         return cspec, mspec, vspec
 
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0,
