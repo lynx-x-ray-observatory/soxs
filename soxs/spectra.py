@@ -659,9 +659,14 @@ class ApecGenerator(object):
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         if apec_root is None:
             apec_root = soxs_files_path
-        neistr = "_nei" if nei else ""
-        self.cocofile = os.path.join(apec_root, "apec_v%s%s_coco.fits" % apec_vers, neistr)
-        self.linefile = os.path.join(apec_root, "apec_v%s%s_line.fits" % apec_vers, neistr)
+        if nei:
+            neistr = "_nei"
+            ftype = "comp"
+        else:
+            neistr = ""
+            ftype = "coco"
+        self.cocofile = os.path.join(apec_root, "apec_v%s%s_%s.fits" % (apec_vers, neistr, ftype))
+        self.linefile = os.path.join(apec_root, "apec_v%s%s_line.fits" % (apec_vers, neistr))
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
                                                                       self.linefile))
