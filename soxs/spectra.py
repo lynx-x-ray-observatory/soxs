@@ -630,6 +630,11 @@ class ApecGenerator(object):
         "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+    nei : boolean, optional
+        If True, use the non-equilibrium ionization tables. These are
+        not supplied with SOXS but must be downloaded separately, in
+        which case the *apec_root* parameter must also be set to their
+        location. Default: False
 
     Examples
     --------
@@ -639,6 +644,10 @@ class ApecGenerator(object):
     def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
                  apec_vers="3.0.9", broadening=True, nolines=False,
                  abund_table=None, nei=False):
+        if nei and apec_root is None:
+            raise RuntimeError("The NEI APEC tables are not supplied with "
+                               "SOXS! Download them from http://www.atomdb.org "
+                               "and set 'apec_root' to their location.")
         self.nei = nei
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
