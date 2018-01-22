@@ -637,8 +637,9 @@ class ApecGenerator(object):
     ...                            broadening=True)
     """
     def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
-                 apec_vers="3.0.8", broadening=True, nolines=False,
-                 abund_table=None):
+                 apec_vers="3.0.9", broadening=True, nolines=False,
+                 abund_table=None, nei=False):
+        self.nei = nei
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
         self.emin = emin
@@ -649,8 +650,9 @@ class ApecGenerator(object):
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         if apec_root is None:
             apec_root = soxs_files_path
-        self.cocofile = os.path.join(apec_root, "apec_v%s_coco.fits" % apec_vers)
-        self.linefile = os.path.join(apec_root, "apec_v%s_line.fits" % apec_vers)
+        neistr = "_nei" if nei else ""
+        self.cocofile = os.path.join(apec_root, "apec_v%s%s_coco.fits" % apec_vers, neistr)
+        self.linefile = os.path.join(apec_root, "apec_v%s%s_line.fits" % apec_vers, neistr)
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
                                                                       self.linefile))
@@ -758,7 +760,10 @@ class ApecGenerator(object):
     def _preload_data(self, index):
         line_data = self.line_handle[index+2].data
         coco_data = self.coco_handle[index+2].data
-        line_fields = ('element', 'lambda', 'epsilon', 'ion_drv')
+        line_fields = ['element', 'lambda', 'epsilon']
+        if self.nei:
+            line_fields.append('ion_drv')
+        line_fields = tuple(line_fields)
         coco_fields = ('Z', 'rmJ', 'N_Cont', 'E_Cont', 'Continuum',
                        'N_Pseudo','E_Pseudo', 'Pseudo')
         line_fields = {el: line_data.field(el) for el in line_fields}
