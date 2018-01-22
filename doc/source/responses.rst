@@ -40,7 +40,7 @@ For these ARFs, :math:`d` is the diameter of the outermost mirror shell, and
   * :math:`d` = 3 m, :math:`f` = 20 m: `xrs_mucal_3x20.arf <../soxs_responses/xrs_mucal_3x20.arf>`_
   * :math:`d` = 6 m, :math:`f` = 20 m: `xrs_mucal_6x20.arf <../soxs_responses/xrs_mucal_6x20.arf>`_
 
-* RMF: `xrs_mucal.rmf <xrs_mucal.rmf>`_
+* RMF: `xrs_mucal.rmf <../soxs_responses/xrs_mucal.rmf>`_
 
 CAT Gratings
 ++++++++++++
