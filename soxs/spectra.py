@@ -670,6 +670,8 @@ class ApecGenerator(object):
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
                                                                       self.linefile))
+        mylog.info("Using %s for generating spectral lines." % os.path.split(self.linefile)[-1])
+        mylog.info("Using %s for generating the continuum." % os.path.split(self.cocofile)[-1])
         self.nolines = nolines
         self.wvbins = hc/self.ebins[::-1]
         self.broadening = broadening
