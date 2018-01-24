@@ -706,7 +706,6 @@ class ApecGenerator(object):
                     el = elem.split("^")
                     e = el[0]
                     ion = int(el[1])
-                    self.var_ion_names.append(elem)
                 else:
                     if self.nei:
                         raise RuntimeError("Variable elements must include the ionization "
@@ -716,9 +715,10 @@ class ApecGenerator(object):
                 self.var_elem.append(elem_names.index(e))
                 self.var_ion.append(ion)
             self.var_elem.sort()
-            self.var_ion.sort(key=lambda x: self.var_elem)
-            self.var_ion_names.sort(key=lambda x: self.var_elem)
             self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
+            self.var_ion.sort(key=lambda x: (self.var_elem, x))
+            self.var_ion_names = ["%s^%d" % (e, i)
+                                  for e, i in zip(self.var_elem_names, self.var_ion)]
         self.num_var_elem = len(self.var_elem)
         if self.nei:
             self.cosmic_elem = [1, 2]
@@ -749,7 +749,7 @@ class ApecGenerator(object):
                   (line_fields['lambda'] > self.minlam) & \
                   (line_fields['lambda'] < self.maxlam)
             if ion > 0:
-                loc &= (line_fields['ion_drv'] - 1 == ion)
+                loc &= (line_fields['ion_drv'] == ion+1)
             i = np.where(loc)[0]
             E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
             amp = line_fields['epsilon'][i].astype("float64")*self.atable[element]
