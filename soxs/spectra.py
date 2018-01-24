@@ -648,6 +648,9 @@ class ApecGenerator(object):
             raise RuntimeError("The NEI APEC tables are not supplied with "
                                "SOXS! Download them from http://www.atomdb.org "
                                "and set 'apec_root' to their location.")
+        if nei and var_elem is None:
+            raise RuntimeError("For NEI spectra, you must specify which elements "
+                               "you want to vary using the 'var_elem' argument!")
         self.nei = nei
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
@@ -712,10 +715,14 @@ class ApecGenerator(object):
             self.var_ion.sort(key=lambda x: self.var_elem)
             self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
         self.num_var_elem = len(self.var_elem)
-        self.cosmic_elem = [elem for elem in cosmic_elem 
-                            if elem not in self.var_elem]
-        self.metal_elem = [elem for elem in metal_elem
-                           if elem not in self.var_elem]
+        if self.nei:
+            self.cosmic_elem = [1, 2]
+            self.metal_elem = []
+        else:
+            self.cosmic_elem = [elem for elem in cosmic_elem 
+                                if elem not in self.var_elem]
+            self.metal_elem = [elem for elem in metal_elem
+                               if elem not in self.var_elem]
         if abund_table is None:
             abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, string_types):
