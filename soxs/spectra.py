@@ -821,10 +821,23 @@ class ApecGenerator(object):
                                                        velocity, line_fields, coco_fields, scale_factor)
         return cspec, mspec, vspec
 
+    def _spectrum_init(self, kT, velocity, elem_abund):
+        kT = parse_value(kT, "keV")
+        velocity = parse_value(velocity, "km/s")
+        v = velocity*1.0e5
+        if set(elem_abund.keys()) != set(self.var_elem_names):
+            raise RuntimeError("The supplied set of abundances is not the "
+                               "same as that was originally set!\n"
+                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
+                                                                      set(self.var_elem_names)))
+        tindex = np.searchsorted(self.Tvals, kT)-1
+        dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
+        return kT, dT, tindex, v
+
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0,
                      elem_abund=None):
         """
-        Get a thermal emission spectrum.
+        Get a thermal emission spectrum assuming CIE.
 
         Parameters
         ----------
@@ -840,24 +853,17 @@ class ApecGenerator(object):
         velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
             The velocity broadening parameter, in units of 
             km/s. Default: 0.0
-        elem_abund : dict of element name, float pairs
-            A dictionary of elemental abundances to vary
-            freely of the abund parameter. Default: None
+        elem_abund : dict of element name, float pairs, optional
+            A dictionary of elemental abundances in solar
+            units to vary freely of the abund parameter. Default: None
         """
-        kT = parse_value(kT, "keV")
-        velocity = parse_value(velocity, "km/s")
-        v = velocity*1.0e5
+        if self.nei:
+            raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
         if elem_abund is None:
             elem_abund = {}
-        if set(elem_abund.keys()) != set(self.var_elem_names):
-            raise RuntimeError("The supplied set of abundances is not the "
-                               "same as that was originally set!\n"
-                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
-                                                                      set(self.var_elem_names)))
-        tindex = np.searchsorted(self.Tvals, kT)-1
+        kT, dT, tindex, v = self._spectrum_init(kT, velocity, elem_abund)
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
-        dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
         cspec, mspec, vspec = self._get_table([tindex, tindex+1], redshift, v)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT
