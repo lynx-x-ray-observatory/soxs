@@ -678,12 +678,11 @@ class ApecGenerator(object):
         try:
             self.line_handle = pyfits.open(self.linefile)
         except IOError:
-            raise IOError("LINE file %s does not exist" % self.linefile)
+            raise IOError("Line file %s does not exist" % self.linefile)
         try:
             self.coco_handle = pyfits.open(self.cocofile)
         except IOError:
-            raise IOError("COCO file %s does not exist" % self.cocofile)
-
+            raise IOError("Continuum file %s does not exist" % self.cocofile)
         self.Tvals = self.line_handle[1].data.field("kT")
         self.nT = len(self.Tvals)
         self.dTvals = np.diff(self.Tvals)
