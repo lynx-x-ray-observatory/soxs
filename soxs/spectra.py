@@ -694,6 +694,7 @@ class ApecGenerator(object):
         self.var_elem = []
         self.var_elem_names = []
         self.var_ion = []
+        self.var_ion_names = []
         if var_elem is not None:
             if len(var_elem) != len(set(var_elem)):
                 raise RuntimeError("Duplicates were found in the \"var_elem\" list! %s" % var_elem)
@@ -705,14 +706,18 @@ class ApecGenerator(object):
                     el = elem.split("^")
                     e = el[0]
                     ion = int(el[1])
+                    self.var_ion_names.append(elem)
                 else:
+                    if self.nei:
+                        raise RuntimeError("Variable elements must include the ionization "
+                                           "state for NEI plasmas!")
                     e = elem
                     ion = 0
                 self.var_elem.append(elem_names.index(e))
                 self.var_ion.append(ion)
-            self.var_elem = [elem_names.index(elem) for elem in var_elem]
             self.var_elem.sort()
             self.var_ion.sort(key=lambda x: self.var_elem)
+            self.var_ion_names.sort(key=lambda x: self.var_elem)
             self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
         self.num_var_elem = len(self.var_elem)
         if self.nei:
@@ -825,11 +830,6 @@ class ApecGenerator(object):
         kT = parse_value(kT, "keV")
         velocity = parse_value(velocity, "km/s")
         v = velocity*1.0e5
-        if set(elem_abund.keys()) != set(self.var_elem_names):
-            raise RuntimeError("The supplied set of abundances is not the "
-                               "same as that was originally set!\n"
-                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
-                                                                      set(self.var_elem_names)))
         tindex = np.searchsorted(self.Tvals, kT)-1
         dT = (kT-self.Tvals[tindex])/self.dTvals[tindex]
         return kT, dT, tindex, v
@@ -861,6 +861,11 @@ class ApecGenerator(object):
             raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
         if elem_abund is None:
             elem_abund = {}
+        if set(elem_abund.keys()) != set(self.var_elem_names):
+            raise RuntimeError("The supplied set of abundances is not the "
+                               "same as that was originally set!\n"
+                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
+                                                                      set(self.var_elem_names)))
         kT, dT, tindex, v = self._spectrum_init(kT, velocity, elem_abund)
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
@@ -897,13 +902,18 @@ class ApecGenerator(object):
         """
         if not self.nei:
             raise RuntimeError("Use 'get_spectrum' for CIE spectra!")
+        if set(elem_abund.keys()) != set(self.var_ion_names):
+            raise RuntimeError("The supplied set of abundances is not the "
+                               "same as that was originally set!\n"
+                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
+                                                                      set(self.var_ion_names)))
         kT, dT, tindex, v = self._spectrum_init(kT, velocity, elem_abund)
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
         cspec, _, vspec = self._get_table([tindex, tindex+1], redshift, v)
         spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         for elem, eabund in elem_abund.items():
-            j = self.var_elem_names.index(elem)
+            j = self.var_ion_names.index(elem)
             spec += eabund*(vspec[j,0,:]*(1.-dT) + vspec[j,1,:]*dT)
         spec = 1.0e14*norm*spec/self.de
         return Spectrum(self.ebins, spec)
