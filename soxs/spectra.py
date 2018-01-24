@@ -751,7 +751,6 @@ class ApecGenerator(object):
             if ion > 0:
                 loc &= (line_fields['ion_drv'] - 1 == ion)
             i = np.where(loc)[0]
-
             E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
             amp = line_fields['epsilon'][i].astype("float64")*self.atable[element]
             if self.broadening:
@@ -810,9 +809,14 @@ class ApecGenerator(object):
             vspec = np.zeros((self.num_var_elem, numi, self.nbins))
         for i, ikT in enumerate(indices):
             line_fields, coco_fields = self._preload_data(ikT)
-            # First do H,He, and trace elements
+            # First do H, He, and trace elements
             for elem in self.cosmic_elem:
-                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, 0, velocity, line_fields,
+                if self.nei:
+                    # For H, He we assume fully ionized
+                    ion = elem
+                else:
+                    ion = 0
+                cspec[i,:] += self._make_spectrum(self.Tvals[ikT], elem, ion, velocity, line_fields,
                                                   coco_fields, scale_factor)
             # Next do the metals
             for elem in self.metal_elem:
