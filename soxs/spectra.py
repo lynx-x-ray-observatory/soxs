@@ -696,6 +696,9 @@ class ApecGenerator(object):
                 raise RuntimeError("Duplicates were found in the \"var_elem\" list! %s" % var_elem)
             for elem in var_elem:
                 if "^" in elem:
+                    if not self.nei:
+                        raise RuntimeError("Cannot use different ionization states with a "
+                                           "CIE plasma!")
                     el = elem.split("^")
                     e = el[0]
                     ion = int(el[1])
