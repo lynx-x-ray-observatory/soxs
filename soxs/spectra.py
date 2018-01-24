@@ -750,7 +750,7 @@ class ApecGenerator(object):
             tmpspec += vec
 
         ind = np.where((coco_fields['Z'] == element) &
-                       (coco_fields['rmJ'] == ion))[0]
+                       (coco_fields['rmJ'] == ion+int(self.nei)))[0]
 
         if len(ind) == 0:
             return tmpspec
