@@ -875,6 +875,39 @@ class ApecGenerator(object):
         spec = 1.0e14*norm*spec/self.de
         return Spectrum(self.ebins, spec)
 
+    def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
+        """
+        Get a thermal emission spectrum assuming NEI.
+
+        Parameters
+        ----------
+        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The temperature in keV.
+        elem_abund : dict of element name, float pairs
+            A dictionary of elemental abundances in solar 
+            units to vary freely of the abund parameter.
+        redshift : float
+            The redshift.
+        norm : float
+            The normalization of the model, in the standard
+            Xspec units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
+        velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The velocity broadening parameter, in units of 
+            km/s. Default: 0.0
+        """
+        if not self.nei:
+            raise RuntimeError("Use 'get_spectrum' for CIE spectra!")
+        kT, dT, tindex, v = self._spectrum_init(kT, velocity, elem_abund)
+        if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
+            return np.zeros(self.nbins)
+        cspec, _, vspec = self._get_table([tindex, tindex+1], redshift, v)
+        spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
+        for elem, eabund in elem_abund.items():
+            j = self.var_elem_names.index(elem)
+            spec += eabund*(vspec[j,0,:]*(1.-dT) + vspec[j,1,:]*dT)
+        spec = 1.0e14*norm*spec/self.de
+        return Spectrum(self.ebins, spec)
+
 
 def wabs_cross_section(E):
     emax = np.array([0.0, 0.1, 0.284, 0.4, 0.532, 0.707, 0.867, 1.303, 1.840, 
