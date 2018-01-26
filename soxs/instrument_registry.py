@@ -320,7 +320,7 @@ def write_instrument_json(inst_name, filename):
     fp.close()
 
 def make_simple_instrument(base_inst, new_inst, fov, num_pixels,
-                           no_bkgnd=False, no_psf=False):
+                           no_bkgnd=False, no_psf=False, no_dither=False):
     """
     Using an existing imaging instrument specification, 
     make a simple square instrument given a field of view 
@@ -343,6 +343,9 @@ def make_simple_instrument(base_inst, new_inst, fov, num_pixels,
     no_psf : boolean, optional
         Set this new instrument to have no spatial PSF. 
         Default: False
+    no_dither : boolean, optional
+        Set this new instrument to have no dithering. 
+        Default: False
     """
     sq_inst = get_instrument_from_registry(base_inst)
     if sq_inst["imaging"] is False:
@@ -359,4 +362,5 @@ def make_simple_instrument(base_inst, new_inst, fov, num_pixels,
         sq_inst["bkgnd"] = "aciss"
     if no_psf:
         sq_inst["psf"] = None
+    sq_inst["dither"] = not no_dither
     add_instrument_to_registry(sq_inst)
