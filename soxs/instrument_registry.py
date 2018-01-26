@@ -362,5 +362,6 @@ def make_simple_instrument(base_inst, new_inst, fov, num_pixels,
         sq_inst["bkgnd"] = "aciss"
     if no_psf:
         sq_inst["psf"] = None
-    sq_inst["dither"] = not no_dither
+    if sq_inst["dither"]:
+        sq_inst["dither"] = not no_dither
     add_instrument_to_registry(sq_inst)
