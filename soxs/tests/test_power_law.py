@@ -42,8 +42,8 @@ def plaw_fit(alpha_sim):
 
     exp_time = (50.0, "ks")
     area = 40000.0
-    make_simple_instrument("athena_xifu", "new_xifu", 20.0, 1024)
-    inst_name = "new_xifu"
+    make_simple_instrument("hdxi", "new_hdxi", 20.0, 1024)
+    inst_name = "new_hdxi"
 
     spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 20000)
     spec.apply_foreground_absorption(nH_sim, model="tbabs")
