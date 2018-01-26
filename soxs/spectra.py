@@ -693,7 +693,6 @@ class ApecGenerator(object):
         self.maxlam = self.wvbins.max()
         self.var_elem = []
         self.var_elem_names = []
-        self.var_ion = []
         self.var_ion_names = []
         if var_elem is not None:
             if len(var_elem) != len(set(var_elem)):
@@ -712,22 +711,19 @@ class ApecGenerator(object):
                                            "state for NEI plasmas!")
                     e = elem
                     ion = 0
-                self.var_elem.append(elem_names.index(e))
-                self.var_ion.append(ion)
-            self.var_elem.sort()
-            self.var_elem_names = [elem_names[elem] for elem in self.var_elem]
-            self.var_ion.sort(key=lambda x: (self.var_elem, x))
-            self.var_ion_names = ["%s^%d" % (e, i)
-                                  for e, i in zip(self.var_elem_names, self.var_ion)]
+                self.var_elem.append([elem_names.index(e), ion])
+            self.var_elem.sort(key=lambda x: (x[0], x[1]))
+            self.var_elem_names = [elem_names[e[0]] for e in self.var_elem]
+            self.var_ion_names = ["%s^%d" % (elem_names[e[0]], e[1]) for e in self.var_elem]
         self.num_var_elem = len(self.var_elem)
         if self.nei:
             self.cosmic_elem = [1, 2]
             self.metal_elem = []
         else:
             self.cosmic_elem = [elem for elem in cosmic_elem 
-                                if elem not in self.var_elem]
+                                if elem not in self.var_elem[:,0]]
             self.metal_elem = [elem for elem in metal_elem
-                               if elem not in self.var_elem]
+                               if elem not in self.var_elem[:,0]]
         if abund_table is None:
             abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, string_types):
@@ -826,7 +822,7 @@ class ApecGenerator(object):
             # parameter
             if self.num_var_elem > 0:
                 for j, elem in enumerate(self.var_elem):
-                    vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem, self.var_ion[j],
+                    vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem[0], elem[1],
                                                        velocity, line_fields, coco_fields, scale_factor)
         return cspec, mspec, vspec
 
