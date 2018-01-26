@@ -319,7 +319,8 @@ def write_instrument_json(inst_name, filename):
     json.dump(inst_dict, fp, indent=4)
     fp.close()
 
-def make_square_instrument(base_inst, new_inst, fov, num_pixels):
+def make_simple_instrument(base_inst, new_inst, fov, num_pixels,
+                           no_bkgnd=False, no_psf=False):
     """
     Using an existing imaging instrument specification, 
     make a simple square instrument given a field of view 
@@ -336,6 +337,12 @@ def make_square_instrument(base_inst, new_inst, fov, num_pixels):
         The field of view in arcminutes.
     num_pixels : integer
         The number of pixels on a side.
+    no_bkgnd : boolean, optional
+        Set this new instrument to have no particle background. 
+        Default: False
+    no_psf : boolean, optional
+        Set this new instrument to have no spatial PSF. 
+        Default: False
     """
     sq_inst = get_instrument_from_registry(base_inst)
     if sq_inst["imaging"] is False:
@@ -345,4 +352,11 @@ def make_square_instrument(base_inst, new_inst, fov, num_pixels):
     sq_inst["chips"] = None
     sq_inst["fov"] = parse_value(fov, "arcmin")
     sq_inst["num_pixels"] = num_pixels
+    if no_bkgnd:
+        sq_inst["bkgnd"] = None
+    elif base_inst.startswith("aciss"):
+        # Special-case ACIS-S to use the BI background on S3
+        sq_inst["bkgnd"] = "aciss"
+    if no_psf:
+        sq_inst["psf"] = None
     add_instrument_to_registry(sq_inst)
