@@ -24,7 +24,8 @@ from soxs.instrument_registry import \
     show_instrument_registry, \
     write_instrument_json, \
     get_instrument_from_registry, \
-    instrument_registry
+    instrument_registry, \
+    make_square_instrument
 
 from soxs.spatial import \
     PointSourceModel, \

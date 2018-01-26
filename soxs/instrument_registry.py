@@ -1,7 +1,8 @@
 from __future__ import print_function
 import json
-from soxs.utils import mylog
+from soxs.utils import mylog, parse_value
 import os
+from copy import deepcopy
 
 # The Instrument Registry
 
@@ -289,7 +290,7 @@ def get_instrument_from_registry(name):
     Returns a copy of the instrument specification
     corresponding to *name*.
     """
-    return instrument_registry[name].copy()
+    return deepcopy(instrument_registry[name])
 
 def show_instrument_registry():
     """
@@ -317,3 +318,31 @@ def write_instrument_json(inst_name, filename):
     fp = open(filename, 'w')
     json.dump(inst_dict, fp, indent=4)
     fp.close()
+
+def make_square_instrument(base_inst, new_inst, fov, num_pixels):
+    """
+    Using an existing imaging instrument specification, 
+    make a simple square instrument given a field of view 
+    and a resolution.
+
+    Parameters
+    ----------
+    base_inst : string
+        The name for the instrument specification to base the 
+        new one on.
+    new_inst : string
+        The name for the new instrument specification.
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The field of view in arcminutes.
+    num_pixels : integer
+        The number of pixels on a side.
+    """
+    sq_inst = get_instrument_from_registry(base_inst)
+    if sq_inst["imaging"] is False:
+        raise RuntimeError("make_square_instrument only works with "
+                           "imaging instruments!")
+    sq_inst["name"] = new_inst
+    sq_inst["chips"] = None
+    sq_inst["fov"] = parse_value(fov, "arcmin")
+    sq_inst["num_pixels"] = num_pixels
+    add_instrument_to_registry(sq_inst)
