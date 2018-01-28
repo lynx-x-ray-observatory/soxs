@@ -713,11 +713,13 @@ class ApecGenerator(object):
                     ion = 0
                 self.var_elem.append([elem_names.index(e), ion])
             self.var_elem.sort(key=lambda x: (x[0], x[1]))
+            self.var_elem = np.array(self.var_elem)
             self.var_elem_names = [elem_names[e[0]] for e in self.var_elem]
             self.var_ion_names = ["%s^%d" % (elem_names[e[0]], e[1]) for e in self.var_elem]
         self.num_var_elem = len(self.var_elem)
         if self.nei:
-            self.cosmic_elem = [1, 2]
+            self.cosmic_elem = [elem for elem in [1, 2]
+                                if elem not in self.var_elem[:, 0]]
             self.metal_elem = []
         else:
             self.cosmic_elem = [elem for elem in cosmic_elem 
