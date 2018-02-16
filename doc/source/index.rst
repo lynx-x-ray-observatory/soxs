@@ -91,7 +91,7 @@ Contributors
 
 * John ZuHone (CfA)
 * Scott Randall (CfA)
-* Felipe Santos (CfA)
+* Felipe Andrade-Santos (CfA)
 * Herve Bourdin (CfA)
 * Alexey Vikhlinin (CfA)
 * Reinout Van Weeren (CfA)
