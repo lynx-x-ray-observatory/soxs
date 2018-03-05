@@ -642,8 +642,10 @@ class ApecGenerator(object):
     ...                            broadening=True)
     """
     def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
-                 apec_vers="3.0.9", broadening=True, nolines=False,
+                 apec_vers=None, broadening=True, nolines=False,
                  abund_table=None, nei=False):
+        if apec_vers is None:
+            apec_vers = "3.0.9"
         if nei and apec_root is None:
             raise RuntimeError("The NEI APEC tables are not supplied with "
                                "SOXS! Download them from http://www.atomdb.org "
