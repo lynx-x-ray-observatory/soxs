@@ -691,10 +691,12 @@ class ApecGenerator(object):
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
-        self.var_elem = []
         self.var_elem_names = []
         self.var_ion_names = []
-        if var_elem is not None:
+        if var_elem is None:
+            self.var_elem = np.empty((0,1), dtype='int')
+        else:
+            self.var_elem = []
             if len(var_elem) != len(set(var_elem)):
                 raise RuntimeError("Duplicates were found in the \"var_elem\" list! %s" % var_elem)
             for elem in var_elem:
@@ -713,7 +715,7 @@ class ApecGenerator(object):
                     ion = 0
                 self.var_elem.append([elem_names.index(e), ion])
             self.var_elem.sort(key=lambda x: (x[0], x[1]))
-            self.var_elem = np.array(self.var_elem)
+            self.var_elem = np.array(self.var_elem, dtype='int')
             self.var_elem_names = [elem_names[e[0]] for e in self.var_elem]
             self.var_ion_names = ["%s^%d" % (elem_names[e[0]], e[1]) for e in self.var_elem]
         self.num_var_elem = len(self.var_elem)
