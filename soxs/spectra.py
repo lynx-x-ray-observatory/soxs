@@ -735,7 +735,8 @@ class ApecGenerator(object):
             self.atable = np.concatenate([[0.0], np.array(abund_table)])
         else:
             self.atable = abund_tables[abund_table].copy()
-        self.atable[1:] /= abund_tables["angr"][1:]
+        self._atable = self.atable.copy()
+        self._atable[1:] /= abund_tables["angr"][1:]
 
     def _make_spectrum(self, kT, element, ion, velocity, line_fields,
                        coco_fields, scale_factor):
@@ -750,7 +751,7 @@ class ApecGenerator(object):
                 loc &= (line_fields['ion_drv'] == ion+1)
             i = np.where(loc)[0]
             E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
-            amp = line_fields['epsilon'][i].astype("float64")*self.atable[element]
+            amp = line_fields['epsilon'][i].astype("float64")*self._atable[element]
             if self.broadening:
                 sigma = 2.*kT*erg_per_keV/(atomic_weights[element]*m_u)
                 sigma += 2.0*velocity*velocity
@@ -772,13 +773,13 @@ class ApecGenerator(object):
 
         n_cont = coco_fields['N_Cont'][ind]
         e_cont = coco_fields['E_Cont'][ind][:n_cont]*scale_factor
-        continuum = coco_fields['Continuum'][ind][:n_cont]*self.atable[element]
+        continuum = coco_fields['Continuum'][ind][:n_cont]*self._atable[element]
 
         tmpspec += np.interp(self.emid, e_cont, continuum)*de0
 
         n_pseudo = coco_fields['N_Pseudo'][ind]
         e_pseudo = coco_fields['E_Pseudo'][ind][:n_pseudo]*scale_factor
-        pseudo = coco_fields['Pseudo'][ind][:n_pseudo]*self.atable[element]
+        pseudo = coco_fields['Pseudo'][ind][:n_pseudo]*self._atable[element]
 
         tmpspec += np.interp(self.emid, e_pseudo, pseudo)*de0
 
