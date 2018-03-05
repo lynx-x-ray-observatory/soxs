@@ -19,6 +19,7 @@ from soxs.instrument import AuxiliaryResponseFile
 from six import string_types
 from astropy.modeling.functional_models import \
     Gaussian1D
+import glob
 
 
 class Energies(u.Quantity):
@@ -645,7 +646,10 @@ class ApecGenerator(object):
                  apec_vers=None, broadening=True, nolines=False,
                  abund_table=None, nei=False):
         if apec_vers is None:
-            apec_vers = "3.0.9"
+            filedir = os.path.join(os.path.dirname(__file__), 'files')
+            cfile = glob.glob("%s/apec_*_coco.fits" % filedir)[0]
+            apec_vers = cfile.split("_")[1][1:]
+        mylog.info("Using APEC version %s." % apec_vers)
         if nei and apec_root is None:
             raise RuntimeError("The NEI APEC tables are not supplied with "
                                "SOXS! Download them from http://www.atomdb.org "
