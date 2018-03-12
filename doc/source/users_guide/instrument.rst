@@ -638,3 +638,45 @@ whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
                                           "psf": ["gaussian", 5.0],
                                           "imaging": True,
                                           "grating": False}
+
+.. _simple-instruments:
+
+Making Simple Square-Shaped Instruments
++++++++++++++++++++++++++++++++++++++++
+
+One may want to simulate a particular instrumental energy response for 
+an imaging observation, but you may not want to deal with the 
+complicating factors of multiple chips, PSF, background, or dithering. The 
+function :func:`~soxs.instrument_registry.make_simple_instrument` has 
+been provided to create simple, square-shaped instruments without chip 
+gaps to facilitate this possibility.
+
+By default, square instruments are created with a specified field of view and
+resolution. Turning off the instrumental b
+To create a simple *Chandra*/ACIS-I-like instrument with a new field of view and
+spatial resolution:
+
+.. code-block:: python
+
+    fov = 20.0 # defaults to arcmin
+    num_pixels = 2048
+    make_simple_instrument("acisi_cy19", "simple_acisi", fov, num_pixels)
+
+To create the same instrument but to additionally turn off the dither:
+
+.. code-block:: python
+
+    fov = 20.0 # defaults to arcmin
+    num_pixels = 2048
+    make_simple_instrument("acisi_cy19", "simple_acisi", fov, num_pixels,
+                           no_dither=True)
+
+To create a simple *Athena*/XIFU-like instrument without the background and with
+no PSF:
+
+.. code-block:: python
+
+    fov = (1024, "arcsec")
+    num_pixels = 2048
+    make_simple_instrument("athena_xifu", "simple_xifu", fov, num_pixels,
+                           no_bkgnd=True, no_psf=True)

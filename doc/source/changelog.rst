@@ -15,6 +15,9 @@ This release of SOXS provides new features, bugfixes, and optimizations.
   the SOXS configuration file. See :ref:`solar-abund-tables` for more information.
 * Absorption lines can now be added to spectra. See :ref:`absorb_lines` for more
   information.
+* A new function for generating a simple imaging instrument based on an existing
+  instrument specification has been added. See :ref:`simple-instruments` for more
+  information. 
 
 Version 2.0.0
 -------------
