@@ -214,6 +214,16 @@ class BetaModel(RadialFunctionModel):
         super(BetaModel, self).__init__(ra0, dec0, func, theta=theta, 
                                         ellipticity=ellipticity)
 
+class DoubleBetaModel(RadialFunctionModel):
+    def __init__(self, ra0, dec0, r_c1, beta1, r_c2, beta2, sb_ratio,
+                 theta=0.0, ellipticity=1.0):
+        r_c1 = parse_value(r_c1, "arcsec")
+        r_c2 = parse_value(r_c2, "arcsec")
+        func = lambda r: (1.0+(r/r_c1)**2)**(-3*beta1+0.5) + \
+                         sb_ratio*(1.0+(r/r_c2)**2)**(-3*beta2+0.5)
+        super(DoubleBetaModel, self).__init__(ra0, dec0, func, theta=theta,
+                                              ellipticity=ellipticity)
+
 class AnnulusModel(RadialFunctionModel):
     """
     A model for positions of photons within an annulus shape 
