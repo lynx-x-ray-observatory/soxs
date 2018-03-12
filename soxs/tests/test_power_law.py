@@ -17,6 +17,8 @@ from sherpa.astro.ui import load_user_model, add_user_pars, \
     covar, get_covar_results, set_covar_opt
 from numpy.random import RandomState
 
+make_simple_instrument("hdxi", "new_hdxi", 20.0, 1024)
+
 prng = RandomState(69)
 
 def mymodel(pars, x, xhi=None):
@@ -42,7 +44,6 @@ def plaw_fit(alpha_sim):
 
     exp_time = (50.0, "ks")
     area = 40000.0
-    make_simple_instrument("hdxi", "new_hdxi", 20.0, 1024)
     inst_name = "new_hdxi"
 
     spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 20000)
