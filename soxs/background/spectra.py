@@ -3,6 +3,7 @@ from soxs.spectra import Spectrum, ConvolvedSpectrum, \
     _generate_energies, Energies
 from soxs.constants import erg_per_keV
 from soxs.utils import parse_prng, parse_value
+from soxs.instrument import AuxiliaryResponseFile
 import h5py
 
 class BackgroundSpectrum(Spectrum):
@@ -72,6 +73,14 @@ class BackgroundSpectrum(Spectrum):
         fov = parse_value(fov, "arcmin")
         flux = self.flux.value*fov*fov
         return Spectrum(self.ebins.value, flux)
+
+    def __mul__(self, other):
+        if isinstance(other, AuxiliaryResponseFile):
+            return ConvolvedBackgroundSpectrum(self, other)
+        else:
+            return BackgroundSpectrum(self.ebins, other*self.flux)
+
+    __rmul__  = __mul__
 
 class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
@@ -171,6 +180,15 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         arf = FlatResponse(self.ebins.value[0], self.ebins.value[-1],
                            1.0, self.ebins.size-1)
         return ConvolvedSpectrum(Spectrum(self.ebins.value, flux), arf)
+
+    def __mul__(self, other):
+        if isinstance(other, AuxiliaryResponseFile):
+            raise NotImplementedError
+        else:
+            return InstrumentalBackgroundSpectrum(self.ebins, other*self.flux,
+                                                  self.default_focal_length)
+
+    __rmul__  = __mul__
 
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
