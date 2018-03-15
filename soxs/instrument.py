@@ -194,6 +194,7 @@ class RedistributionMatrixFile(object):
         self.weights = np.array([w.sum() for w in self.data["MATRIX"]])
         self.elo = self.data["ENERG_LO"]
         self.ehi = self.data["ENERG_HI"]
+        self.ebins = np.append(self.data["ENERG_LO"], self.data["ENERG_HI"][-1])
         self.emid = 0.5*(self.elo+self.ehi)
         self.de = self.ehi-self.elo
         self.n_e = self.elo.size
@@ -284,8 +285,8 @@ class RedistributionMatrixFile(object):
     def convolve_spectrum(self, cspec, exp_time, prng=None):
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
-        spec = cspec(self.emid).value * exp_time * self.de
-        np.clip(spec, 0.0, None, out=spec)
+        counts = cspec.flux.value * exp_time * cspec.de.value
+        spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
         for k in range(self.n_e):
