@@ -18,6 +18,9 @@ This release of SOXS provides new features, bugfixes, and optimizations.
 * A new function for generating a simple imaging instrument based on an existing
   instrument specification has been added. See :ref:`simple-instruments` for more
   information. 
+* A bug that prevented the multiplication of a
+  :class:`~soxs.background.spectra.BackgroundSpectrum` object by a constant has
+  been fixed.
 
 Version 2.0.0
 -------------
