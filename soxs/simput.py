@@ -151,9 +151,9 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
         Set to True to overwrite previous files. Default: False
     """
     # Make sure these are arrays
-    energy = np.array(energy)
-    ra = np.array(ra)
-    dec = np.array(dec)
+    energy = np.asarray(energy)
+    ra = np.asarray(ra)
+    dec = np.asarray(dec)
     if hasattr(flux, "value"):
         flux = flux.value
 
