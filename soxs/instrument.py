@@ -52,6 +52,28 @@ class AuxiliaryResponseFile(object):
         self.max_area = self.eff_area.max()
         f.close()
 
+    @classmethod
+    def from_instrument(cls, name):
+        """
+        Return an :class:`~soxs.instrument.AuxiliaryResponseFile`
+        object from the name of an existing instrument
+        specification in SOXS.
+
+        Parameters
+        ----------
+        name : string
+            The name of the instrument specification to use 
+            to obtain the ARF object from.
+
+        Examples
+        --------
+        >>> arf = soxs.AuxiliaryResponseFile.from_instrument("hdxi")
+        """
+        instr = instrument_registry.get(name, None)
+        if instr is None:
+            raise KeyError("Instrument '%s' not in registry!" % name)
+        return cls(instr["arf"])
+
     def __str__(self):
         return self.filename
 
@@ -136,9 +158,10 @@ class AuxiliaryResponseFile(object):
         ax.set_ylabel("$\mathrm{A\ (cm^2)}$")
         return fig, ax
 
+
 class FlatResponse(AuxiliaryResponseFile):
     """
-    A flat effective area response. 
+    A flat effective area response.
 
     Parameters
     ----------
@@ -206,6 +229,28 @@ class RedistributionMatrixFile(object):
                 break
         self.cmin = self.header.get("TLMIN%d" % num, 1)
         self.cmax = self.header.get("TLMAX%d" % num, self.n_ch)
+
+    @classmethod
+    def from_instrument(cls, name):
+        """
+        Return an :class:`~soxs.instrument.RedistributionMatrixFile`
+        object from the name of an existing instrument
+        specification in SOXS.
+
+        Parameters
+        ----------
+        name : string
+            The name of the instrument specification to use 
+            to obtain the RMF object from.
+
+        Examples
+        --------
+        >>> arf = soxs.RedistributionMatrixFile.from_instrument("hdxi")
+        """
+        instr = instrument_registry.get(name, None)
+        if instr is None:
+            raise KeyError("Instrument '%s' not in registry!" % name)
+        return cls(instr["rmf"])
 
     @property
     def data(self):
