@@ -285,12 +285,16 @@ def add_instrument_to_registry(inst_spec):
     mylog.debug("The %s instrument specification has been added to the instrument registry." % name)
     return name
 
+
 def get_instrument_from_registry(name):
     """
     Returns a copy of the instrument specification
     corresponding to *name*.
     """
+    if name not in instrument_registry:
+        raise KeyError("Instrument '%s' not in registry!" % name)
     return deepcopy(instrument_registry[name])
+
 
 def show_instrument_registry():
     """
@@ -300,6 +304,7 @@ def show_instrument_registry():
         print("Instrument: %s" % name)
         for k, v in spec.items():
             print("    %s: %s" % (k, v))
+
 
 def write_instrument_json(inst_name, filename):
     """
@@ -318,6 +323,7 @@ def write_instrument_json(inst_name, filename):
     fp = open(filename, 'w')
     json.dump(inst_dict, fp, indent=4)
     fp.close()
+
 
 def make_simple_instrument(base_inst, new_inst, fov, num_pixels,
                            no_bkgnd=False, no_psf=False, no_dither=False):
