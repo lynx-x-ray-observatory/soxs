@@ -755,7 +755,7 @@ class ApecGenerator(object):
             loc = (line_fields['element'] == element) & \
                   (line_fields['lambda'] > self.minlam) & \
                   (line_fields['lambda'] < self.maxlam)
-            if ion > 0:
+            if self.nei:
                 loc &= (line_fields['ion_drv'] == ion+1)
             i = np.where(loc)[0]
             E0 = hc/line_fields['lambda'][i].astype("float64")*scale_factor
