@@ -671,7 +671,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 
 def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                   ymin=None, ymax=None, xscale=None, yscale=None, 
-                  label=None, fontsize=18, fig=None, ax=None, **kwargs):
+                  label=None, fontsize=18, fig=None, ax=None, 
+                  plot_counts=False, **kwargs):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure and axis is returned.
@@ -713,6 +714,9 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     ax : :class:`~matplotlib.axes.Axes`, optional
         An Axes instance to plot in. Default: None, one will be
         created if not provided.
+    plot_counts : boolean, optional
+        If set to True, the counts instead of the count rate will
+        be plotted. Default: False
 
     Returns
     -------
@@ -737,11 +741,15 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     else:
         x = hdu.data[chantype]
         xlabel = "Channel (%s)" % chantype
-    if "COUNT_RATE" in hdu.columns.names:
-        y = hdu.data["COUNT_RATE"]
+    if plot_counts:
+        y = hdu.data["COUNTS"].astype("float64")
+        yerr = np.sqrt(y)
     else:
-        y = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]
-    yerr = np.sqrt(hdu.data["COUNTS"])/hdu.header["EXPOSURE"]
+        if "COUNT_RATE" in hdu.columns.names:
+            y = hdu.data["COUNT_RATE"]
+        else:
+            y = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]
+        yerr = np.sqrt(hdu.data["COUNTS"])/hdu.header["EXPOSURE"]
     if plot_energy:
         yunit = "keV"
         y /= 2.0*xerr
@@ -769,6 +777,10 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
     ax.set_xlabel(xlabel, fontsize=fontsize)
-    ax.set_ylabel("Count Rate (counts/s/%s)" % yunit, fontsize=fontsize)
+    if plot_counts:
+        ylabel = "Counts (counts/%s)"
+    else:
+        ylabel = "Count Rate (counts/s/%s)"
+    ax.set_ylabel(ylabel % yunit, fontsize=fontsize)
     ax.tick_params(axis='both', labelsize=fontsize)
     return fig, ax
