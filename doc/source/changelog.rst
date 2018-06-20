@@ -6,8 +6,10 @@ ChangeLog
 Version 2.1.0
 -------------
 
-This release of SOXS provides new features, bugfixes, and optimizations.
+This release of SOXS provides new features, bugfixes, optimizations, and other
+improvements.
 
+* The 2.1.x series of SOXS will be the last to support Python 2.7.
 * Generating spectra without imaging using (see :ref:`simulate-spectrum`) is now
   faster, especially for high-resolution instruments such as microcalorimeters 
   and gratings.
@@ -21,6 +23,12 @@ This release of SOXS provides new features, bugfixes, and optimizations.
 * A bug that prevented the multiplication of a
   :class:`~soxs.background.spectra.BackgroundSpectrum` object by a constant has
   been fixed.
+* New convenience methods for generating :class:`~soxs.instrument.AuxiliaryResponseFile`
+  and :class:`~soxs.instrument.RedistributionMatrixFile` objects directly from
+  existing instrument specification names has been added.
+* A new keyword argument, ``plot_counts``, has been added to the
+  :func:`~soxs.events.plot_spectrum` function which allows the counts instead of
+  the count rate to be plotted.
 
 Version 2.0.0
 -------------
