@@ -19,7 +19,7 @@ Z = 0.3
 redshift = 0.03
 norm = 1.0e-3
 nH = 0.04
-exp_time = Quantity(50.0, "ks")
+exp_time = Quantity(20.0, "ks")
 area = Quantity(3.0, "m**2")
 
 prng = 31

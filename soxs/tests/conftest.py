@@ -2,7 +2,7 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption("answer_dir",
+    parser.addoption("--answer_dir",
                      help="Directory where answers are stored.")
     parser.addoption("--answer_store", action="store_true",
                      help="Generate new answers, but don't test.")
