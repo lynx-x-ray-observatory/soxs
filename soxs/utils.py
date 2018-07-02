@@ -16,7 +16,7 @@ soxs_cfg_defaults = {"response_path": "/does/not/exist",
                      "abund_table": "angr",
                      "test_outputs_path": "/does/not/exist"}
 
-CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME', 
+CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                             os.path.join(os.path.expanduser('~'),
                                          '.config', 'soxs'))
 if not os.path.exists(CONFIG_DIR):

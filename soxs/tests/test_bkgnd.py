@@ -14,6 +14,7 @@ import numpy as np
 
 prng = RandomState(24)
 
+
 def test_uniform_bkgnd_scale():
     hdxi_arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
     events, event_params = make_background((50, "ks"), "hdxi", [30., 45.], 
@@ -29,6 +30,7 @@ def test_uniform_bkgnd_scale():
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]
     b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
     assert np.abs(S-b_sum) < 1.645*dS
+
 
 def test_simulate_bkgnd_spectrum():
     tmpdir = tempfile.mkdtemp()
@@ -60,6 +62,7 @@ def test_simulate_bkgnd_spectrum():
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
+
 
 def test_add_background():
     tmpdir = tempfile.mkdtemp()
@@ -104,6 +107,7 @@ def test_add_background():
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
+
 
 def test_ptsrc():
     from soxs.background.point_sources import generate_fluxes, \
@@ -158,6 +162,7 @@ def test_ptsrc():
     assert_allclose(events["energy"].sum(), events2["energy"].sum(), rtol=1.0e-3)
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
+
 
 if __name__ == "__main__":
     test_add_background()

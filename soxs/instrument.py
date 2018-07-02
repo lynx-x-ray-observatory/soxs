@@ -14,6 +14,7 @@ from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
 
+
 def get_response_path(fn):
     if os.path.exists(fn):
         return os.path.abspath(fn)
@@ -28,6 +29,7 @@ def get_response_path(fn):
                   "http://hea-www.cfa.harvard.edu/~jzuhone/soxs/responses.html "
                   "and place it in the current working directory or place it in "
                   "the SOXS response directory %s." % resp_path)
+
 
 class AuxiliaryResponseFile(object):
     r"""
@@ -187,6 +189,7 @@ class FlatResponse(AuxiliaryResponseFile):
         self.eff_area = area*np.ones(nbins)
         self.max_area = area
 
+
 class RedistributionMatrixFile(object):
     r"""
     A class for redistribution matrix files (RMFs).
@@ -345,6 +348,7 @@ class RedistributionMatrixFile(object):
         pbar.close()
         return prng.poisson(lam=conv_spec)
 
+
 def perform_dither(t, dither_dict):
     if dither_dict["dither_on"]:
         a = 2.0*np.pi/dither_dict["x_period"]
@@ -357,6 +361,7 @@ def perform_dither(t, dither_dict):
         x_offset = np.zeros(t.size)
         y_offset = np.zeros(t.size)
     return x_offset, y_offset
+
 
 def generate_events(input_events, exp_time, instrument, sky_center, 
                     no_dither=False, dither_params=None, 
@@ -944,6 +949,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     write_event_file(events, event_params, out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 
+
 def simulate_spectrum(spec, instrument, exp_time, out_file,
                       instr_bkgnd=False, foreground=False,
                       ptsrc_bkgnd=False, bkgnd_area=None,
@@ -953,7 +959,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
     by convolving it with responses. To be used if one wants to 
     create a spectrum without worrying about spatial response. Similar
-    to XSPEC's "fakeit". 
+    to XSPEC's "fakeit".
 
     Parameters
     ----------

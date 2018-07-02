@@ -20,11 +20,13 @@ from six import string_types
 from astropy.modeling.functional_models import \
     Gaussian1D
 
+
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
         ret = u.Quantity.__new__(cls, energy, unit="keV")
         ret.flux = u.Quantity(flux, "erg/(cm**2*s)")
         return ret
+
 
 def _generate_energies(spec, t_exp, rate, prng, quiet=False):
     cumspec = spec.cumspec
@@ -38,8 +40,10 @@ def _generate_energies(spec, t_exp, rate, prng, quiet=False):
         mylog.info("Finished creating energies.")
     return e
 
+
 class Spectrum(object):
     _units = "photon/(cm**2*s*keV)"
+
     def __init__(self, ebins, flux):
         self.ebins = u.Quantity(ebins, "keV")
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
@@ -578,6 +582,7 @@ class Spectrum(object):
         ax.tick_params(axis='both',labelsize=fontsize)
         return fig, ax
 
+
 class ApecGenerator(object):
     r"""
     Initialize a thermal gas emission model from the 
@@ -816,6 +821,7 @@ class ApecGenerator(object):
         spec = 1.0e14*norm*spec/self.de
         return Spectrum(self.ebins, spec)
 
+
 def wabs_cross_section(E):
     emax = np.array([0.0, 0.1, 0.284, 0.4, 0.532, 0.707, 0.867, 1.303, 1.840, 
                      2.471, 3.210, 4.038, 7.111, 8.331, 10.0])
@@ -829,6 +835,7 @@ def wabs_cross_section(E):
     sigma = (c0[idxs]+c1[idxs]*E+c2[idxs]*E*E)*1.0e-24/E**3
     return sigma
 
+
 def get_wabs_absorb(e, nH):
     sigma = wabs_cross_section(e)
     return np.exp(-nH*1.0e22*sigma)
@@ -836,6 +843,7 @@ def get_wabs_absorb(e, nH):
 _tbabs_emid = None
 _tbabs_sigma = None
 _tbabs_spline = None
+
 
 def tbabs_cross_section(E):
     global _tbabs_emid
@@ -854,9 +862,11 @@ def tbabs_cross_section(E):
                                                      ext=1)
     return _tbabs_spline(E)
 
+
 def get_tbabs_absorb(e, nH):
     sigma = tbabs_cross_section(e)
     return np.exp(-nH*1.0e22*sigma)
+
 
 class ConvolvedSpectrum(Spectrum):
     _units = "photon/(s*keV)"

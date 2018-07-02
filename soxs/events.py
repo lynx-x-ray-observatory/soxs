@@ -8,6 +8,7 @@ from soxs.utils import mylog, parse_value, get_rot_mat, \
 from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
 
+
 def wcs_from_event_file(f):
     h = f["EVENTS"].header
     w = pywcs.WCS(naxis=2)
@@ -17,6 +18,7 @@ def wcs_from_event_file(f):
     w.wcs.ctype = [h["TCTYP2"], h["TCTYP3"]]
     w.wcs.cunit = [h["TCUNI2"], h["TCUNI3"]]
     return w
+
 
 def write_event_file(events, parameters, filename, overwrite=False):
     from astropy.time import Time, TimeDelta
@@ -124,6 +126,7 @@ def write_event_file(events, parameters, filename, overwrite=False):
 
     pyfits.HDUList(hdulist).writeto(filename, overwrite=overwrite)
 
+
 def parse_region_args(rtype, args, dx, dy):
     if rtype == "Box":
         xctr, yctr, xw, yw = args
@@ -137,6 +140,7 @@ def parse_region_args(rtype, args, dx, dy):
     else:
         raise NotImplementedError
     return new_args
+
 
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False,
@@ -337,6 +341,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
             mylog.warning("Refusing to write an aspect solution file because "
                           "there was no dithering.")
 
+
 def _write_spectrum(bins, spec, exp_time, spectype, parameters,
                     specfile, overwrite=False):
 
@@ -427,8 +432,9 @@ def write_spectrum(evtfile, specfile, overwrite=False):
     _write_spectrum(bins, spec, exp_time, spectype, parameters,
                     specfile, overwrite=overwrite)
 
-def write_radial_profile(evt_file, out_file, ctr, rmin, 
-                         rmax, nbins, ctr_type="celestial", 
+
+def write_radial_profile(evt_file, out_file, ctr, rmin,
+                         rmax, nbins, ctr_type="celestial",
                          emin=None, emax=None, expmap_file=None,
                          overwrite=False):
     r"""
@@ -561,7 +567,8 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
 coord_types = {"sky": ("X", "Y", 2, 3),
                "det": ("DETX", "DETY", 6, 7)}
 
-def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None, 
+
+def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
                 overwrite=False, expmap_file=None, reblock=1):
     r"""
     Generate a image by binning X-ray counts and write 
@@ -668,6 +675,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     hdu.header["EXPOSURE"] = exp_time
 
     hdu.writeto(out_file, overwrite=overwrite)
+
 
 def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                   ymin=None, ymax=None, xscale=None, yscale=None, 

@@ -4,6 +4,7 @@ from astropy.io import fits
 from soxs.utils import soxs_cfg
 import shutil
 
+
 def get_test_path():
     test_path = soxs_cfg.get("soxs", "test_outputs_path")
     if not os.path.exists(test_path):
@@ -16,12 +17,12 @@ def spectrum_answer_testing(spec, filename, generate):
     test_path = get_test_path()
     testfile = os.path.join(test_path, filename)
     if generate:
-        spec.write_file(testfile, overwrite=True)
+        spec.write_h5_file(testfile, overwrite=True)
     else:
         answer_spec = type(spec).from_file(testfile)
         assert_equal(answer_spec.emid.value, spec.emid.value)
         assert_equal(answer_spec.flux.value, spec.flux.value)
-        assert answer_spec.flux.units == spec.flux.units
+        assert answer_spec.flux.unit == spec.flux.unit
 
 
 def file_answer_testing(hdu, filename, generate):
