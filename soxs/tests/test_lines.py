@@ -47,6 +47,7 @@ def test_emission_line(answer_store):
     write_spectrum("emission_line_evt.fits", "emission_line_evt.pha",
                    overwrite=True)
 
+    file_answer_testing("EVENTS", "emission_line_evt.fits", answer_store)
     file_answer_testing("SPECTRUM", "emission_line_evt.pha", answer_store)
 
     os.chdir(curdir)
