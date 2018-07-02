@@ -5,6 +5,7 @@ import os
 import tempfile
 import shutil
 
+
 def test_arithmetic():
     spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4, 0.1, 10.0, 10000)
     spec2 = Spectrum.from_powerlaw(2.0, 0.01, 1.0e-3, 0.1, 10.0, 10000)
@@ -31,6 +32,7 @@ def test_arithmetic():
 
     assert_allclose(spec8.flux.value, spec1.flux.value+1.0e-4)
 
+
 def test_read_write():
 
     tmpdir = tempfile.mkdtemp()
@@ -49,6 +51,7 @@ def test_read_write():
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
+
 def test_rescale_flux():
     spec = Spectrum.from_powerlaw(2.0, 0.01, 1.0, 0.1, 10.0, 10000)
 
@@ -59,6 +62,7 @@ def test_rescale_flux():
     spec.rescale_flux(1.0e-12, emin=0.4, emax=1.0, flux_type="energy")
     f = spec.get_flux_in_band(0.4, 1.0)[1]
     assert_allclose(1.0e-12, f.value)
+
 
 def test_convolved_spectra():
     arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")

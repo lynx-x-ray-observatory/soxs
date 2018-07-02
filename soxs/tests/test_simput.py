@@ -9,6 +9,7 @@ from numpy.random import RandomState
 
 prng = RandomState(25)
 
+
 def test_append():
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
