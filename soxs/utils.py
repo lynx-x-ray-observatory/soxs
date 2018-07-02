@@ -13,8 +13,7 @@ import warnings
 # Configuration
 
 soxs_cfg_defaults = {"response_path": "/does/not/exist",
-                     "abund_table": "angr",
-                     "test_outputs_path": "/does/not/exist"}
+                     "abund_table": "angr"}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                             os.path.join(os.path.expanduser('~'),

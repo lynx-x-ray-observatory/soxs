@@ -91,7 +91,7 @@ spec_aspl = agen_aspl0.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
 spec_aspl.apply_foreground_absorption(nH_sim)
 
 
-def test_thermal(answer_store):
+def test_thermal(answer_store, answer_dir):
 
     prng = RandomState(71)
 
@@ -99,7 +99,7 @@ def test_thermal(answer_store):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec, "thermal_spec.h5", answer_store)
+    spectrum_answer_testing(spec, "thermal_spec.h5", answer_store, answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     sim_cat = SimputCatalog.from_models("thermal_model", "thermal_model", spec,
@@ -112,14 +112,14 @@ def test_thermal(answer_store):
 
     write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", overwrite=True)
 
-    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store)
-    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store)
+    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store, answer_dir)
+    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_thermal_from_spectrum(answer_store):
+def test_thermal_from_spectrum(answer_store, answer_dir):
 
     prng = RandomState(89)
 
@@ -132,7 +132,7 @@ def test_thermal_from_spectrum(answer_store):
     simulate_spectrum(spec, inst["name"], exp_time,
                       "thermal_model_spec_evt.pha", prng=prng)
 
-    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", answer_store)
+    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -143,7 +143,7 @@ def test_var_thermal():
     assert_allclose(spec.flux, spec_var.flux)
 
 
-def test_nolines_thermal_from_spectrum(answer_store):
+def test_nolines_thermal_from_spectrum(answer_store, answer_dir):
 
     prng = RandomState(101)
 
@@ -157,13 +157,13 @@ def test_nolines_thermal_from_spectrum(answer_store):
                       "nolines_thermal_model_evt.pha", prng=prng)
 
     file_answer_testing("SPECTRUM", "nolines_thermal_model_evt.pha",
-                        answer_store)
+                        answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_thermal_abund_table(answer_store):
+def test_thermal_abund_table(answer_store, answer_dir):
 
     prng = RandomState(72)
 
@@ -171,7 +171,7 @@ def test_thermal_abund_table(answer_store):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store)
+    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store, answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     sim_cat = SimputCatalog.from_models("thermal_model_aspl", "thermal_model_aspl",
@@ -188,18 +188,8 @@ def test_thermal_abund_table(answer_store):
                    "thermal_model_aspl_evt.pha",
                    overwrite=True)
 
-    file_answer_testing("EVENTS", "thermal_model_aspl_evt.fits", answer_store)
-    file_answer_testing("SPECTRUM", "thermal_model_aspl_evt.pha", answer_store)
+    file_answer_testing("EVENTS", "thermal_model_aspl_evt.fits", answer_store, answer_dir)
+    file_answer_testing("SPECTRUM", "thermal_model_aspl_evt.pha", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
-
-
-if __name__ == "__main__":
-    import sys
-    answer_store = bool(sys.argv[1])
-    test_thermal(answer_store)
-    test_thermal_from_spectrum(answer_store)
-    test_var_thermal()
-    test_nolines_thermal_from_spectrum(answer_store)
-    test_thermal_abund_table(answer_store)

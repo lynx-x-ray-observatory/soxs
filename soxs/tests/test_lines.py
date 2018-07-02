@@ -14,7 +14,7 @@ from numpy.random import RandomState
 prng = RandomState(69)
 
 
-def test_emission_line(answer_store):
+def test_emission_line(answer_store, answer_dir):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -31,7 +31,8 @@ def test_emission_line(answer_store):
     spec = Spectrum.from_constant(const_flux, 1.0, 10.0, 20000)
     spec.add_emission_line(line_pos, line_width, line_amp)
 
-    spectrum_answer_testing(spec, "emission_line_test.h5", answer_store)
+    spectrum_answer_testing(spec, "emission_line_test.h5", answer_store,
+                            answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     sim_cat = SimputCatalog.from_models("emission_line", "emission_line", spec, 
@@ -79,10 +80,3 @@ def test_absorption_line(answer_store):
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
-
-
-if __name__ == "__main__":
-    import sys
-    answer_store = bool(sys.argv[1])
-    test_emission_line(answer_store)
-    test_absorption_line(answer_store)

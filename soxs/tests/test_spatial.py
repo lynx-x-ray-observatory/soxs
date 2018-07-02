@@ -70,7 +70,7 @@ def test_point_source():
     shutil.rmtree(tmpdir)
 
 
-def test_annulus(answer_store):
+def test_annulus(answer_store, answer_dir):
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
@@ -93,14 +93,14 @@ def test_annulus(answer_store):
                          1.1*r_in, 0.9*r_out, 100, ctr_type="celestial",
                          emin=0.5, emax=7.0, overwrite=True)
 
-    file_answer_testing("EVENTS", "ann_evt.fits", answer_store)
-    file_answer_testing("PROFILE", "ann_evt_profile.fits", answer_store)
+    file_answer_testing("EVENTS", "ann_evt.fits", answer_store, answer_dir)
+    file_answer_testing("PROFILE", "ann_evt_profile.fits", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_beta_model(answer_store):
+def test_beta_model(answer_store, answer_dir):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -122,17 +122,17 @@ def test_beta_model(answer_store):
                          instr_bkgnd=False, foreground=False, prng=prng)
 
     write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", [ra0, dec0],
-                         0.0, 100.0, 200, ctr_type="celestial", emin=0.5, 
+                         0.0, 100.0, 200, ctr_type="celestial", emin=0.5,
                          emax=7.0, overwrite=True)
 
-    file_answer_testing("EVENTS", "beta_evt.fits", answer_store)
-    file_answer_testing("PROFILE", "beta_evt_profile.fits", answer_store)
+    file_answer_testing("EVENTS", "beta_evt.fits", answer_store, answer_dir)
+    file_answer_testing("PROFILE", "beta_evt_profile.fits", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_beta_model_flux(answer_store):
+def test_beta_model_flux(answer_store, answer_dir):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -162,17 +162,8 @@ def test_beta_model_flux(answer_store):
                          emin=0.5, emax=7.0, expmap_file="beta_expmap.fits",
                          overwrite=True)
 
-    file_answer_testing("EVENTS", "beta_flux_evt.fits", answer_store)
-    file_answer_testing("PROFILE", "beta_flux_evt_profile.fits", answer_store)
+    file_answer_testing("EVENTS", "beta_flux_evt.fits", answer_store, answer_dir)
+    file_answer_testing("PROFILE", "beta_flux_evt_profile.fits", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
-
-
-if __name__ == "__main__":
-    import sys
-    answer_store = bool(sys.argv[1])
-    test_point_source()
-    test_annulus(answer_store)
-    test_beta_model(answer_store)
-    test_beta_model_flux(answer_store)
