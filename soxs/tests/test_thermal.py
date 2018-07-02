@@ -8,15 +8,12 @@ from soxs.simput import SimputCatalog
 from soxs.instrument_registry import \
     get_instrument_from_registry
 from soxs.instrument import instrument_simulator, \
-    RedistributionMatrixFile, AuxiliaryResponseFile, \
-    simulate_spectrum
-from soxs.utils import convert_rmf
+    RedistributionMatrixFile, simulate_spectrum
 from soxs.events import write_spectrum
-from sherpa.astro.ui import load_user_model, add_user_pars, \
-    load_pha, ignore, fit, set_model, set_stat, set_method, \
-    covar, get_covar_results, set_covar_opt
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
+from soxs.tests.utils import spectrum_answer_testing, \
+    file_answer_testing
 
 inst_name = "mucal"
 
@@ -36,12 +33,14 @@ agen_nolines = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
 agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
                           broadening=True, abund_table="aspl")
 
+
 def mymodel(pars, x, xhi=None):
     dx = x[1]-x[0]
     wabs = get_wabs_absorb(x+0.5*dx, pars[0])
     apec = agen.get_spectrum(pars[1], pars[2], pars[3], pars[4])
     eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
     return dx*wabs*apec.flux.value[eidxs]
+
 
 def mymodel_var(pars, x, xhi=None):
     dx = x[1]-x[0]
@@ -51,12 +50,14 @@ def mymodel_var(pars, x, xhi=None):
     eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
     return dx*wabs*apec.flux.value[eidxs]
 
+
 def mymodel_nolines(pars, x, xhi=None):
     dx = x[1]-x[0]
     wabs = get_wabs_absorb(x+0.5*dx, pars[0])
     apec = agen_nolines.get_spectrum(pars[1], pars[2], pars[3], pars[4])
     eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
     return dx*wabs*apec.flux.value[eidxs]
+
 
 def mymodel_aspl(pars, x, xhi=None):
     dx = x[1]-x[0]
@@ -89,7 +90,8 @@ spec_nolines.apply_foreground_absorption(nH_sim)
 spec_aspl = agen_aspl0.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
 spec_aspl.apply_foreground_absorption(nH_sim)
 
-def test_thermal():
+
+def test_thermal(answer_store):
 
     prng = RandomState(71)
 
@@ -97,49 +99,27 @@ def test_thermal():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
+    spectrum_answer_testing(spec, "thermal_spec.h5", answer_store)
+
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model", "thermal_model", spec, pt_src_pos,
-                                        exp_time, area, prng=prng)
+    sim_cat = SimputCatalog.from_models("thermal_model", "thermal_model", spec,
+                                        pt_src_pos, exp_time, area, prng=prng)
     sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", exp_time, 
                          inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
                          instr_bkgnd=False, prng=prng)
 
-    inst = get_instrument_from_registry(inst_name)
-    arf = AuxiliaryResponseFile(inst["arf"])
-    rmf = RedistributionMatrixFile(inst["rmf"])
-    os.system("cp %s ." % arf.filename)
-    convert_rmf(rmf.filename)
-
     write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", overwrite=True)
 
-    load_user_model(mymodel, "wapec")
-    add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm"],
-                  [0.01, 4.0, 0.2, redshift, norm_sim*0.8],
-                  parmins=[0.0, 0.1, 0.0, -20.0, 0.0],
-                  parmaxs=[10.0, 20.0, 10.0, 20.0, 1.0e9],
-                  parfrozen=[False, False, False, True, False])
-
-    load_pha("thermal_model_evt.pha")
-    set_stat("cstat")
-    set_method("simplex")
-    set_model("wapec")
-    ignore(":0.5, 8.0:")
-    fit()
-    set_covar_opt("sigma", 1.645)
-    covar()
-    res = get_covar_results()
-
-    assert np.abs(res.parvals[0]-nH_sim) < res.parmaxes[0]
-    assert np.abs(res.parvals[1]-kT_sim) < res.parmaxes[1]
-    assert np.abs(res.parvals[2]-abund_sim) < res.parmaxes[2]
-    assert np.abs(res.parvals[3]-norm_sim) < res.parmaxes[3]
+    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store)
+    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
-def test_thermal_from_spectrum():
+
+def test_thermal_from_spectrum(answer_store):
 
     prng = RandomState(89)
 
@@ -150,44 +130,20 @@ def test_thermal_from_spectrum():
     inst = get_instrument_from_registry(inst_name)
 
     simulate_spectrum(spec, inst["name"], exp_time,
-                      "thermal_model_evt.pha", prng=prng)
+                      "thermal_model_spec_evt.pha", prng=prng)
 
-    arf = AuxiliaryResponseFile(inst["arf"])
-    rmf = RedistributionMatrixFile(inst["rmf"])
-    os.system("cp %s ." % arf.filename)
-    convert_rmf(rmf.filename)
-
-    load_user_model(mymodel, "wapec")
-    add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm"],
-                  [0.01, 4.0, 0.2, redshift, norm_sim*0.8],
-                  parmins=[0.0, 0.1, 0.0, -20.0, 0.0],
-                  parmaxs=[10.0, 20.0, 10.0, 20.0, 1.0e9],
-                  parfrozen=[False, False, False, True, False])
-
-    load_pha("thermal_model_evt.pha")
-    set_stat("cstat")
-    set_method("simplex")
-    set_model("wapec")
-    ignore(":0.5, 8.0:")
-    fit()
-    set_covar_opt("sigma", 1.645)
-    covar()
-    res = get_covar_results()
-
-    assert np.abs(res.parvals[0]-nH_sim) < res.parmaxes[0]
-    assert np.abs(res.parvals[1]-kT_sim) < res.parmaxes[1]
-    assert np.abs(res.parvals[2]-abund_sim) < res.parmaxes[2]
-    assert np.abs(res.parvals[3]-norm_sim) < res.parmaxes[3]
+    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
-def test_var_thermal():
 
+def test_var_thermal():
     assert_allclose(spec.ebins, spec_var.ebins)
     assert_allclose(spec.flux, spec_var.flux)
 
-def test_nolines_thermal_from_spectrum():
+
+def test_nolines_thermal_from_spectrum(answer_store):
 
     prng = RandomState(101)
 
@@ -200,37 +156,14 @@ def test_nolines_thermal_from_spectrum():
     simulate_spectrum(spec_nolines, inst["name"], exp_time,
                       "nolines_thermal_model_evt.pha", prng=prng)
 
-    arf = AuxiliaryResponseFile(inst["arf"])
-    rmf = RedistributionMatrixFile(inst["rmf"])
-    os.system("cp %s ." % arf.filename)
-    convert_rmf(rmf.filename)
-
-    load_user_model(mymodel_nolines, "wapec")
-    add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm"],
-                  [0.01, 7.0, 0.2, redshift, norm_sim*0.8],
-                  parmins=[0.0, 0.1, 0.0, -20.0, 0.0],
-                  parmaxs=[10.0, 20.0, 10.0, 20.0, 1.0e9],
-                  parfrozen=[False, False, False, True, False])
-
-    load_pha("nolines_thermal_model_evt.pha")
-    set_stat("cstat")
-    set_method("simplex")
-    set_model("wapec")
-    ignore(":0.5, 8.0:")
-    fit()
-    set_covar_opt("sigma", 1.645)
-    covar()
-    res = get_covar_results()
-
-    assert np.abs(res.parvals[0]-nH_sim) < res.parmaxes[0]
-    assert np.abs(res.parvals[1]-kT_sim) < res.parmaxes[1]
-    assert np.abs(res.parvals[2]-abund_sim) < res.parmaxes[2]
-    assert np.abs(res.parvals[3]-norm_sim) < res.parmaxes[3]
+    file_answer_testing("SPECTRUM", "nolines_thermal_model_evt.pha",
+                        answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
-def test_thermal_abund_table():
+
+def test_thermal_abund_table(answer_store):
 
     prng = RandomState(72)
 
@@ -238,52 +171,35 @@ def test_thermal_abund_table():
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
+    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store)
+
     pt_src_pos = PointSourceModel(30.0, 45.0)
     sim_cat = SimputCatalog.from_models("thermal_model_aspl", "thermal_model_aspl",
                                         spec_aspl, pt_src_pos,
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog(overwrite=True)
 
-    instrument_simulator("thermal_model_aspl_simput.fits", "thermal_model_aspl_evt.fits", 
-                         exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
+    instrument_simulator("thermal_model_aspl_simput.fits",
+                         "thermal_model_aspl_evt.fits", exp_time, inst_name,
+                         [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
                          instr_bkgnd=False, prng=prng)
 
-    inst = get_instrument_from_registry(inst_name)
-    arf = AuxiliaryResponseFile(inst["arf"])
-    rmf = RedistributionMatrixFile(inst["rmf"])
-    os.system("cp %s ." % arf.filename)
-    convert_rmf(rmf.filename)
+    write_spectrum("thermal_model_aspl_evt.fits",
+                   "thermal_model_aspl_evt.pha",
+                   overwrite=True)
 
-    write_spectrum("thermal_model_aspl_evt.fits", "thermal_model_aspl_evt.pha", overwrite=True)
-
-    load_user_model(mymodel_aspl, "wapec")
-    add_user_pars("wapec", ["nH", "kT", "abund", "redshift", "norm"],
-                  [0.01, 5.0, 0.2, redshift, norm_sim*0.8],
-                  parmins=[0.0, 0.1, 0.0, -20.0, 0.0],
-                  parmaxs=[10.0, 20.0, 10.0, 20.0, 1.0e9],
-                  parfrozen=[False, False, False, True, False])
-
-    load_pha("thermal_model_aspl_evt.pha")
-    set_stat("cstat")
-    set_method("simplex")
-    set_model("wapec")
-    ignore(":0.6, 8.0:")
-    fit()
-    set_covar_opt("sigma", 1.645)
-    covar()
-    res = get_covar_results()
-
-    assert np.abs(res.parvals[0]-nH_sim) < res.parmaxes[0]
-    assert np.abs(res.parvals[1]-kT_sim) < res.parmaxes[1]
-    assert np.abs(res.parvals[2]-abund_sim) < res.parmaxes[2]
-    assert np.abs(res.parvals[3]-norm_sim) < res.parmaxes[3]
+    file_answer_testing("EVENTS", "thermal_model_aspl_evt.fits", answer_store)
+    file_answer_testing("SPECTRUM", "thermal_model_aspl_evt.pha", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
+
 if __name__ == "__main__":
-    test_thermal()
-    test_thermal_from_spectrum()
+    import sys
+    answer_store = bool(sys.argv[1])
+    test_thermal(answer_store)
+    test_thermal_from_spectrum(answer_store)
     test_var_thermal()
-    test_nolines_thermal_from_spectrum()
-    test_thermal_abund_table()
+    test_nolines_thermal_from_spectrum(answer_store)
+    test_thermal_abund_table(answer_store)
