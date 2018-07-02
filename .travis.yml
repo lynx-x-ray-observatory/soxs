@@ -4,7 +4,8 @@ env:
     global:
         # Set defaults to avoid repeating in most cases
         - NUMPY_VERSION=1.11
-        - CMD='py.test soxs/tests'
+        - ANSWER_VER=1
+
 matrix:
     include:
 
@@ -12,21 +13,26 @@ matrix:
         - python: 2.7
           env: PYTHON='python'
         - python: 3.5
-          env: PYTHON='python3'
+          env: CMD='py.test soxs/tests --answer_dir=/home/jzuhone/soxs_test_data3_${ANSWER_VER}' PYTHON='python3'
         - python: 3.6
-          env: PYTHON='python3'
-        - python: 2.7
-          env: CMD='coverage run --source soxs -m py.test'; PYTHON='python'
+          env: CMD='py.test soxs/tests --answer_dir=/home/jzuhone/soxs_test_data3_${ANSWER_VER}' PYTHON='python3'
+        - python: 3.6
+          env: CMD='coverage run --source soxs -m py.test soxs/tests --answer_dir=/home/jzuhone/soxs_test_data3_${ANSWER_VER}'; PYTHON='python3'
 
 before_install:
 
-    # Use utf8 encoding. Should be default, but this is insurance against
-    # future changes
     - wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_responses.tar.gz
     - tar -zxvf soxs_responses.tar.gz
+    #- wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data2_${ANSWER_VER}.tar.gz
+    #- tar -zxvf soxs_test_data2_${ANSWER_VER}.tar.gz
+    - wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data3_${ANSWER_VER}.tar.gz
+    - tar -zxvf soxs_test_data3_${ANSWER_VER}.tar.gz
+
     - mkdir -p $HOME/.config/soxs
     - printf "[soxs]\nresponse_path = $PWD/soxs_responses" >> $HOME/.config/soxs/soxs.cfg
 
+    # Use utf8 encoding. Should be default, but this is insurance against
+    # future changes
     - export PYTHONIOENCODING=UTF8
     - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
     - chmod +x miniconda.sh
@@ -45,8 +51,7 @@ install:
 
     # CORE DEPENDENCIES
     - conda config --add channels conda-forge
-    - conda config --add channels https://conda.anaconda.org/sherpa
-    - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy sherpa scipy cython h5py tqdm pyyaml
+    - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy scipy cython h5py tqdm pyyaml
     - conda install --yes -c astropy pyregion
     
     # COVERAGE DEPENDENCIES
