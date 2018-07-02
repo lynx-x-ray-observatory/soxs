@@ -11,3 +11,4 @@ soxs.egg-info
 *.o
 *.so
 build
+.pytest_cache
