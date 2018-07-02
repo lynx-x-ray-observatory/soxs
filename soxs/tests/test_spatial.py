@@ -118,7 +118,7 @@ def test_beta_model(answer_store):
     sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
-                         "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
+                         "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
                          instr_bkgnd=False, foreground=False, prng=prng)
 
     write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", [ra0, dec0],
