@@ -16,8 +16,9 @@ soxs_cfg_defaults = {"response_path": "/does/not/exist",
                      "abund_table": "angr",
                      "test_outputs_path": "/does/not/exist"}
 
-CONFIG_DIR = os.environ.get(
-    'XDG_CONFIG_HOME', os.path.join(os.path.expanduser('~'), '.config', 'soxs'))
+CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME', 
+                            os.path.join(os.path.expanduser('~'),
+                                         '.config', 'soxs'))
 if not os.path.exists(CONFIG_DIR):
     try:
         os.makedirs(CONFIG_DIR)
@@ -60,6 +61,7 @@ mylog = soxsLogger
 
 mylog.setLevel('INFO')
 
+
 def issue_deprecation_warning(msg):
     import warnings
     from numpy import VisibleDeprecationWarning
@@ -68,11 +70,13 @@ def issue_deprecation_warning(msg):
 soxs_path = os.path.abspath(os.path.dirname(__file__))
 soxs_files_path = os.path.join(soxs_path, "files")
 
+
 def parse_prng(prng):
     if isinstance(prng, RandomState):
         return prng
     else:
         return RandomState(prng)
+
 
 def iterable(obj):
     """
@@ -85,6 +89,7 @@ def iterable(obj):
         return False
     return True
 
+
 def ensure_list(obj):
     """
     This function ensures that *obj* is a list.  Typically used to convert a
@@ -96,6 +101,7 @@ def ensure_list(obj):
     if not isinstance(obj, list):
         return [obj]
     return obj
+
 
 def ensure_numpy_array(obj):
     """
@@ -112,6 +118,7 @@ def ensure_numpy_array(obj):
         return np.asarray(obj)
     else:
         return np.asarray([obj])
+
 
 def convert_rmf(rmffile):
 
@@ -160,6 +167,7 @@ def convert_rmf(rmffile):
 
     new_f.writeto(os.path.split(rmffile)[-1], overwrite=True)
 
+
 def parse_value(value, default_units, equivalence=None):
     if isinstance(value, string_types):
         v = value.split(",")
@@ -177,11 +185,13 @@ def parse_value(value, default_units, equivalence=None):
         q = Quantity(value, default_units)
     return q.to(default_units, equivalencies=equivalence).value
 
+
 def get_rot_mat(roll_angle):
     roll_angle = np.deg2rad(roll_angle)
     rot_mat = np.array([[np.cos(roll_angle), -np.sin(roll_angle)],
                         [np.sin(roll_angle), np.cos(roll_angle)]])
     return rot_mat
+
 
 def downsample(myarr,factor,estimator=np.mean):
     """
@@ -201,6 +211,7 @@ def downsample(myarr,factor,estimator=np.mean):
                                        for i in range(factor)]
                                       for j in range(factor)]), axis=0)
     return dsarr
+
 
 def line_width_equiv(rest):
     from astropy.constants import c
