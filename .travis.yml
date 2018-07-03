@@ -13,9 +13,9 @@ matrix:
         - python: 2.7
           env: PYTHON='python'
         - python: 3.5
-          env: CMD="py.test soxs/tests --answer_dir=soxs_test_data3" PYTHON='python3'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
         - python: 3.6
-          env: CMD="py.test soxs/tests --answer_dir=soxs_test_data3" PYTHON='python3'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
         - python: 3.6
           env: CMD='coverage run --source soxs -m py.test'; PYTHON='python3'
 
