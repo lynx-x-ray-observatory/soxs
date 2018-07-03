@@ -15,16 +15,12 @@ matrix:
         - python: 3.5
           env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
         - python: 3.6
-          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
-        - python: 3.6
-          env: CMD='coverage run --source soxs -m py.test'; PYTHON='python3'
+          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
 
 before_install:
 
     - wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_responses.tar.gz
     - tar -zxvf soxs_responses.tar.gz
-    #- wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data2_${ANSWER_VER}.tar.gz
-    #- tar -zxvf soxs_test_data2_${ANSWER_VER}.tar.gz
     - wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data3_${ANSWER_VER}.tar.gz
     - tar -zxvf soxs_test_data3_${ANSWER_VER}.tar.gz
 
@@ -55,7 +51,7 @@ install:
     - conda install --yes -c astropy pyregion
     
     # COVERAGE DEPENDENCIES
-    - pip install coverage coveralls
+    - pip install coverage coveralls pytest-cov
     - $PYTHON setup.py develop
 
 script:
