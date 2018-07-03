@@ -11,7 +11,7 @@ matrix:
 
         # Try all python versions with the latest numpy
         - python: 2.7
-          env: PYTHON='python'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python'
         - python: 3.5
           env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
         - python: 3.6
