@@ -119,54 +119,6 @@ def ensure_numpy_array(obj):
         return np.asarray([obj])
 
 
-def convert_rmf(rmffile):
-
-    f = pyfits.open(rmffile)
-
-    names = [ff.name for ff in f]
-    idx = -1
-    for i, name in enumerate(names):
-        if "MATRIX" in name:
-            idx = i
-            break
-
-    new_f = copy(f)
-
-    matrix = new_f[names[idx]]
-    fchan = matrix.data["F_CHAN"]
-    nchan = matrix.data["N_CHAN"]
-    m = matrix.data["MATRIX"]
-
-    fchan_new = pyfits.Column(name = 'F_CHAN', format='PJ()',
-                              array=np.array([fc[fc > 0] for fc in fchan], dtype=np.object))
-    nchan_new = pyfits.Column(name = 'N_CHAN', format='PJ()',
-                              array=np.array([nc[nc > 0] for nc in nchan], dtype=np.object))
-    m_new = pyfits.Column(name = 'MATRIX', format='PE()',
-                          array=np.array([mm[mm > 0] for mm in m], dtype=np.object))
-
-    matrix_new = pyfits.BinTableHDU.from_columns([matrix.columns["ENERG_LO"],
-                                                  matrix.columns["ENERG_HI"],
-                                                  matrix.columns["N_GRP"],
-                                                  fchan_new, nchan_new,
-                                                  m_new])
-
-    matrix_new.name = "SPECRESP MATRIX"
-
-    new_f.pop(idx)
-
-    new_f.append(matrix_new)
-
-    header_keys = ["HDUCLASS", "HDUCLAS1", "HDUVERS1", "HDUCLAS2", "HDUVERS2", "HDUCLAS3",
-                   "TELESCOP", "INSTRUME", "DETNAM", "FILTER", "DETCHANS", "CHANTYPE",
-                   "HIERARCH LO_THRESH", "LO_THRES", "RMFVERSN", "TLMIN4", "TLMAX4"]
-
-    for key in header_keys:
-        if key in matrix.header:
-            matrix_new.header[key] = matrix.header[key]
-
-    new_f.writeto(os.path.split(rmffile)[-1], overwrite=True)
-
-
 def parse_value(value, default_units, equivalence=None):
     if isinstance(value, string_types):
         v = value.split(",")
