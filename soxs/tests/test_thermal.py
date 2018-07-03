@@ -34,38 +34,6 @@ agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
                           broadening=True, abund_table="aspl")
 
 
-def mymodel(pars, x, xhi=None):
-    dx = x[1]-x[0]
-    wabs = get_wabs_absorb(x+0.5*dx, pars[0])
-    apec = agen.get_spectrum(pars[1], pars[2], pars[3], pars[4])
-    eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
-    return dx*wabs*apec.flux.value[eidxs]
-
-
-def mymodel_var(pars, x, xhi=None):
-    dx = x[1]-x[0]
-    wabs = get_wabs_absorb(x+0.5*dx, pars[0])
-    apec = agen_var.get_spectrum(pars[1], pars[2], pars[3], pars[4],
-                                 elem_abund={"O": pars[5], "Fe": pars[6]})
-    eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
-    return dx*wabs*apec.flux.value[eidxs]
-
-
-def mymodel_nolines(pars, x, xhi=None):
-    dx = x[1]-x[0]
-    wabs = get_wabs_absorb(x+0.5*dx, pars[0])
-    apec = agen_nolines.get_spectrum(pars[1], pars[2], pars[3], pars[4])
-    eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
-    return dx*wabs*apec.flux.value[eidxs]
-
-
-def mymodel_aspl(pars, x, xhi=None):
-    dx = x[1]-x[0]
-    wabs = get_wabs_absorb(x+0.5*dx, pars[0])
-    apec_aspl = agen_aspl.get_spectrum(pars[1], pars[2], pars[3], pars[4])
-    eidxs = np.logical_and(rmf.elo >= x[0]-0.5*dx, rmf.elo <= x[-1]+0.5*dx)
-    return dx*wabs*apec_aspl.flux.value[eidxs]
-
 nH_sim = 0.02
 kT_sim = 5.0
 abund_sim = 0.4

@@ -17,13 +17,6 @@ make_simple_instrument("hdxi", "new_hdxi", 20.0, 1024)
 prng = RandomState(69)
 
 
-def mymodel(pars, x, xhi=None):
-    dx = x[1]-x[0]
-    tbabs = get_tbabs_absorb(x, pars[0])
-    plaw = pars[1]*dx*(x*(1.0+pars[2]))**(-pars[3])
-    return tbabs*plaw
-
-
 def test_power_law(answer_store, answer_dir):
     plaw_fit(1.1, answer_store, answer_dir)
     plaw_fit(0.8, answer_store, answer_dir)
