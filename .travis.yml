@@ -11,11 +11,11 @@ matrix:
 
         # Try all python versions with the latest numpy
         - python: 2.7
-          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3"; PYTHON='python'
         - python: 3.5
-          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3"; PYTHON='python3.5'
         - python: 3.6
-          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data3" PYTHON='python3'
+          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data3"; PYTHON='python3.6'
 
 before_install:
 
@@ -59,6 +59,6 @@ script:
     - $CMD
 
 after_success:
-    - if [[ $CMD == 'coverage run --source soxs -m py.test' ]]; then
+    - if [[ $PYTHON == "python3.6" ]]; then
           coveralls --rcfile='soxs/tests/coveragerc';
       fi
