@@ -189,8 +189,8 @@ instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
 ## AXIS
 
 instrument_registry["axis"] = {"name": "axis",
-                               "arf": "axis.arf",
-                               "rmf": "axis.rmf",
+                               "arf": "axis-31jan18.arf",
+                               "rmf": "axis-31jan18.rmf",
                                "bkgnd": "axis",
                                "num_pixels": 5200,
                                "fov": 15.0,
