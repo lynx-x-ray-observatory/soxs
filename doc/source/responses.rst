@@ -149,5 +149,5 @@ SXS
 AXIS
 ----
 
-* ARF: `axis.arf <../soxs_responses/axis.arf>`_
-* RMF: `axis.rmf <../soxs_responses/axis.rmf>`_
+* ARF: `axis-31jan18.arf <../soxs_responses/axis-31jan18.arf>`_
+* RMF: `axis-31jan18.rmf <../soxs_responses/axis-31jan18.rmf>`_

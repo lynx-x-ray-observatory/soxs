@@ -29,6 +29,8 @@ improvements.
 * A new keyword argument, ``plot_counts``, has been added to the
   :func:`~soxs.events.plot_spectrum` function which allows the counts instead of
   the count rate to be plotted.
+* The response files for the `AXIS <http://axis.astro.umd.edu>`_ mission have 
+  been updated to their latest versions.
 
 Version 2.0.0
 -------------
