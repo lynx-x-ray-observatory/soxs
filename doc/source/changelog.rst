@@ -10,6 +10,9 @@ This release of SOXS provides new features, bugfixes, optimizations, and other
 improvements.
 
 * The 2.1.x series of SOXS will be the last to support Python 2.7.
+* Support for non-equilibrium ionization plasma emission using AtomDB has been
+  added to SOXS. see :ref:`nei` for more details.
+* The default AtomDB/APEC version provided with SOXS is now v3.0.9.
 * Generating spectra without imaging using (see :ref:`simulate-spectrum`) is now
   faster, especially for high-resolution instruments such as microcalorimeters 
   and gratings.

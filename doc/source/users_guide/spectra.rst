@@ -105,7 +105,7 @@ new :class:`~soxs.spectra.Spectrum` objects. You start by initializing an
 
 The ``broadening`` parameter sets whether or not spectral lines will be 
 thermally and velocity broadened. The ``apec_vers`` parameter sets the version 
-of the AtomDB tables to use. Version 3.0.8 is built into SOXS, and is the default.
+of the AtomDB tables to use. Version 3.0.9 is built into SOXS, and is the default.
 
 You may also supply another location for the AtomDB tables. For example, the 
 following construction will look for the AtomDB tables in the current working 
@@ -116,7 +116,8 @@ directory:
     agen = ApecGenerator(0.05, 50.0, 10000, apec_root=".")
 
 Once you have an :class:`~soxs.spectra.ApecGenerator` object, you can use it to
-generate thermal spectra. The parameters are:
+generate thermal spectra using the :meth:`~soxs.spectra.ApecGenerator.get_spectrum`
+method. The parameters are:
 
 * ``kT``: The temperature of the plasma, with default units of keV
 * ``abund``: The metal abundance, in solar units. Includes C, N, O, Ne, Mg, Al, 
@@ -160,8 +161,9 @@ to specify which elements should be allowed to vary freely:
 Whatever elements are not specified here are assumed to be set as normal, whether
 they are H, He, trace elements, or metals covered by the ``abund`` parameter. 
 Now, spectra which are created from this :class:`~soxs.spectra.ApecGenerator`
-object should set values for the abundances of these elements in solar units. This
-is done by supplying the ``elem_abund`` dict like so:
+object using the :meth:`~soxs.spectra.ApecGenerator.get_spectrum` method should 
+set values for the abundances of these elements in solar units. This is done by 
+supplying the ``elem_abund`` dict like so:
 
 .. code-block:: python
 
@@ -176,6 +178,49 @@ is done by supplying the ``elem_abund`` dict like so:
 
 Note that setting the ``abund`` parameter is still necessary for the other
 metals. 
+
+.. _nei:
+
+Non-Equilibrium Ionization Spectra
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A variation on specifying variable abundances in SOXS allows one to construct
+non-equilibrium ionization (NEI) spectra. In this case, all ions one desires to
+contribute to the spectrum must be put in by hand, with the exception of H and
+He, which may be specified, but if they are not they are assumed to be fully
+ionized at their Solar abundances.
+
+To create an :class:`~soxs.spectra.ApecGenerator` object which produces NEI
+spectra, one must specify not only the elements one wants but also their 
+ionization states. The notation is to represent an ion by the element first, 
+followed by the ``^`` symbol, followed by its ionization state. So for oxygen,
+:math:`O^{+1}` would correspond to ``"O^1"``, and so on. The keyword argument 
+``nei=True`` must also be set. An example using four oxygen ions and two 
+nitrogen ions is shown below:
+
+.. code-block:: python
+
+    var_elem = ["O^1", "O^2", "O^3", "O^4", "N^4", "N^5"]
+    agen = ApecGenerator(0.05, 10.0, 10000, var_elem=var_elem, nei=True)
+
+Once this has been created, we use a special method for NEI spectra, 
+:meth:`~soxs.spectra.ApecGenerator.get_nei_spectrum`
+
+.. code-block:: python
+
+    kT = 5.0 
+    norm = 1.0e-3 
+    redshift = 0.0
+    elem_abund = {"O^1": 0.3, "O^2": 0.5, "O^3": 0.2, "O^4": 0.5,
+                  "N^4": 0.2, "N^5": 0.4}
+    spec = agen.get_nei_spectrum(kT, elem_abund, redshift, norm)
+    
+.. warning::
+
+    SOXS does not make any assumptions about the correctness of the relative ion
+    abundances which you input into :meth:`~soxs.spectra.ApecGenerator.get_nei_spectrum`.
+    It assumes you have run a NEI code to determine the correct abundances, and
+    only computes the spectrum.
 
 .. _nolines:
 
