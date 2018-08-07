@@ -32,7 +32,9 @@ agen_nolines = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
                              broadening=True, nolines=True)
 agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
                           broadening=True, abund_table="aspl")
-
+agen_nei = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
+                         broadening=True, var_elem=["O^6","O^3","N^4","Ca^5"],
+                         apec_root=os.getcwd(), nei=True)
 
 nH_sim = 0.02
 kT_sim = 5.0
@@ -41,6 +43,8 @@ norm_sim = 1.0e-3
 redshift = 0.05
 O_sim = 0.4
 Fe_sim = 0.4
+
+nei_sim = {"O^6": 0.4, "O^3": 0.5, "N^4": 0.7, "Ca^5": 0.9}
 
 exp_time = 5.0e4
 area = 40000.0
@@ -57,6 +61,9 @@ spec_nolines.apply_foreground_absorption(nH_sim)
 
 spec_aspl = agen_aspl0.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
 spec_aspl.apply_foreground_absorption(nH_sim)
+
+spec_nei = agen_nei.get_nei_spectrum(kT_sim, nei_sim, redshift, norm_sim)
+spec_nei.apply_foreground_absorption(nH_sim)
 
 
 def test_thermal(answer_store, answer_dir):
@@ -158,6 +165,35 @@ def test_thermal_abund_table(answer_store, answer_dir):
 
     file_answer_testing("EVENTS", "thermal_model_aspl_evt.fits", answer_store, answer_dir)
     file_answer_testing("SPECTRUM", "thermal_model_aspl_evt.pha", answer_store, answer_dir)
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
+
+
+def test_thermal_nei(answer_store, answer_dir):
+
+    prng = RandomState(71)
+
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, answer_dir)
+
+    pt_src_pos = PointSourceModel(30.0, 45.0)
+    sim_cat = SimputCatalog.from_models("thermal_model_nei", "thermal_model_nei", spec_nei,
+                                        pt_src_pos, exp_time, area, prng=prng)
+    sim_cat.write_catalog(overwrite=True)
+
+    instrument_simulator("thermal_model_nei_simput.fits", "thermal_model_nei_evt.fits",
+                         exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False,
+                         foreground=False, instr_bkgnd=False, prng=prng)
+
+    write_spectrum("thermal_model_nei_evt.fits", "thermal_model_nei_evt.pha", 
+                   overwrite=True)
+
+    file_answer_testing("EVENTS", "thermal_model_nei_evt.fits", answer_store, answer_dir)
+    file_answer_testing("SPECTRUM", "thermal_model_nei_evt.pha", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
