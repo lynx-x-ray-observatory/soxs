@@ -4,18 +4,18 @@ env:
     global:
         # Set defaults to avoid repeating in most cases
         - NUMPY_VERSION=1.13
-        - ANSWER_VER=1
+        - ANSWER_VER=2
 
 matrix:
     include:
 
         # Try all python versions with the latest numpy
         - python: 2.7
-          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3"; PYTHON='python'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python'
         - python: 3.5
-          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data3"; PYTHON='python3.5'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.5'
         - python: 3.6
-          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data3"; PYTHON='python3.6'
+          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.6'
 
 before_install:
 
@@ -23,7 +23,7 @@ before_install:
     - wget http://hea-www.cfa.harvard.edu/~jzuhone/apec_v3.0.9_nei_line.fits
     - wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_responses.tar.gz
     - tar -zxvf soxs_responses.tar.gz
-    - wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data3_${ANSWER_VER}.tar.gz
+    - wget http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data_${ANSWER_VER}.tar.gz
     - tar -zxvf soxs_test_data3_${ANSWER_VER}.tar.gz
 
     - mkdir -p $HOME/.config/soxs
