@@ -602,7 +602,9 @@ class ApecGenerator(object):
         The number of bins in the spectral model.
     var_elem : list of strings, optional
         The names of elements to allow to vary freely
-        from the single abundance parameter. Default:
+        from the single abundance parameter. These can be strings like
+        ["O", "N", "He"], or if nei=True they must be elements with
+        ionization states, e.g. ["O^1", "O^2", "N^4"]. Default:
         None
     apec_root : string, optional
         The directory root where the APEC model files 
@@ -866,7 +868,8 @@ class ApecGenerator(object):
             km/s. Default: 0.0
         elem_abund : dict of element name, float pairs, optional
             A dictionary of elemental abundances in solar
-            units to vary freely of the abund parameter. Default: None
+            units to vary freely of the abund parameter, e.g.
+            {"O": 0.4, "N": 0.3, "He": 0.9}. Default: None
         """
         if self.nei:
             raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
@@ -900,8 +903,9 @@ class ApecGenerator(object):
         kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The temperature in keV.
         elem_abund : dict of element name, float pairs
-            A dictionary of elemental abundances in solar 
-            units to vary freely of the abund parameter.
+            A dictionary of ionization state abundances in solar
+            units to vary freely of the abund parameter, e.g.
+            {"O^1": 0.4, "O^4": 0.6, "N^2": 0.7} Default: None
         redshift : float
             The redshift.
         norm : float
