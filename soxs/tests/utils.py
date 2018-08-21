@@ -12,9 +12,9 @@ def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
     else:
         answer_spec = type(spec).from_file(testfile)
         assert_array_max_ulp(answer_spec.emid.value,
-                             spec.emid.value, maxulp=2)
+                             spec.emid.value, maxulp=4)
         assert_array_max_ulp(answer_spec.flux.value,
-                             spec.flux.value, maxulp=2)
+                             spec.flux.value, maxulp=4)
         assert answer_spec.flux.unit == spec.flux.unit
 
 
