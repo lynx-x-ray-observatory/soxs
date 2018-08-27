@@ -1,4 +1,4 @@
-__version__ = "2.0.0"
+from ._version import get_versions
 
 from soxs.utils import soxs_cfg
 
@@ -57,3 +57,6 @@ from soxs.cosmology import \
 from soxs.background import \
     make_point_sources_file, \
     make_point_source_list
+
+__version__ = get_versions()['version']
+del get_versions

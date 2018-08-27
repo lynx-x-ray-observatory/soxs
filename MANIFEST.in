@@ -1,1 +1,2 @@
-include soxs/files/*
+include soxs/files/*include versioneer.py
+include soxs/_version.py

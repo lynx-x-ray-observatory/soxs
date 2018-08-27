@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 from setuptools.extension import Extension
 import numpy as np
 import glob
+import versioneer
 
 scripts = glob.glob("scripts/*")
 
@@ -15,7 +16,7 @@ cython_extensions = [
 
 setup(name='soxs',
       packages=find_packages(),
-      version="2.0.0",
+      version=versioneer.get_version(),
       description='Simulated Observations of X-ray Sources',
       author='John ZuHone',
       author_email='john.zuhone@cfa.harvard.edu',
