@@ -650,7 +650,7 @@ class ApecGenerator(object):
         if apec_vers is None:
             filedir = os.path.join(os.path.dirname(__file__), 'files')
             cfile = glob.glob("%s/apec_*_coco.fits" % filedir)[0]
-            apec_vers = cfile.split("_")[1][1:]
+            apec_vers = cfile.split("/")[-1].split("_")[1][1:]
         mylog.info("Using APEC version %s." % apec_vers)
         if nei and apec_root is None:
             raise RuntimeError("The NEI APEC tables are not supplied with "
