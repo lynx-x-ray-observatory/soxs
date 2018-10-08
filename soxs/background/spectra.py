@@ -80,14 +80,15 @@ class BackgroundSpectrum(Spectrum):
         else:
             return BackgroundSpectrum(self.ebins, other*self.flux)
 
-    __rmul__  = __mul__
+    __rmul__ = __mul__
 
 class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
+
     def __init__(self, ebins, flux, default_focal_length):
         super(BackgroundSpectrum, self).__init__(ebins, flux)
         self.default_focal_length = default_focal_length
-
+ 
     @classmethod
     def from_file(cls, filename, default_focal_length):
         """
@@ -125,6 +126,22 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
             de = np.diff(emid)[0]
             ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
         return cls(ebins, flux, default_focal_length)
+
+    @classmethod
+    def from_instrument(cls, instr_name):
+        """
+        Obtain an instrumental background spectrum corresponding
+        to a registered instrument.
+
+        Parameters
+        ----------
+        instr_name : string
+            Name of the instrument in the instrument registry.
+        """
+        from soxs.instrument_registry import instrument_registry
+        from soxs.background.instrument import instrument_backgrounds
+        instr = instrument_registry[instr_name]
+        return instrument_backgrounds[instr["bkgnd"]]
 
     def generate_energies(self, t_exp, fov, focal_length=None, 
                           prng=None, quiet=False):
