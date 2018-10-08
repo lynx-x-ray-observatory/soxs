@@ -134,30 +134,51 @@ class AuxiliaryResponseFile(object):
             events[key] = events[key][eidxs]
         return events
 
-    def plot(self, fig=None, ax=None):
+    def plot(self, xscale="log", yscale="log", xlabel=None,
+             ylabel=None, fig=None, ax=None, **kwargs):
         """
         Make a quick plot of the effective area curve.
 
         Parameters
         ----------
+        xscale : string
+            The scale of the x-axis. "linear" or "log".
+        yscale : string
+            The scale of the y-axis. "linear" or "log".
+        xlabel : string
+            The label of the x-axis. Default: "E (keV)"
+        ylabel : string
+            The label of the y-axis. Default: "$\mathrm{A\ (cm^2)}$"
         fig : :class:`~matplotlib.figure.Figure`, optional
-            The figure to place the plot in. If not supplied, one will be created.
+            The figure to place the plot in. If not supplied, 
+            one will be created.
         ax : :class:`~matplotlib.axes.Axes`, optional
-            The axes to place the plot in. If not supplied, one will be created.
+            The axes to place the plot in. If not supplied, 
+            one will be created.
+
+        All other arguments are passed to the call to 
+        :meth:`~matplotlib.axes.Axes.plot`.
 
         Returns
         -------
 
-        A tuple of the :class:`~matplotlib.figure.Figure` and :class:`~matplotlib.axes.Axes` objects.
+        A tuple of the :class:`~matplotlib.figure.Figure` and 
+        :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
+        if xlabel is None:
+            xlabel = "E (keV)"
+        if ylabel is None:
+            ylabel = "$\mathrm{A\ (cm^2)}$"
         if fig is None:
             fig = plt.figure(figsize=(10, 10))
         if ax is None:
             ax = fig.add_subplot(111)
-        ax.loglog(self.emid, self.eff_area)
-        ax.set_xlabel("E (keV)")
-        ax.set_ylabel("$\mathrm{A\ (cm^2)}$")
+        ax.plot(self.emid, self.eff_area, **kwargs)
+        ax.set_xscale(xscale)
+        ax.set_yscale(yscale)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         return fig, ax
 
 
