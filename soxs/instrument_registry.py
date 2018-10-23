@@ -36,6 +36,9 @@ class InstrumentRegistry(object):
     def __contains__(self, item):
         return item in self.registry
 
+    def get(self, key, default=None):
+        return self.registry.get(key, default)
+
 
 instrument_registry = InstrumentRegistry()
 
