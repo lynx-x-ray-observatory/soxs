@@ -227,19 +227,20 @@ for energy in ["meg", "heg"]:
 
 # SXS
 
-instrument_registry["hitomi_sxs"] = {"name": "hitomi_sxs",
-                                     "arf": "hitomi_sxs_ptsrc.arf",
-                                     "rmf": "hitomi_sxs.rmf",
-                                     "bkgnd": "hitomi_sxs",
-                                     "num_pixels": 6,
-                                     "fov": 3.06450576,
-                                     "aimpt_coords": [0.0, 0.0],
-                                     "chips": None,
-                                     "focal_length": 5.6,
-                                     "dither": False,
-                                     "psf": ["gaussian", 72.0],
-                                     "imaging": True,
-                                     "grating": False}
+instrument_registry["xrism_resolve"] = {"name": "xrism_resolve",
+                                        "arf": "xarm_res_bet_fa_20170818.arf",
+                                        "rmf": "xarm_res_h5ev_20170818.rmf",
+                                        "bkgnd": "hitomi_sxs",
+                                        "num_pixels": 6,
+                                        "fov": 3.06450576,
+                                        "aimpt_coords": [0.0, 0.0],
+                                        "chips": None,
+                                        "focal_length": 5.6,
+                                        "dither": False,
+                                        "psf": ["gaussian", 72.0],
+                                        "imaging": True,
+                                        "grating": False,
+                                        "dep_name": "hitomi_sxs"}
 
 ## AXIS
 
