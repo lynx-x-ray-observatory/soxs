@@ -275,7 +275,7 @@ def add_instrument_to_registry(inst_spec):
     online documentation.
 
     >>> {
-    ...     "name": "hdxi_3x10", # The short name of the instrument
+    ...     "name": "lynx_hdxi", # The short name of the instrument
     ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf", # The file containing the RMF
     ...     "bkgnd": "acisi", # The name of the particle background

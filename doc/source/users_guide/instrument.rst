@@ -99,20 +99,10 @@ Lynx
 Imaging
 #######
 
-For *Lynx*, there are currently two base imaging instruments, ``"hdxi"`` for the 
-High-Definition X-ray Imager, and ``"mucal"`` for the microcalorimeter. There 
-are also variations on these instruments which use different mirror parameters. 
-The different variations on mirror parameters available are:
-
-* :math:`d` = 3 m, :math:`f` = 10 m (default case)
-* :math:`d` = 3 m, :math:`f` = 15 m
-* :math:`d` = 3 m, :math:`f` = 20 m
-* :math:`d` = 6 m, :math:`f` = 20 m
-
-Where :math:`d` is the diameter of the outermost mirror shell, and :math:`f` is
-the focal length. To use a different case other than the default, append it to 
-the instrument string in a ``dxf`` pattern, e.g. ``"hdxi_3x20"``, 
-``"mucal_6x20"``.
+For *Lynx*, there are currently two base imaging instruments, ``"lynx_hdxi"`` 
+for the High-Definition X-ray Imager, and the three pices of ``"lynx_lxm"`` for 
+the microcalorimeter. All configurations correspond to the 
+:math:`d = 3~m, f = 10~m` mirror system.
 
 Gratings
 ########
@@ -147,35 +137,35 @@ ACIS-I
 
 The two ACIS-I specifications have a square field of view of roughly 20 
 arcminutes, laid out in four chips 8 arcminutes on a side arranged 2x2. However,
-The two separate specifications, ``"acisi_cy0"`` and ``"acisi_cy19"``, use the 
-instrumental responses from shortly after launch ("Cycle 0") and from more 
-recently ("Cycle 19"), respectively. The main effect is that the effective area
-at low energies for ``"acisi_cy19"`` is much lower due to the buildup of 
-contamination on the ACIS optical blocking filters compared to the 
-``"acisi_cy0"`` responses.
+The two separate specifications, ``"chandra_acisi_cy0"`` and 
+``"chandra_acisi_cy20"``, use the instrumental responses from shortly after 
+launch ("Cycle 0") and from more recently ("Cycle 20"), respectively. The main 
+effect is that the effective area at low energies for ``"chandra_acisi_cy20"`` 
+is much lower due to the buildup of contamination on the ACIS optical blocking 
+filters compared to the ``"chandra_acisi_cy0"`` responses.
 
 ACIS-S
 ######
 
 The two ACIS-S specifications have 6 chips 8 arcminutes on a side in a single row.
-As in the ACIS-I case, the two specifications are for Cycle 0 ``"aciss_cy0"``, and
-Cycle 19, ``"aciss_cy19"``. 
+As in the ACIS-I case, the two specifications are for Cycle 0 ``"chandra_aciss_cy0"``, 
+and Cycle 20, ``"chandra_aciss_cy20"``. 
 
 HETG
 ####
 
 Eight gratings specifications have been included for ACIS-S and the HETG, for both
-Cycle 0 and Cycle 19. These simulate spectra only for the MEG and HEG, for the 
+Cycle 0 and Cycle 20. These simulate spectra only for the MEG and HEG, for the 
 :math:`\pm` first order spectra. They are named:
 
 * ``"aciss_meg_m1_cy0"``
 * ``"aciss_meg_p1_cy0"``
 * ``"aciss_heg_m1_cy0"``
 * ``"aciss_heg_p1_cy0"``
-* ``"aciss_meg_m1_cy19"``
-* ``"aciss_meg_p1_cy19"``
-* ``"aciss_heg_m1_cy19"``
-* ``"aciss_heg_p1_cy19"``
+* ``"aciss_meg_m1_cy20"``
+* ``"aciss_meg_p1_cy20"``
+* ``"aciss_heg_m1_cy20"``
+* ``"aciss_heg_p1_cy20"``
 
 Hitomi
 ~~~~~~
@@ -295,7 +285,7 @@ command "fakeit" does.
 .. code-block:: python
 
     spec = soxs.Spectrum.from_file("lots_of_lines.dat")
-    instrument = "mucal"
+    instrument = "lynx_lxm"
     out_file = "lots_of_lines.pha"
     simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=True)
 
@@ -312,7 +302,7 @@ Here is an example invocation:
 .. code-block:: python
 
     spec = soxs.Spectrum.from_file("lots_of_lines.dat")
-    instrument = "mucal"
+    instrument = "lynx_lxm"
     out_file = "lots_of_lines.pha"
     simulate_spectrum(spec, instrument, exp_time, out_file, 
                       ptsrc_bkgnd=True, foreground=True, 
@@ -336,7 +326,7 @@ The foreground galactic absorption parameter ``nH`` and the absorption model
 .. code-block:: python
 
     spec = soxs.Spectrum.from_file("lots_of_lines.dat")
-    instrument = "mucal"
+    instrument = "lynx_lxm"
     out_file = "lots_of_lines.pha"
     simulate_spectrum(spec, instrument, exp_time, out_file, 
                       ptsrc_bkgnd=True, foreground=True, 
@@ -367,8 +357,8 @@ spectrum:
     spec = soxs.Spectrum.from_powerlaw(2.0, 0.0, 0.1, 0.1, 10.0, 100000)
     spec.apply_foreground_absorption(0.1, absorb_model='tbabs')
     
-    # Simulate the observed spectrum with Chandra/ACIS HETG: MEG, -1 order, Cycle 19
-    soxs.simulate_spectrum(spec, "aciss_meg_m1_cy19", (100.0, "ks"), 
+    # Simulate the observed spectrum with Chandra/ACIS HETG: MEG, -1 order, Cycle 20
+    soxs.simulate_spectrum(spec, "chandra_aciss_meg_m1_cy20", (100.0, "ks"), 
                            "soxs_meg_m1.pha", overwrite=True)
                            
     # Plot the spectrum
@@ -406,7 +396,7 @@ gives (showing only a subset for brevity):
 
 .. code-block:: pycon
 
-    Instrument: hdxi
+    Instrument: lynx_hdxi
         name: hdxi_3x10
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
@@ -420,6 +410,15 @@ gives (showing only a subset for brevity):
         psf: ['gaussian', 0.5]
         imaging: True
         grating: False
+        dep_name: hdxi
+    Instrument: lynx_gratings
+        name: lynx_gratings
+        arf: xrs_cat.arf
+        rmf: xrs_cat.rmf
+        bkgnd: None
+        focal_length: 10.0
+        imaging: False
+        grating: True
     Instrument: athena_xifu
         name: athena_xifu
         arf: athena_xifu_1469_onaxis_pitch249um_v20160401.arf
@@ -429,17 +428,17 @@ gives (showing only a subset for brevity):
         num_pixels: 84
         aimpt_coords: [0.0, 0.0]
         chips: [['Polygon', 
-                 [-33, 0, 33, 33, 0, -33], 
-                 [20, 38, 20, -20, -38, -20]]]
+                [-33, 0, 33, 33, 0, -33], 
+                [20, 38, 20, -20, -38, -20]]]
         focal_length: 12.0
         dither: False
-        psf: ['gaussian', 5.0]        
+        psf: ['gaussian', 5.0]
         imaging: True
         grating: False
-    Instrument: acisi_cy19
-        name: acisi_cy19
-        arf: acisi_aimpt_cy19.arf
-        rmf: acisi_aimpt_cy19.rmf
+    Instrument: chandra_acisi_cy0
+        name: chandra_acisi_cy0
+        arf: acisi_aimpt_cy0.arf
+        rmf: acisi_aimpt_cy0.rmf
         bkgnd: acisi
         fov: 20.008
         num_pixels: 2440
@@ -453,6 +452,7 @@ gives (showing only a subset for brevity):
         dither: True
         imaging: True
         grating: False
+        dep_name: acisi_cy0
     Instrument: hitomi_sxs
         name: hitomi_sxs
         arf: hitomi_sxs_ptsrc.arf
@@ -514,8 +514,8 @@ to get the specification so that you can alter it:
 .. code-block:: python
 
     from soxs import get_instrument_from_registry, add_instrument_to_registry
-    new_mucal = get_instrument_from_registry("mucal")
-    new_mucal["name"] = "mucal_high_res" # Must change the name, otherwise an error will be thrown
+    new_mucal = get_instrument_from_registry("lynx_lxm")
+    new_mucal["name"] = "lxm_high_res" # Must change the name, otherwise an error will be thrown
     new_mucal["num_pixels"] = 12000 # Results in an ambitiously smaller plate scale, 0.1 arcsec per pixel
     name = add_instrument_to_registry(new_mucal)
     
@@ -523,7 +523,7 @@ You can also store an instrument specification in a JSON file and import it:
 
 .. code-block:: python
 
-    name = add_instrument_to_registry("my_mucal.json")
+    name = add_instrument_to_registry("my_lxm.json")
     
 You can download an example instrument specification JSON file 
 `here <../example_mucal_spec.json>`_. 
@@ -602,22 +602,22 @@ For example, the *Chandra* ACIS-I instrument configurations have a list of four
 
 .. code-block:: python
 
-    instrument_registry["acisi_cy19"] = {"name": "acisi_cy19",
-                                         "arf": "acisi_aimpt_cy19.arf",
-                                         "rmf": "acisi_aimpt_cy19.rmf",
-                                         "bkgnd": "acisi",
-                                         "fov": 20.008,
-                                         "num_pixels": 2440,
-                                         "aimpt_coords": [86.0, 57.0],
-                                         "chips": [["Box", -523, -523, 1024, 1024],
-                                                   ["Box", 523, -523, 1024, 1024],
-                                                   ["Box", -523, 523, 1024, 1024],
-                                                   ["Box", 523, 523, 1024, 1024]],
-                                         "psf": ["gaussian", 0.5],
-                                         "focal_length": 10.0,
-                                         "dither": True,
-                                         "imaging": True,
-                                         "grating": False}
+    instrument_registry["chandra_acisi_cy20"] = {"name": "acisi_cy20",
+                                                 "arf": "acisi_aimpt_cy20.arf",
+                                                 "rmf": "acisi_aimpt_cy20.rmf",
+                                                 "bkgnd": "acisi",
+                                                 "fov": 20.008,
+                                                 "num_pixels": 2440,
+                                                 "aimpt_coords": [86.0, 57.0],
+                                                 "chips": [["Box", -523, -523, 1024, 1024],
+                                                           ["Box", 523, -523, 1024, 1024],
+                                                           ["Box", -523, 523, 1024, 1024],
+                                                           ["Box", 523, 523, 1024, 1024]],
+                                                 "psf": ["gaussian", 0.5],
+                                                 "focal_length": 10.0,
+                                                 "dither": True,
+                                                 "imaging": True,
+                                                 "grating": False}
 
 whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
 
@@ -660,7 +660,7 @@ spatial resolution:
 
     fov = 20.0 # defaults to arcmin
     num_pixels = 2048
-    make_simple_instrument("acisi_cy19", "simple_acisi", fov, num_pixels)
+    make_simple_instrument("chandra_acisi_cy20", "simple_acisi", fov, num_pixels)
 
 To create the same instrument but to additionally turn off the dither:
 
@@ -668,7 +668,7 @@ To create the same instrument but to additionally turn off the dither:
 
     fov = 20.0 # defaults to arcmin
     num_pixels = 2048
-    make_simple_instrument("acisi_cy19", "simple_acisi", fov, num_pixels,
+    make_simple_instrument("chandra_acisi_cy20", "simple_acisi", fov, num_pixels,
                            no_dither=True)
 
 To create a simple *Athena*/XIFU-like instrument without the background and with
