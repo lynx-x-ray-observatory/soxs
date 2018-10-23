@@ -64,8 +64,8 @@ instrument_registry["lynx_hdxi"] = {"name": "hdxi_3x10",
 # Micro-calorimeter
 
 instrument_registry["lynx_lxm"] = {"name": "lynx_lxm",
-                                   "arf": "xrs_mucal_3x10.arf",
-                                   "rmf": "xrs_mucal.rmf",
+                                   "arf": "xrs_mucal_3x10_3.0eV.arf",
+                                   "rmf": "xrs_mucal_3.0eV.rmf",
                                    "bkgnd": "mucal",
                                    "fov": 5.0,
                                    "num_pixels": 300,
@@ -79,7 +79,7 @@ instrument_registry["lynx_lxm"] = {"name": "lynx_lxm",
                                    "dep_name": "mucal"}
 
 instrument_registry["lynx_lxm_enh"] = {"name": "lynx_lxm_enh",
-                                       "arf": "xrs_mucal_3x10.arf",
+                                       "arf": "xrs_mucal_3x10_1.5eV.arf",
                                        "rmf": "xrs_mucal_1.5eV.rmf",
                                        "bkgnd": "mucal",
                                        "fov": 1.0,
@@ -93,7 +93,7 @@ instrument_registry["lynx_lxm_enh"] = {"name": "lynx_lxm_enh",
                                        "grating": False}
 
 instrument_registry["lynx_lxm_ultra"] = {"name": "lynx_lxm_ultra",
-                                         "arf": "xrs_mucal_3x10.arf",
+                                         "arf": "xrs_mucal_3x10_0.3eV.arf",
                                          "rmf": "xrs_mucal_0.3eV.rmf",
                                          "bkgnd": "mucal",
                                          "fov": 1.0,
