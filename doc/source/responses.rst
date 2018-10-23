@@ -54,11 +54,11 @@ ACIS-I Cycle 0
 * ARF: `acisi_aimpt_cy0.arf <../soxs_responses/acisi_aimpt_cy0.arf>`_
 * RMF: `acisi_aimpt_cy0.rmf <../soxs_responses/acisi_aimpt_cy0.rmf>`_
 
-ACIS-I Cycle 19
+ACIS-I Cycle 20
 +++++++++++++++
 
-* ARF: `acisi_aimpt_cy19.arf <../soxs_responses/acisi_aimpt_cy19.arf>`_
-* RMF: `acisi_aimpt_cy19.rmf <../soxs_responses/acisi_aimpt_cy19.rmf>`_
+* ARF: `acisi_aimpt_cy20.arf <../soxs_responses/acisi_aimpt_cy20.arf>`_
+* RMF: `acisi_aimpt_cy20.rmf <../soxs_responses/acisi_aimpt_cy20.rmf>`_
 
 ACIS-S Cycle 0
 ++++++++++++++
@@ -66,11 +66,11 @@ ACIS-S Cycle 0
 * ARF: `aciss_aimpt_cy0.arf <../soxs_responses/aciss_aimpt_cy0.arf>`_
 * RMF: `aciss_aimpt_cy0.rmf <../soxs_responses/aciss_aimpt_cy0.rmf>`_
 
-ACIS-S Cycle 19
+ACIS-S Cycle 20
 +++++++++++++++
 
-* ARF: `aciss_aimpt_cy19.arf <../soxs_responses/aciss_aimpt_cy19.arf>`_
-* RMF: `aciss_aimpt_cy19.rmf <../soxs_responses/aciss_aimpt_cy19.rmf>`_
+* ARF: `aciss_aimpt_cy20.arf <../soxs_responses/aciss_aimpt_cy20.arf>`_
+* RMF: `aciss_aimpt_cy20.rmf <../soxs_responses/aciss_aimpt_cy20.rmf>`_
 
 ACIS-S Cycle 0 Gratings
 +++++++++++++++++++++++
@@ -93,26 +93,26 @@ MEG
 * ARF: `aciss_meg-1_cy0.garf <../soxs_responses/aciss_meg-1_cy0.garf>`_
 * RMF: `aciss_meg-1_cy0.grmf <../soxs_responses/aciss_meg-1_cy0.grmf>`_
 
-ACIS-S Cycle 19 Gratings
+ACIS-S Cycle 20 Gratings
 ++++++++++++++++++++++++
 
 HEG
 ~~~
 
-* ARF: `aciss_heg1_cy19.garf <../soxs_responses/aciss_heg1_cy19.garf>`_
-* RMF: `aciss_heg1_cy19.grmf <../soxs_responses/aciss_heg1_cy19.grmf>`_
+* ARF: `aciss_heg1_cy20.garf <../soxs_responses/aciss_heg1_cy20.garf>`_
+* RMF: `aciss_heg1_cy20.grmf <../soxs_responses/aciss_heg1_cy20.grmf>`_
 
-* ARF: `aciss_heg-1_cy19.garf <../soxs_responses/aciss_heg-1_cy19.garf>`_
-* RMF: `aciss_heg-1_cy19.grmf <../soxs_responses/aciss_heg-1_cy19.grmf>`_
+* ARF: `aciss_heg-1_cy20.garf <../soxs_responses/aciss_heg-1_cy20.garf>`_
+* RMF: `aciss_heg-1_cy20.grmf <../soxs_responses/aciss_heg-1_cy20.grmf>`_
 
 MEG
 ~~~
 
-* ARF: `aciss_meg1_cy19.garf <../soxs_responses/aciss_meg1_cy19.garf>`_
-* RMF: `aciss_meg1_cy19.grmf <../soxs_responses/aciss_meg1_cy19.grmf>`_
+* ARF: `aciss_meg1_cy20.garf <../soxs_responses/aciss_meg1_cy20.garf>`_
+* RMF: `aciss_meg1_cy20.grmf <../soxs_responses/aciss_meg1_cy20.grmf>`_
 
-* ARF: `aciss_meg-1_cy19.garf <../soxs_responses/aciss_meg-1_cy19.garf>`_
-* RMF: `aciss_meg-1_cy19.grmf <../soxs_responses/aciss_meg-1_cy19.grmf>`_
+* ARF: `aciss_meg-1_cy20.garf <../soxs_responses/aciss_meg-1_cy20.garf>`_
+* RMF: `aciss_meg-1_cy20.grmf <../soxs_responses/aciss_meg-1_cy20.grmf>`_
 
 Hitomi
 ------
