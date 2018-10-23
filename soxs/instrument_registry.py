@@ -291,7 +291,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "chips": None, # The specification for the chips
     ...     "aimpt_coords": [0.0, 0.0], # The detector coordinates of the aimpoint
     ...     "imaging": True # Whether or not this is a imaging instrument
-    ...     "grating": True # Whether or not this is a grating instrument
+    ...     "grating": False # Whether or not this is a grating instrument
     ... }
     """
     if isinstance(inst_spec, dict):
