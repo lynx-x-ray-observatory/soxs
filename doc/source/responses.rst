@@ -12,43 +12,20 @@ be downloaded individually or as a complete package.
 Lynx
 ----
 
-High-Definition X-ray Imager
-++++++++++++++++++++++++++++
+HDXI
+++++
 
-For these ARFs, :math:`d` is the diameter of the outermost mirror shell, and 
-:math:`f` is the focal length.
-
-* ARFs:
-
-  * :math:`d` = 3 m, :math:`f` = 10 m: `xrs_hdxi_3x10.arf <../soxs_responses/xrs_hdxi_3x10.arf>`_
-  * :math:`d` = 3 m, :math:`f` = 15 m: `xrs_hdxi_3x15.arf <../soxs_responses/xrs_hdxi_3x15.arf>`_
-  * :math:`d` = 3 m, :math:`f` = 20 m: `xrs_hdxi_3x20.arf <../soxs_responses/xrs_hdxi_3x20.arf>`_
-  * :math:`d` = 6 m, :math:`f` = 20 m: `xrs_hdxi_6x20.arf <../soxs_responses/xrs_hdxi_6x20.arf>`_
-
+* ARF: `xrs_hdxi_3x10.arf <../soxs_responses/xrs_hdxi_3x10.arf>`_
 * RMF: `xrs_hdxi.rmf <../soxs_responses/xrs_hdxi.rmf>`_
 
-Microcalorimeter
-++++++++++++++++
+LXM
++++
 
-For these ARFs, :math:`d` is the diameter of the outermost mirror shell, and 
-:math:`f` is the focal length.
-
-* ARFs:
-
-  * :math:`d` = 3 m, :math:`f` = 10 m: `xrs_mucal_3x10.arf <../soxs_responses/xrs_mucal_3x10.arf>`_
-  * :math:`d` = 3 m, :math:`f` = 15 m: `xrs_mucal_3x15.arf <../soxs_responses/xrs_mucal_3x15.arf>`_
-  * :math:`d` = 3 m, :math:`f` = 20 m: `xrs_mucal_3x20.arf <../soxs_responses/xrs_mucal_3x20.arf>`_
-  * :math:`d` = 6 m, :math:`f` = 20 m: `xrs_mucal_6x20.arf <../soxs_responses/xrs_mucal_6x20.arf>`_
-
+* ARFs `xrs_mucal_3x10.arf <../soxs_responses/xrs_mucal_3x10.arf>`_
 * RMF: `xrs_mucal.rmf <../soxs_responses/xrs_mucal.rmf>`_
 
 CAT Gratings
 ++++++++++++
-
-.. note::
-
-    For the *Lynx* gratings, only the :math:`d` = 3 m, :math:`f` = 10 m configuration is 
-    available. 
 
 * ARF: `xrs_cat.arf <../soxs_responses/xrs_cat.arf>`_
 * RMF: `xrs_cat.rmf <../soxs_responses/xrs_cat.rmf>`_
