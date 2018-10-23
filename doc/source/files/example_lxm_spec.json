@@ -1,6 +1,6 @@
 {
-    "name": "example_mucal",
-    "rmf": "xrs_mucal.rmf",
+    "name": "example_lxm",
+    "rmf": "xrs_mucal_3.0eV.rmf",
     "psf": [
         "gaussian",
         0.5
@@ -8,7 +8,7 @@
     "bkgnd": "mucal",
     "fov": 5.0,
     "dither": true,
-    "arf": "xrs_mucal_3x10.arf",
+    "arf": "xrs_mucal_3x10_3.0eV.arf",
     "num_pixels": 300,
     "focal_length": 10.0,
     "aimpt_coords": [0.0, 0.0],
