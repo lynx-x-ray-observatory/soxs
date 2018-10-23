@@ -149,7 +149,7 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
 # ACIS-I, Cycle 0 and 19
 
 for cycle in [0, 19]:
-    name = "acisi_cy%d" % cycle
+    name = "chandra_acisi_cy%d" % cycle
     instrument_registry[name] = {"name": name, 
                                  "arf": "acisi_aimpt_cy%d.arf" % cycle,
                                  "rmf": "acisi_aimpt_cy%d.rmf" % cycle,
@@ -165,12 +165,13 @@ for cycle in [0, 19]:
                                  "focal_length": 10.0,
                                  "dither": True,
                                  "imaging": True,
-                                 "grating": False}
+                                 "grating": False,
+                                 "dep_name": "acisi_cy%d" % cycle}
 
 # ACIS-S, Cycle 0 and 19
 
 for cycle in [0, 19]:
-    name = "aciss_cy%d" % cycle
+    name = "chandra_aciss_cy%d" % cycle
     instrument_registry[name] = {"name": name,
                                  "arf": "aciss_aimpt_cy%d.arf" % cycle,
                                  "rmf": "aciss_aimpt_cy%d.rmf" % cycle,
@@ -190,7 +191,8 @@ for cycle in [0, 19]:
                                  "focal_length": 10.0,
                                  "dither": True,
                                  "imaging": True, 
-                                 "grating": False}
+                                 "grating": False,
+                                 "dep_name": "aciss_cy%d" % cycle}
 
 
 # ACIS-S, Cycle 0 and 19 HETG
@@ -200,15 +202,17 @@ orders = {"p1": 1, "m1": -1}
 for energy in ["meg", "heg"]:
     for order in ["p1", "m1"]:
         for cycle in [0, 19]:
-            name = "aciss_%s_%s_cy%d" % (energy, order, cycle)
-            resp_name = "aciss_%s%d_cy%d" % (energy, orders[order], cycle)
+            dep_name = "aciss_%s_%s_cy%d" % (energy, order, cycle)
+            name = "chandra_" + dep_name
+            resp_name = "chandra_aciss_%s%d_cy%d" % (energy, orders[order], cycle)
             instrument_registry[name] = {"name": name,
                                          "arf": "%s.garf" % resp_name,
                                          "rmf": "%s.grmf" % resp_name,
                                          "bkgnd": None,
                                          "focal_length": 10.0,
                                          "imaging": False,
-                                         "grating": True}
+                                         "grating": True,
+                                         "dep_name": dep_name}
 
 ## Hitomi
 
