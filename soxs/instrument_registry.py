@@ -34,46 +34,66 @@ instrument_registry = InstrumentRegistry()
 
 # High-Definition X-ray Imager (HDXI)
 
-instrument_registry["hdxi"] = {"name": "hdxi_3x10",
-                               "arf": "xrs_hdxi_3x10.arf",
-                               "rmf": "xrs_hdxi.rmf",
-                               "bkgnd": "acisi",
-                               "fov": 20.0,
-                               "num_pixels": 4096,
-                               "aimpt_coords": [0.0, 0.0],
-                               "chips": None,
-                               "focal_length": 10.0,
-                               "dither": True,
-                               "psf": ["gaussian", 0.5],
-                               "imaging": True,
-                               "grating": False}
-instrument_registry["hdxi_3x10"] = instrument_registry["hdxi"]
+instrument_registry["lynx_hdxi"] = {"name": "hdxi_3x10",
+                                    "arf": "xrs_hdxi_3x10.arf",
+                                    "rmf": "xrs_hdxi.rmf",
+                                    "bkgnd": "acisi",
+                                    "fov": 20.0,
+                                    "num_pixels": 4096,
+                                    "aimpt_coords": [0.0, 0.0],
+                                    "chips": None,
+                                    "focal_length": 10.0,
+                                    "dither": True,
+                                    "psf": ["gaussian", 0.5],
+                                    "imaging": True,
+                                    "grating": False,
+                                    "dep_name": "hdxi"}
 
 # Micro-calorimeter
 
-instrument_registry["mucal"] = {"name": "mucal_3x10",
-                                "arf": "xrs_mucal_3x10.arf",
-                                "rmf": "xrs_mucal.rmf",
-                                "bkgnd": "mucal",
-                                "fov": 5.0,
-                                "num_pixels": 300,
-                                "aimpt_coords": [0.0, 0.0],
-                                "chips": None,
-                                "focal_length": 10.0,
-                                "dither": True,
-                                "psf": ["gaussian", 0.5],
-                                "imaging": True,
-                                "grating": False}
+instrument_registry["lynx_lxm_main"] = {"name": "lynx_lxm_main",
+                                        "arf": "xrs_mucal_3x10.arf",
+                                        "rmf": "xrs_mucal.rmf",
+                                        "bkgnd": "mucal",
+                                        "fov": 5.0,
+                                        "num_pixels": 300,
+                                        "aimpt_coords": [0.0, 0.0],
+                                        "chips": None,
+                                        "focal_length": 10.0,
+                                        "dither": True,
+                                        "psf": ["gaussian", 0.5],
+                                        "imaging": True,
+                                        "grating": False, 
+                                        "dep_name": "mucal"}
 
-instrument_registry["mucal_3x10"] = instrument_registry["mucal"]
+instrument_registry["lynx_lxm_enh"] = {"name": "lynx_lxm_enh",
+                                       "arf": "xrs_mucal_3x10.arf",
+                                       "rmf": "xrs_mucal_1.5eV.rmf",
+                                       "bkgnd": "mucal",
+                                       "fov": 1.0,
+                                       "num_pixels": 120,
+                                       "aimpt_coords": [0.0, 0.0], 
+                                       "chips": None,
+                                       "focal_length": 10.0,
+                                       "dither": True,
+                                       "psf": ["gaussian", 0.5],
+                                       "imaging": True,
+                                       "grating": False}
 
-# Account for different ARFs in imager and microcalorimeter
-for det in ["hdxi", "mucal"]:
-    for mirror in ["3x15", "3x20", "6x20"]:
-        instrument_registry["%s_%s" % (det, mirror)] = instrument_registry[det].copy()
-        instrument_registry["%s_%s" % (det, mirror)]["name"] = "%s_%s" % (det, mirror)
-        instrument_registry["%s_%s" % (det, mirror)]["arf"] = "xrs_%s_%s.arf" % (det, mirror)
-        instrument_registry["%s_%s" % (det, mirror)]["focal_length"] = float(mirror.split("x")[-1])
+instrument_registry["lynx_lxm_ultra"] = {"name": "lynx_lxm_ultra",
+                                         "arf": "xrs_mucal_3x10.arf",
+                                         "rmf": "xrs_mucal_0.3eV.rmf",
+                                         "bkgnd": "mucal",
+                                         "fov": 1.0,
+                                         "num_pixels": 60,
+                                         "aimpt_coords": [0.0, 0.0],
+                                         "chips": None,
+                                         "focal_length": 10.0,
+                                         "dither": True,
+                                         "psf": ["gaussian", 0.5],
+                                         "imaging": True,
+                                         "grating": False}
+
 
 # Gratings (for spectra only)
 
