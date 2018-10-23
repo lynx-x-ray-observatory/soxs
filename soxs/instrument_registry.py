@@ -1,12 +1,34 @@
 from __future__ import print_function
 import json
-from soxs.utils import mylog, parse_value
+from soxs.utils import mylog, parse_value, \
+    issue_deprecation_warning
 import os
 from copy import deepcopy
 
 # The Instrument Registry
 
-instrument_registry = {}
+
+class InstrumentRegistry(object):
+    def __init__(self):
+        self.dep_map = {}
+        self.registry = {}
+
+    def __getitem__(self, key):
+        if key in self.dep_map:
+            msg = "Instrument '%s' has been replaced with " % key
+            msg += "instrument '%s' and is deprecated. " % self.dep_map[key]
+            msg += "Please edit your scripts/notebooks accordingly."
+            issue_deprecation_warning(msg)
+            key = self.dep_map[key]
+        return self.registry[key]
+
+    def __setitem__(self, key, value):
+        if "dep_map" in value:
+            self.dep_map[value["dep_name"]] = value["name"]
+        self.registry[key] = value
+
+
+instrument_registry = InstrumentRegistry()
 
 ## Lynx
 
