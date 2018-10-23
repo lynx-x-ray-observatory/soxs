@@ -27,6 +27,15 @@ class InstrumentRegistry(object):
             self.dep_map[value["dep_name"]] = value["name"]
         self.registry[key] = value
 
+    def keys(self):
+        return self.registry.keys()
+
+    def items(self):
+        return self.registry.items()
+
+    def __contains__(self, item):
+        return item in self.registry
+
 
 instrument_registry = InstrumentRegistry()
 
