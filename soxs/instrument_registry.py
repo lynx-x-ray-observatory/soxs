@@ -155,9 +155,9 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
 
 ## Chandra
 
-# ACIS-I, Cycle 0 and 19
+# ACIS-I, Cycle 0 and 20
 
-for cycle in [0, 19]:
+for cycle in [0, 20]:
     name = "chandra_acisi_cy%d" % cycle
     instrument_registry[name] = {"name": name, 
                                  "arf": "acisi_aimpt_cy%d.arf" % cycle,
@@ -179,7 +179,7 @@ for cycle in [0, 19]:
 
 # ACIS-S, Cycle 0 and 19
 
-for cycle in [0, 19]:
+for cycle in [0, 20]:
     name = "chandra_aciss_cy%d" % cycle
     instrument_registry[name] = {"name": name,
                                  "arf": "aciss_aimpt_cy%d.arf" % cycle,
@@ -210,7 +210,7 @@ orders = {"p1": 1, "m1": -1}
 
 for energy in ["meg", "heg"]:
     for order in ["p1", "m1"]:
-        for cycle in [0, 19]:
+        for cycle in [0, 20]:
             dep_name = "aciss_%s_%s_cy%d" % (energy, order, cycle)
             name = "chandra_" + dep_name
             resp_name = "chandra_aciss_%s%d_cy%d" % (energy, orders[order], cycle)
