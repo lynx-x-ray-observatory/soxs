@@ -216,24 +216,24 @@ Simulate a Lynx microcalorimeter spectrum.
 
 .. code-block:: bash
 
-    [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha
+    [~]$ simulate_spectrum power_law_spec.dat lynx_lxm 300.0,ks plaw_spec.pha
 
 The same spectrum, but with point-source, foreground, and instrumental backgrounds
 added. Two square arcminutes of background assumed. 
 
 .. code-block:: bash
 
-    [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
+    [~]$ simulate_spectrum power_law_spec.dat lynx_lxm 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
 
 The same spectrum with backgrounds, but adjusting the galactic hydrogen column and
 absorption model.
 
 .. code-block:: bash
 
-    [~]$ simulate_spectrum power_law_spec.dat mucal 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd --nh 0.02 --absorb_model tbabs
+    [~]$ simulate_spectrum power_law_spec.dat lynx_lxm 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd --nh 0.02 --absorb_model tbabs
 
 Simulate backgrounds only.
 
 .. code-block:: bash
 
-    [~]$ simulate_spectrum None mucal 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
+    [~]$ simulate_spectrum None lynx_lxm 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd

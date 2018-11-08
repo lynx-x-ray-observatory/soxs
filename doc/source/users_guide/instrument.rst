@@ -31,9 +31,9 @@ following:
 
     from soxs import instrument_simulator
     simput_file = "snr_simput.fits" # SIMPUT file to be read
-    out_file = "evt_mucal.fits" # event file to be written
+    out_file = "evt_lxm.fits" # event file to be written
     exp_time = (30.0, "ks") # The exposure time
-    instrument = "mucal" # short name for instrument to be used
+    instrument = "lynx_lxm" # short name for instrument to be used
     sky_center = [30., 45.] # RA, Dec of pointing in degrees
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
                          sky_center, overwrite=True)
@@ -100,8 +100,10 @@ Imaging
 #######
 
 For *Lynx*, there are currently two base imaging instruments, ``"lynx_hdxi"`` 
-for the High-Definition X-ray Imager, and the three pices of ``"lynx_lxm"`` for 
-the microcalorimeter. All configurations correspond to the 
+for the High-Definition X-ray Imager (HDXI), and the three subarrays of the 
+*Lynx* X-ray Microcalorimeter (LXM): the Main Array (``"lynx_lxm"``), the 
+Enhanced Main Array (``"lynx_lxm_enh"``), and the Ultra High-Resolution Array
+(``"lynx_lxm_ultra"``). All *Lynx* configurations correspond to the 
 :math:`d = 3~m, f = 10~m` mirror system.
 
 Gratings
@@ -514,10 +516,10 @@ to get the specification so that you can alter it:
 .. code-block:: python
 
     from soxs import get_instrument_from_registry, add_instrument_to_registry
-    new_mucal = get_instrument_from_registry("lynx_lxm")
-    new_mucal["name"] = "lxm_high_res" # Must change the name, otherwise an error will be thrown
-    new_mucal["num_pixels"] = 12000 # Results in an ambitiously smaller plate scale, 0.1 arcsec per pixel
-    name = add_instrument_to_registry(new_mucal)
+    new_lxm = get_instrument_from_registry("lynx_lxm")
+    new_lxm["name"] = "lxm_high_res" # Must change the name, otherwise an error will be thrown
+    new_lxm["num_pixels"] = 12000 # Results in an ambitiously smaller plate scale, 0.1 arcsec per pixel
+    name = add_instrument_to_registry(new_lxm)
     
 You can also store an instrument specification in a JSON file and import it:
 
@@ -526,7 +528,7 @@ You can also store an instrument specification in a JSON file and import it:
     name = add_instrument_to_registry("my_lxm.json")
     
 You can download an example instrument specification JSON file 
-`here <../example_mucal_spec.json>`_. 
+`here <../example_lxm_spec.json>`_. 
 
 You can also take an existing instrument specification and write it to a JSON 
 file for editing using :func:`~soxs.instrument.write_instrument_json`:
@@ -534,8 +536,8 @@ file for editing using :func:`~soxs.instrument.write_instrument_json`:
 .. code-block:: python
 
     from soxs import write_instrument_json
-    # Using the "new_mucal" from above
-    write_instrument_json("mucal_high_res", "mucal_high_res.json")
+    # Using the "lxm_high_res" from above
+    write_instrument_json("lxm_high_res", "lxm_high_res.json")
 
 .. warning::
 

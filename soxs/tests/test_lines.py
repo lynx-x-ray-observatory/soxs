@@ -26,7 +26,7 @@ def test_emission_line(answer_store, answer_dir):
 
     exp_time = (100.0, "ks")
     area = 30000.0
-    inst_name = "mucal"
+    inst_name = "lynx_lxm"
 
     spec = Spectrum.from_constant(const_flux, 1.0, 10.0, 20000)
     spec.add_emission_line(line_pos, line_width, line_amp)

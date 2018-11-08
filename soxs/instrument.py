@@ -42,7 +42,7 @@ class AuxiliaryResponseFile(object):
 
     Examples
     --------
-    >>> arf = AuxiliaryResponseFile("xrs_mucal_3x10.arf")
+    >>> arf = AuxiliaryResponseFile("xrs_mucal_3x10_3.0eV.arf")
     """
     def __init__(self, filename):
         self.filename = get_response_path(filename)
@@ -1023,7 +1023,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     Examples
     --------
     >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
-    >>> soxs.simulate_spectrum(spec, "mucal", 100000.0, 
+    >>> soxs.simulate_spectrum(spec, "lynx_lxm", 100000.0, 
     ...                        "my_spec.pi", overwrite=True)
     """
     from soxs.events import _write_spectrum

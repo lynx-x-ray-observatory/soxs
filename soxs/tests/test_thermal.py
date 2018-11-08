@@ -15,7 +15,7 @@ from numpy.testing import assert_allclose
 from soxs.tests.utils import spectrum_answer_testing, \
     file_answer_testing
 
-inst_name = "mucal"
+inst_name = "lynx_lxm"
 
 rmf = RedistributionMatrixFile("xrs_%s.rmf" % inst_name)
 agen0 = ApecGenerator(0.01, 10.0, 20000, broadening=True)
