@@ -611,8 +611,8 @@ class ApecGenerator(object):
         are stored. If not provided, the default is to 
         grab them from the tables stored with SOXS.
     apec_vers : string, optional
-        The version identifier string for the APEC files, 
-        e.g. "2.0.2"
+        The version identifier string for the APEC files. 
+        Default: "3.0.9"
     broadening : boolean, optional
         Whether or not the spectral lines should be 
         thermally and velocity broadened. Default: True
