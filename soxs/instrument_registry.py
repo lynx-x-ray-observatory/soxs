@@ -119,29 +119,11 @@ instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
 
 ## Athena
 
-# XIFU
-
-instrument_registry["athena_xifu"] = {"name": "athena_xifu",
-                                      "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
-                                      "rmf": "athena_xifu_rmf_v20160401.rmf",
-                                      "bkgnd": "athena_xifu",
-                                      "fov": 5.991992621478149,
-                                      "num_pixels": 84,
-                                      "aimpt_coords": [0.0, 0.0],
-                                      "chips": [["Polygon", 
-                                                 [-33, 0, 33, 33, 0, -33],
-                                                 [20, 38, 20, -20, -38, -20]]],
-                                      "focal_length": 12.0,
-                                      "dither": False,
-                                      "psf": ["gaussian", 5.0],
-                                      "imaging": True, 
-                                      "grating": False}
-
 # WFI
 
 instrument_registry["athena_wfi"] = {"name": "athena_wfi",
-                                     "arf": "athena_wfi_1469_onaxis_w_filter_v20150326.arf",
-                                     "rmf": "athena_wfi_rmf_v20150326.rmf",
+                                     "arf": "athena_wfi_15row_20171107_wo_filter_OnAxis.arf",
+                                     "rmf": "athena_wfi_baseline.rmf",
                                      "bkgnd": "athena_wfi",
                                      "fov": 40.147153,
                                      "num_pixels": 1078,
@@ -155,6 +137,24 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                      "psf": ["gaussian", 5.0],
                                      "imaging": True,
                                      "grating": False}
+
+# XIFU
+
+instrument_registry["athena_xifu"] = {"name": "athena_xifu",
+                                      "arf": "XIFU_CC_BASELINECONF_2018_10_10.arf",
+                                      "rmf": "XIFU_CC_BASELINECONF_2018_10_10.rmf",
+                                      "bkgnd": "athena_xifu",
+                                      "fov": 5.991992621478149,
+                                      "num_pixels": 84,
+                                      "aimpt_coords": [0.0, 0.0],
+                                      "chips": [["Polygon", 
+                                                 [-33, 0, 33, 33, 0, -33],
+                                                 [20, 38, 20, -20, -38, -20]]],
+                                      "focal_length": 12.0,
+                                      "dither": False,
+                                      "psf": ["gaussian", 5.0],
+                                      "imaging": True, 
+                                      "grating": False}
 
 ## Chandra
 
