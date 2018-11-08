@@ -3,6 +3,32 @@
 ChangeLog
 =========
 
+Version 2.2.0
+-------------
+
+This version of SOXS focuses on new instrument modes and response files, as well
+as containing bugfixes and improvements. This version supports Python 2.7, 3.5,
+3.6, and 3.7.
+
+* Fixed an issue where an invalid APEC version was being found when the user 
+  did not specify a path to the AtomDB tables. Thanks to David Turner for this
+  bugfix. 
+* The *Lynx* microcalorimeter, now named "LXM", has been split into three 
+  subarrays, currently corresponding to three different instrument modes. 
+* The only *Lynx* mirror configuration currently available is the 
+  :math:`d = 3~m, f = 10~m` system. All other confiugrations have been removed
+  in this version of SOXS.
+* A new naming scheme has been adopted for many instruments for clarity, but
+  the old names will be accepted with a warning. 
+* The *Chandra* Cycle 19 responses have been replaced by their Cycle 20 
+  versions.
+* The *Athena* response files have been updated to their latest versions. 
+* The *Hitomi* SXS instrument mode has been replaced by the *XRISM* Resolve
+  instrument mode, and the response files have been updated accordingly. 
+
+For more information on the new instrument configurations, consult the
+:ref:`instrument` section of the User's Guide. 
+
 Version 2.1.0
 -------------
 
