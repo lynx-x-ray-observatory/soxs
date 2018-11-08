@@ -21,8 +21,27 @@ HDXI
 LXM
 +++
 
-* ARFs `xrs_mucal_3x10.arf <../soxs_responses/xrs_mucal_3x10.arf>`_
-* RMF: `xrs_mucal.rmf <../soxs_responses/xrs_mucal.rmf>`_
+The LXM has three different subarrays, each with different plate scales, field
+of view, and energy resolution. Currently, we have separated them into three
+separate instrument modes in SOXS. They are:
+
+Main Array
+~~~~~~~~~~
+
+* ARFs `xrs_mucal_3x10_3.0eV.arf <../soxs_responses/xrs_mucal_3x10_3.0eV.arf>`_
+* RMF: `xrs_mucal_3.0eV.rmf <../soxs_responses/xrs_mucal_3.0eV.rmf>`_
+
+Enhanced Main Array
+~~~~~~~~~~~~~~~~~~~
+
+* ARFs `xrs_mucal_3x10_1.5eV.arf <../soxs_responses/xrs_mucal_3x10_1.5eV.arf>`_
+* RMF: `xrs_mucal_1.5eV.rmf <../soxs_responses/xrs_mucal_1.5eV.rmf>`_
+
+Ultra High-Resolution Array
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* ARFs `xrs_mucal_3x10_0.3eV.arf <../soxs_responses/xrs_mucal_3x10_0.3eV.arf>`_
+* RMF: `xrs_mucal_0.3eV.rmf <../soxs_responses/xrs_mucal_0.3eV.rmf>`_
 
 CAT Gratings
 ++++++++++++
@@ -33,17 +52,17 @@ CAT Gratings
 Athena
 ------
 
-Wide-Field Imager
-+++++++++++++++++
+WFI
++++
 
-* ARF: `athena_wfi_1469_onaxis_w_filter_v20150326.arf <../soxs_responses/athena_wfi_1469_onaxis_w_filter_v20150326.arf>`_
-* RMF: `athena_wfi_rmf_v20150326.rmf <../soxs_responses/athena_wfi_rmf_v20150326.rmf>`_
+* ARF: `athena_wfi_15row_20171107_wo_filter_OnAxis.arf <../soxs_responses/athena_wfi_15row_20171107_wo_filter_OnAxis.arf>`_
+* RMF: `athena_wfi_baseline.rmf <../soxs_responses/athena_wfi_baseline.rmf>`_
 
-X-ray Integral Field Unit
-+++++++++++++++++++++++++
+X-IFU
++++++
 
-* ARF: `athena_xifu_1469_onaxis_pitch249um_v20160401.arf <../soxs_responses/athena_xifu_1469_onaxis_pitch249um_v20160401.arf>`_
-* RMF: `athena_xifu_rmf_v20160401.rmf <../soxs_responses/athena_xifu_rmf_v20160401.rmf>`_
+* ARF: `XIFU_CC_BASELINECONF_2018_10_10.arf <../soxs_responses/XIFU_CC_BASELINECONF_2018_10_10.arf>`_
+* RMF: `XIFU_CC_BASELINECONF_2018_10_10.rmf <../soxs_responses/XIFU_CC_BASELINECONF_2018_10_10.rmf>`_
 
 Chandra
 -------
@@ -114,14 +133,14 @@ MEG
 * ARF: `aciss_meg-1_cy20.garf <../soxs_responses/aciss_meg-1_cy20.garf>`_
 * RMF: `aciss_meg-1_cy20.grmf <../soxs_responses/aciss_meg-1_cy20.grmf>`_
 
-Hitomi
-------
+XRISM
+-----
 
-SXS
-+++
+Resolve
++++++++
 
-* ARF: `hitomi_sxs_ptsrc.arf <../soxs_responses/hitomi_sxs_ptsrc.arf>`_
-* RMF: `hitomi_sxs.rmf <../soxs_responses/hitomi_sxs.rmf>`_
+* ARF: `xarm_res_bet_fa_20170818.arf <../soxs_responses/xarm_res_bet_fa_20170818.arf>`_
+* RMF: `xarm_res_h5ev_20170818.rmf <../soxs_responses/xarm_res_h5ev_20170818.rmf>`_
 
 AXIS
 ----
