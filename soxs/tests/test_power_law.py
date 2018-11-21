@@ -12,7 +12,7 @@ from numpy.random import RandomState
 from soxs.tests.utils import spectrum_answer_testing, \
     file_answer_testing
 
-make_simple_instrument("hdxi", "new_hdxi", 20.0, 1024)
+make_simple_instrument("lynx_hdxi", "new_hdxi", 20.0, 1024)
 
 prng = RandomState(69)
 
