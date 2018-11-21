@@ -39,6 +39,9 @@ class InstrumentRegistry(object):
     def get(self, key, default=None):
         return self.registry.get(key, default)
 
+    def set(self, key, value, default=None):
+        self.registry.set(key, value, default)
+
 
 instrument_registry = InstrumentRegistry()
 
