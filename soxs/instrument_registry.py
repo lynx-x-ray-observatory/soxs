@@ -23,7 +23,7 @@ class InstrumentRegistry(object):
         return self.registry[key]
 
     def __setitem__(self, key, value):
-        if "dep_map" in value:
+        if "dep_name" in value:
             self.dep_map[value["dep_name"]] = value["name"]
         self.registry[key] = value
 
