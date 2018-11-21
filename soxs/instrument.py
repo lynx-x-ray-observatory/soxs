@@ -13,7 +13,7 @@ from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from six import string_types
 from tqdm import tqdm
-from scipy.interpolate import InterpolatedUnivariateSpline
+
 
 def get_response_path(fn):
     if os.path.exists(fn):
@@ -84,8 +84,8 @@ class AuxiliaryResponseFile(object):
         Interpolate the effective area to the energies 
         provided  by the supplied *energy* array.
         """
-        a = InterpolatedUnivariateSpline(self.emid, self.eff_area)
-        return u.Quantity(a(energy), "cm**2")
+        earea = np.interp(energy, self.emid, self.eff_area, left=0.0, right=0.0)
+        return u.Quantity(earea, "cm**2")
 
     def detect_events(self, events, exp_time, flux, refband, prng=None):
         """
