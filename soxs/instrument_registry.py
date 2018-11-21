@@ -55,7 +55,7 @@ instrument_registry = InstrumentRegistry()
 
 # High-Definition X-ray Imager (HDXI)
 
-instrument_registry["lynx_hdxi"] = {"name": "hdxi_3x10",
+instrument_registry["lynx_hdxi"] = {"name": "lynx_hdxi",
                                     "arf": "xrs_hdxi_3x10.arf",
                                     "rmf": "xrs_hdxi.rmf",
                                     "bkgnd": "acisi",
