@@ -63,8 +63,8 @@ def test_point_source():
     scalex = np.std(x)*sigma_to_fwhm*dtheta
     scaley = np.std(y)*sigma_to_fwhm*dtheta
 
-    assert (scalex - psf_scale)/psf_scale < 0.01
-    assert (scaley - psf_scale)/psf_scale < 0.01
+    assert (scalex - psf_scale)/psf_scale < 0.03
+    assert (scaley - psf_scale)/psf_scale < 0.03
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
