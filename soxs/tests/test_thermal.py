@@ -2,7 +2,7 @@ import numpy as np
 import os
 import shutil
 import tempfile
-from soxs.spectra import ApecGenerator, get_wabs_absorb
+from soxs.spectra import ApecGenerator
 from soxs.spatial import PointSourceModel
 from soxs.simput import SimputCatalog
 from soxs.instrument_registry import \
@@ -17,7 +17,7 @@ from soxs.tests.utils import spectrum_answer_testing, \
 
 inst_name = "lynx_lxm"
 
-rmf = RedistributionMatrixFile("xrs_%s.rmf" % inst_name)
+rmf = RedistributionMatrixFile.from_instrument(inst_name)
 agen0 = ApecGenerator(0.01, 10.0, 20000, broadening=True)
 agen_var0 = ApecGenerator(0.01, 10.0, 20000, var_elem=["O", "Fe"],
                           broadening=True)
