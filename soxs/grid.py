@@ -2,7 +2,6 @@ from soxs.instrument import instrument_simulator
 from soxs.events import make_exposure_map
 from soxs.utils import parse_value, mylog
 import numpy as np
-from astropy import wcs
 from astropy.io import fits, ascii
 from astropy.table import Table
 
@@ -26,7 +25,7 @@ def observe_grid_source(grid_spec_file, exp_time, instrument,
                              no_dither=no_dither, dither_params=dither_params,
                              subpixel_res=subpixel_res, prng=prng,
                              source_id=row["src_id"])
-    et = Table([out_list])
+    et = Table([out_list], names=["evtfile"])
     et.meta["comments"] = t.meta["comments"][2:]
     outfile = "{}_event_grid.txt".format(simput_file.split("_simput.fits")[0])
     mylog.info("Writing grid information to {}.".format(outfile))
@@ -35,9 +34,9 @@ def observe_grid_source(grid_spec_file, exp_time, instrument,
     return outfile
 
 
-def make_grid_image(evtfile_list, out_file, emin=None, emax=None, 
-                    make_expmap=False, expmap_energy=None, 
-                    overwrite=False, reblock=1):
+def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
+                    use_expmap=False, expmap_file=None,
+                    expmap_energy=None, overwrite=False, reblock=1):
     t = ascii.read(evtfile_list, format='commented_header',
                    guess=False, header_start=0, delimiter="\t")
 
@@ -52,28 +51,40 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
         emax = parse_value(emax, "keV")
     emax *= 1000.
 
-    evtfiles = t["evtfiles"]
+    evtfiles = t["evtfile"]
 
-    ra0, dec0 = np.array(t.meta["comments"][1].split()[-1].split(","), dtype='float64')
-    numx, numy = np.array(t.meta["comments"][2].split()[-1].split(","), dtype='int64')
+    ra0, dec0 = np.array(t.meta["comments"][0].split()[-1].split(","), dtype='float64')
+    numx, numy = np.array(t.meta["comments"][1].split()[-1].split(","), dtype='int64')
     f = fits.open(evtfiles[0], memmap=True)
     exp_time = f["EVENTS"].header["EXPOSURE"]
     xmin = f["EVENTS"].header["TLMIN2"]
     ymin = f["EVENTS"].header["TLMIN3"]
     xmax = f["EVENTS"].header["TLMAX2"]
     ymax = f["EVENTS"].header["TLMAX3"]
-    nx = int(xmax-xmin)//reblock
-    ny = int(ymax-ymin)//reblock
+    Lx = 0.5*(xmax-xmin)
+    Ly = 0.5*(ymax-ymin)
+    nx = int(Lx)//reblock
+    ny = int(Ly)//reblock
     nxb = nx*numx
     nyb = ny*numy
     xdel = f["EVENTS"].header["TCDLT2"]*reblock
     ydel = f["EVENTS"].header["TCDLT3"]*reblock
     f.close()
 
-    xbins = np.linspace(xmin, xmax, nx+1, endpoint=True)
-    ybins = np.linspace(ymin, ymax, ny+1, endpoint=True)
+    xbins = np.linspace(xmin+0.5*Lx, xmax-0.5*Lx, nx+1, endpoint=True)
+    ybins = np.linspace(ymin+0.5*Ly, ymax-0.5*Ly, ny+1, endpoint=True)
 
     Hbig = np.zeros((nxb, nyb))
+
+    if use_expmap:
+        if expmap_file is None:
+            expmap_file = evtfiles[0].split("_evt.fits")[0] + "_expmap.fits"
+            make_exposure_map(evtfiles[0], expmap_file, expmap_energy,
+                              overwrite=overwrite, reblock=reblock)
+        f = fits.open(expmap_file)
+        E = f["EXPMAP"].data.T
+        f.close()
+        Ebig = np.zeros((nxb, nyb))
 
     for evtfile in evtfiles:
         f = fits.open(evtfile, memmap=True)
@@ -82,6 +93,17 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
         x = f["EVENTS"].data["X"][idxs]
         y = f["EVENTS"].data["Y"][idxs]
         H, _, _ = np.histogram2d(x, y, bins=[xbins, ybins])
+        i, j = np.array(evtfile.split("_")[-3:-1], dtype='int')
+        Hbig[i*nx:(i+1)*nx,j*ny:(j+1)*ny] += H
+        if use_expmap:
+            Ebig[i*nx:(i+1)*nx,j*ny:(j+1)*ny] += E
+
+    if use_expmap:
+        with np.errstate(invalid='ignore', divide='ignore'):
+            Hbig /= Ebig
+        Hbig[np.isinf(Hbig)] = 0.0
+        Hbig = np.nan_to_num(Hbig)
+        Hbig[Hbig < 0.0] = 0.0
 
     hdu = fits.PrimaryHDU(Hbig.T)
 
@@ -99,10 +121,5 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
     hdu.header["CRPIX2"] = 0.5*(ny+1)
 
     hdu.header["EXPOSURE"] = exp_time
-
-    if make_expmap:
-        expmap_file = evtfiles[0].split("_evt.fits")[0] + "_expmap.fits"
-        make_exposure_map(evtfiles[0], expmap_file, expmap_energy,
-                          overwrite=overwrite, reblock=reblock)
 
     hdu.writeto(out_file, overwrite=overwrite)
