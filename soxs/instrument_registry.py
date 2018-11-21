@@ -13,12 +13,15 @@ class InstrumentRegistry(object):
         self.dep_map = {}
         self.registry = {}
 
+    def _complain_old(self, key):
+        msg = "Instrument '%s' has been replaced with " % key
+        msg += "instrument '%s' and is deprecated. " % self.dep_map[key]
+        msg += "Please edit your scripts/notebooks accordingly."
+        issue_deprecation_warning(msg)
+
     def __getitem__(self, key):
         if key in self.dep_map:
-            msg = "Instrument '%s' has been replaced with " % key
-            msg += "instrument '%s' and is deprecated. " % self.dep_map[key]
-            msg += "Please edit your scripts/notebooks accordingly."
-            issue_deprecation_warning(msg)
+            self._complain_old(key)
             key = self.dep_map[key]
         return self.registry[key]
 
@@ -34,6 +37,9 @@ class InstrumentRegistry(object):
         return self.registry.items()
 
     def __contains__(self, item):
+        if item in self.dep_map:
+            self._complain_old(item)
+            return True
         return item in self.registry
 
     def get(self, key, default=None):
