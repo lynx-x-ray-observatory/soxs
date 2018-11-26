@@ -25,6 +25,12 @@ The LXM has three different subarrays, each with different plate scales, field
 of view, and energy resolution. Currently, we have separated them into three
 separate instrument modes in SOXS. They are:
 
+XGS
++++
+
+* ARF: `xrs_cat.arf <../soxs_responses/xrs_cat.arf>`_
+* RMF: `xrs_cat.rmf <../soxs_responses/xrs_cat.rmf>`_
+
 Main Array
 ~~~~~~~~~~
 

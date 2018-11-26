@@ -66,7 +66,7 @@ def test_absorption_line(answer_store, answer_dir):
     line_amp = 1.0e-5
 
     exp_time = (100.0, "ks")
-    inst_name = "lynx_gratings"
+    inst_name = "lynx_xgs"
 
     spec = Spectrum.from_constant(const_flux, 0.1, 3.0, 100000)
     spec.add_absorption_line(line_pos, line_width, line_amp)

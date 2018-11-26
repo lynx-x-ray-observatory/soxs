@@ -118,13 +118,13 @@ instrument_registry["lynx_lxm_ultra"] = {"name": "lynx_lxm_ultra",
 
 # Gratings (for spectra only)
 
-instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
-                                        "arf": "xrs_cat.arf",
-                                        "rmf": "xrs_cat.rmf",
-                                        "bkgnd": None,
-                                        "focal_length": 10.0,
-                                        "imaging": False,
-                                        "grating": True}
+instrument_registry["lynx_xgs"] = {"name": "lynx_xgs",
+                                   "arf": "xrs_cat.arf",
+                                   "rmf": "xrs_cat.rmf",
+                                   "bkgnd": None,
+                                   "focal_length": 10.0,
+                                   "imaging": False,
+                                   "grating": True}
 
 ## Athena
 

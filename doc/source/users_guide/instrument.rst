@@ -121,9 +121,10 @@ Gratings
 ########
 
 A single gratings instrument specification for *Lynx* is included with SOXS,
-``lynx_gratings``, which currently only allows simulations of spectra. It 
-corresponds approximately to the :math:`d = 3~m, f = 10~m` mirror system, 
-50% coverage of the input aperture by the gratings, and :math:`R = 5000`.
+the *Lynx* X-ray Gratings Spectrometer, ``"lynx_xgs"``, which currently only 
+allows simulations of spectra. It corresponds approximately to the 
+:math:`d = 3~m, f = 10~m` mirror system, 50% coverage of the input aperture 
+by the gratings, and :math:`R = 5000`.
 
 Athena
 ~~~~~~
@@ -419,8 +420,8 @@ gives (showing only a subset for brevity):
         imaging: True
         grating: False
         dep_name: hdxi
-    Instrument: lynx_gratings
-        name: lynx_gratings
+    Instrument: lynx_xgs
+        name: lynx_xgs
         arf: xrs_cat.arf
         rmf: xrs_cat.rmf
         bkgnd: None
@@ -559,19 +560,19 @@ Making Custom Non-Imaging and Grating Instruments
 +++++++++++++++++++++++++++++++++++++++++++++++++
 
 Non-imaging and grating instrument specifications are far simpler than imaging
-instrument specifications, and require fewer keywords. The ``"lynx_grating"``
+instrument specifications, and require fewer keywords. The ``"lynx_xgs"``
 instrument specification provides an example of the minimum number of keywords
 required for such instruments:
 
 .. code-block:: python
 
-    instrument_registry["lynx_gratings"] = {"name": "lynx_gratings",
-                                            "arf": "xrs_cat.arf",
-                                            "rmf": "xrs_cat.rmf",
-                                            "bkgnd": None,
-                                            "focal_length": 10.0,
-                                            "imaging": False,
-                                            "grating": True}
+    instrument_registry["lynx_xgs"] = {"name": "lynx_xgs",
+                                       "arf": "xrs_cat.arf",
+                                       "rmf": "xrs_cat.rmf",
+                                       "bkgnd": None,
+                                       "focal_length": 10.0,
+                                       "imaging": False,
+                                       "grating": True}
 
 For non-imaging instruments, ``"imaging"`` must be set to ``False``. For gratings 
 instruments, ``"grating"`` must be set to ``True``.
