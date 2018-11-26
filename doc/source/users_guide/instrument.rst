@@ -171,21 +171,22 @@ Eight gratings specifications have been included for ACIS-S and the HETG, for bo
 Cycle 0 and Cycle 20. These simulate spectra only for the MEG and HEG, for the 
 :math:`\pm` first order spectra. They are named:
 
-* ``"aciss_meg_m1_cy0"``
-* ``"aciss_meg_p1_cy0"``
-* ``"aciss_heg_m1_cy0"``
-* ``"aciss_heg_p1_cy0"``
-* ``"aciss_meg_m1_cy20"``
-* ``"aciss_meg_p1_cy20"``
-* ``"aciss_heg_m1_cy20"``
-* ``"aciss_heg_p1_cy20"``
+* ``"chandra_aciss_meg_m1_cy0"``
+* ``"chandra_aciss_meg_p1_cy0"``
+* ``"chandra_aciss_heg_m1_cy0"``
+* ``"chandra_aciss_heg_p1_cy0"``
+* ``"chandra_aciss_meg_m1_cy20"``
+* ``"chandra_aciss_meg_p1_cy20"``
+* ``"chandra_aciss_heg_m1_cy20"``
+* ``"chandra_aciss_heg_p1_cy20"``
 
 XRISM
 ~~~~~
 
 A single instrument specification is available for *XRISM*, for the "Resolve"
-microcalorimeter instrument. It has a 5.6-meter focal length, a 1.2-arcminute
-Gaussian PSF, no dithering, a 3-arcminute field of view, and 0.5-arcminute pixels.
+microcalorimeter instrument, named ``"xrism_resolve"``. It has a 5.6-meter focal 
+length, a 1.2-arcminute Gaussian PSF, no dithering, a 3-arcminute field of view, 
+and 0.5-arcminute pixels.
 
 AXIS
 ~~~~

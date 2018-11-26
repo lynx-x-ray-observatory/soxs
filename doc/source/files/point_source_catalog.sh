@@ -10,4 +10,4 @@ make_point_sources my_cat ptsrc 300.0,ks 20. 22.,-27.0 --random_seed=24 --output
  
 # Take the SIMPUT catalog and make an event file. Since we already made a
 # distribution of point sources, turn the point-source background off. 
-instrument_simulator my_cat_simput.fits ptsrc_cat_evt.fits 300.0,ks hdxi 22.,-27.0 --overwrite --no_ptsrc_bkgnd
+instrument_simulator my_cat_simput.fits ptsrc_cat_evt.fits 300.0,ks lynx_hdxi 22.,-27.0 --overwrite --no_ptsrc_bkgnd

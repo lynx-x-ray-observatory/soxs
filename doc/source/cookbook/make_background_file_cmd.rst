@@ -26,7 +26,7 @@ point source table created by ``make_point_source_list```.
  
     # Take the SIMPUT catalog and make an event file. Since we already made a
     # distribution of point sources, turn the point-source background off. 
-    make_background_file bkgnd_evt.fits 300.0,ks hdxi 22.,-27.0 --overwrite --input_sources=point_source_table.dat
+    make_background_file bkgnd_evt.fits 300.0,ks lynx_hdxi 22.,-27.0 --overwrite --input_sources=point_source_table.dat
 
 Download this script here: `make_background_file.sh <../make_background_file.sh>`_
 

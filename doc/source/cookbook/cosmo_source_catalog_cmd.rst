@@ -21,7 +21,7 @@ distribution of cosmological halos and simulate an observation of them.
     make_cosmological_sources my_cat cosmo 200.0,ks 20. 30.,45. --cat_center=3.1,-1.9 --random_seed=33 --overwrite --output_sources=halo_source_table.dat
  
     # Take the SIMPUT catalog and make an event file.
-    instrument_simulator my_cat_simput.fits cosmo_cat_evt.fits 200.0,ks hdxi 30.,45. --overwrite
+    instrument_simulator my_cat_simput.fits cosmo_cat_evt.fits 200.0,ks lynx_hdxi 30.,45. --overwrite
 
 Download this script here: `cosmo_source_catalog.sh <../cosmo_source_catalog.sh>`_
 

@@ -26,7 +26,7 @@ into a single SIMPUT catalog, which is then used to make a single event file.
     make_annulus_source my_cat annulus 30.0 45.0 10.0 30.0 thermal_spec.dat 100.0,ks --append --overwrite
     
     # Take the SIMPUT catalog and make an event file
-    instrument_simulator my_cat_simput.fits evt.fits 50.0,ks hdxi 30.0,45.0 --overwrite
+    instrument_simulator my_cat_simput.fits evt.fits 50.0,ks lynx_hdxi 30.0,45.0 --overwrite
 
 Download this script here: `make_multiple_sources.sh <../make_multiple_sources.sh>`_
 
