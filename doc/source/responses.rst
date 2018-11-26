@@ -7,7 +7,7 @@ Here you can download the response files you will need to simulate event files
 with SOXS, and then analyze the data products afterwards. The response files may
 be downloaded individually or as a complete package. 
 
-`All response files (96 MB) <../soxs_responses.tar.gz>`_
+`All response files (110 MB) <../soxs_responses.tar.gz>`_
 
 Lynx
 ----
@@ -24,12 +24,6 @@ LXM
 The LXM has three different subarrays, each with different plate scales, field
 of view, and energy resolution. Currently, we have separated them into three
 separate instrument modes in SOXS. They are:
-
-XGS
-+++
-
-* ARF: `xrs_cat.arf <../soxs_responses/xrs_cat.arf>`_
-* RMF: `xrs_cat.rmf <../soxs_responses/xrs_cat.rmf>`_
 
 Main Array
 ~~~~~~~~~~
@@ -49,8 +43,8 @@ Ultra High-Resolution Array
 * ARFs `xrs_mucal_3x10_0.3eV.arf <../soxs_responses/xrs_mucal_3x10_0.3eV.arf>`_
 * RMF: `xrs_mucal_0.3eV.rmf <../soxs_responses/xrs_mucal_0.3eV.rmf>`_
 
-CAT Gratings
-++++++++++++
+XGS
++++
 
 * ARF: `xrs_cat.arf <../soxs_responses/xrs_cat.arf>`_
 * RMF: `xrs_cat.rmf <../soxs_responses/xrs_cat.rmf>`_
