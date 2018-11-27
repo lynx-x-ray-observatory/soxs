@@ -100,7 +100,7 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
         xx.append(x)
         yy.append(y)
 
-    Hbig, _, _ = np.histogram2d(np.concatenate(xx),
+    Cbig, _, _ = np.histogram2d(np.concatenate(xx),
                                 np.concatenate(yy), bins=[xbins, ybins])
 
     if use_expmap:
@@ -127,44 +127,38 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
             ef = interp2d(xme+x0, yme+y0, E)
             Ebig += ef(xmid, ymid)
         with np.errstate(invalid='ignore', divide='ignore'):
-            Hbig /= Ebig.T
-        Hbig[np.isinf(Hbig)] = 0.0
-        Hbig = np.nan_to_num(Hbig)
-        Hbig[Hbig < 0.0] = 0.0
+            Fbig = Cbig / Ebig.T
+        Fbig[np.isinf(Fbig)] = 0.0
+        Fbig = np.nan_to_num(Fbig)
+        Fbig[Fbig < 0.0] = 0.0
 
-    hdu = fits.PrimaryHDU(Hbig.T)
+    header_keys = {"MTYPE1": "EQPOS",
+                   "MFORM1": "RA,DEC",
+                   "CTYPE1": "RA---TAN",
+                   "CTYPE2": "DEC--TAN",
+                   "CRVAL1": ra0,
+                   "CRVAL2": dec0,
+                   "CUNIT1": "deg",
+                   "CUNIT2": "deg",
+                   "CDELT1": xdel,
+                   "CDELT2": ydel,
+                   "CRPIX1": 0.5*(nxb+1),
+                   "CRPIX2": 0.5*(nyb+1)}
 
-    hdu.header["MTYPE1"] = "EQPOS"
-    hdu.header["MFORM1"] = "RA,DEC"
-    hdu.header["CTYPE1"] = "RA---TAN"
-    hdu.header["CTYPE2"] = "DEC--TAN"
-    hdu.header["CRVAL1"] = ra0
-    hdu.header["CRVAL2"] = dec0
-    hdu.header["CUNIT1"] = "deg"
-    hdu.header["CUNIT2"] = "deg"
-    hdu.header["CDELT1"] = xdel
-    hdu.header["CDELT2"] = ydel
-    hdu.header["CRPIX1"] = 0.5*(nxb+1)
-    hdu.header["CRPIX2"] = 0.5*(nyb+1)
+    hdu = fits.PrimaryHDU(Cbig.T)
+    hdu.header.update(header_keys)
     hdu.header["EXPOSURE"] = exp_time
 
-    hdu.writeto(out_file, overwrite=overwrite)
+    hdu.writeto(img_file, overwrite=overwrite)
 
     if use_expmap:
         hdue = fits.PrimaryHDU(Ebig)
-        hdue.header["MTYPE1"] = "EQPOS"
-        hdue.header["MFORM1"] = "RA,DEC"
-        hdue.header["CTYPE1"] = "RA---TAN"
-        hdue.header["CTYPE2"] = "DEC--TAN"
-        hdue.header["CRVAL1"] = ra0
-        hdue.header["CRVAL2"] = dec0
-        hdue.header["CUNIT1"] = "deg"
-        hdue.header["CUNIT2"] = "deg"
-        hdue.header["CDELT1"] = xdel
-        hdue.header["CDELT2"] = ydel
-        hdue.header["CRPIX1"] = 0.5*(nxb+1)
-        hdue.header["CRPIX2"] = 0.5*(nyb+1)
-
-        out_exp_file = out_file.split(".")[0]+"_expmap.fits"
-
+        hdue.header.update(header_keys)
+        out_exp_file = img_file.split(".")[0]+"_expmap.fits"
         hdue.writeto(out_exp_file, overwrite=overwrite)
+
+        hduf = fits.PrimaryHDU(Fbig.T)
+        hduf.header.update(header_keys)
+        out_flux_file = img_file.split(".")[0]+"_flux.fits"
+        hduf.writeto(out_flux_file, overwrite=overwrite)
+
