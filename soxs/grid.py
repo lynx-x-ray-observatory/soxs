@@ -13,6 +13,52 @@ def observe_grid_source(grid_spec_file, exp_time, instrument,
                         foreground=True, ptsrc_bkgnd=True,
                         bkgnd_file=None, no_dither=False,
                         dither_params=None, subpixel_res=False, prng=None):
+    """
+    Observe a grid of sources produced by pyXSIM, or SOXS in its cosmological
+    sources mode.
+
+    Parameters
+    ----------
+    grid_spec_file : filename
+        The ASCII table produced by pyXSIM or SOXS containing the specification
+        of the input SIMPUT photon lists and their locations on the sky.
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The exposure time in seconds.
+    instrument : string
+        The name of the instrument to use, which picks an instrument
+        specification from the instrument registry.
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file with the same name.
+        Default: False
+    instr_bkgnd : boolean, optional
+        Whether or not to include the instrumental/particle background. 
+        Default: True
+    foreground : boolean, optional
+        Whether or not to include the local foreground. 
+        Default: True
+    ptsrc_bkgnd : boolean, optional
+        Whether or not to include the point-source background. 
+        Default: True
+    bkgnd_file : string, optional
+        If set, backgrounds will be loaded from this file and not generated
+        on the fly. Default: None
+    no_dither : boolean, optional
+        If True, turn off dithering entirely. Default: False
+    dither_params : array-like of floats, optional
+        The parameters to use to control the size and period of the dither
+        pattern. The first two numbers are the dither amplitude in x and y
+        detector coordinates in arcseconds, and the second two numbers are
+        the dither period in x and y detector coordinates in seconds. 
+        Default: [8.0, 8.0, 1000.0, 707.0].
+    subpixel_res: boolean, optional
+        If True, event positions are not randomized within the pixels 
+        within which they are detected. Default: False
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time. 
+    """
     t = ascii.read(grid_spec_file, format='commented_header', guess=False, 
                    header_start=0, delimiter="\t")
     simput_file = t.meta["comments"][0].split()[-1]
@@ -40,6 +86,45 @@ def make_grid_image(evtfile_list, img_file, emin=None, emax=None,
                     reblock=1, use_expmap=False, expmap_file=None,
                     expmap_energy=None, expmap_weights=None,
                     overwrite=False):
+    """
+    Make a single FITS image from a grid of observations. Optionally,
+    an exposure map can be computed and a flux image may be generated.
+
+    Parameters
+    ----------
+    evtfile_list : filename
+        The ASCII table produced by :meth:`~soxs.grid.observe_grid_source`
+        containing the information about the event files and their
+        locations on the sky.
+    img_file : filename
+        The name of the FITS image file to be written. This name will
+        also be used for the exposure map and flux files if they are
+        written.
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the photons to put in the image, in keV.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the photons to put in the image, in keV.
+    reblock : integer, optional
+        Supply an integer power of 2 here to make an exposure map 
+        with a different binning. Default: 1
+    use_expmap : boolean, optional
+        Whether or not to use (and potentially generate) an exposure map
+        and a flux map. Default: False
+    expmap_file : filename, optional
+        If this is supplied, an existing exposure map file will be used
+        instead of generated. Default: None
+    expmap_energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, or NumPy array
+        The energy in keV to use when computing the exposure map, or 
+        a set of energies to be used with the *weights* parameter. If
+        providing a set, it must be in keV.
+    expmap_weights : array-like, optional
+        The weights to use with a set of energies given in the
+        *energy* parameter. Used to create a more accurate exposure
+        map weighted by a range of energies. Default: None
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file with the same name.
+        Default: False
+    """
     from scipy.interpolate import interp2d
     t = ascii.read(evtfile_list, format='commented_header',
                    guess=False, header_start=0, delimiter="\t")
