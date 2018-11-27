@@ -36,9 +36,10 @@ def observe_grid_source(grid_spec_file, exp_time, instrument,
     return outfile
 
 
-def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
-                    use_expmap=False, expmap_file=None,
-                    expmap_energy=None, overwrite=False, reblock=1):
+def make_grid_image(evtfile_list, img_file, emin=None, emax=None,
+                    reblock=1, use_expmap=False, expmap_file=None,
+                    expmap_energy=None, expmap_weights=None,
+                    overwrite=False):
     from scipy.interpolate import interp2d
     t = ascii.read(evtfile_list, format='commented_header',
                    guess=False, header_start=0, delimiter="\t")
@@ -107,7 +108,8 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
         if expmap_file is None:
             expmap_file = evtfiles[0].split("_0_0_evt.fits")[0] + "_expmap.fits"
             make_exposure_map(evtfiles[0], expmap_file, expmap_energy,
-                              overwrite=overwrite, reblock=reblock)
+                              weights=expmap_weights, overwrite=overwrite, 
+                              reblock=reblock)
         f = fits.open(expmap_file)
         E = f["EXPMAP"].data.T
         f.close()
