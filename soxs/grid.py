@@ -1,8 +1,10 @@
 from soxs.instrument import instrument_simulator
-from soxs.events import make_exposure_map
+from soxs.events import make_exposure_map, \
+    wcs_from_event_file
 from soxs.utils import parse_value, mylog
 import numpy as np
 from astropy.io import fits, ascii
+from astropy import wcs
 from astropy.table import Table
 
 
@@ -37,6 +39,7 @@ def observe_grid_source(grid_spec_file, exp_time, instrument,
 def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
                     use_expmap=False, expmap_file=None,
                     expmap_energy=None, overwrite=False, reblock=1):
+    from scipy.interpolate import interp2d
     t = ascii.read(evtfile_list, format='commented_header',
                    guess=False, header_start=0, delimiter="\t")
 
@@ -71,36 +74,60 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
     ydel = f["EVENTS"].header["TCDLT3"]*reblock
     f.close()
 
-    xbins = np.linspace(xmin+0.5*Lx, xmax-0.5*Lx, nx+1, endpoint=True)
-    ybins = np.linspace(ymin+0.5*Ly, ymax-0.5*Ly, ny+1, endpoint=True)
+    bigw = wcs.WCS(naxis=2)
+    bigw.wcs.crval = [ra0, dec0]
+    bigw.wcs.crpix = [0.5*(nxb+1), 0.5*(nyb+1)]
+    bigw.wcs.cdelt = [xdel, ydel]
+    bigw.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+    bigw.wcs.cunit = ["deg"]*2
 
-    Hbig = np.zeros((nxb, nyb))
+    xbins = np.linspace(0.5, nxb+0.5, nxb+1, endpoint=True)
+    ybins = np.linspace(0.5, nyb+0.5, nyb+1, endpoint=True)
+    xmid = 0.5*(xbins[1:]+xbins[:-1])
+    ymid = 0.5*(ybins[1:]+ybins[:-1])
+
+    xx = []
+    yy = []
+    for evtfile in evtfiles:
+        f = fits.open(evtfile, memmap=True)
+        e = f["EVENTS"].data["ENERGY"]
+        idxs = np.logical_and(e > emin, e < emax)
+        w = wcs_from_event_file(f)
+        x, y = w.wcs_pix2world(f["EVENTS"].data["X"][idxs],
+                               f["EVENTS"].data["Y"][idxs], 1)
+        x, y = bigw.wcs_world2pix(x, y, 1)
+        f.close()
+        xx.append(x)
+        yy.append(y)
+
+    Hbig, _, _ = np.histogram2d(np.concatenate(xx),
+                                np.concatenate(yy), bins=[xbins, ybins])
 
     if use_expmap:
         if expmap_file is None:
-            expmap_file = evtfiles[0].split("_evt.fits")[0] + "_expmap.fits"
+            expmap_file = evtfiles[0].split("_0_0_evt.fits")[0] + "_expmap.fits"
             make_exposure_map(evtfiles[0], expmap_file, expmap_energy,
                               overwrite=overwrite, reblock=reblock)
         f = fits.open(expmap_file)
         E = f["EXPMAP"].data.T
         f.close()
         Ebig = np.zeros((nxb, nyb))
-
-    for evtfile in evtfiles:
-        f = fits.open(evtfile, memmap=True)
-        e = f["EVENTS"].data["ENERGY"]
-        idxs = np.logical_and(e > emin, e < emax)
-        x = f["EVENTS"].data["X"][idxs]
-        y = f["EVENTS"].data["Y"][idxs]
-        H, _, _ = np.histogram2d(x, y, bins=[xbins, ybins])
-        i, j = np.array(evtfile.split("_")[-3:-1], dtype='int')
-        Hbig[i*nx:(i+1)*nx,j*ny:(j+1)*ny] += H
-        if use_expmap:
-            Ebig[i*nx:(i+1)*nx,j*ny:(j+1)*ny] += E
-
-    if use_expmap:
+        nxe, nye = E.shape
+        xbe = np.linspace(0.5, nxe+0.5, nxe+1, endpoint=True)
+        ybe = np.linspace(0.5, nye+0.5, nye+1, endpoint=True)
+        xme = 0.5*(xbe[1:]+xbe[:-1])
+        yme = 0.5*(ybe[1:]+ybe[:-1])
+        xme -= 0.5*(nxe+1)
+        yme -= 0.5*(nye+1)
+        for evtfile in evtfiles:
+            f = fits.open(evtfile, memmap=True)
+            w = wcs_from_event_file(f)
+            f.close()
+            x0, y0 = bigw.wcs_world2pix(w.wcs.crval[0], w.wcs.crval[1], 1)
+            ef = interp2d(xme+x0, yme+y0, E)
+            Ebig += ef(xmid, ymid)
         with np.errstate(invalid='ignore', divide='ignore'):
-            Hbig /= Ebig
+            Hbig /= Ebig.T
         Hbig[np.isinf(Hbig)] = 0.0
         Hbig = np.nan_to_num(Hbig)
         Hbig[Hbig < 0.0] = 0.0
@@ -117,9 +144,27 @@ def make_grid_image(evtfile_list, out_file, emin=None, emax=None,
     hdu.header["CUNIT2"] = "deg"
     hdu.header["CDELT1"] = xdel
     hdu.header["CDELT2"] = ydel
-    hdu.header["CRPIX1"] = 0.5*(nx+1)
-    hdu.header["CRPIX2"] = 0.5*(ny+1)
-
+    hdu.header["CRPIX1"] = 0.5*(nxb+1)
+    hdu.header["CRPIX2"] = 0.5*(nyb+1)
     hdu.header["EXPOSURE"] = exp_time
 
     hdu.writeto(out_file, overwrite=overwrite)
+
+    if use_expmap:
+        hdue = fits.PrimaryHDU(Ebig)
+        hdue.header["MTYPE1"] = "EQPOS"
+        hdue.header["MFORM1"] = "RA,DEC"
+        hdue.header["CTYPE1"] = "RA---TAN"
+        hdue.header["CTYPE2"] = "DEC--TAN"
+        hdue.header["CRVAL1"] = ra0
+        hdue.header["CRVAL2"] = dec0
+        hdue.header["CUNIT1"] = "deg"
+        hdue.header["CUNIT2"] = "deg"
+        hdue.header["CDELT1"] = xdel
+        hdue.header["CDELT2"] = ydel
+        hdue.header["CRPIX1"] = 0.5*(nxb+1)
+        hdue.header["CRPIX2"] = 0.5*(nyb+1)
+
+        out_exp_file = out_file.split(".")[0]+"_expmap.fits"
+
+        hdue.writeto(out_exp_file, overwrite=overwrite)
