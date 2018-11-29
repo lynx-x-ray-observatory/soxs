@@ -20,7 +20,7 @@ from six import string_types
 from astropy.modeling.functional_models import \
     Gaussian1D
 import glob
-
+from tqdm import tqdm
 
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
@@ -816,6 +816,7 @@ class ApecGenerator(object):
         vspec = None
         if self.num_var_elem > 0:
             vspec = np.zeros((self.num_var_elem, numi, self.nbins))
+        pbar = tqdm(leave=True, total=numi, desc="Preparing spectrum table ")
         for i, ikT in enumerate(indices):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H, He, and trace elements
@@ -837,6 +838,8 @@ class ApecGenerator(object):
                 for j, elem in enumerate(self.var_elem):
                     vspec[j,i,:] = self._make_spectrum(self.Tvals[ikT], elem[0], elem[1],
                                                        velocity, line_fields, coco_fields, scale_factor)
+            pbar.update()
+        pbar.close()
         return cspec, mspec, vspec
 
     def _spectrum_init(self, kT, velocity, elem_abund):
