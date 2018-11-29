@@ -45,6 +45,7 @@ instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
                           "hitomi_sxs": hitomi_sxs_bkgnd,
                           "axis": axis_bkgnd}
 
+
 def add_instrumental_background(name, filename, default_focal_length):
     """
     Add a particle/instrument background to the list 
@@ -69,8 +70,8 @@ def add_instrumental_background(name, filename, default_focal_length):
     spec = InstrumentalBackgroundSpectrum.from_file(filename, default_focal_length)
     instrument_backgrounds[name] = spec
 
-def make_instrument_background(bkgnd_name, event_params, focal_length, rmf, 
-                               prng=None):
+
+def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
     import pyregion._region_filter as rfilter
 
     prng = parse_prng(prng)
@@ -78,11 +79,15 @@ def make_instrument_background(bkgnd_name, event_params, focal_length, rmf,
     if event_params["chips"] is None:
         bkgnd_spec = [instrument_backgrounds[bkgnd_name]]
     else:
-        nchips = len(event_params["chips"])
         if isinstance(bkgnd_name, string_types):
-            bkgnd_spec = [instrument_backgrounds[bkgnd_name]]*nchips
+            nchips = len(event_params["chips"])
+            bkgnd_names = [bkgnd_name]*nchips
         else:
-            bkgnd_spec = [instrument_backgrounds[name] for name in bkgnd_name]
+            bkgnd_names = bkgnd_name
+        bkgnd_spec = []
+        for name in bkgnd_names:
+            spec = instrument_backgrounds[name].new_spec_from_band(rmf.elo[0], rmf.ehi[-1])
+            bkgnd_spec.append(spec)
 
     bkg_events = {}
 
