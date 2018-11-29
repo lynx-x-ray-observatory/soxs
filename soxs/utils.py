@@ -1,8 +1,6 @@
 import os
 import logging
-import astropy.io.fits as pyfits
 import numpy as np
-from copy import copy
 from numpy.random import RandomState
 import astropy.units as u
 from astropy.units import Quantity
