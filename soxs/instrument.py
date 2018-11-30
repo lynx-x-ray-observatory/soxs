@@ -785,9 +785,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
         bkg_events = make_instrument_background(instrument_spec["bkgnd"], 
-                                                event_params,
-                                                instrument_spec["focal_length"], 
-                                                rmf, prng=prng)
+                                                event_params, rmf, prng=prng)
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
 
