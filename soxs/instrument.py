@@ -351,7 +351,7 @@ class RedistributionMatrixFile(object):
 
         return events
 
-    def convolve_spectrum(self, cspec, exp_time, prng=None):
+    def convolve_spectrum(self, cspec, exp_time, noisy=True, prng=None):
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
         counts = cspec.flux.value * exp_time * cspec.de.value
@@ -378,7 +378,10 @@ class RedistributionMatrixFile(object):
                     conv_spec[f:f+n_chan[i]] += spec[k]*mat[:mat_size[i]]
                 pbar.update()
         pbar.close()
-        return prng.poisson(lam=conv_spec)
+        if noisy:
+            return prng.poisson(lam=conv_spec)
+        else:
+            return conv_spec
 
 
 def perform_dither(t, dither_dict):
