@@ -358,14 +358,25 @@ class RedistributionMatrixFile(object):
         spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
-        for k in range(self.n_e):
-            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
-            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-            mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+        if np.all(self.data["N_GRP"] == 1):
+            # We can do things a bit faster if there is only one group each
+            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"]))
+            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"]))
+            mat = np.nan_to_num(np.float64(self.data["MATRIX"]))
             mat_size = np.minimum(n_chan, self.n_ch-f_chan)
-            for i, f in enumerate(f_chan):
-                conv_spec[f:f+n_chan[i]] += spec[k]*mat[:mat_size[i]]
-            pbar.update()
+            for k in range(self.n_e):
+                conv_spec[f_chan[k]:f_chan[k]+n_chan[k]] += spec[k]*mat[:mat_size[k]]
+                pbar.update()
+        else:
+            # Otherwise, we have to go step-by-step
+            for k in range(self.n_e):
+                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+                n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+                mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+                mat_size = np.minimum(n_chan, self.n_ch-f_chan)
+                for i, f in enumerate(f_chan):
+                    conv_spec[f:f+n_chan[i]] += spec[k]*mat[:mat_size[i]]
+                pbar.update()
         pbar.close()
         return prng.poisson(lam=conv_spec)
 
