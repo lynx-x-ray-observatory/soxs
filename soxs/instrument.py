@@ -362,9 +362,9 @@ class RedistributionMatrixFile(object):
             f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
             n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
             mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
-            for f, n in zip(f_chan, n_chan):
-                mat_size = min(n, self.n_ch-f)
-                conv_spec[f:f+n] += spec[k]*mat[:mat_size]
+            mat_size = np.minimum(n_chan, self.n_ch-f_chan)
+            for i, f in enumerate(f_chan):
+                conv_spec[f:f+n_chan[i]] += spec[k]*mat[:mat_size[i]]
             pbar.update()
         pbar.close()
         return prng.poisson(lam=conv_spec)
