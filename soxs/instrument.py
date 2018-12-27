@@ -365,7 +365,7 @@ class RedistributionMatrixFile(object):
             mat = np.nan_to_num(np.float64(self.data["MATRIX"]))
             mat_size = np.minimum(n_chan, self.n_ch-f_chan)
             for k in range(self.n_e):
-                conv_spec[f_chan[k]:f_chan[k]+n_chan[k]] += spec[k]*mat[:mat_size[k]]
+                conv_spec[f_chan[k]:f_chan[k]+n_chan[k]] += spec[k]*mat[k,:mat_size[k]]
                 pbar.update()
         else:
             # Otherwise, we have to go step-by-step
