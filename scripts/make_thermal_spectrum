@@ -20,8 +20,10 @@ parser.add_argument("emax", help='The maximum energy in keV.')
 parser.add_argument("nbins", type=int, help='The number of bins in the spectrum.')
 parser.add_argument("--velocity", default=0.0,
                     help='The velocity broadening parameter, in units of km/s. Default: 0.0')
-parser.add_argument("--apec_vers", type=str, default="3.0.8", 
-                    help='The version of the AtomDB tables to use. Default: 3.0.8')
+parser.add_argument("--apec_vers", type=str,
+                    help='The version of the AtomDB tables to use. Default is'
+                         'to use the version currently included with this'
+                         'version of SOXS.')
 parser.add_argument("--absorb_model", type=str,
                     help='Model for applying foreground Galactic absorption.')
 parser.add_argument("--nh", default=0.02, 

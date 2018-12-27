@@ -44,8 +44,9 @@ using the AtomDB tables.
       --velocity VELOCITY   The velocity broadening parameter, in units of km/s.
                             Default: 0.0
       --apec_vers APEC_VERS
-                            The version of the AtomDB tables to use. Default:
-                            3.0.8
+                            The version of the AtomDB tables to use. Default is
+                            to use the version currently included with this
+                            version of SOXS.
       --absorb_model ABSORB_MODEL
                             Model for applying foreground Galactic absorption.
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
