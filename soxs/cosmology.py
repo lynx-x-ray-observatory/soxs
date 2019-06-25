@@ -13,7 +13,7 @@ from soxs.spectra import ApecGenerator
 from soxs.utils import soxs_files_path, mylog, parse_prng, \
     parse_value
 
-# Cosmological parameters for the catalog 
+# Cosmological parameters for the catalog
 # SHOULD NOT BE ALTERED
 omega_m = 0.279
 omega_l = 0.721
@@ -30,16 +30,19 @@ conc = 10.0
 lum_table_file = os.path.join(soxs_files_path, "lum_table.h5")
 halos_cat_file = os.path.join(soxs_files_path, "halo_catalog.h5")
 
+
 def lum(M_mean, z_mean): 
     # Alexey's cosmology II paper, eq. 22
-    E_z = np.sqrt(omega_m * (1 + z_mean) ** 3 + omega_k * (1 + z_mean) ** 2 + omega_l)
-    ln_Lx = 47.392 + 1.61*np.log(M_mean) + 1.850 * np.log(E_z) - 0.39*np.log(h0/0.72)
+    E_z = np.sqrt(omega_m*(1.+z_mean)**3+omega_k*(1.+z_mean)**2+omega_l)
+    ln_Lx = 47.392+1.61*np.log(M_mean)+1.850*np.log(E_z)-0.39*np.log(h0/0.72)
     return np.exp(ln_Lx)
+
 
 def Tx(M_mean, z_mean): 
     # Alexey's cosmology II paper, eq. 6, Table 3 for coefficients.
-    E_z = np.sqrt(omega_m * (1 + z_mean) ** 3 + omega_k * (1 + z_mean) ** 2 + omega_l)
+    E_z = np.sqrt(omega_m*(1.+z_mean)**3+omega_k*(1.+z_mean)**2+omega_l)
     return 5.0 * (M_mean*E_z*h0/3.02e14)**(1.0/1.53)
+
 
 def flux2lum(kT, z):
     lum_table = h5py.File(lum_table_file, "r")
@@ -49,8 +52,9 @@ def flux2lum(kT, z):
     lum_table.close()
     return flux2lum
 
+
 def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
-                              absorb_model="wabs", nH=0.05, area=40000.0, 
+                              absorb_model="wabs", nH=0.05, area=40000.0,
                               output_sources=None, prng=None):
     r"""
     Make an X-ray source made up of contributions from
@@ -175,9 +179,11 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     # If requested, output the source properties to a file
     if output_sources is not None:
-        t = Table([ra0, dec0, rc_kpc, beta, ellip, theta, m, r500_kpc, kT, z, flux_kcorr],
+        t = Table([ra0, dec0, rc_kpc, beta, ellip, theta, m,
+                   r500_kpc, kT, z, flux_kcorr],
                   names=('RA', 'Dec', 'r_c', 'beta', 'ellipticity',
-                         'theta', 'M500c', 'r500', 'kT', 'redshift', 'flux_0.5_2.0_keV'))
+                         'theta', 'M500c', 'r500', 'kT', 'redshift', 
+                         'flux_0.5_2.0_keV'))
         t["RA"].unit = "deg"
         t["Dec"].unit = "deg"
         t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
@@ -193,14 +199,16 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     ra = []
     dec = []
 
-    pbar = tqdm(leave=True, total=n_halos, desc="Generating photons from halos ")
+    pbar = tqdm(leave=True, total=n_halos, 
+                desc="Generating photons from halos ")
     for halo in range(n_halos):
         spec = agen.get_spectrum(kT[halo], abund, z[halo], 1.0)
-        spec.rescale_flux(flux_kcorr[halo], emin=emin, emax=emax, flux_type="energy")
+        spec.rescale_flux(flux_kcorr[halo], emin=emin, emax=emax, 
+                          flux_type="energy")
         if nH is not None:
             spec.apply_foreground_absorption(nH, model=absorb_model)
         e = spec.generate_energies(exp_time, area, prng=prng, quiet=True)
-        beta_model = BetaModel(ra0[halo], dec0[halo], rc[halo], beta[halo], 
+        beta_model = BetaModel(ra0[halo], dec0[halo], rc[halo], beta[halo],
                                ellipticity=ellip[halo], theta=theta[halo])
         xsky, ysky = beta_model.generate_coords(e.size, prng=prng)
         tot_flux += e.flux
@@ -221,9 +229,11 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     return output_events
 
-def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                                   sky_center, cat_center=None, absorb_model="wabs",
-                                   nH=0.05, area=40000.0, append=False, overwrite=False, 
+
+def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
+                                   sky_center, cat_center=None,
+                                   absorb_model="wabs", nH=0.05, area=40000.0,
+                                   append=False, overwrite=False,
                                    output_sources=None, prng=None):
     r"""
     Make a SIMPUT catalog made up of contributions from
@@ -269,8 +279,11 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
-    events = make_cosmological_sources(exp_time, fov, sky_center, cat_center=cat_center,
-                                       absorb_model=absorb_model, nH=nH, area=area, 
-                                       output_sources=output_sources, prng=prng)
-    write_photon_list(simput_prefix, phlist_prefix, events["flux"], events["ra"], 
-                      events["dec"], events["energy"], append=append, overwrite=overwrite)
+    events = make_cosmological_sources(exp_time, fov, sky_center,
+                                       cat_center=cat_center,
+                                       absorb_model=absorb_model, nH=nH,
+                                       area=area, output_sources=output_sources,
+                                       prng=prng)
+    write_photon_list(simput_prefix, phlist_prefix, events["flux"],
+                      events["ra"], events["dec"], events["energy"],
+                      append=append, overwrite=overwrite)
