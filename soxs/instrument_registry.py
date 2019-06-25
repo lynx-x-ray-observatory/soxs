@@ -346,7 +346,8 @@ def add_instrument_to_registry(inst_spec):
         default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "imaging", "grating"}
     my_keys = set(inst.keys())
     # Don't check things we don't need
-    my_keys.remove("dep_name")
+    if "dep_name" in my_keys:
+        my_keys.remove("dep_name")
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
         raise RuntimeError("One or more items is missing from the instrument specification!\n"
