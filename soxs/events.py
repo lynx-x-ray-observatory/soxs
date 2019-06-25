@@ -666,7 +666,8 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
 def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                   ymin=None, ymax=None, xscale=None, yscale=None, 
                   label=None, fontsize=18, fig=None, ax=None, 
-                  plot_counts=False, **kwargs):
+                  plot_counts=False, ebins=None, noerr=False,
+                  plot_used=False, **kwargs):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure and axis is returned.
@@ -734,20 +735,25 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
                                "spectrum, so I cannot plot in energy!")
     else:
         x = hdu.data[chantype]
+        xerr = 0.5
         xlabel = "Channel (%s)" % chantype
-    if plot_counts:
-        y = hdu.data["COUNTS"].astype("float64")
-        yerr = np.sqrt(y)
+    y = hdu.data["COUNTS"].astype("float64")
+    if ebins is not None and plot_energy:
+        de = np.diff(ebins)
+        y = np.histogram(x, ebins, weights=y)[0].astype("float64")
+        xmid = 0.5*(ebins[1:]+ebins[:-1])
+        xerr = 0.5*de
     else:
-        if "COUNT_RATE" in hdu.columns.names:
-            y = hdu.data["COUNT_RATE"]
-        else:
-            y = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]
-        yerr = np.sqrt(hdu.data["COUNTS"])/hdu.header["EXPOSURE"]
+        xmid = x
+        de = 2.0*xerr
+    yerr = np.sqrt(y)
+    if not plot_counts:
+        y /= hdu.header["EXPOSURE"]
+        yerr /= hdu.header["EXPOSURE"]
     if plot_energy:
         yunit = "keV"
-        y /= 2.0*xerr
-        yerr /= 2.0*xerr
+        y /= de
+        yerr /= de
     else:
         yunit = "bin"
     f.close()
@@ -765,7 +771,16 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
             yscale = ax.get_yscale()
     if ax is None:
         ax = fig.add_subplot(111)
-    ax.errorbar(x, y, yerr=yerr, xerr=xerr, lw=lw, label=label, **kwargs)
+    if plot_used:
+        used = y > 0
+        xmid = xmid[used]
+        y = y[used]
+        xerr = xerr[used]
+        yerr = yerr[used]
+    if noerr:
+        xerr = None
+        yerr = None
+    ax.errorbar(xmid, y, yerr=yerr, xerr=xerr, lw=lw, label=label, **kwargs)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     ax.set_xlim(xmin, xmax)
