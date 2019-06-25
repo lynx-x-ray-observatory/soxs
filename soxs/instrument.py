@@ -351,23 +351,37 @@ class RedistributionMatrixFile(object):
 
         return events
 
-    def convolve_spectrum(self, cspec, exp_time, prng=None):
+    def convolve_spectrum(self, cspec, exp_time, noisy=True, prng=None):
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
         counts = cspec.flux.value * exp_time * cspec.de.value
         spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
-        for k in range(self.n_e):
-            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
-            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-            mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
-            for f, n in zip(f_chan, n_chan):
-                mat_size = min(n, self.n_ch-f)
-                conv_spec[f:f+n] += spec[k]*mat[:mat_size]
-            pbar.update()
+        if np.all(self.data["N_GRP"] == 1):
+            # We can do things a bit faster if there is only one group each
+            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"]))
+            n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"]))
+            mat = np.nan_to_num(np.float64(self.data["MATRIX"]))
+            mat_size = np.minimum(n_chan, self.n_ch-f_chan)
+            for k in range(self.n_e):
+                conv_spec[f_chan[k]:f_chan[k]+n_chan[k]] += spec[k]*mat[k,:mat_size[k]]
+                pbar.update()
+        else:
+            # Otherwise, we have to go step-by-step
+            for k in range(self.n_e):
+                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+                n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+                mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+                mat_size = np.minimum(n_chan, self.n_ch-f_chan)
+                for i, f in enumerate(f_chan):
+                    conv_spec[f:f+n_chan[i]] += spec[k]*mat[:mat_size[i]]
+                pbar.update()
         pbar.close()
-        return prng.poisson(lam=conv_spec)
+        if noisy:
+            return prng.poisson(lam=conv_spec)
+        else:
+            return conv_spec
 
 
 def perform_dither(t, dither_dict):
