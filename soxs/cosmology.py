@@ -101,7 +101,7 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     mylog.info("Loading halo data from catalog: %s" % halos_cat_file)
     halo_data = h5py.File(halos_cat_file, "r")
 
-    scale = cosmo.kpc_proper_per_arcmin(halo_data["redshift"]).to("Mpc/arcmin")
+    scale = cosmo.kpc_comoving_per_arcmin(halo_data["redshift"]).to("Mpc/arcmin")
 
     # 600. arcmin = 10 degrees (total FOV of catalog = 100 deg^2)
     fov_cat = 10.0*60.0
@@ -121,15 +121,18 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     mylog.info("Coordinates of the FOV within the catalog are (%g, %g) deg." %
                (xc/60.0, yc/60.0))
 
-    xlo = (xc-1.1*0.5*fov)*scale.value*h0
-    xhi = (xc+1.1*0.5*fov)*scale.value*h0
-    ylo = (yc-1.1*0.5*fov)*scale.value*h0
-    yhi = (yc+1.1*0.5*fov)*scale.value*h0
+    xlo = (xc-1.1*0.5*fov)
+    xhi = (xc+1.1*0.5*fov)
+    ylo = (yc-1.1*0.5*fov)
+    yhi = (yc+1.1*0.5*fov)
 
     mylog.info("Selecting halos in the FOV.")
 
-    fov_idxs = (halo_data["x"] >= xlo) & (halo_data["x"] <= xhi)
-    fov_idxs = (halo_data["y"] >= ylo) & (halo_data["y"] <= yhi) & fov_idxs
+    halo_x = halo_data["x"][()]/(h0*scale.value)
+    halo_y = halo_data["y"][()]/(h0*scale.value)
+
+    fov_idxs = (halo_x >= xlo) & (halo_x <= xhi)
+    fov_idxs = (halo_y >= ylo) & (halo_y <= yhi) & fov_idxs
 
     n_halos = fov_idxs.sum()
 
@@ -138,9 +141,10 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     # Now select the specific halos which are in the FOV
     z = halo_data["redshift"][fov_idxs].astype("float64")
     m = halo_data["M500c"][fov_idxs].astype("float64")/h0
-    s = scale[fov_idxs].to("Mpc/arcsec").value
-    ra0, dec0 = w.wcs_pix2world(halo_data["x"][fov_idxs]/(h0*s)-xc*60.0,
-                                halo_data["y"][fov_idxs]/(h0*s)-yc*60.0, 1)
+    # We need to compute proper scales here
+    s = scale[fov_idxs].to("Mpc/arcsec").value/(1.0+z)
+    ra0, dec0 = w.wcs_pix2world(halo_x[fov_idxs]-xc*60.0,
+                                halo_y[fov_idxs]-yc*60.0, 1)
 
     # Close the halo catalog file
     halo_data.close()
