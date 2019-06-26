@@ -168,3 +168,14 @@ def line_width_equiv(rest):
     forward = lambda x: rest*x/ckms
     backward = lambda x: x/rest*ckms
     return [(u.km/u.s, u.keV, forward, backward)]
+
+
+class DummyPbar(object):
+    def __init__(self):
+        pass
+    
+    def update(self, *args, **kwargs):
+        pass
+    
+    def close(self):
+        pass

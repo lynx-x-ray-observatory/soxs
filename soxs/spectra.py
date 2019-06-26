@@ -6,7 +6,8 @@ import tempfile
 import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
-    parse_prng, parse_value, soxs_cfg, line_width_equiv
+    parse_prng, parse_value, soxs_cfg, line_width_equiv, \
+    DummyPbar
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -21,6 +22,7 @@ from astropy.modeling.functional_models import \
     Gaussian1D
 import glob
 from tqdm import tqdm
+
 
 class Energies(u.Quantity):
     def __new__(cls, energy, flux):
@@ -816,7 +818,10 @@ class ApecGenerator(object):
         vspec = None
         if self.num_var_elem > 0:
             vspec = np.zeros((self.num_var_elem, numi, self.nbins))
-        pbar = tqdm(leave=True, total=numi, desc="Preparing spectrum table ")
+        if numi > 2:
+            pbar = tqdm(leave=True, total=numi, desc="Preparing spectrum table ")
+        else:
+            pbar = DummyPbar()
         for i, ikT in enumerate(indices):
             line_fields, coco_fields = self._preload_data(ikT)
             # First do H, He, and trace elements
