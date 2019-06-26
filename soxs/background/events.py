@@ -9,6 +9,7 @@ key_map = {"telescope": "TELESCOP",
            "channel_type": "CHANTYPE",
            "nchan": "PHA_BINS"}
 
+
 def add_background_from_file(events, event_params, bkg_file):
     from soxs.instrument import perform_dither
     f = pyfits.open(bkg_file)
@@ -78,6 +79,7 @@ def add_background_from_file(events, event_params, bkg_file):
     f.close()
 
     return all_events
+
 
 def make_diffuse_background(bkg_events, event_params, rmf, prng=None):
     from soxs.instrument import perform_dither

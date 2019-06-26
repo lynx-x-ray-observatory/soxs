@@ -119,9 +119,9 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         """
         if filename.endswith(".h5"):
             f = h5py.File(filename, "r")
-            flux = f["spectrum"].value
+            flux = f["spectrum"][()]
             nbins = flux.size
-            ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
+            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
             f.close()
         else:
             emid, flux = np.loadtxt(filename, unpack=True)

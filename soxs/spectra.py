@@ -262,9 +262,9 @@ class Spectrum(object):
         """
         if filename.endswith(".h5"):
             f = h5py.File(filename, "r")
-            flux = f["spectrum"].value
+            flux = f["spectrum"][()]
             nbins = flux.size
-            ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
+            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
             f.close()
         else:
             emid, flux = np.loadtxt(filename, unpack=True)
@@ -969,7 +969,7 @@ def tbabs_cross_section(E):
         f = h5py.File(filename, "r")
         _tbabs_sigma = f["cross_section"][:]
         nbins = _tbabs_sigma.size
-        ebins = np.linspace(f["emin"].value, f["emax"].value, nbins+1)
+        ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
         f.close()
         _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
         _tbabs_spline = InterpolatedUnivariateSpline(_tbabs_emid,

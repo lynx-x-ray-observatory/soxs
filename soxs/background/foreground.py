@@ -6,10 +6,11 @@ from soxs.background.events import make_diffuse_background
 from soxs.utils import soxs_files_path, parse_prng, mylog
 import numpy as np
 
-# X-ray foreground from Hickox & Markevitch 2007 
+# X-ray foreground from Hickox & Markevitch 2007
 # (http://adsabs.harvard.edu/abs/2007ApJ...661L.117H)
 hm_bkgnd_file = os.path.join(soxs_files_path, "hm_cxb_bkgnd.h5")
 hm_astro_bkgnd = BackgroundSpectrum.from_file(hm_bkgnd_file)
+
 
 def make_foreground(event_params, arf, rmf, prng=None):
     import pyregion._region_filter as rfilter
