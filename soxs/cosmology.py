@@ -132,8 +132,8 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
 
     mylog.info("Selecting halos in the FOV.")
 
-    halo_x = halo_data["x"][()]/(h0*scale.value)
-    halo_y = halo_data["y"][()]/(h0*scale.value)
+    halo_x = halo_data["x"][()].astype("float64")/(h0*scale.value)
+    halo_y = halo_data["y"][()].astype("float64")/(h0*scale.value)
 
     fov_idxs = (halo_x >= xlo) & (halo_x <= xhi)
     fov_idxs = (halo_y >= ylo) & (halo_y <= yhi) & fov_idxs
