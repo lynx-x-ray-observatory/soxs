@@ -8,7 +8,8 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV, sigma_to_fwhm
 from soxs.simput import read_simput_catalog
 from soxs.utils import mylog, ensure_numpy_array, \
-    parse_prng, parse_value, get_rot_mat, soxs_cfg
+    parse_prng, parse_value, get_rot_mat, soxs_cfg, \
+    create_region
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
@@ -614,8 +615,8 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                     thisc = np.ones(n_evt, dtype='bool')
                     rtype = chip[0]
                     args = chip[1:]
-                    r = getattr(rfilter, rtype)(*args)
-                    inside = r.inside(cx, cy)
+                    r = create_region(rtype, args, 0.0, 0.0)
+                    inside = r.contains(cx, cy)
                     thisc = np.logical_and(thisc, inside)
                     events["chip_id"][thisc] = i
                 keep = events["chip_id"] > -1

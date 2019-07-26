@@ -6,6 +6,7 @@ import astropy.units as u
 from astropy.units import Quantity
 import warnings
 from configparser import ConfigParser
+import regions
 
 # Configuration
 
@@ -178,3 +179,19 @@ class DummyPbar(object):
 
     def close(self):
         pass
+
+
+def create_region(rtype, args, dx, dy):
+    rtype = getattr(regions, rtype)
+    if rtype in ["Rectangle", "Box"]:
+        xctr, yctr, xw, yw = args
+        reg = regions.RectanglePixelRegion((xctr + dx, yctr + dy), xw, yw)
+    elif rtype == "Circle":
+        xctr, yctr, radius = args
+        reg = regions.CirclePixelRegion((xctr+dx, yctr+dy), radius)
+    elif rtype == "Polygon":
+        vertices = regions.PixCoord(x=args[0]+dx, y=args[1]+dy)
+        reg = regions.PolygonPixelRegion(vertices=vertices)
+    else:
+        raise NotImplementedError
+    return reg

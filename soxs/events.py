@@ -3,7 +3,7 @@ import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import os
 from soxs.utils import mylog, parse_value, get_rot_mat, \
-    downsample
+    downsample, create_region
 from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
 
@@ -126,21 +126,6 @@ def write_event_file(events, parameters, filename, overwrite=False):
     pyfits.HDUList(hdulist).writeto(filename, overwrite=overwrite)
 
 
-def parse_region_args(rtype, args, dx, dy):
-    if rtype == "Box":
-        xctr, yctr, xw, yw = args
-        new_args = [xctr + dx, yctr + dy, xw, yw]
-    elif rtype == "Circle":
-        xctr, yctr, radius = args
-        new_args = [xctr + dx, yctr + dx, radius]
-    elif rtype == "Polygon":
-        new_args = [[x + dx for x in args[0]],
-                    [y + dy for y in args[1]]]
-    else:
-        raise NotImplementedError
-    return new_args
-
-
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False,
                       reblock=1, nhistx=16, nhisty=16, order=1):
@@ -184,7 +169,6 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         The interpolation order to use when making the exposure map. 
         Default: 1
     """
-    import pyregion._region_filter as rfilter
     from scipy.ndimage.interpolation import rotate, shift
     from soxs.instrument import AuxiliaryResponseFile, perform_dither
     if isinstance(energy, np.ndarray) and weights is None:
@@ -254,7 +238,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         eff_area = np.average(eff_area, weights=weights)
 
     if instr["chips"] is None:
-        rtypes = ["Box"]
+        rtypes = ["Rectangle"]
         args = [[0.0, 0.0, instr["num_pixels"], instr["num_pixels"]]]
     else:
         rtypes = []
@@ -266,10 +250,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     tmpmap = np.zeros((2*nx, 2*ny))
 
     for rtype, arg in zip(rtypes, args):
-        rfunc = getattr(rfilter, rtype)
-        new_args = parse_region_args(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
-        r = rfunc(*new_args)
-        tmpmap += r.mask(tmpmap).astype("float64")
+        r = create_region(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
+        tmpmap += r.to_mask().cutout(tmpmap).astype("float64")
 
     tmpmap = downsample(tmpmap, reblock)
 
@@ -562,6 +544,7 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     hdulist = pyfits.HDUList([pyfits.PrimaryHDU(), tbhdu])
 
     hdulist.writeto(out_file, overwrite=overwrite)
+
 
 coord_types = {"sky": ("X", "Y", 2, 3),
                "det": ("DETX", "DETY", 6, 7)}

@@ -23,7 +23,7 @@ setup(name='soxs',
       url='https://github.com/lynx-x-ray-observatory/soxs/',
       setup_requires=["numpy","cython>=0.24"],
       install_requires=["numpy","astropy>=3.0","tqdm",
-                        "h5py","scipy","pyyaml","pyregion"],
+                        "h5py","scipy","pyyaml","regions"],
       include_package_data=True,
       scripts=scripts,
       classifiers=[

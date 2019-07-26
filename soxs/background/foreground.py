@@ -3,7 +3,8 @@ import os
 from soxs.background.spectra import BackgroundSpectrum, \
     ConvolvedBackgroundSpectrum
 from soxs.background.events import make_diffuse_background
-from soxs.utils import soxs_files_path, parse_prng, mylog
+from soxs.utils import soxs_files_path, parse_prng, mylog, \
+    create_region
 import numpy as np
 
 # X-ray foreground from Hickox & Markevitch 2007
@@ -13,7 +14,6 @@ hm_astro_bkgnd = BackgroundSpectrum.from_file(hm_bkgnd_file)
 
 
 def make_foreground(event_params, arf, rmf, prng=None):
-    import pyregion._region_filter as rfilter
 
     prng = parse_prng(prng)
 
@@ -42,8 +42,8 @@ def make_foreground(event_params, arf, rmf, prng=None):
             thisc = np.ones(n_events, dtype='bool')
             rtype = chip[0]
             args = chip[1:]
-            r = getattr(rfilter, rtype)(*args)
-            inside = r.inside(bkg_events["detx"], bkg_events["dety"])
+            r = create_region(rtype, args, 0.0, 0.0)
+            inside = r.contains(bkg_events["detx"], bkg_events["dety"])
             thisc = np.logical_and(thisc, inside)
             bkg_events["chip_id"][thisc] = i
 

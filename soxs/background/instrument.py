@@ -1,6 +1,6 @@
 import os
 from soxs.utils import soxs_files_path, parse_prng, \
-    parse_value, mylog
+    parse_value, mylog, create_region
 from soxs.background.spectra import \
     InstrumentalBackgroundSpectrum
 from soxs.background.events import make_diffuse_background
@@ -71,7 +71,6 @@ def add_instrumental_background(name, filename, default_focal_length):
 
 
 def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
-    import pyregion._region_filter as rfilter
 
     prng = parse_prng(prng)
 
@@ -115,8 +114,8 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
             thisc = np.ones(n_events, dtype='bool')
             rtype = chip[0]
             args = chip[1:]
-            r = getattr(rfilter, rtype)(*args)
-            inside = r.inside(detx, dety)
+            r = create_region(rtype, args, 0.0, 0.0)
+            inside = r.contains(bkg_events["detx"], bkg_events["dety"])
             thisc = np.logical_and(thisc, inside)
             bkg_events["energy"].append(e[thisc])
             bkg_events["detx"].append(detx[thisc])
