@@ -329,15 +329,22 @@ class RedistributionMatrixFile(object):
         fcurr = 0
         last = sorted_e.shape[0]
 
+        emin = sorted_e[0]
+        emax = sorted_e[-1]
+
         pbar = tqdm(leave=True, total=last, desc="Scattering energies ")
         for (k, low), high in zip(enumerate(self.elo), self.ehi):
+            if high < emin or low > emax:
+                continue
+            e = sorted_e[fcurr:last]
+            nn = np.logical_and(low <= e, e < high).sum()
+            if nn == 0:
+                continue
             # weight function for probabilities from RMF
             weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
             weights /= weights.sum()
             trueChannel = self._make_channels(k)
             if len(trueChannel) > 0:
-                e = sorted_e[fcurr:last]
-                nn = np.logical_and(low <= e, e < high).sum()
                 channelInd = prng.choice(len(weights), size=nn, p=weights)
                 detectedChannels.append(trueChannel[channelInd])
                 fcurr += nn
