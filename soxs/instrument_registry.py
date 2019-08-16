@@ -240,7 +240,7 @@ for energy in ["meg", "heg"]:
 # SXS
 
 instrument_registry["xrism_resolve"] = {"name": "xrism_resolve",
-                                        "arf": "xarm_res_bet_fa_20170818.arf",
+                                        "arf": "xarm_res_flt_pa_20170818.arf",
                                         "rmf": "xarm_res_h5ev_20170818.rmf",
                                         "bkgnd": "hitomi_sxs",
                                         "num_pixels": 6,

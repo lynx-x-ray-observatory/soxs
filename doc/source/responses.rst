@@ -139,7 +139,7 @@ XRISM
 Resolve
 +++++++
 
-* ARF: `xarm_res_bet_fa_20170818.arf <../soxs_responses/xarm_res_bet_fa_20170818.arf>`_
+* ARF: `xarm_res_flt_pa_20170818.arf <../soxs_responses/xarm_res_flt_pa_20170818.arf>`_
 * RMF: `xarm_res_h5ev_20170818.rmf <../soxs_responses/xarm_res_h5ev_20170818.rmf>`_
 
 AXIS
