@@ -407,7 +407,7 @@ def perform_dither(t, dither_dict):
     return x_offset, y_offset
 
 
-def generate_events(input_events, exp_time, instrument, sky_center, 
+def generate_events(source, exp_time, instrument, sky_center, 
                     no_dither=False, dither_params=None, 
                     roll_angle=0.0, subpixel_res=False, prng=None):
     """
@@ -463,19 +463,19 @@ def generate_events(input_events, exp_time, instrument, sky_center,
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
-    if isinstance(input_events, dict):
+    if isinstance(source, dict):
         parameters = {}
         for key in ["flux", "emin", "emax", "sources"]:
-            parameters[key] = input_events[key]
-        event_list = []
+            parameters[key] = source[key]
+        source_list = []
         for i in range(len(parameters["flux"])):
             edict = {}
             for key in ["ra", "dec", "energy"]:
-                edict[key] = input_events[key][i]
-            event_list.append(edict)
-    elif isinstance(input_events, str):
+                edict[key] = source[key][i]
+            source_list.append(edict)
+    elif isinstance(source, str):
         # Assume this is a SIMPUT catalog
-        event_list, parameters = read_simput_catalog(input_events)
+        source_list, parameters = read_simput_catalog(source)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -538,7 +538,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
     all_events = defaultdict(list)
 
-    for i, evts in enumerate(event_list):
+    for i, src in enumerate(source_list):
 
         mylog.info("Detecting events from source %s." % parameters["sources"][i])
 
@@ -546,7 +546,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
         mylog.info("Applying energy-dependent effective area from %s." % os.path.split(arf.filename)[-1])
         refband = [parameters["emin"][i], parameters["emax"][i]]
-        events = arf.detect_events(evts, exp_time, parameters["flux"][i], refband, prng=prng)
+        events = arf.detect_events(src, exp_time, parameters["flux"][i], refband, prng=prng)
 
         n_evt = events["energy"].size
 
