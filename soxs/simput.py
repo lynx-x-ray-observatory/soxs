@@ -6,6 +6,7 @@ from soxs.utils import parse_prng, parse_value, \
 from soxs.spatial import construct_wcs
 from astropy.units import Quantity
 
+
 def read_simput_catalog(simput_file):
     r"""
     Read events from a SIMPUT catalog. This will read 
@@ -30,17 +31,18 @@ def read_simput_catalog(simput_file):
     parameters["emin"] = f_simput["src_cat"].data["e_min"]
     parameters["emax"] = f_simput["src_cat"].data["e_max"]
     parameters["sources"] = f_simput["src_cat"].data["src_name"]
-    phlist_files = [file.split("[")[0] for file in 
+    src_files = [file.split("[")[0] for file in 
                     f_simput["src_cat"].data["spectrum"]]
     f_simput.close()
-    for phlist_file in phlist_files:
-        f_phlist = pyfits.open(os.path.join(simput_dir, phlist_file))
+    for src_file in src_files:
+        f_src = pyfits.open(os.path.join(simput_dir, src_file))
         evt = {}
         for key in ["ra", "dec", "energy"]:
-            evt[key] = f_phlist["phlist"].data[key]
-        f_phlist.close()
+            evt[key] = f_src["phlist"].data[key]
+        f_src.close()
         events.append(evt)
     return events, parameters
+
 
 def handle_simput_catalog(simput_prefix, phfiles, flux, emin, emax, 
                           src_names, append, overwrite):
@@ -123,6 +125,7 @@ def handle_simput_catalog(simput_prefix, phfiles, flux, emin, emax,
 
     wrhdu.writeto(simputfile, overwrite=(overwrite or append))
 
+
 def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
                       append=False, overwrite=False):
     r"""
@@ -187,7 +190,23 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     handle_simput_catalog(simput_prefix, [phfile], [flux], [emin], 
                           [emax], [phlist_prefix], append, overwrite)
 
+
 class SimputCatalog:
+
+    def __init__(self, name, sources):
+        """
+        Create a SIMPUT catalog from a single or multiple sources.
+
+        Parameters
+        ----------
+        name : string
+            The name of the SIMPUT catalog. This will also be the prefix 
+            of any SIMPUT catalog file that is written from this object.
+        sources : single or list of :class:`~soxs.simput.SimputSource` instances
+            The photon list(s) to create this catalog with.
+        """
+        self.name = name
+        self.sources = ensure_list(sources)
 
     @classmethod
     def from_models(cls, name, phlist_name, spectral_model, spatial_model,
@@ -202,7 +221,7 @@ class SimputCatalog:
             The name of the SIMPUT catalog. This will be the prefix of 
             the SIMPUT catalog file that is written from this SIMPUT 
             catalog.
-        phlist_name : string
+        src_name : string
             The name of the photon list. This will be the prefix of 
             the photon list file which is created from the PhotonList 
             object which is created here.
@@ -223,7 +242,7 @@ class SimputCatalog:
             which sets the seed based on the system time.
 
         """
-        photon_list = PhotonList.from_models(phlist_name, spectral_model, 
+        photon_list = PhotonList.from_models(src_name, spectral_model, 
                                              spatial_model, t_exp,
                                              area, prng=prng)
         return cls(name, photon_list)
@@ -253,22 +272,6 @@ class SimputCatalog:
 
         return cls(name, photon_lists)
 
-    def __init__(self, name, photon_lists):
-        """
-        Create a SIMPUT catalog from a single photon list or multiple
-        photon lists.
-
-        Parameters
-        ----------
-        name : string
-            The name of the SIMPUT catalog. This will also be the prefix 
-            of any SIMPUT catalog file that is written from this object.
-        photon_lists : single or list of :class:`~soxs.simput.PhotonList` instances
-            The photon list(s) to create this catalog with.
-        """
-        self.name = name
-        self.photon_lists = ensure_list(photon_lists)
-
     def write_catalog(self, overwrite=False):
         """
         Write the SIMPUT catalog and associated photon lists to disk.
@@ -279,27 +282,44 @@ class SimputCatalog:
             Whether or not to overwrite an existing file with 
             the same name. Default: False
         """
-        for i, phlist in enumerate(self.photon_lists):
+        for i, src in enumerate(self.sources):
             if i == 0:
                 append = False
                 mylog.info("Writing SIMPUT catalog file %s_simput.fits." % self.name)
             else:
                 append = True
-            mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % phlist.name)
-            phlist.write_photon_list(self.name, append=append, overwrite=overwrite)
+            mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % src.name)
+            src.write_photon_list(self.name, append=append, overwrite=overwrite)
 
-    def append(self, photon_list):
+    def append(self, source):
         """
-        Add a photon list to this catalog.
+        Add a source to this catalog.
 
         Parameters
         ----------
-        photon_list : :class:`~soxs.simput.PhotonList`
-            The photon list to append to this catalog.
+        source : :class:`~soxs.simput.SimputSource`
+            The source to append to this catalog.
         """
-        self.photon_lists.append(photon_list)
+        self.sources.append(source)
 
-class PhotonList:
+
+class SimputSource:
+    def __init__(self, name, emin, emax, flux):
+        self.emin = emin
+        self.emax = emax
+        self.name = name
+        self.flux = flux
+
+
+class PhotonList(SimputSource):
+
+    def __init__(self, name, ra, dec, energy, flux):
+        super(PhotonList, self).__init__(name, energy.value.min(),
+                                         energy.value.max(), flux)
+        self.ra = ra
+        self.dec = dec
+        self.energy = energy
+        self.num_events = energy.size
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
@@ -336,16 +356,6 @@ class PhotonList:
         e = spectral_model.generate_energies(t_exp, area, prng=prng)
         ra, dec = spatial_model.generate_coords(e.size, prng=prng)
         return cls(name, ra, dec, e, e.flux)
-
-    def __init__(self, name, ra, dec, energy, flux):
-        self.name = name
-        self.ra = ra
-        self.dec = dec
-        self.energy = energy
-        self.emin = energy.value.min()
-        self.emax = energy.value.max()
-        self.flux = flux
-        self.num_events = energy.size
 
     def write_photon_list(self, simput_prefix, append=False, overwrite=False):
         """
@@ -418,11 +428,11 @@ class PhotonList:
         else:
             wcs = ax.wcs
         if emin is None:
-            emin = self.energy.value.min()
+            emin = self.emin
         else:
             emin = parse_value(emin, "keV")
         if emax is None:
-            emax = self.energy.value.max()
+            emax = self.emax
         else:
             emax = parse_value(emax, "keV")
         idxs = np.logical_and(self.energy.value >= emin, self.energy.value <= emax)
