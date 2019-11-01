@@ -178,7 +178,7 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
                           [emax], [phlist_prefix], append, overwrite)
 
 
-def _from_models(prng, t_exp, area, spectral_model, spatial_model):
+def _e_from_models(prng, t_exp, area, spectral_model, spatial_model):
     prng = parse_prng(prng)
     t_exp = parse_value(t_exp, "s")
     area = parse_value(area, "cm**2")
@@ -242,8 +242,8 @@ class SimputCatalog:
             which sets the seed based on the system time.
 
         """
-        e, ra, dec = _from_models(prng, t_exp, area, spectral_model, 
-                                  spatial_model)
+        ra, dec, e = _e_from_models(prng, t_exp, area, spectral_model, 
+                                    spatial_model)
         photon_list = SimputPhotonList(src_name, ra, dec, e, e.flux)
         return cls(name, photon_list, src_name, e.flux, e.min(), e.max())
 
@@ -389,8 +389,8 @@ class SimputPhotonList(SimputSource):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
-        e, ra, dec = _from_models(prng, t_exp, area, spectral_model,
-                                  spatial_model)
+        ra, dec, e = _e_from_models(prng, t_exp, area, spectral_model,
+                                    spatial_model)
         return cls(name, ra, dec, e, e.flux)
 
     def write_photon_list(self, simput_prefix, append=False, overwrite=False):
