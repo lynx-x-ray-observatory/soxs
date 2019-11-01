@@ -242,9 +242,9 @@ class SimputCatalog:
             which sets the seed based on the system time.
 
         """
-        photon_list = PhotonList.from_models(src_name, spectral_model, 
-                                             spatial_model, t_exp,
-                                             area, prng=prng)
+        photon_list = SimputPhotonList.from_models(src_name, spectral_model, 
+                                                   spatial_model, t_exp,
+                                                   area, prng=prng)
         return cls(name, photon_list)
 
     @classmethod
@@ -266,8 +266,8 @@ class SimputCatalog:
             ra = Quantity(events[i]["ra"], "deg")
             dec = Quantity(events[i]["dec"], "deg")
             energy = Quantity(events[i]["energy"], "keV")
-            phlist = PhotonList(params["sources"][i], ra, dec, energy,
-                                params[i]["flux"])
+            phlist = SimputPhotonList(params["src_names"][i], ra, dec, energy,
+                                      params[i]["flux"])
             photon_lists.append(phlist)
 
         return cls(name, photon_lists)
@@ -311,11 +311,12 @@ class SimputSource:
         self.flux = flux
 
 
-class PhotonList(SimputSource):
+class SimputPhotonList(SimputSource):
+    src_type = "phlist"
 
     def __init__(self, name, ra, dec, energy, flux):
-        super(PhotonList, self).__init__(name, energy.value.min(),
-                                         energy.value.max(), flux)
+        super(SimputPhotonList, self).__init__(name, energy.value.min(),
+                                               energy.value.max(), flux)
         self.ra = ra
         self.dec = dec
         self.energy = energy
