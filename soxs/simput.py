@@ -209,7 +209,7 @@ class SimputCatalog:
         self.sources = ensure_list(sources)
 
     @classmethod
-    def from_models(cls, name, phlist_name, spectral_model, spatial_model,
+    def from_models(cls, name, src_name, spectral_model, spatial_model,
                     t_exp, area, prng=None):
         """
         Generate a SIMPUT catalog object and a single photon list
