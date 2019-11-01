@@ -84,7 +84,7 @@ def test_add_background():
 
     empty_cat = {"ra": [ra], "dec": [dec], "energy": [e],
                  "flux": [0.0], "emin": [0.1], "emax": [10.0],
-                 "sources": ["empty"]}
+                 "src_names": ["empty"]}
 
     instrument_simulator(empty_cat, "evt1.fits", exp_time, "lynx_hdxi",
                          [ra0, dec0], prng=prng1, overwrite=True)
