@@ -30,7 +30,7 @@ def read_simput_catalog(simput_file):
     parameters["flux"] = f_simput["src_cat"].data["flux"]
     parameters["emin"] = f_simput["src_cat"].data["e_min"]
     parameters["emax"] = f_simput["src_cat"].data["e_max"]
-    parameters["sources"] = f_simput["src_cat"].data["src_name"]
+    parameters["src_names"] = f_simput["src_cat"].data["src_name"]
     src_files = [file.split("[")[0] for file in 
                     f_simput["src_cat"].data["spectrum"]]
     f_simput.close()

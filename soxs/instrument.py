@@ -465,7 +465,7 @@ def generate_events(source, exp_time, instrument, sky_center,
     prng = parse_prng(prng)
     if isinstance(source, dict):
         parameters = {}
-        for key in ["flux", "emin", "emax", "sources"]:
+        for key in ["flux", "emin", "emax", "src_names"]:
             parameters[key] = source[key]
         source_list = []
         for i in range(len(parameters["flux"])):
@@ -507,25 +507,24 @@ def generate_events(source, exp_time, instrument, sky_center,
                    "dither_on": dither_on,
                    "plate_scale": plate_scale_arcsec}
 
-    event_params = {}
-    event_params["exposure_time"] = exp_time
-    event_params["arf"] = arf.filename
-    event_params["sky_center"] = sky_center
-    event_params["pix_center"] = np.array([0.5*(2*nx+1)]*2)
-    event_params["num_pixels"] = nx
-    event_params["plate_scale"] = plate_scale
-    event_params["rmf"] = rmf.filename
-    event_params["channel_type"] = rmf.header["CHANTYPE"]
-    event_params["telescope"] = rmf.header["TELESCOP"]
-    event_params["instrument"] = instrument_spec['name']
-    event_params["mission"] = rmf.header.get("MISSION", "")
-    event_params["nchan"] = rmf.n_ch
-    event_params["roll_angle"] = roll_angle
-    event_params["fov"] = instrument_spec["fov"]
-    event_params["chan_lim"] = [rmf.cmin, rmf.cmax]
-    event_params["chips"] = instrument_spec["chips"]
-    event_params["dither_params"] = dither_dict
-    event_params["aimpt_coords"] = instrument_spec["aimpt_coords"]
+    event_params = {"exposure_time": exp_time,
+                    "arf": arf.filename,
+                    "sky_center": sky_center,
+                    "pix_center": np.array([0.5*(2*nx+1)]*2),
+                    "num_pixels": nx,
+                    "plate_scale": plate_scale,
+                    "rmf": rmf.filename,
+                    "channel_type": rmf.header["CHANTYPE"],
+                    "telescope": rmf.header["TELESCOP"],
+                    "instrument": instrument_spec['name'],
+                    "mission": rmf.header.get("MISSION", ""),
+                    "nchan": rmf.n_ch,
+                    "roll_angle": roll_angle,
+                    "fov": instrument_spec["fov"],
+                    "chan_lim": [rmf.cmin, rmf.cmax],
+                    "chips": instrument_spec["chips"],
+                    "dither_params": dither_dict,
+                    "aimpt_coords": instrument_spec["aimpt_coords"]}
 
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
@@ -540,7 +539,7 @@ def generate_events(source, exp_time, instrument, sky_center,
 
     for i, src in enumerate(source_list):
 
-        mylog.info("Detecting events from source %s." % parameters["sources"][i])
+        mylog.info("Detecting events from source %s." % parameters["src_names"][i])
 
         # Step 1: Use ARF to determine which photons are observed
 
@@ -747,7 +746,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         input_events["flux"].append(ptsrc_events["flux"])
         input_events["emin"].append(ptsrc_events["energy"].min())
         input_events["emax"].append(ptsrc_events["energy"].max())
-        input_events["sources"].append("ptsrc_bkgnd")
+        input_events["src_names"].append("ptsrc_bkgnd")
         events, event_params = generate_events(input_events, exp_time,
                                                instrument, sky_center,
                                                no_dither=no_dither,
