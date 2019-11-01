@@ -2,7 +2,7 @@ import astropy.io.fits as pyfits
 import numpy as np
 import os
 from soxs.utils import parse_prng, parse_value, \
-    ensure_list, mylog
+    ensure_list, mylog, ensure_numpy_array
 from soxs.spatial import construct_wcs
 from astropy.units import Quantity
 
@@ -23,25 +23,12 @@ def read_simput_catalog(simput_file):
        and energies of the events from the sources.
     2. NumPy arrays of the parameters of the sources.
     """
-    events = []
-    parameters = {}
-    simput_dir = os.path.split(os.path.abspath(simput_file))[0]
-    f_simput = pyfits.open(simput_file)
-    parameters["flux"] = f_simput["src_cat"].data["flux"]
-    parameters["emin"] = f_simput["src_cat"].data["e_min"]
-    parameters["emax"] = f_simput["src_cat"].data["e_max"]
-    parameters["src_names"] = f_simput["src_cat"].data["src_name"]
-    src_files = [file.split("[")[0] for file in 
-                    f_simput["src_cat"].data["spectrum"]]
-    f_simput.close()
-    for src_file in src_files:
-        f_src = pyfits.open(os.path.join(simput_dir, src_file))
-        evt = {}
-        for key in ["ra", "dec", "energy"]:
-            evt[key] = f_src["phlist"].data[key]
-        f_src.close()
-        events.append(evt)
-    return events, parameters
+    sc = SimputCatalog.from_file(simput_file)
+    parameters = {"emin": sc.emin,
+                  "emax": sc.emax,
+                  "src_names": sc.src_names,
+                  "flux": sc.fluxes}
+    return sc.sources, parameters
 
 
 def handle_simput_catalog(simput_prefix, phfiles, flux, emin, emax, 
@@ -191,9 +178,18 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
                           [emax], [phlist_prefix], append, overwrite)
 
 
+def _from_models(prng, t_exp, area, spectral_model, spatial_model):
+    prng = parse_prng(prng)
+    t_exp = parse_value(t_exp, "s")
+    area = parse_value(area, "cm**2")
+    e = spectral_model.generate_energies(t_exp, area, prng=prng)
+    ra, dec = spatial_model.generate_coords(e.size, prng=prng)
+    return ra, dec, e
+
+
 class SimputCatalog:
 
-    def __init__(self, name, sources):
+    def __init__(self, name, sources, src_names, fluxes, emin, emax):
         """
         Create a SIMPUT catalog from a single or multiple sources.
 
@@ -207,6 +203,10 @@ class SimputCatalog:
         """
         self.name = name
         self.sources = ensure_list(sources)
+        self.src_names = ensure_list(src_names)
+        self.fluxes = ensure_numpy_array(fluxes)
+        self.emin = ensure_numpy_array(emin)
+        self.emax = ensure_numpy_array(emax)
 
     @classmethod
     def from_models(cls, name, src_name, spectral_model, spatial_model,
@@ -222,8 +222,8 @@ class SimputCatalog:
             the SIMPUT catalog file that is written from this SIMPUT 
             catalog.
         src_name : string
-            The name of the photon list. This will be the prefix of 
-            the photon list file which is created from the PhotonList 
+            The name of the source This will be the prefix of 
+            the source file which is created from the SimputSource
             object which is created here.
         spectral_model : :class:`~soxs.spectra.Spectrum`
             The spectral model to use to generate the event energies.
@@ -242,10 +242,10 @@ class SimputCatalog:
             which sets the seed based on the system time.
 
         """
-        photon_list = SimputPhotonList.from_models(src_name, spectral_model, 
-                                                   spatial_model, t_exp,
-                                                   area, prng=prng)
-        return cls(name, photon_list)
+        e, ra, dec = _from_models(prng, t_exp, area, spectral_model, 
+                                  spatial_model)
+        photon_list = SimputPhotonList(src_name, ra, dec, e, e.flux)
+        return cls(name, photon_list, src_name, e.flux, e.min(), e.max())
 
     @classmethod
     def from_file(cls, simput_file):
@@ -259,22 +259,33 @@ class SimputCatalog:
             The name of the SIMPUT catalog file to read the 
             catalog and photon lists from. 
         """
-        photon_lists = []
+        sources = []
         name = simput_file.split("_simput.fits")[0]
-        events, parameters = read_simput_catalog(simput_file)
-        for i, params in enumerate(parameters):
-            ra = Quantity(events[i]["ra"], "deg")
-            dec = Quantity(events[i]["dec"], "deg")
-            energy = Quantity(events[i]["energy"], "keV")
-            phlist = SimputPhotonList(params["src_names"][i], ra, dec, energy,
-                                      params[i]["flux"])
-            photon_lists.append(phlist)
+        simput_dir = os.path.split(os.path.abspath(simput_file))[0]
+        f_simput = pyfits.open(simput_file)
+        fluxes = f_simput["src_cat"].data["flux"]
+        src_names = f_simput["src_cat"].data["src_name"]
+        for src, i in enumerate(f_simput["src_cat"].data["spectrum"]):
+            src_file, src_type = src.split("[")
+            src_type = src_type.strip("]")
+            f_src = pyfits.open(os.path.join(simput_dir, src_file))
+            if src_type == "phlist":
+                ra = Quantity(f_src["phlist"].data["ra"], "deg")
+                dec = Quantity(f_src["phlist"].data["dec"], "deg")
+                energy = Quantity(f_src["phlist"].data["energy"], "keV")
+                src = SimputPhotonList(src_names[i], ra, dec, energy,
+                                       fluxes[i])
+            f_src.close()
+            sources.append(src)
+        f_simput.close()
 
-        return cls(name, photon_lists)
+        return cls(name, sources, src_names, fluxes,
+                   f_simput["src_cat"].data["e_min"],
+                   f_simput["src_cat"].data["e_max"])
 
     def write_catalog(self, overwrite=False):
         """
-        Write the SIMPUT catalog and associated photon lists to disk.
+        Write the SIMPUT catalog and associated sources to disk.
 
         Parameters
         ----------
@@ -288,8 +299,9 @@ class SimputCatalog:
                 mylog.info("Writing SIMPUT catalog file %s_simput.fits." % self.name)
             else:
                 append = True
-            mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % src.name)
-            src.write_photon_list(self.name, append=append, overwrite=overwrite)
+            if src.src_type == "phlist":
+                mylog.info("Writing SIMPUT photon list file %s_phlist.fits." % src.name)
+                src.write_photon_list(self.name, append=append, overwrite=overwrite)
 
     def append(self, source):
         """
@@ -304,11 +316,37 @@ class SimputCatalog:
 
 
 class SimputSource:
+    src_type = "spectrum"
+
     def __init__(self, name, emin, emax, flux):
         self.emin = emin
         self.emax = emax
         self.name = name
         self.flux = flux
+
+    @classmethod
+    def from_spectrum(cls, name, spec, ra, dec):
+        hdu0 = pyfits.PrimaryHDU()
+        col_e = pyfits.Column(name='energy', format='D', unit='keV', array=self.emid.value)
+        col_f = pyfits.Column(name='flux', format='D', unit='photon/s/cm**2/keV', array=self.flux.value)
+        col_name = pyfits.Column(name='name', format='80A', array=np.array([name]))
+
+        coldefs = pyfits.ColDefs([col_e, col_f, col_name])
+        tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+        tbhdu.name = "SPECTRUM"
+        tbhdu.header["HDUCLASS"] = "HEASARC"
+        tbhdu.header["HDUCLAS1"] = "SIMPUT"
+        tbhdu.header["HDUCLAS2"] = "SPECTRUM"
+        tbhdu.header["HDUVERS"] = "1.1.0"
+        tbhdu.header["EXTVER"] = 1
+
+        hdulist = [hdu0, tbhdu]
+
+        pyfits.HDUList(hdulist).writeto(filename, overwrite=overwrite)
+
+
+class SimputPointSource(SimputSource):
+    src_type = "ptsrc_spectrum"
 
 
 class SimputPhotonList(SimputSource):
@@ -351,11 +389,8 @@ class SimputPhotonList(SimputSource):
             set of random numbers, such as for a test. Default is None, 
             which sets the seed based on the system time. 
         """
-        prng = parse_prng(prng)
-        t_exp = parse_value(t_exp, "s")
-        area = parse_value(area, "cm**2")
-        e = spectral_model.generate_energies(t_exp, area, prng=prng)
-        ra, dec = spatial_model.generate_coords(e.size, prng=prng)
+        e, ra, dec = _from_models(prng, t_exp, area, spectral_model,
+                                  spatial_model)
         return cls(name, ra, dec, e, e.flux)
 
     def write_photon_list(self, simput_prefix, append=False, overwrite=False):

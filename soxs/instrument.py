@@ -6,7 +6,7 @@ import os
 from collections import defaultdict
 
 from soxs.constants import erg_per_keV, sigma_to_fwhm
-from soxs.simput import read_simput_catalog
+from soxs.simput import read_simput_catalog, SimputPhotonList
 from soxs.utils import mylog, ensure_numpy_array, \
     parse_prng, parse_value, get_rot_mat, soxs_cfg, \
     create_region
@@ -89,13 +89,17 @@ class AuxiliaryResponseFile:
                           left=0.0, right=0.0)
         return u.Quantity(earea, "cm**2")
 
+    def generate_events(self, src, exp_time, refband, prng=None):
+        prng = parse_prng(prng)
+        cspec = ConvolvedSpectrum(src.spec, self).new_spec_from_band(refband[0], refband[1])
+        energy = cspec.generate_energies(exp_time, quiet=True, prng=prng)
+        pones = np.ones_like(energy)
+        return {"energy": energy, "ra": src.ra*pones, "dec": src.dec*pones}
+
     def detect_events(self, events, exp_time, flux, refband, prng=None):
         """
         Use the ARF to determine a subset of photons which 
-        will be detected. Returns a boolean NumPy array 
-        which is the same is the same size as the number 
-        of photons, wherever it is "true" means those photons 
-        have been detected.
+        will be detected.
 
         Parameters
         ----------
@@ -469,10 +473,10 @@ def generate_events(source, exp_time, instrument, sky_center,
             parameters[key] = source[key]
         source_list = []
         for i in range(len(parameters["flux"])):
-            edict = {}
-            for key in ["ra", "dec", "energy"]:
-                edict[key] = source[key][i]
-            source_list.append(edict)
+            phlist = SimputPhotonList(parameters['src_names'],
+                                      source["ra"][i], source["dec"][i],
+                                      source["energy"][i], parameters['flux'])
+            source_list.append(phlist)
     elif isinstance(source, str):
         # Assume this is a SIMPUT catalog
         source_list, parameters = read_simput_catalog(source)
@@ -545,7 +549,10 @@ def generate_events(source, exp_time, instrument, sky_center,
 
         mylog.info("Applying energy-dependent effective area from %s." % os.path.split(arf.filename)[-1])
         refband = [parameters["emin"][i], parameters["emax"][i]]
-        events = arf.detect_events(src, exp_time, parameters["flux"][i], refband, prng=prng)
+        if src.src_type == "phlist":
+            events = arf.detect_events(src, exp_time, parameters["flux"][i], refband, prng=prng)
+        elif src.src_type.endswith("spectrum"):
+            events = arf.generate_events(src, exp_time, refband, prng=prng)
 
         n_evt = events["energy"].size
 
