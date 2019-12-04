@@ -80,6 +80,18 @@ def generate_fluxes(exp_time, area, fov, prng):
 
     return agn_fluxes, gal_fluxes
 
+
+def generate_positions(num, fov, sky_center, prng):
+    dec_scal = np.fabs(np.cos(sky_center[1] * np.pi / 180))
+    ra_min = sky_center[0] - fov / (2.0 * 60.0 * dec_scal)
+    dec_min = sky_center[1] - fov / (2.0 * 60.0)
+
+    ra0 = prng.uniform(size=num) * fov / (60.0 * dec_scal) + ra_min
+    dec0 = prng.uniform(size=num) * fov / 60.0 + dec_min
+
+    return ra0, dec0
+
+
 def generate_sources(exp_time, fov, sky_center, area=40000.0, prng=None):
     r"""
     Make a catalog of point sources.
@@ -115,12 +127,7 @@ def generate_sources(exp_time, fov, sky_center, area=40000.0, prng=None):
     ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)),
                           gal_index * np.ones(gal_fluxes.size)])
 
-    dec_scal = np.fabs(np.cos(sky_center[1] * np.pi / 180))
-    ra_min = sky_center[0] - fov / (2.0 * 60.0 * dec_scal)
-    dec_min = sky_center[1] - fov / (2.0 * 60.0)
-
-    ra0 = prng.uniform(size=fluxes.size) * fov / (60.0 * dec_scal) + ra_min
-    dec0 = prng.uniform(size=fluxes.size) * fov / 60.0 + dec_min
+    ra0, dec0 = generate_positions(fluxes.size, fov, sky_center, prng)
 
     return ra0, dec0, fluxes, ind
 
