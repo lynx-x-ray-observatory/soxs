@@ -7,11 +7,11 @@ from tqdm import tqdm
 from astropy.cosmology import FlatLambdaCDM
 from astropy.table import Table
 
-from soxs.simput import write_photon_list
 from soxs.spatial import BetaModel, construct_wcs
 from soxs.spectra import ApecGenerator
 from soxs.utils import soxs_files_path, mylog, parse_prng, \
     parse_value
+from soxs.simput import SimputCatalog, SimputPhotonList
 
 # Cosmological parameters for the catalog
 # SHOULD NOT BE ALTERED
@@ -248,12 +248,11 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     return output_events
 
 
-def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
+def make_cosmological_sources_file(filename, exp_time, fov,
                                    sky_center, cat_center=None,
                                    absorb_model="wabs", nH=0.05, area=40000.0,
-                                   append=False, overwrite=False,
-                                   output_sources=None, write_regions=None,
-                                   prng=None):
+                                   overwrite=False, output_sources=None, 
+                                   write_regions=None, prng=None):
     r"""
     Make a SIMPUT catalog made up of contributions from
     galaxy clusters, galaxy groups, and galaxies.
@@ -284,9 +283,6 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
-    append : boolean, optional
-        If True, append a new source an existing SIMPUT 
-        catalog. Default: False
     overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
     output_sources : string, optional
@@ -306,7 +302,9 @@ def make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
                                        cat_center=cat_center,
                                        absorb_model=absorb_model, nH=nH,
                                        area=area, output_sources=output_sources,
-                                       write_regions=write_regions, prng=prng)
-    write_photon_list(simput_prefix, phlist_prefix, events["flux"],
-                      events["ra"], events["dec"], events["energy"],
-                      append=append, overwrite=overwrite)
+                                       write_regions=write_regions,prng=prng)
+    phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"], 
+                              events["flux"], name="cosmo_sources")
+    cat = SimputCatalog(phlist, phlist.name, events["flux"], events["energy"].min(),
+                        events["energy"].max())
+    cat.write_catalog(filename, overwrite=overwrite)

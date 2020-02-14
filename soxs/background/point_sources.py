@@ -1,6 +1,6 @@
 import numpy as np
-from soxs import write_photon_list
 from soxs.constants import keV_per_erg, erg_per_keV
+from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spectra import get_wabs_absorb, get_tbabs_absorb
 from soxs.utils import mylog, parse_prng, parse_value
 from scipy.interpolate import InterpolatedUnivariateSpline
@@ -35,6 +35,7 @@ fb_emax = 2.0  # keV, high energy bound for the logN-logS flux band
 spec_emin = 0.1  # keV, minimum energy of mock spectrum
 spec_emax = 10.0  # keV, max energy of mock spectrum
 
+
 def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
     f_g = np.log(spec_emax/spec_emin)*np.ones(ind.size)
     f_E = np.log(fb_emax/fb_emin)*np.ones(ind.size)
@@ -44,6 +45,7 @@ def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
     f_E[n2] = (fb_emax**(2.0-ind[n2])-fb_emin**(2.0-ind[n2]))/(2.0-ind[n2])
     fscale = f_g/f_E
     return fscale
+
 
 def generate_fluxes(exp_time, area, fov, prng):
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
@@ -130,6 +132,7 @@ def generate_sources(exp_time, fov, sky_center, area=40000.0, prng=None):
     ra0, dec0 = generate_positions(fluxes.size, fov, sky_center, prng)
 
     return ra0, dec0, fluxes, ind
+
 
 def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs", 
                           nH=0.05, area=40000.0, input_sources=None, 
@@ -265,9 +268,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
 
     return output_events
 
-def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+
+def make_point_sources_file(filename, exp_time, fov, 
                             sky_center, absorb_model="wabs", nH=0.05, 
-                            area=40000.0, prng=None, append=False, 
+                            area=40000.0, prng=None, 
                             overwrite=False, input_sources=None, 
                             output_sources=None):
     """
@@ -300,9 +304,6 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
         be specified if you have a reason to generate the same 
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
-    append : boolean, optional
-        If True, append a new source an existing SIMPUT 
-        catalog. Default: False
     overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
     input_sources : string, optional
@@ -317,9 +318,12 @@ def make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov,
                                    absorb_model=absorb_model, nH=nH, 
                                    area=area, input_sources=input_sources, 
                                    output_sources=output_sources, prng=prng)
-    write_photon_list(simput_prefix, phlist_prefix, events["flux"], 
-                      events["ra"], events["dec"], events["energy"], 
-                      append=append, overwrite=overwrite)
+    phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"],
+                              events["flux"], name="point_sources")
+    cat = SimputCatalog(phlist, phlist.name, events["flux"], events["energy"].min(),
+                        events["energy"].max())
+    cat.write_catalog(filename, overwrite=overwrite)
+
 
 def make_point_source_list(output_file, exp_time, fov, sky_center,
                            area=40000.0, prng=None):
