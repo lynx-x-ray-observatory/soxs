@@ -3,9 +3,10 @@ from ._version import get_versions
 from soxs.utils import soxs_cfg
 
 from soxs.simput import \
-    write_photon_list, \
     read_simput_catalog, \
-    SimputPhotonList, SimputCatalog
+    SimputPhotonList, \
+    SimputCatalog, \
+    SimputSpectrum
 
 from soxs.spectra import \
     Spectrum, \
