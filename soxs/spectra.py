@@ -14,7 +14,6 @@ import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
-from soxs.instrument import AuxiliaryResponseFile
 from astropy.modeling.functional_models import \
     Gaussian1D
 import glob
@@ -72,7 +71,7 @@ class Spectrum:
         return Spectrum(self.ebins, self.flux+other.flux)
 
     def __mul__(self, other):
-        if isinstance(other, AuxiliaryResponseFile):
+        if hasattr(other, "eff_area"):
             return ConvolvedSpectrum(self, other)
         else:
             return Spectrum(self.ebins, other*self.flux)
@@ -995,6 +994,7 @@ class ConvolvedSpectrum(Spectrum):
         arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
             The ARF to use in the convolution.
         """
+        from soxs.instrument import AuxiliaryResponseFile
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf

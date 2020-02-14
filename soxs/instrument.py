@@ -119,7 +119,7 @@ class AuxiliaryResponseFile:
             which sets the seed based on the system time. 
         """
         prng = parse_prng(prng)
-        energy = events["energy"]
+        energy = events["energy"].value
         if energy.size == 0:
             return events
         earea = self.interpolate_area(energy).value
@@ -327,7 +327,7 @@ class RedistributionMatrixFile:
         """
         prng = parse_prng(prng)
         eidxs = np.argsort(events["energy"])
-        sorted_e = events["energy"][eidxs]
+        sorted_e = events["energy"].value[eidxs]
 
         detectedChannels = []
 

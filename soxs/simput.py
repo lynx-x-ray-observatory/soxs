@@ -31,10 +31,8 @@ def read_simput_catalog(simput_file):
     return sc.sources, parameters
 
 
-def handle_simput_catalog(simput_prefix, phfiles, flux, emin, emax, 
+def handle_simput_catalog(simputfile, phfiles, flux, emin, emax, 
                           src_names, append, overwrite):
-
-    simputfile = simput_prefix+"_simput.fits"
 
     num_new_sources = len(phfiles)
 
@@ -189,19 +187,15 @@ def _e_from_models(prng, t_exp, area, spectral_model, spatial_model):
 
 class SimputCatalog:
 
-    def __init__(self, name, sources, src_names, fluxes, emin, emax):
+    def __init__(self, sources, src_names, fluxes, emin, emax):
         """
         Create a SIMPUT catalog from a single or multiple sources.
 
         Parameters
         ----------
-        name : string
-            The name of the SIMPUT catalog. This will also be the prefix 
-            of any SIMPUT catalog file that is written from this object.
         sources : single or list of :class:`~soxs.simput.SimputSource` instances
             The photon list(s) to create this catalog with.
         """
-        self.name = name
         self.sources = ensure_list(sources)
         self.src_names = ensure_list(src_names)
         self.fluxes = ensure_numpy_array(fluxes)
@@ -209,7 +203,7 @@ class SimputCatalog:
         self.emax = ensure_numpy_array(emax)
 
     @classmethod
-    def from_models(cls, name, src_name, spectral_model, spatial_model,
+    def from_models(cls, src_name, spectral_model, spatial_model,
                     t_exp, area, prng=None):
         """
         Generate a SIMPUT catalog object and a single photon list
@@ -217,10 +211,6 @@ class SimputCatalog:
 
         Parameters
         ----------
-        name : string
-            The name of the SIMPUT catalog. This will be the prefix of 
-            the SIMPUT catalog file that is written from this SIMPUT 
-            catalog.
         src_name : string
             The name of the source This will be the prefix of 
             the source file which is created from the SimputSource
@@ -245,7 +235,7 @@ class SimputCatalog:
         ra, dec, e = _e_from_models(prng, t_exp, area, spectral_model, 
                                     spatial_model)
         photon_list = SimputPhotonList(src_name, ra, dec, e, e.flux)
-        return cls(name, photon_list, src_name, e.flux, e.min(), e.max())
+        return cls(photon_list, src_name, e.flux, e.min(), e.max())
 
     @classmethod
     def from_file(cls, simput_file):
@@ -260,28 +250,33 @@ class SimputCatalog:
             catalog and photon lists from. 
         """
         sources = []
-        name = simput_file.split("_simput.fits")[0]
-        simput_dir = os.path.split(os.path.abspath(simput_file))[0]
         f_simput = pyfits.open(simput_file)
         fluxes = f_simput["src_cat"].data["flux"]
         src_names = f_simput["src_cat"].data["src_name"]
-        for src, i in enumerate(f_simput["src_cat"].data["spectrum"]):
-            src_file, src_type = src.split("[")
-            src_type = src_type.strip("]")
-            f_src = pyfits.open(os.path.join(simput_dir, src_file))
-            if src_type == "phlist":
-                ra = Quantity(f_src["phlist"].data["ra"], "deg")
-                dec = Quantity(f_src["phlist"].data["dec"], "deg")
-                energy = Quantity(f_src["phlist"].data["energy"], "keV")
+        e_min = f_simput["src_cat"].data["e_min"]
+        e_max = f_simput["src_cat"].data["e_max"]
+        spectra = f_simput["src_cat"].data["spectrum"]
+        f_simput.close()
+        for i, src in enumerate(spectra):
+            src_file, src_id = src.split("[")
+            src_id = src_id.strip("]")
+            # If no file is specified, assume the catalog and source are in the same file
+            if src_file == "":
+                fn_src = simput_file
+            else:
+                fn_src = src_file
+            extname, extver = src_id.lower().strip("]").split(",")
+            extver = int(extver)
+            if extname == "phlist":
+                data = pyfits.getdata(fn_src, (extname, extver))
+                ra = Quantity(data["ra"], "deg")
+                dec = Quantity(data["dec"], "deg")
+                energy = Quantity(data["energy"], "keV")
                 src = SimputPhotonList(src_names[i], ra, dec, energy,
                                        fluxes[i])
-            f_src.close()
             sources.append(src)
-        f_simput.close()
 
-        return cls(name, sources, src_names, fluxes,
-                   f_simput["src_cat"].data["e_min"],
-                   f_simput["src_cat"].data["e_max"])
+        return cls(sources, src_names, fluxes, e_min, e_max)
 
     def write_catalog(self, overwrite=False):
         """
@@ -324,6 +319,22 @@ class SimputSource:
         self.name = name
         self.flux = flux
 
+    def __getitem__(self, item):
+        return self.events[item]
+
+    def __setitem__(self, item, value):
+        self.events[item] = value
+
+    def __contains__(self, item):
+        return item in self.events
+
+    def __iter__(self):
+        for key in self.events:
+            yield key
+
+    def pop(self, item):
+        return self.events.pop(item)
+
     @classmethod
     def from_spectrum(cls, name, spec, ra, dec):
         hdu0 = pyfits.PrimaryHDU()
@@ -355,9 +366,7 @@ class SimputPhotonList(SimputSource):
     def __init__(self, name, ra, dec, energy, flux):
         super(SimputPhotonList, self).__init__(name, energy.value.min(),
                                                energy.value.max(), flux)
-        self.ra = ra
-        self.dec = dec
-        self.energy = energy
+        self.events = {"ra": ra, "dec": dec, "energy": energy}
         self.num_events = energy.size
 
     @classmethod
@@ -411,7 +420,7 @@ class SimputPhotonList(SimputSource):
             the same name. Default: False
         """
         write_photon_list(simput_prefix, self.name, self.flux,
-                          self.ra, self.dec, self.energy,
+                          self["ra"], self["dec"], self["energy"],
                           append=append, overwrite=overwrite)
 
     def plot(self, center, width, s=None, c=None, marker=None, stride=1,
@@ -471,9 +480,9 @@ class SimputPhotonList(SimputSource):
             emax = self.emax
         else:
             emax = parse_value(emax, "keV")
-        idxs = np.logical_and(self.energy.value >= emin, self.energy.value <= emax)
-        ra = self.ra[idxs][::stride].value
-        dec = self.dec[idxs][::stride].value
+        idxs = np.logical_and(self["energy"].value >= emin, self["energy"].value <= emax)
+        ra = self["ra"][idxs][::stride].value
+        dec = self["dec"][idxs][::stride].value
         x, y = wcs.wcs_world2pix(ra, dec, 1)
         ax.scatter(x, y, s=s, c=c, marker=marker, label=label, **kwargs)
         x0, y0 = wcs.wcs_world2pix(center[0], center[1], 1)
