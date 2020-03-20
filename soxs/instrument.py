@@ -1105,7 +1105,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         spec_plaw = BackgroundSpectrum.from_powerlaw(1.45, 0.0, 2.0e-7, emin=0.01,
                                                      emax=10.0, nbins=300000)
         spec_plaw.apply_foreground_absorption(nH, model=absorb_model)
-        cspec_plaw = ConvolvedBackgroundSpectrum(spec_plaw.to_spectrum(fov), arf)
+        cspec_plaw = ConvolvedSpectrum(spec_plaw.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
 
     bins = (np.arange(rmf.n_ch)+rmf.cmin).astype("int32")

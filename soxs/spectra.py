@@ -960,6 +960,7 @@ def get_wabs_absorb(e, nH):
     sigma = wabs_cross_section(e)
     return np.exp(-nH*1.0e22*sigma)
 
+
 _tbabs_emid = None
 _tbabs_sigma = None
 _tbabs_spline = None
@@ -990,6 +991,7 @@ def get_tbabs_absorb(e, nH):
 
 class ConvolvedSpectrum(Spectrum):
     _units = "photon/(s*keV)"
+
     def __init__(self, spectrum, arf):
         """
         Generate a convolved spectrum by convolving a spectrum with an
@@ -1005,7 +1007,7 @@ class ConvolvedSpectrum(Spectrum):
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
-        earea = arf.interpolate_area(spectrum.emid)
+        earea = arf.interpolate_area(spectrum.emid.value)
         rate = spectrum.flux * earea
         super(ConvolvedSpectrum, self).__init__(spectrum.ebins, rate)
 
