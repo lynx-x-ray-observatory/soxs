@@ -169,7 +169,7 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
 
 # ACIS-I, Cycle 0 and 20
 
-for cycle in [0, 20]:
+for cycle in [0, 22]:
     name = "chandra_acisi_cy%d" % cycle
     instrument_registry[name] = {"name": name, 
                                  "arf": "acisi_aimpt_cy%d.arf" % cycle,
@@ -189,9 +189,9 @@ for cycle in [0, 20]:
                                  "grating": False,
                                  "dep_name": "acisi_cy%d" % cycle}
 
-# ACIS-S, Cycle 0 and 19
+# ACIS-S, Cycle 0 and 22
 
-for cycle in [0, 20]:
+for cycle in [0, 22]:
     name = "chandra_aciss_cy%d" % cycle
     instrument_registry[name] = {"name": name,
                                  "arf": "aciss_aimpt_cy%d.arf" % cycle,

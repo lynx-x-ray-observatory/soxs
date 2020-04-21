@@ -1051,8 +1051,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     from soxs.spectra import ConvolvedSpectrum
     from soxs.background.foreground import hm_astro_bkgnd
     from soxs.background.instrument import instrument_backgrounds
-    from soxs.background.spectra import BackgroundSpectrum, \
-        ConvolvedBackgroundSpectrum
+    from soxs.background.spectra import BackgroundSpectrum
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
     try:
