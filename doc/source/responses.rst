@@ -76,8 +76,8 @@ ACIS-I Cycle 0
 ACIS-I Cycle 22
 +++++++++++++++
 
-* ARF: `acisi_aimpt_cy20.arf <../soxs_responses/acisi_aimpt_cy22.arf>`_
-* RMF: `acisi_aimpt_cy20.rmf <../soxs_responses/acisi_aimpt_cy22.rmf>`_
+* ARF: `acisi_aimpt_cy22.arf <../soxs_responses/acisi_aimpt_cy22.arf>`_
+* RMF: `acisi_aimpt_cy22.rmf <../soxs_responses/acisi_aimpt_cy22.rmf>`_
 
 ACIS-S Cycle 0
 ++++++++++++++
@@ -88,8 +88,8 @@ ACIS-S Cycle 0
 ACIS-S Cycle 22
 +++++++++++++++
 
-* ARF: `aciss_aimpt_cy20.arf <../soxs_responses/aciss_aimpt_cy22.arf>`_
-* RMF: `aciss_aimpt_cy20.rmf <../soxs_responses/aciss_aimpt_cy22.rmf>`_
+* ARF: `aciss_aimpt_cy22.arf <../soxs_responses/aciss_aimpt_cy22.arf>`_
+* RMF: `aciss_aimpt_cy22.rmf <../soxs_responses/aciss_aimpt_cy22.rmf>`_
 
 ACIS-S Cycle 0 Gratings
 +++++++++++++++++++++++
