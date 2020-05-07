@@ -3,7 +3,6 @@ language: python
 env:
     global:
         # Set defaults to avoid repeating in most cases
-        - NUMPY_VERSION=1.14
         - ANSWER_VER=3
 
 matrix:
@@ -11,11 +10,13 @@ matrix:
 
         # Try all python versions with the latest numpy
         - python: 2.7
-          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python'
-        - python: 3.5
-          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.5'
+          env: CMD="py.test soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python'; NUMPY_VERSION=1.14
         - python: 3.6
-          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.6'
+          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.6'; NUMPY_VERSION=1.14
+        - python: 3.7
+          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.7'; NUMPY_VERSION=1.16
+        - python: 3.8
+          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.8'; NUMPY_VERSION=1.16
 
 before_install:
 
