@@ -1,14 +1,16 @@
-[![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)  
-[![Build Status](https://travis-ci.org/XRStools/soxs.svg?branch=master)](https://travis-ci.org/XRStools/soxs)  
-[![Coverage Status](https://coveralls.io/repos/github/XRStools/soxs/badge.svg?branch=master)](https://coveralls.io/github/XRStools/soxs?branch=master)  
+
+
+![SOXS: Simulated X-ray Observations of Astrophysical Sources](misc/SOXS_Wordmark.png)
+
+[![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)  [![Build Status](https://travis-ci.org/XRStools/soxs.svg?branch=master)](https://travis-ci.org/XRStools/soxs)  [![Coverage Status](https://coveralls.io/repos/github/XRStools/soxs/badge.svg?branch=master)](https://coveralls.io/github/XRStools/soxs?branch=master)  
 
 # What is SOXS?
 
 SOXS is a software suite which creates simulated X-ray observations of
-astrophysical sources with the mission concept X-ray Surveyor. The goal of
+astrophysical sources with almost *any* existing or planned X-ray observatory. The goal of
 SOXS is to provide a comprehensive set of tools to design source models and
-convolve them with simulated models of X-ray instruments, particularly of the
-*Lynx* mission concept.
+convolve them with simulated models of X-ray instruments. This package was developed to support the
+[*Lynx X-ray Observatory*](www.lynxobservatory.org) mission concept.
 
 There are two main entry points to SOXS: a command-line interface, and a
 Python interface. The former is simpler to use, but the latter has more power
