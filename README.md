@@ -1,6 +1,6 @@
 
 
-![SOXS: Simulated X-ray Observations of Astrophysical Sources](misc/SOXS_Wordmark.png)
+![SOXS: Simulated Observations of X-ray Sources](misc/SOXS_Wordmark.png)
 
 [![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)  [![Build Status](https://travis-ci.org/XRStools/soxs.svg?branch=master)](https://travis-ci.org/XRStools/soxs)  [![Coverage Status](https://coveralls.io/repos/github/XRStools/soxs/badge.svg?branch=master)](https://coveralls.io/github/XRStools/soxs?branch=master)  
 
