@@ -152,9 +152,9 @@ ACIS-I
 The two ACIS-I specifications have a square field of view of roughly 20 
 arcminutes, laid out in four chips 8 arcminutes on a side arranged 2x2. However,
 The two separate specifications, ``"chandra_acisi_cy0"`` and 
-``"chandra_acisi_cy20"``, use the instrumental responses from shortly after 
-launch ("Cycle 0") and from more recently ("Cycle 20"), respectively. The main 
-effect is that the effective area at low energies for ``"chandra_acisi_cy20"`` 
+``"chandra_acisi_cy22"``, use the instrumental responses from shortly after 
+launch ("Cycle 0") and from more recently ("Cycle 22"), respectively. The main 
+effect is that the effective area at low energies for ``"chandra_acisi_cy22"`` 
 is much lower due to the buildup of contamination on the ACIS optical blocking 
 filters compared to the ``"chandra_acisi_cy0"`` responses.
 
@@ -163,7 +163,7 @@ ACIS-S
 
 The two ACIS-S specifications have 6 chips 8 arcminutes on a side in a single row.
 As in the ACIS-I case, the two specifications are for Cycle 0 ``"chandra_aciss_cy0"``, 
-and Cycle 20, ``"chandra_aciss_cy20"``. 
+and Cycle 22, ``"chandra_aciss_cy22"``. 
 
 HETG
 ####
@@ -181,13 +181,16 @@ Cycle 0 and Cycle 20. These simulate spectra only for the MEG and HEG, for the
 * ``"chandra_aciss_heg_m1_cy20"``
 * ``"chandra_aciss_heg_p1_cy20"``
 
+.. _xrism:
+
 XRISM
 ~~~~~
 
 A single instrument specification is available for *XRISM*, for the "Resolve"
 microcalorimeter instrument, named ``"xrism_resolve"``. It has a 5.6-meter focal 
 length, a 1.2-arcminute Gaussian PSF, no dithering, a 3-arcminute field of view, 
-and 0.5-arcminute pixels.
+and 0.5-arcminute pixels. The ARF assumes the full PSF without detector boundary, 
+and an extended source flat model. The RMF assumes 5 eV spectral resolution. 
 
 AXIS
 ~~~~
@@ -430,8 +433,8 @@ gives (showing only a subset for brevity):
         grating: True
     Instrument: athena_xifu
         name: athena_xifu
-        arf: athena_xifu_1469_onaxis_pitch249um_v20160401.arf
-        rmf: athena_xifu_rmf_v20160401.rmf
+        arf: athena_wfi_15row_20171107_wo_filter_OnAxis.arf
+        rmf: athena_wfi_baseline.rmf
         bkgnd: athena_xifu
         fov: 5.991992621478149
         num_pixels: 84
@@ -611,9 +614,9 @@ For example, the *Chandra* ACIS-I instrument configurations have a list of four
 
 .. code-block:: python
 
-    instrument_registry["chandra_acisi_cy20"] = {"name": "acisi_cy20",
-                                                 "arf": "acisi_aimpt_cy20.arf",
-                                                 "rmf": "acisi_aimpt_cy20.rmf",
+    instrument_registry["chandra_acisi_cy22"] = {"name": "acisi_cy22",
+                                                 "arf": "acisi_aimpt_cy22.arf",
+                                                 "rmf": "acisi_aimpt_cy22.rmf",
                                                  "bkgnd": "acisi",
                                                  "fov": 20.008,
                                                  "num_pixels": 2440,
@@ -633,8 +636,8 @@ whereas the *Athena* XIFU instrument configuration uses a ``Polygon`` region:
 .. code-block:: python
 
     instrument_registry["athena_xifu"] = {"name": "athena_xifu",
-                                          "arf": "athena_xifu_1469_onaxis_pitch249um_v20160401.arf",
-                                          "rmf": "athena_xifu_rmf_v20160401.rmf",
+                                          "arf": "athena_wfi_15row_20171107_wo_filter_OnAxis.arf",
+                                          "rmf": "athena_wfi_baseline.rmf",
                                           "bkgnd": "athena_xifu",
                                           "fov": 5.991992621478149,
                                           "num_pixels": 84,
@@ -669,7 +672,7 @@ spatial resolution:
 
     fov = 20.0 # defaults to arcmin
     num_pixels = 2048
-    make_simple_instrument("chandra_acisi_cy20", "simple_acisi", fov, num_pixels)
+    make_simple_instrument("chandra_acisi_cy22", "simple_acisi", fov, num_pixels)
 
 To create the same instrument but to additionally turn off the dither:
 
@@ -677,7 +680,7 @@ To create the same instrument but to additionally turn off the dither:
 
     fov = 20.0 # defaults to arcmin
     num_pixels = 2048
-    make_simple_instrument("chandra_acisi_cy20", "simple_acisi", fov, num_pixels,
+    make_simple_instrument("chandra_acisi_cy22", "simple_acisi", fov, num_pixels,
                            no_dither=True)
 
 To create a simple *Athena*/XIFU-like instrument without the background and with

@@ -6,15 +6,17 @@ ChangeLog
 Version 2.3.0
 -------------
 
-This version of SOXS fixes a few bugs, updates response files, and adds a speedup
-for certain types of RMF convolutions.
+This version of SOXS fixes a few bugs, updates instrument specifications, and 
+adds a speedup for certain types of RMF convolutions. **Support for Python 2.7 
+has been dropped in this release.**
 
 * Fixed an issue in cosmological sources generation where comoving units were
   assumed when they should have been proper.
 * Fixed an issue where the ``make_thermal_spectrum`` command-line script had the
   wrong default version of APEC specified. 
 * *Chandra* imaging responses for ACIS-I and ACIS-S have been updated to Cycle 22. 
-* The *XRISM*/Resolve ARF has been updated. 
+* The *XRISM*/Resolve ARF has been updated to use a version with higher effective
+  area. See the :ref:`xrism` section of :ref:`instrument` for more information. 
 * RMF convolutions are now faster in most situations.
 * The field of view for the *Lynx*/HDXI has been increased from 20 arcmin to 22
   arcmin. 
