@@ -1,5 +1,3 @@
-from __future__ import division
-
 import numpy as np
 import subprocess
 import tempfile
@@ -17,7 +15,6 @@ import astropy.units as u
 import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from soxs.instrument import AuxiliaryResponseFile
-from six import string_types
 from astropy.modeling.functional_models import \
     Gaussian1D
 import glob
@@ -740,7 +737,7 @@ class ApecGenerator(object):
                                if elem not in self.var_elem[:,0]]
         if abund_table is None:
             abund_table = soxs_cfg.get("soxs", "abund_table")
-        if not isinstance(abund_table, string_types):
+        if not isinstance(abund_table, str):
             if len(abund_table) != 30:
                 raise RuntimeError("User-supplied abundance tables "
                                    "must be 30 elements long!")

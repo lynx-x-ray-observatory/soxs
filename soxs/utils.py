@@ -4,9 +4,8 @@ import numpy as np
 from numpy.random import RandomState
 import astropy.units as u
 from astropy.units import Quantity
-from six import string_types
-from six.moves import configparser
 import warnings
+from configparser import ConfigParser
 
 # Configuration
 
@@ -25,7 +24,7 @@ if not os.path.exists(CONFIG_DIR):
 CURRENT_CONFIG_FILE = os.path.join(CONFIG_DIR, 'soxs.cfg')
 
 if not os.path.exists(CURRENT_CONFIG_FILE):
-    cp = configparser.ConfigParser()
+    cp = ConfigParser()
     cp.add_section("soxs")
     try:
         with open(CURRENT_CONFIG_FILE, 'w') as new_cfg:
@@ -33,7 +32,7 @@ if not os.path.exists(CURRENT_CONFIG_FILE):
     except IOError:
         warnings.warn("unable to write new config file")
 
-soxs_cfg = configparser.ConfigParser(soxs_cfg_defaults)
+soxs_cfg = ConfigParser(soxs_cfg_defaults)
 soxs_cfg.read([CURRENT_CONFIG_FILE, 'soxs.cfg'])
 if not soxs_cfg.has_section("soxs"):
     soxs_cfg.add_section("soxs")
@@ -118,7 +117,7 @@ def ensure_numpy_array(obj):
 
 
 def parse_value(value, default_units, equivalence=None):
-    if isinstance(value, string_types):
+    if isinstance(value, str):
         v = value.split(",")
         if len(v) == 2:
             value = (float(v[0]), v[1])
@@ -173,9 +172,9 @@ def line_width_equiv(rest):
 class DummyPbar(object):
     def __init__(self):
         pass
-    
+
     def update(self, *args, **kwargs):
         pass
-    
+
     def close(self):
         pass

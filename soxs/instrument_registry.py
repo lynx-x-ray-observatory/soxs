@@ -1,4 +1,3 @@
-from __future__ import print_function
 import json
 from soxs.utils import mylog, parse_value, \
     issue_deprecation_warning

@@ -5,7 +5,6 @@ from soxs.background.spectra import \
     InstrumentalBackgroundSpectrum
 from soxs.background.events import make_diffuse_background
 import numpy as np
-from six import string_types
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
@@ -79,7 +78,7 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
     if event_params["chips"] is None:
         bkgnd_spec = [instrument_backgrounds[bkgnd_name]]
     else:
-        if isinstance(bkgnd_name, string_types):
+        if isinstance(bkgnd_name, str):
             nchips = len(event_params["chips"])
             bkgnd_names = [bkgnd_name]*nchips
         else:

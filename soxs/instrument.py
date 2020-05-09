@@ -11,7 +11,6 @@ from soxs.utils import mylog, ensure_numpy_array, \
     parse_prng, parse_value, get_rot_mat, soxs_cfg
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
-from six import string_types
 from tqdm import tqdm
 
 
@@ -472,7 +471,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             for key in ["ra", "dec", "energy"]:
                 edict[key] = input_events[key][i]
             event_list.append(edict)
-    elif isinstance(input_events, string_types):
+    elif isinstance(input_events, str):
         # Assume this is a SIMPUT catalog
         event_list, parameters = read_simput_catalog(input_events)
 

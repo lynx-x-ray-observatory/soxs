@@ -2,7 +2,6 @@ import numpy as np
 import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import os
-from six import string_types
 from soxs.utils import mylog, parse_value, get_rot_mat, \
     downsample
 from soxs.instrument_registry import instrument_registry
@@ -400,7 +399,7 @@ def write_spectrum(evtfile, specfile, overwrite=False):
     """
     from soxs.instrument import RedistributionMatrixFile
     parameters = {}
-    if isinstance(evtfile, string_types):
+    if isinstance(evtfile, str):
         f = pyfits.open(evtfile)
         spectype = f["EVENTS"].header["CHANTYPE"]
         rmf = f["EVENTS"].header["RESPFILE"]
