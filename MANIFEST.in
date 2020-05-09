@@ -1,4 +1,3 @@
 include soxs/files/*
 include versioneer.py
 include soxs/_version.py
-include soxs/misc/*
