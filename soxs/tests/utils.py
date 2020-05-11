@@ -29,6 +29,6 @@ def file_answer_testing(hdu, filename, answer_store, answer_dir):
         new_cols = f_new[hdu].data.names
         assert old_cols == new_cols
         for name in old_cols:
-            assert_equal(f_old[hdu].data[name], f_new[hdu].data[name])
+            assert_array_max_ulp(f_old[hdu].data[name], f_new[hdu].data[name], maxulp=5)
         f_old.close()
         f_new.close()
