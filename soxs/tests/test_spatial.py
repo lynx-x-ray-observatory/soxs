@@ -42,7 +42,7 @@ def test_point_source():
                                         exp_time, area, prng=prng)
     sim_cat.write_catalog(overwrite=True)
 
-    inst = get_instrument_from_registry("hdxi")
+    inst = get_instrument_from_registry("lynx_hdxi")
     inst["name"] = "hdxi_big_psf"
     inst["psf"] = ["gaussian", 5.0]
 
@@ -86,7 +86,7 @@ def test_annulus(answer_store, answer_dir):
     sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("ann_simput.fits", "ann_evt.fits", exp_time,
-                         "hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
+                         "lynx_hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
                          instr_bkgnd=False, foreground=False, prng=prng)
 
     write_radial_profile("ann_evt.fits", "ann_evt_profile.fits", [ra0, dec0],
