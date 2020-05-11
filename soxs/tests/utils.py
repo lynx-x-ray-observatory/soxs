@@ -12,9 +12,9 @@ def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
     else:
         answer_spec = type(spec).from_file(testfile)
         assert_array_max_ulp(answer_spec.emid.value,
-                             spec.emid.value, maxulp=7)
+                             spec.emid.value, maxulp=4)
         assert_array_max_ulp(answer_spec.flux.value,
-                             spec.flux.value, maxulp=7)
+                             spec.flux.value, maxulp=4)
         assert answer_spec.flux.unit == spec.flux.unit
 
 
@@ -29,6 +29,6 @@ def file_answer_testing(hdu, filename, answer_store, answer_dir):
         new_cols = f_new[hdu].data.names
         assert old_cols == new_cols
         for name in old_cols:
-            assert_array_max_ulp(f_old[hdu].data[name], f_new[hdu].data[name], maxulp=5)
+            assert_array_max_ulp(f_old[hdu].data[name], f_new[hdu].data[name], maxulp=4)
         f_old.close()
         f_new.close()
