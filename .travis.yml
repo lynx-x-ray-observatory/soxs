@@ -61,6 +61,6 @@ script:
     - $CMD
 
 after_success:
-    - if [[ $PYTHON == "python3.6" ]]; then
+    - if [[ $PYTHON == "python3.8" ]]; then
           coveralls --rcfile='soxs/tests/coveragerc';
       fi
