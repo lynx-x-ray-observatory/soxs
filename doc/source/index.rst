@@ -6,6 +6,10 @@
 SOXS: Simulated Observations of X-ray Sources
 =============================================
 
+.. image::
+
+   SOXS_Wordmark.png
+
 .. raw:: html
 
    <figure style="display: table; float: right; margin: 0 0 20px 20px;">
