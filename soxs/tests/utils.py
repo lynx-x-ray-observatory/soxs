@@ -1,6 +1,5 @@
 import os
-from numpy.testing import assert_equal, \
-    assert_array_max_ulp
+from numpy.testing import assert_almost_equal
 from astropy.io import fits
 import shutil
 
@@ -11,10 +10,10 @@ def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
         spec.write_h5_file(testfile, overwrite=True)
     else:
         answer_spec = type(spec).from_file(testfile)
-        assert_array_max_ulp(answer_spec.emid.value,
-                             spec.emid.value, maxulp=4)
-        assert_array_max_ulp(answer_spec.flux.value,
-                             spec.flux.value, maxulp=4)
+        assert_almost_equal(answer_spec.emid.value,
+                             spec.emid.value)
+        assert_almost_equal(answer_spec.flux.value,
+                             spec.flux.value)
         assert answer_spec.flux.unit == spec.flux.unit
 
 
@@ -29,6 +28,6 @@ def file_answer_testing(hdu, filename, answer_store, answer_dir):
         new_cols = f_new[hdu].data.names
         assert old_cols == new_cols
         for name in old_cols:
-            assert_array_max_ulp(f_old[hdu].data[name], f_new[hdu].data[name], maxulp=4)
+            assert_almost_equal(f_old[hdu].data[name], f_new[hdu].data[name])
         f_old.close()
         f_new.close()
