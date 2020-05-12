@@ -200,6 +200,29 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
                            1.0, self.ebins.size-1)
         return ConvolvedSpectrum(Spectrum(self.ebins.value, flux), arf)
 
+    def new_spec_from_band(self, emin, emax):
+        """
+        Create a new :class:`~soxs.spectra.Spectrum` object
+        from a subset of an existing one defined by a particular
+        energy band.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the band in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the band in keV.
+        """
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, 'keV')
+        band = np.logical_and(self.ebins.value >= emin,
+                              self.ebins.value <= emax)
+        idxs = np.where(band)[0]
+        ebins = self.ebins.value[idxs]
+        flux = self.flux.value[idxs[:-1]]
+        return InstrumentalBackgroundSpectrum(ebins, flux, 
+                                              self.default_focal_length)
+
     def __mul__(self, other):
         if isinstance(other, AuxiliaryResponseFile):
             raise NotImplementedError
