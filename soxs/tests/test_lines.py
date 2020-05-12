@@ -75,7 +75,7 @@ def test_absorption_line(answer_store, answer_dir):
                             answer_dir)
 
     simulate_spectrum(spec, inst_name, exp_time, "absorption_line_evt.pha",
-                      overwrite=True)
+                      overwrite=True, prng=prng)
 
     file_answer_testing("SPECTRUM", "absorption_line_evt.pha", answer_store,
                         answer_dir)
