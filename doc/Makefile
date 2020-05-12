@@ -51,6 +51,7 @@ clean:
 .PHONY: html
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	cp source/images/soxs_showcase.png $(BUILDDIR)/html/_images
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 

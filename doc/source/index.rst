@@ -6,20 +6,9 @@
 SOXS: Simulated Observations of X-ray Sources
 =============================================
 
-.. image::
-
-   SOXS_Wordmark.png
-
-.. raw:: html
-
-   <figure style="display: table; float: right; margin: 0 0 20px 20px;">
-   <img src="galaxy_compare.png" width="600" style="float: right;"/>
-   <figcaption style="display: table-caption; caption-side: bottom;">
-   Simulated X-ray events from a spiral galaxy from the Illustris simulation,
-   assuming <em>Chandra</em>/ACIS-I on the left and <em>Lynx</em>/HDXI on the 
-   right. Both exposures are 50 ks. 
-   </figcaption>
-   </figure>
+.. image:: images/SOXS_Wordmark.png
+   :width: 70%
+   :align: center
 
 SOXS is a software suite which creates simulated X-ray observations of
 astrophysical sources. The goal of SOXS is to provide a comprehensive set 
@@ -37,6 +26,12 @@ going on under the hood.
 
 Why Another Mock X-ray Observation Package?
 -------------------------------------------
+
+.. raw:: html
+
+   <figure style="display: table; float: right; margin: 0 0 20px 20px;">
+   <img src="_images/soxs_showcase.png" width="600" style="float: right;"/>
+   </figure>
 
 There are already a number of successful efforts to create mock X-ray 
 observations, and it is a sensible question as to why it would not have made
@@ -59,7 +54,8 @@ science in general and astronomy in particular, including `NumPy <http://www.num
 `SciPy <http://www.scipy.org>`_, `AstroPy <http://www.astropy.org>`_, `yt <http://yt-project.org/>`_,
 and `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyXSIM>`_. 
 
-Thirdly, SOXS is being developed out in the open, on `GitHub <http://github.com/XRStools/soxs>`_, 
+Thirdly, SOXS is being developed out in the open, on 
+`GitHub <http://github.com/lynx-x-ray-observatory/soxs>`_, 
 to encourage contributions in the form of bugfixes and enhancements, and to make
 contributing as simple as forking the code and submitting a pull request for review.
 
@@ -71,7 +67,7 @@ SOXS is released under a `BSD 3-clause license <https://opensource.org/licenses/
 Current Version
 ---------------
 
-The current stable version is 2.2.0. See the :ref:`changelog` for details on changes from previous
+The current stable version is 2.3.0. See the :ref:`changelog` for details on changes from previous
 versions.
 
 Documentation Contents
@@ -100,6 +96,7 @@ Contributors
 * Alexey Vikhlinin (CfA)
 * Reinout Van Weeren (CfA)
 * Akos Bogdan (CfA)
+* Grant Tremblay (CfA)
 
 Indices and tables
 ==================
