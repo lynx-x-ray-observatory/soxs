@@ -53,7 +53,7 @@ There are a number of ways to get help with SOXS.
 
 ## Documentation
 
-Documentation for SOXS lives at http://hea-www.cfa.harvard.edu/~jzuhone/soxs.
+Documentation for SOXS lives at http://hea-www.cfa.harvard.edu/soxs.
 
 ## Mailing List
 
