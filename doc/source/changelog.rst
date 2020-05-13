@@ -3,6 +3,12 @@
 ChangeLog
 =========
 
+Version 3.0.0
+-------------
+
+* The :class:`~soxs.spatial.DoubleBetaModel` spatial source model has been 
+  added.
+
 Version 2.3.0
 -------------
 

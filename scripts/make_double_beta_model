@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+import argparse
+from soxs import Spectrum, PhotonList, BetaModel
+
+parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a double beta-model source.')
+parser.add_argument("simput_prefix", type=str, 
+                    help='The prefix of the SIMPUT file to be used as the root of the '+
+                         'catalog. If it does not exist, it will be created.')
+parser.add_argument("phlist_prefix", type=str, 
+                    help='The prefix of the photon list file to be written.')
+parser.add_argument("ra0", help="The right ascension of the source center in degrees.")
+parser.add_argument("dec0", help="The declination of the source center in degrees.")
+parser.add_argument("r_c1", help="The inner core radius in arcseconds.")
+parser.add_argument("beta1", type=float, help="The inner beta parameter.")
+parser.add_argument("r_c2", help="The outer core radius in arcseconds.")
+parser.add_argument("beta2", type=float, help="The outer beta parameter.")
+parser.add_argument("sb_ratio", type=float, help="The ratio of the outer to the inner SB peak value.")
+parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
+parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
+parser.add_argument("--area", default=30000.0, 
+                    help='The collecting area to use, in cm^2. Default: 30000.0')
+parser.add_argument("--theta", default=0.0, 
+                    help="The angle through which to rotate the beta model in degrees. "
+                         "Only makes sense if ellipticity is added. Default: 0.0")
+parser.add_argument("--ellipticity", type=float, default=1.0,
+                    help="The ellipticity of the radial profile, expressed as the ratio "
+                         "between the length scales of the x and y coordinates. The value "
+                         "of this parameter will shrink or expand the profile in the "
+                         "direction of the \"y\" coordinate, so you may need to rotate to "
+                         "get the shape you want. Default: 1.0")
+parser.add_argument("--append", action='store_true',
+                    help='If set, append a new source an existing SIMPUT catalog. ')
+parser.add_argument("--overwrite", action='store_true', 
+                    help='Overwrite an existing file with the same name.')
+parser.add_argument("--random_seed", type=int,
+                    help="A constant integer random seed to produce a consistent set of random numbers.")
+
+args = parser.parse_args()
+
+spec = Spectrum.from_file(args.specfile)
+
+beta_src = DoubleBetaModel(args.ra0, args.dec0, args.r_c1, args.beta1, args.r_c2, 
+                           args.beta2, args.sb_ratio, theta=args.theta, 
+                           ellipticity=args.ellipticity)
+phlist = PhotonList.from_models(args.phlist_prefix, spec, beta_src, args.exp_time,
+                                args.area, prng=args.random_seed)
+phlist.write_photon_list(args.simput_prefix, append=args.append, overwrite=args.overwrite)
