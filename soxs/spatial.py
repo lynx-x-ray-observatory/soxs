@@ -193,7 +193,7 @@ class BetaModel(RadialFunctionModel):
         The center Dec of the beta model in degrees.
     r_c: float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The core radius of the profile in arcseconds.
-    beta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    beta : float
         The "beta" parameter of the profile.
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The angle through which to rotate the beta model in 
@@ -213,6 +213,47 @@ class BetaModel(RadialFunctionModel):
         func = lambda r: (1.0+(r/r_c)**2)**(-3*beta+0.5)
         super(BetaModel, self).__init__(ra0, dec0, func, theta=theta, 
                                         ellipticity=ellipticity)
+
+class DoubleBetaModel(RadialFunctionModel):
+    """
+    A model for positions of photons with a double beta-model shape.
+
+    Parameters
+    ----------
+    ra0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The center RA of the beta model in degrees.
+    dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The center Dec of the beta model in degrees.
+    r_c1: float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The inner core radius of the profile in arcseconds.
+    beta1 : float
+        The inner "beta" parameter of the profile.
+    r_c2: float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The outer core radius of the profile in arcseconds.
+    beta2 : float
+        The outer "beta" parameter of the profile.
+    sb_ratio : float
+        The ratio of the outer to the inner SB peak value
+    theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The angle through which to rotate the beta model in 
+        degrees. Only makes sense if ellipticity is added. 
+        Default: 0.0
+    ellipticity : float, optional
+        The ellipticity of the radial profile, expressed 
+        as the ratio between the length scales of the x 
+        and y coordinates. The value of this parameter will 
+        shrink or expand the profile in the direction of the 
+        "y" coordinate, so you may need to rotate to get the 
+        shape you want. Default: 1.0
+    """
+    def __init__(self, ra0, dec0, r_c1, beta1, r_c2, beta2, sb_ratio,
+                 theta=0.0, ellipticity=1.0):
+        r_c1 = parse_value(r_c1, "arcsec")
+        r_c2 = parse_value(r_c2, "arcsec")
+        func = lambda r: (1.0+(r/r_c1)**2)**(-3*beta1+0.5) + \
+                         sb_ratio*(1.0+(r/r_c2)**2)**(-3*beta2+0.5)
+        super(DoubleBetaModel, self).__init__(ra0, dec0, func, theta=theta,
+                                              ellipticity=ellipticity)
 
 class AnnulusModel(RadialFunctionModel):
     """

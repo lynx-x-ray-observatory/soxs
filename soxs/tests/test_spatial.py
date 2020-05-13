@@ -1,5 +1,5 @@
 from soxs.spatial import PointSourceModel, BetaModel, \
-    AnnulusModel
+    AnnulusModel, DoubleBetaModel
 from soxs.spectra import ApecGenerator
 import numpy as np
 import os
@@ -127,6 +127,43 @@ def test_beta_model(answer_store, answer_dir):
 
     file_answer_testing("EVENTS", "beta_evt.fits", answer_store, answer_dir)
     file_answer_testing("PROFILE", "beta_evt_profile.fits", answer_store, answer_dir)
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
+
+
+def test_double_beta_model(answer_store, answer_dir):
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    prng = 32
+
+    r_c1 = 20.0
+    beta1 = 1.0
+    r_c2 = 100.0
+    beta2 = 2./3.
+    sb_ratio = 0.5
+
+    exp_time = Quantity(500.0, "ks")
+
+    double_beta_src_pos = DoubleBetaModel(ra0, dec0, r_c1, beta1, r_c2, beta2,
+                                          sb_ratio)
+    sim_cat = SimputCatalog.from_models("double_beta", "double_beta", spec,
+                                        double_beta_src_pos, exp_time, area,
+                                        prng=prng)
+    sim_cat.write_catalog(overwrite=True)
+
+    instrument_simulator("double_beta_simput.fits", "double_beta_evt.fits", 
+                         exp_time, "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
+                         instr_bkgnd=False, foreground=False, prng=prng)
+
+    write_radial_profile("double_beta_evt.fits", "double_beta_evt_profile.fits", 
+                         [ra0, dec0], 0.0, 200.0, 200, ctr_type="celestial", 
+                         emin=0.5, emax=7.0, overwrite=True)
+
+    file_answer_testing("EVENTS", "double_beta_evt.fits", answer_store, answer_dir)
+    file_answer_testing("PROFILE", "double_beta_evt_profile.fits", answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

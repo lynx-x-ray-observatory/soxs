@@ -64,6 +64,42 @@ the slope parameter, and :math:`r_c` is the core radius. To construct one:
     beta = 2./3. # the beta slope parameter
     beta_src = BetaModel(ra0, dec0, r_c, beta)
 
+The normalization of the :class:`~soxs.spatial.BetaModel` will be determined
+by the :class:`~soxs.spectra.Spectrum` object it is combined with, so the 
+:math:`S_0` parameter is not specified. 
+
+``DoubleBetaModel``
++++++++++++++++++++
+
+The :class:`~soxs.spatial.DoubleBetaModel` generates photon positions for a 
+sum of two :math:`\beta`-model profiles, often used to model cool-core galaxy 
+clusters. This sum is parameterized as:
+
+.. math::
+
+    S(r) = S_{0,1}\left\{\left[1+\left(\frac{r}{r_{c,1}}\right)^2\right]^{(-3\beta_1+1/2)} +
+           \frac{S_{0,2}}{S_{0,1}}\left[1+\left(\frac{r}{r_{c,2}}\right)^2\right]^{(-3\beta_2+1/2)}\right\}
+
+where :math:`S_{0,1}` and :math:`S_{0,2}` are the central surface brightness 
+parameters of the two profiles, :math:`\beta_1` and :math:`\beta_2` are the 
+slope parameters of the two profiles, and :math:`r_{c,1}` and :math:`r_{c,2}` are 
+the core radius parameters. The ratio :math:`S_{0,2}/S_{0,1}` is parameterized by 
+``sb_ratio`` in the example below. To construct a :class:`~soxs.spatial.DoubleBetaModel` 
+object:
+
+.. code-block:: python
+
+    from soxs import DoubleBetaModel
+    ra0 = 30.0 # center RA in degrees
+    dec0 = 45.0 # center Dec in degrees
+    r_c1 = 20.0 # the inner core radius in arc seconds
+    beta1 = 2./3. # the inner beta slope parameter
+    r_c2 = 100.0 # the outer core radius in arc seconds
+    beta2 = 1. # the outer beta slope parameter
+    sb_ratio = 0.5 # the ratio of the outer to the inner SB peak value
+    beta_src = DoubleBetaModel(ra0, dec0, r_c1, beta1, r_c2, beta2,
+                               sb_ratio)
+
 ``AnnulusModel``
 ++++++++++++++++
 
