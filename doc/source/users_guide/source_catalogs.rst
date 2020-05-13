@@ -68,8 +68,8 @@ to select regions of interest and determine coordinates to be passed into the
 ``cat_center`` parameter of :func:`~soxs.cosmology.make_cosmological_sources_file`.
 A full ASCII table of the halos in the catalog and their properties is also provided.
 
-* `FITS image of sources <http://hea-www.cfa.harvard.edu/~jzuhone/full_map.fits.gz>`_
-* `ASCII table of source properties <http://hea-www.cfa.harvard.edu/~jzuhone/all_halos.dat>`_
+* `FITS image of sources <http://hea-www.cfa.harvard.edu/soxs/full_map.fits.gz>`_
+* `ASCII table of source properties <http://hea-www.cfa.harvard.edu/soxs/all_halos.dat>`_
 
 .. note::
 
