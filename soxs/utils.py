@@ -182,7 +182,7 @@ class DummyPbar(object):
 
 
 def create_region(rtype, args, dx, dy):
-    rtype = getattr(regions, rtype)
+    #rtype = getattr(regions, rtype)
     if rtype in ["Rectangle", "Box"]:
         xctr, yctr, xw, yw = args
         reg = regions.RectanglePixelRegion((xctr + dx, yctr + dy), xw, yw)
