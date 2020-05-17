@@ -185,10 +185,12 @@ def create_region(rtype, args, dx, dy):
     #rtype = getattr(regions, rtype)
     if rtype in ["Rectangle", "Box"]:
         xctr, yctr, xw, yw = args
-        reg = regions.RectanglePixelRegion((xctr + dx, yctr + dy), xw, yw)
+        center = regions.PixCoord(x=xctr+dx, y=yctr+dy)
+        reg = regions.RectanglePixelRegion(center=center, width=xw, height=yw)
     elif rtype == "Circle":
         xctr, yctr, radius = args
-        reg = regions.CirclePixelRegion((xctr+dx, yctr+dy), radius)
+        center = regions.PixCoord(x=xctr+dx, y=yctr+dy)
+        reg = regions.CirclePixelRegion(center=center, radius=radius)
     elif rtype == "Polygon":
         vertices = regions.PixCoord(x=args[0]+dx, y=args[1]+dy)
         reg = regions.PolygonPixelRegion(vertices=vertices)
