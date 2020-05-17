@@ -251,7 +251,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
 
     for rtype, arg in zip(rtypes, args):
         r = create_region(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
-        tmpmap += r.to_mask().cutout(tmpmap).astype("float64")
+        tmpmap += r.to_mask().to_image(tmpmap.shape).astype("float64")
 
     tmpmap = downsample(tmpmap, reblock)
 
