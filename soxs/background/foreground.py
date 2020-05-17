@@ -6,6 +6,7 @@ from soxs.background.events import make_diffuse_background
 from soxs.utils import soxs_files_path, parse_prng, mylog, \
     create_region
 import numpy as np
+from regions import PixCoord
 
 # X-ray foreground from Hickox & Markevitch 2007
 # (http://adsabs.harvard.edu/abs/2007ApJ...661L.117H)
@@ -43,7 +44,7 @@ def make_foreground(event_params, arf, rmf, prng=None):
             rtype = chip[0]
             args = chip[1:]
             r = create_region(rtype, args, 0.0, 0.0)
-            inside = r.contains(bkg_events["detx"], bkg_events["dety"])
+            inside = r.contains(PixCoord(bkg_events["detx"], bkg_events["dety"]))
             thisc = np.logical_and(thisc, inside)
             bkg_events["chip_id"][thisc] = i
 

@@ -5,6 +5,7 @@ from soxs.background.spectra import \
     InstrumentalBackgroundSpectrum
 from soxs.background.events import make_diffuse_background
 import numpy as np
+from regions import PixCoord
 
 # ACIS-I particle background
 acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
@@ -115,7 +116,7 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
             rtype = chip[0]
             args = chip[1:]
             r = create_region(rtype, args, 0.0, 0.0)
-            inside = r.contains(bkg_events["detx"], bkg_events["dety"])
+            inside = r.contains(PixCoord(bkg_events["detx"], bkg_events["dety"]))
             thisc = np.logical_and(thisc, inside)
             bkg_events["energy"].append(e[thisc])
             bkg_events["detx"].append(detx[thisc])

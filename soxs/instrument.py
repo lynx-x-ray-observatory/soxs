@@ -13,7 +13,7 @@ from soxs.utils import mylog, ensure_numpy_array, \
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
-
+from regions import PixCoord
 
 def get_response_path(fn):
     if os.path.exists(fn):
@@ -616,7 +616,7 @@ def generate_events(input_events, exp_time, instrument, sky_center,
                     rtype = chip[0]
                     args = chip[1:]
                     r = create_region(rtype, args, 0.0, 0.0)
-                    inside = r.contains(cx, cy)
+                    inside = r.contains(PixCoord(cx, cy))
                     thisc = np.logical_and(thisc, inside)
                     events["chip_id"][thisc] = i
                 keep = events["chip_id"] > -1
