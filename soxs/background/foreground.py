@@ -33,18 +33,15 @@ def make_foreground(event_params, arf, rmf, prng=None):
     bkg_events["dety"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
     bkg_events["energy"] = energy
 
-    if event_params["chips"] is None:
-        bkg_events["chip_id"] = np.zeros(n_events, dtype='int')
-    else:
-        bkg_events["chip_id"] = -np.ones(n_events, dtype='int')
-        for i, chip in enumerate(event_params["chips"]):
-            thisc = np.ones(n_events, dtype='bool')
-            rtype = chip[0]
-            args = chip[1:]
-            r = create_region(rtype, args, 0.0, 0.0)
-            inside = r.contains(PixCoord(bkg_events["detx"], bkg_events["dety"]))
-            thisc = np.logical_and(thisc, inside)
-            bkg_events["chip_id"][thisc] = i
+    bkg_events["chip_id"] = -np.ones(n_events, dtype='int')
+    for i, chip in enumerate(event_params["chips"]):
+        thisc = np.ones(n_events, dtype='bool')
+        rtype = chip[0]
+        args = chip[1:]
+        r = create_region(rtype, args, 0.0, 0.0)
+        inside = r.contains(PixCoord(bkg_events["detx"], bkg_events["dety"]))
+        thisc = np.logical_and(thisc, inside)
+        bkg_events["chip_id"][thisc] = i
 
     keep = bkg_events["chip_id"] > -1
 

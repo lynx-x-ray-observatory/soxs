@@ -116,7 +116,7 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
             rtype = chip[0]
             args = chip[1:]
             r = create_region(rtype, args, 0.0, 0.0)
-            inside = r.contains(PixCoord(bkg_events["detx"], bkg_events["dety"]))
+            inside = r.contains(PixCoord(detx, dety))
             thisc = np.logical_and(thisc, inside)
             bkg_events["energy"].append(e[thisc])
             bkg_events["detx"].append(detx[thisc])

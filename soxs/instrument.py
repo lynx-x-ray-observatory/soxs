@@ -604,22 +604,16 @@ def generate_events(input_events, exp_time, instrument, sky_center,
             cx = np.trunc(detx)+0.5*np.sign(detx)
             cy = np.trunc(dety)+0.5*np.sign(dety)
 
-            if event_params["chips"] is None:
-                events["chip_id"] = np.zeros(n_evt, dtype='int')
-                keepx = np.logical_and(cx >= -0.5*nx, cx <= 0.5*nx)
-                keepy = np.logical_and(cy >= -0.5*nx, cy <= 0.5*nx)
-                keep = np.logical_and(keepx, keepy)
-            else:
-                events["chip_id"] = -np.ones(n_evt, dtype='int')
-                for i, chip in enumerate(event_params["chips"]):
-                    thisc = np.ones(n_evt, dtype='bool')
-                    rtype = chip[0]
-                    args = chip[1:]
-                    r = create_region(rtype, args, 0.0, 0.0)
-                    inside = r.contains(PixCoord(cx, cy))
-                    thisc = np.logical_and(thisc, inside)
-                    events["chip_id"][thisc] = i
-                keep = events["chip_id"] > -1
+            events["chip_id"] = -np.ones(n_evt, dtype='int')
+            for i, chip in enumerate(event_params["chips"]):
+                thisc = np.ones(n_evt, dtype='bool')
+                rtype = chip[0]
+                args = chip[1:]
+                r = create_region(rtype, args, 0.0, 0.0)
+                inside = r.contains(PixCoord(cx, cy))
+                thisc = np.logical_and(thisc, inside)
+                events["chip_id"][thisc] = i
+            keep = events["chip_id"] > -1
 
             mylog.info("%d events were rejected because " % (n_evt-keep.sum()) +
                        "they do not fall on any CCD.")

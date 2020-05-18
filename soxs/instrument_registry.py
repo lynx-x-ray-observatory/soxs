@@ -273,7 +273,7 @@ def add_instrument_to_registry(inst_spec):
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
     ...     "dither": True, # Whether or not to dither the instrument
     ...     "psf": ["gaussian", 0.5], # The type of PSF and its HPD
-    ...     "chips": None, # The specification for the chips
+    ...     "chips": [["Box", 0, 0, 4096, 4096]], # The specification for the chips
     ...     "aimpt_coords": [0.0, 0.0], # The detector coordinates of the aimpoint
     ...     "imaging": True # Whether or not this is a imaging instrument
     ...     "grating": False # Whether or not this is a grating instrument
@@ -303,23 +303,12 @@ def add_instrument_to_registry(inst_spec):
         raise RuntimeError("Currently, gratings instrument specifications cannot have "
                            "'imaging' == True!")
     if inst['imaging']:
-        # Catch older JSON files without chip definitions
-        if "chips" not in inst:
-            mylog.warning("Instrument specifications must now include a 'chips' item, which details "
-                          "the layout of the chips if there are more that one. Assuming None for "
-                          "one chip that covers the entire field of view.")
-            inst["chips"] = None
-        # Catch older JSON files without aimpoint coordinates
-        if "aimpt_coords" not in inst:
-            mylog.warning("Instrument specifications must now include a 'aimpt_coords' item, which "
-                          "details the position in detector coordinates of the nominal aimpoint. "
-                          "Assuming [0.0, 0.0].")
-            inst["aimpt_coords"] = [0.0, 0.0]
         default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
                        "aimpt_coords", "focal_length", "num_pixels",
                        "dither", "psf", "imaging", "grating"}
     else:
-        default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "imaging", "grating"}
+        default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", 
+                       "imaging", "grating"}
     my_keys = set(inst.keys())
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
@@ -402,7 +391,7 @@ def make_simple_instrument(base_inst, new_inst, fov, num_pixels,
         raise RuntimeError("make_simple_instrument only works with "
                            "imaging instruments!")
     sq_inst["name"] = new_inst
-    sq_inst["chips"] = None
+    sq_inst["chips"] = [["Box", 0, 0, num_pixels, num_pixels]]
     sq_inst["fov"] = parse_value(fov, "arcmin")
     sq_inst["num_pixels"] = num_pixels
     if no_bkgnd:
