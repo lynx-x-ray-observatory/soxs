@@ -98,7 +98,7 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
         rtype = chip[0]
         args = chip[1:]
         r, bounds = create_region(rtype, args, 0.0, 0.0)
-        fov = (bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area
+        fov = np.sqrt((bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area)
         e = bkgnd_spec[i].generate_energies(event_params["exposure_time"],
                                             fov, prng=prng, quiet=True).value
         n_events = e.size

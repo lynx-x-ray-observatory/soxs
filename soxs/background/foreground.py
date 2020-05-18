@@ -30,7 +30,7 @@ def make_foreground(event_params, arf, rmf, prng=None):
         rtype = chip[0]
         args = chip[1:]
         r, bounds = create_region(rtype, args, 0.0, 0.0)
-        fov = (bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area
+        fov = np.sqrt((bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area)
         e = conv_frgnd_spec.generate_energies(event_params["exposure_time"],
                                               fov, prng=prng, quiet=True).value
         n_events = e.size
