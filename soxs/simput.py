@@ -57,6 +57,7 @@ class SimputCatalog:
         self.emin = ensure_numpy_array(emin)
         self.emax = ensure_numpy_array(emax)
 
+
     @classmethod
     def from_models(cls, src_names, src_models, t_exp, area, prng=None):
         """
@@ -177,8 +178,13 @@ class SimputCatalog:
             e_max.append(src.emax)
             flx.append(src.flux)
             src_name.append(name)
-            extver[src.src_type] += 1
-            spec = "[{},{}]".format(src.src_type.upper(), extver[src.src_type])
+            if i in src_filenames:
+                fn = src_filenames[i]
+            else:
+                fn = filename
+            extver[fn, src.src_type] += 1
+            spec_fn = fn if fn != filename else ""
+            spec = "{}[{},{}]".format(spec_fn, src.src_type.upper(), extver[fn, src.src_type])
             spectrum.append(spec)
             image.append("NULL")
             timing.append("NULL")
@@ -235,9 +241,9 @@ class SimputCatalog:
         """
         self.sources.append(source)
         self.src_names.append(source.name)
-        self.fluxes.append(source.flux)
-        self.emin.append(source.emin)
-        self.emax.append(source.emax)
+        self.fluxes = np.append(self.fluxes, source.flux)
+        self.emin = np.append(self.emin, source.emin)
+        self.emax = np.append(self.emax, source.emax)
 
 
 class SimputSource:

@@ -1,6 +1,6 @@
-from soxs.simput import write_photon_list
 from soxs.spatial import PointSourceModel
 from soxs.spectra import Spectrum
+from soxs.simput import SimputPhotonList, SimputCatalog
 import astropy.io.fits as pyfits
 import tempfile 
 import os
@@ -23,21 +23,18 @@ def test_append():
 
     spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-4, 0.1, 10.0, 10000)
 
-    e1 = spec.generate_energies(exp_time, area, prng=prng)
+    pos1 = PointSourceModel(ra0+0.05, dec0+0.05)
+    pos2 = PointSourceModel(ra0-0.05, dec0-0.05)
 
-    ra1, dec1 = PointSourceModel(ra0+0.05, dec0+0.05).generate_coords(e1.size, prng=prng)
+    sc = SimputCatalog.from_models("pt_src1", (spec, pos1), exp_time, area)
+    pl2 = SimputPhotonList.from_models("pt_src2", spec, pos2, exp_time, area)
+    sc.append(pl2)
+    fns = {0: "pt_src1_phlist.fits", 1: "pt_src2_phlist.fits"}
+    sc.write_catalog("pt_src_simput.fits", src_filenames=fns, overwrite=True)
 
-    e2 = spec.generate_energies(exp_time, area, prng=prng)
-
-    ra2, dec2 = PointSourceModel(ra0-0.05, dec0-0.05).generate_coords(e1.size, prng=prng)
-
-    write_photon_list("pt_src", "pt_src1", e1.flux, ra1, dec1, e1, overwrite=True)
-
-    write_photon_list("pt_src", "pt_src2", e2.flux, ra2, dec2, e2, append=True)
-
-    assert os.path.exists("pt_src_simput.fits")
     assert os.path.exists("pt_src1_phlist.fits")
     assert os.path.exists("pt_src2_phlist.fits")
+    assert os.path.exists("pt_src_simput.fits")
 
     f = pyfits.open("pt_src_simput.fits")
     cat = f["SRC_CAT"].data["SPECTRUM"]
