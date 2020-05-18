@@ -6,6 +6,12 @@ ChangeLog
 Version 3.0.0
 -------------
 
+* SOXS now uses the 
+  `AstroPy Regions package <https://astropy-regions.readthedocs.io/en/latest/>`_ 
+  for region handling.
+* An option for writing ds9 regions corresponding to the sky positions and sizes 
+  of the halos from events created from the cosmology source catalog has been
+  added. See :ref:`cosmo-source-catalog` for more details.
 * The :class:`~soxs.spatial.DoubleBetaModel` spatial source model has been 
   added.
 
