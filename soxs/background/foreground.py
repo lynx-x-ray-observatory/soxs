@@ -24,8 +24,6 @@ def make_foreground(event_params, arf, rmf, prng=None):
                                                event_params["fov"], prng=prng, 
                                                quiet=True).value
 
-    prng = parse_prng(prng)
-
     bkg_events = {}
 
     n_events = energy.size
