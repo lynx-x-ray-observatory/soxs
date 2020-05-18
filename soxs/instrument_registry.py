@@ -1,6 +1,5 @@
 import json
-from soxs.utils import mylog, parse_value, \
-    issue_deprecation_warning
+from soxs.utils import mylog, parse_value
 import os
 from copy import deepcopy
 
@@ -9,24 +8,12 @@ from copy import deepcopy
 
 class InstrumentRegistry(object):
     def __init__(self):
-        self.dep_map = {}
         self.registry = {}
 
-    def _complain_old(self, key):
-        msg = "Instrument '%s' has been replaced with " % key
-        msg += "instrument '%s' and is deprecated. " % self.dep_map[key]
-        msg += "Please edit your scripts/notebooks accordingly."
-        issue_deprecation_warning(msg)
-
     def __getitem__(self, key):
-        if key in self.dep_map:
-            self._complain_old(key)
-            key = self.dep_map[key]
         return self.registry[key]
 
     def __setitem__(self, key, value):
-        if "dep_name" in value:
-            self.dep_map[value["dep_name"]] = value["name"]
         self.registry[key] = value
 
     def keys(self):
@@ -36,9 +23,6 @@ class InstrumentRegistry(object):
         return self.registry.items()
 
     def __contains__(self, item):
-        if item in self.dep_map:
-            self._complain_old(item)
-            return True
         return item in self.registry
 
     def get(self, key, default=None):
@@ -61,13 +45,12 @@ instrument_registry["lynx_hdxi"] = {"name": "lynx_hdxi",
                                     "fov": 22.0,
                                     "num_pixels": 4096,
                                     "aimpt_coords": [0.0, 0.0],
-                                    "chips": None,
+                                    "chips": [["Box", 0, 0, 4096, 4096]],
                                     "focal_length": 10.0,
                                     "dither": True,
                                     "psf": ["gaussian", 0.5],
                                     "imaging": True,
-                                    "grating": False,
-                                    "dep_name": "hdxi"}
+                                    "grating": False}
 
 # Micro-calorimeter
 
@@ -83,8 +66,7 @@ instrument_registry["lynx_lxm"] = {"name": "lynx_lxm",
                                    "dither": True,
                                    "psf": ["gaussian", 0.5],
                                    "imaging": True,
-                                   "grating": False, 
-                                   "dep_name": "mucal"}
+                                   "grating": False}
 
 instrument_registry["lynx_lxm_enh"] = {"name": "lynx_lxm_enh",
                                        "arf": "xrs_mucal_3x10_1.5eV.arf",
@@ -185,8 +167,7 @@ for cycle in [0, 22]:
                                  "focal_length": 10.0,
                                  "dither": True,
                                  "imaging": True,
-                                 "grating": False,
-                                 "dep_name": "acisi_cy%d" % cycle}
+                                 "grating": False}
 
 # ACIS-S, Cycle 0 and 22
 
@@ -211,8 +192,7 @@ for cycle in [0, 22]:
                                  "focal_length": 10.0,
                                  "dither": True,
                                  "imaging": True, 
-                                 "grating": False,
-                                 "dep_name": "aciss_cy%d" % cycle}
+                                 "grating": False}
 
 
 # ACIS-S, Cycle 0 and 19 HETG
@@ -222,8 +202,7 @@ orders = {"p1": 1, "m1": -1}
 for energy in ["meg", "heg"]:
     for order in ["p1", "m1"]:
         for cycle in [0, 20]:
-            dep_name = "aciss_%s_%s_cy%d" % (energy, order, cycle)
-            name = "chandra_" + dep_name
+            name = "chandra_aciss_%s_%s_cy%d" % (energy, order, cycle)
             resp_name = "chandra_aciss_%s%d_cy%d" % (energy, orders[order], cycle)
             instrument_registry[name] = {"name": name,
                                          "arf": "%s.garf" % resp_name,
@@ -231,8 +210,7 @@ for energy in ["meg", "heg"]:
                                          "bkgnd": None,
                                          "focal_length": 10.0,
                                          "imaging": False,
-                                         "grating": True,
-                                         "dep_name": dep_name}
+                                         "grating": True}
 
 ## Hitomi
 
@@ -250,8 +228,7 @@ instrument_registry["xrism_resolve"] = {"name": "xrism_resolve",
                                         "dither": False,
                                         "psf": ["gaussian", 72.0],
                                         "imaging": True,
-                                        "grating": False,
-                                        "dep_name": "hitomi_sxs"}
+                                        "grating": False}
 
 ## AXIS
 
@@ -344,9 +321,6 @@ def add_instrument_to_registry(inst_spec):
     else:
         default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", "imaging", "grating"}
     my_keys = set(inst.keys())
-    # Don't check things we don't need
-    if "dep_name" in my_keys:
-        my_keys.remove("dep_name")
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
         raise RuntimeError("One or more items is missing from the instrument specification!\n"
