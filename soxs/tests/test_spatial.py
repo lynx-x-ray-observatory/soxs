@@ -118,7 +118,7 @@ def test_beta_model(answer_store, answer_dir):
     sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
-                         "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
+                         "chandra_acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
                          instr_bkgnd=False, foreground=False, prng=prng)
 
     write_radial_profile("beta_evt.fits", "beta_evt_profile.fits", [ra0, dec0],
@@ -155,7 +155,7 @@ def test_double_beta_model(answer_store, answer_dir):
     sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("double_beta_simput.fits", "double_beta_evt.fits", 
-                         exp_time, "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
+                         exp_time, "chandra_acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
                          instr_bkgnd=False, foreground=False, prng=prng)
 
     write_radial_profile("double_beta_evt.fits", "double_beta_evt_profile.fits", 
@@ -185,7 +185,7 @@ def test_beta_model_flux(answer_store, answer_dir):
     sim_cat.write_catalog(overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_flux_evt.fits", exp_time,
-                         "acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
+                         "chandra_acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
                          instr_bkgnd=False, foreground=False, 
                          roll_angle=37.0, prng=prng)
 

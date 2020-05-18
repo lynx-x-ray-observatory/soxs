@@ -17,7 +17,7 @@ prng = RandomState(24)
 
 def test_uniform_bkgnd_scale():
     hdxi_arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
-    events, event_params = make_background((50, "ks"), "hdxi", [30., 45.], 
+    events, event_params = make_background((50, "ks"), "lynx_hdxi", [30., 45.], 
                                            foreground=True, instr_bkgnd=True,
                                            ptsrc_bkgnd=False, prng=prng)
     ncts = np.logical_and(events["energy"] >= 0.7, events["energy"] <= 2.0).sum()
@@ -44,7 +44,7 @@ def test_simulate_bkgnd_spectrum():
 
     exp_time = 50000.0
     fov = 3600.0
-    simulate_spectrum(None, "hdxi", exp_time, "test_bkgnd.pha",
+    simulate_spectrum(None, "lynx_hdxi", exp_time, "test_bkgnd.pha",
                       instr_bkgnd=True, foreground=True, prng=prng,
                       overwrite=True, bkgnd_area=(fov, "arcsec**2"))
     ch_min = hdxi_rmf.e_to_ch(0.7)-hdxi_rmf.cmin
@@ -86,13 +86,13 @@ def test_add_background():
                  "flux": [0.0], "emin": [0.1], "emax": [10.0],
                  "sources": ["empty"]}
 
-    instrument_simulator(empty_cat, "evt1.fits", exp_time, "hdxi",
+    instrument_simulator(empty_cat, "evt1.fits", exp_time, "lynx_hdxi",
                          [ra0, dec0], prng=prng1, overwrite=True)
 
-    make_background_file("bkg_evt.fits", exp_time, "hdxi", [ra0, dec0],
+    make_background_file("bkg_evt.fits", exp_time, "lynx_hdxi", [ra0, dec0],
                          prng=prng2, overwrite=True)
 
-    instrument_simulator(empty_cat, "evt2.fits", exp_time, "hdxi",
+    instrument_simulator(empty_cat, "evt2.fits", exp_time, "lynx_hdxi",
                          [ra1, dec1], bkgnd_file="bkg_evt.fits",
                          prng=prng2, overwrite=True)
 
