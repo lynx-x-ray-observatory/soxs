@@ -237,15 +237,11 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     if weights is not None:
         eff_area = np.average(eff_area, weights=weights)
 
-    if instr["chips"] is None:
-        rtypes = ["Rectangle"]
-        args = [[0.0, 0.0, instr["num_pixels"], instr["num_pixels"]]]
-    else:
-        rtypes = []
-        args = []
-        for i, chip in enumerate(instr["chips"]):
-            rtypes.append(chip[0])
-            args.append(np.array(chip[1:]))
+    rtypes = []
+    args = []
+    for i, chip in enumerate(instr["chips"]):
+        rtypes.append(chip[0])
+        args.append(np.array(chip[1:]))
 
     tmpmap = np.zeros((2*nx, 2*ny))
 
