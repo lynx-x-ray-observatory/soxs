@@ -6,6 +6,11 @@ ChangeLog
 Version 3.0.0
 -------------
 
+* All instrument specifications must now specifically implement at least one
+  chip explicitly, so it is no longer permissible to specify the ``"chips"`` 
+  argument to be ``None``. This is a backwards-incompatible change. 
+* Generating the galactic foreground and the instrumental background is now
+  faster and uses less memory. 
 * SOXS now uses the 
   `AstroPy Regions package <https://astropy-regions.readthedocs.io/en/latest/>`_ 
   for region handling.
