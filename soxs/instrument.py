@@ -606,13 +606,11 @@ def generate_events(input_events, exp_time, instrument, sky_center,
 
             events["chip_id"] = -np.ones(n_evt, dtype='int')
             for i, chip in enumerate(event_params["chips"]):
-                thisc = np.ones(n_evt, dtype='bool')
                 rtype = chip[0]
                 args = chip[1:]
-                r = create_region(rtype, args, 0.0, 0.0)
+                r, _ = create_region(rtype, args, 0.0, 0.0)
                 inside = r.contains(PixCoord(cx, cy))
-                thisc = np.logical_and(thisc, inside)
-                events["chip_id"][thisc] = i
+                events["chip_id"][inside] = i
             keep = events["chip_id"] > -1
 
             mylog.info("%d events were rejected because " % (n_evt-keep.sum()) +

@@ -89,41 +89,33 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
             bkgnd_spec.append(spec)
 
     bkg_events = {}
-
-    nx = event_params["num_pixels"]
-
-    if event_params["chips"] is None:
-        bkg_events["energy"] = bkgnd_spec[0].generate_energies(event_params["exposure_time"],
-                                                               event_params["fov"], prng=prng,
-                                                               quiet=True).value
-        n_events = bkg_events["energy"].size
-        bkg_events["chip_id"] = np.zeros(n_events, dtype='int')
-        bkg_events["detx"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
-        bkg_events["dety"] = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
-    else:
-        bkg_events["energy"] = []
-        bkg_events["detx"] = []
-        bkg_events["dety"] = []
-        bkg_events["chip_id"] = []
-        for i, chip in enumerate(event_params["chips"]):
-            e = bkgnd_spec[i].generate_energies(event_params["exposure_time"],
-                                                event_params["fov"], prng=prng,
-                                                quiet=True).value
-            n_events = e.size
-            detx = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
-            dety = prng.uniform(low=-0.5*nx, high=0.5*nx, size=n_events)
-            thisc = np.ones(n_events, dtype='bool')
-            rtype = chip[0]
-            args = chip[1:]
-            r = create_region(rtype, args, 0.0, 0.0)
-            inside = r.contains(PixCoord(detx, dety))
-            thisc = np.logical_and(thisc, inside)
-            bkg_events["energy"].append(e[thisc])
-            bkg_events["detx"].append(detx[thisc])
-            bkg_events["dety"].append(dety[thisc])
-            bkg_events["chip_id"].append(i*np.ones(thisc.sum()))
-        for key in bkg_events:
-            bkg_events[key] = np.concatenate(bkg_events[key])
+    bkg_events["energy"] = []
+    bkg_events["detx"] = []
+    bkg_events["dety"] = []
+    bkg_events["chip_id"] = []
+    pixel_area = (event_params["plate_scale"]*60.0)**2
+    for i, chip in enumerate(event_params["chips"]):
+        rtype = chip[0]
+        args = chip[1:]
+        r, bounds = create_region(rtype, args, 0.0, 0.0)
+        fov = (bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area
+        e = bkgnd_spec[i].generate_energies(event_params["exposure_time"],
+                                            fov, prng=prng, quiet=True).value
+        n_events = e.size
+        detx = prng.uniform(low=bounds[0], high=bounds[1], size=n_events)
+        dety = prng.uniform(low=bounds[2], high=bounds[3], size=n_events)
+        if rtype in ["Box", "Rectangle"]:
+            thisc = slice(None, None, None)
+            n_det = n_events
+        else:
+            thisc = r.contains(PixCoord(detx, dety))
+            n_det = thisc.sum()
+        bkg_events["energy"].append(e[thisc])
+        bkg_events["detx"].append(detx[thisc])
+        bkg_events["dety"].append(dety[thisc])
+        bkg_events["chip_id"].append(i*np.ones(n_det))
+    for key in bkg_events:
+        bkg_events[key] = np.concatenate(bkg_events[key])
 
     if bkg_events["energy"].size == 0:
         raise RuntimeError("No instrumental background events were detected!!!")

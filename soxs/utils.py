@@ -184,15 +184,24 @@ class DummyPbar(object):
 def create_region(rtype, args, dx, dy):
     if rtype in ["Rectangle", "Box"]:
         xctr, yctr, xw, yw = args
-        center = regions.PixCoord(x=xctr+dx, y=yctr+dy)
+        x = xctr+dx
+        y = yctr+dy
+        center = regions.PixCoord(x=x, y=y)
         reg = regions.RectanglePixelRegion(center=center, width=xw, height=yw)
+        bounds = [x-0.5*xw, x+0.5*xw, y-0.5*yw, y+0.5*yw]
     elif rtype == "Circle":
         xctr, yctr, radius = args
-        center = regions.PixCoord(x=xctr+dx, y=yctr+dy)
+        x = xctr+dx
+        y = yctr+dy
+        center = regions.PixCoord(x=x, y=y)
         reg = regions.CirclePixelRegion(center=center, radius=radius)
+        bounds = [x-radius, x+radius, y-radius, y+radius]
     elif rtype == "Polygon":
-        vertices = regions.PixCoord(x=args[0]+dx, y=args[1]+dy)
+        x = args[0]+dx
+        y = args[1]+dy
+        vertices = regions.PixCoord(x=x, y=y)
         reg = regions.PolygonPixelRegion(vertices=vertices)
+        bounds = [x.min(), x.max(), y.min(), y.max()]
     else:
         raise NotImplementedError
-    return reg
+    return reg, bounds
