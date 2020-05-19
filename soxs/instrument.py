@@ -327,7 +327,7 @@ class RedistributionMatrixFile:
         """
         prng = parse_prng(prng)
         eidxs = np.argsort(events["energy"])
-        sorted_e = events["energy"].value[eidxs]
+        sorted_e = np.asarray(events["energy"])[eidxs]
 
         detectedChannels = []
 
