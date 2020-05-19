@@ -6,9 +6,12 @@ ChangeLog
 Version 3.0.0
 -------------
 
+This major version update of SOXS contains new features and optimizations. 
+**NOTE: there are some backwards-incompatible changes in this release.**
+
 * All instrument specifications must now specifically implement at least one
   chip explicitly, so it is no longer permissible to specify the ``"chips"`` 
-  argument to be ``None``. This is a backwards-incompatible change. 
+  argument to be ``None``. **This is a backwards-incompatible change.**
 * Generating the galactic foreground and the instrumental background is now
   faster and uses less memory. 
 * Exposure map calculation now uses far less memory and is slightly faster.
