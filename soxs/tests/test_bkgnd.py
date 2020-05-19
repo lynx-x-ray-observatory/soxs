@@ -82,17 +82,13 @@ def test_add_background():
     dec = np.array([])
     e = np.array([])
 
-    empty_cat = {"ra": [ra], "dec": [dec], "energy": [e],
-                 "flux": [0.0], "emin": [0.1], "emax": [10.0],
-                 "src_names": ["empty"]}
-
-    instrument_simulator(empty_cat, "evt1.fits", exp_time, "lynx_hdxi",
+    instrument_simulator(None, "evt1.fits", exp_time, "lynx_hdxi",
                          [ra0, dec0], prng=prng1, overwrite=True)
 
     make_background_file("bkg_evt.fits", exp_time, "lynx_hdxi", [ra0, dec0],
                          prng=prng2, overwrite=True)
 
-    instrument_simulator(empty_cat, "evt2.fits", exp_time, "lynx_hdxi",
+    instrument_simulator(None, "evt2.fits", exp_time, "lynx_hdxi",
                          [ra1, dec1], bkgnd_file="bkg_evt.fits",
                          prng=prng2, overwrite=True)
 

@@ -467,7 +467,9 @@ def generate_events(source, exp_time, instrument, sky_center,
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
-    if isinstance(source, dict):
+    if source is None:
+        source_list = []
+    elif isinstance(source, dict):
         parameters = {}
         for key in ["flux", "emin", "emax", "src_names"]:
             parameters[key] = source[key]
