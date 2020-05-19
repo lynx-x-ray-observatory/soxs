@@ -77,9 +77,9 @@ def test_thermal(answer_store, answer_dir):
     spectrum_answer_testing(spec, "thermal_spec.h5", answer_store, answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model", "thermal_model", spec,
-                                        pt_src_pos, exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat = SimputCatalog.from_models("thermal_model", (spec, pt_src_pos), 
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("thermal_model_simput.fits", overwrite=True)
 
     instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", exp_time, 
                          inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
@@ -149,10 +149,9 @@ def test_thermal_abund_table(answer_store, answer_dir):
     spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store, answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model_aspl", "thermal_model_aspl",
-                                        spec_aspl, pt_src_pos,
+    sim_cat = SimputCatalog.from_models("thermal_model_aspl", (spec_aspl, pt_src_pos),
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat.write_catalog("thermal_model_aspl_simput.fits", overwrite=True)
 
     instrument_simulator("thermal_model_aspl_simput.fits",
                          "thermal_model_aspl_evt.fits", exp_time, inst_name,
@@ -181,9 +180,9 @@ def test_thermal_nei(answer_store, answer_dir):
     spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model_nei", "thermal_model_nei", spec_nei,
-                                        pt_src_pos, exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat = SimputCatalog.from_models("thermal_model_nei", (spec_nei, pt_src_pos), 
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("thermal_model_nei_simput.fits", overwrite=True)
 
     instrument_simulator("thermal_model_nei_simput.fits", "thermal_model_nei_evt.fits",
                          exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False,

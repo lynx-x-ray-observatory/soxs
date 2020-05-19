@@ -88,7 +88,11 @@ class SimputCatalog:
 
         """
         src_names = ensure_list(src_names)
-        src_models = ensure_list(src_models)
+        if isinstance(src_models, (tuple, list)) and len(src_models) == 2:
+            src_models = [src_models]
+        if len(src_names) != len(src_models):
+            raise RuntimeError(f"Number of src_names ({len(src_names)}) != "
+                               f"number of src_models ({len(src_models)})!")
         sources = []
         for i, src_name in enumerate(src_names):
             src = SimputPhotonList.from_models(src_name, src_models[i][0], 
