@@ -242,7 +242,6 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     for i, chip in enumerate(instr["chips"]):
         rtypes.append(chip[0])
         args.append(np.array(chip[1:])/reblock)
-    nchips = len(instr["chips"])
 
     xdet0 = 0.5*(2*nx//reblock+1)
     ydet0 = 0.5*(2*ny//reblock+1)
