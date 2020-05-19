@@ -722,38 +722,36 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     f = pyfits.open(specfile)
     hdu = f["SPECTRUM"]
     chantype = hdu.header["CHANTYPE"]
-    rmf = hdu.header.get("RESPFILE", None)
-    xerr = None
+    y = hdu.data["COUNTS"].astype("float64")
     if plot_energy:
+        rmf = hdu.header.get("RESPFILE", None)
         if rmf is not None:
             rmf = RedistributionMatrixFile(rmf)
-            x = 0.5*(rmf.ebounds_data["E_MIN"]+rmf.ebounds_data["E_MAX"])
-            xerr = 0.5*(rmf.ebounds_data["E_MAX"]-rmf.ebounds_data["E_MIN"])
+            e = 0.5*(rmf.ebounds_data["E_MIN"]+rmf.ebounds_data["E_MAX"])
+            if ebins is None:
+                xmid = e
+                xerr = 0.5*(rmf.ebounds_data["E_MAX"]-rmf.ebounds_data["E_MIN"])
+            else:
+                xmid = 0.5*(ebins[1:]+ebins[:-1])
+                xerr = 0.5 * np.diff(ebins)
+                y = np.histogram(e, ebins, weights=y)[0].astype("float64")
             xlabel = "Energy (keV)"
         else:
             raise RuntimeError("Cannot find the RMF associated with this "
                                "spectrum, so I cannot plot in energy!")
     else:
-        x = hdu.data[chantype]
+        xmid = hdu.data[chantype]
         xerr = 0.5
         xlabel = "Channel (%s)" % chantype
-    y = hdu.data["COUNTS"].astype("float64")
-    if ebins is not None and plot_energy:
-        de = np.diff(ebins)
-        y = np.histogram(x, ebins, weights=y)[0].astype("float64")
-        xmid = 0.5*(ebins[1:]+ebins[:-1])
-        xerr = 0.5*de
-    else:
-        xmid = x
-        de = 2.0*xerr
+    dx = 2.0*xerr
     yerr = np.sqrt(y)
     if not plot_counts:
         y /= hdu.header["EXPOSURE"]
         yerr /= hdu.header["EXPOSURE"]
     if plot_energy:
         yunit = "keV"
-        y /= de
-        yerr /= de
+        y /= dx
+        yerr /= dx
     else:
         yunit = "bin"
     f.close()
@@ -778,9 +776,9 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
         xerr = xerr[used]
         yerr = yerr[used]
     if noerr:
-        xerr = None
-        yerr = None
-    ax.errorbar(xmid, y, yerr=yerr, xerr=xerr, lw=lw, label=label, **kwargs)
+        ax.plot(xmid, y, lw=lw, label=label, **kwargs)
+    else:
+        ax.errorbar(xmid, y, yerr=yerr, xerr=xerr, lw=lw, label=label, **kwargs)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     ax.set_xlim(xmin, xmax)
