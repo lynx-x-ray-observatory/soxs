@@ -46,7 +46,7 @@ def plaw_fit(alpha_sim, answer_store, answer_dir):
     pt_src_pos = PointSourceModel(30.0, 45.0)
     sim_cat = SimputCatalog.from_models("plaw_model", (spec, pt_src_pos),
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat.write_catalog("plaw_model_simput.fits", overwrite=True)
 
     instrument_simulator("plaw_model_simput.fits", f"plaw_model_{alpha_sim}_evt.fits",
                          exp_time, inst_name, [30.0, 45.0], instr_bkgnd=False,

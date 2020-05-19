@@ -35,9 +35,9 @@ def test_emission_line(answer_store, answer_dir):
                             answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("emission_line", "emission_line", spec, 
-                                        pt_src_pos, exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat = SimputCatalog.from_models("emission_line", (spec, pt_src_pos), 
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("emission_line_simput.fits", overwrite=True)
 
     instrument_simulator("emission_line_simput.fits", "emission_line_evt.fits",
                          exp_time, inst_name, [30.0, 45.0], instr_bkgnd=False,
