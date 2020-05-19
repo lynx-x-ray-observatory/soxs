@@ -259,15 +259,17 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         nitery = 1
 
     expmap = np.zeros((2*nx//reblock, 2*ny//reblock))
-    niter = niterx*nitery*nchips
+    niter = niterx*nitery
     pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
-    for i in range(nhistx):
-        for j in range(nhisty):
-            for rtype, arg in zip(rtypes, args):
+    for i in range(niterx):
+        for j in range(nitery):
+            chips, _ = create_region(rtypes[0], args[0], dx+x_mid[i], dy+y_mid[j])
+            for rtype, arg in zip(rtypes[1:], args[1:]):
                 r, _ = create_region(rtype, arg, dx+x_mid[i], dy+y_mid[j])
-                dexp = r.to_mask().to_image(expmap.shape).astype("float64")
-                expmap += dexp*asphist[i,j]
-                pbar.update(nchips)
+                chips = chips | r
+            dexp = chips.to_mask().to_image(expmap.shape).astype("float64")
+            expmap += dexp*asphist[i,j]
+        pbar.update(nitery)
     pbar.close()
 
     expmap *= eff_area
