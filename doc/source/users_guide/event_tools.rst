@@ -196,6 +196,8 @@ supply an exposure map produced by :func:`~soxs.events.make_exposure_map`:
 
 A cookbook example showing how to extract a radial profile is shown in :ref:`radial-profile`.
 
+.. _write-spectrum:
+
 ``write_spectrum``
 ------------------
 
@@ -241,5 +243,16 @@ would set ``plot_energy=False``:
 .. image:: ../images/mucal_plot_channel.png
 
 where in that case the x-axis is now in channel space, so ``xmin`` and ``xmax`` had to
-be set accordingly. For other customizations, consult the :func:`~soxs.events.plot_spectrum`
-API. 
+be set accordingly. 
+
+To bin the spectrum in energy bins of your choice, generate a set of bin edges and pass
+them to :func:`~soxs.events.plot_spectrum` using the ``ebins`` argument:
+
+.. code-block:: python
+
+    from soxs import plot_spectrum
+    import numpy as np
+    ebins = np.linspace(0.5, 7.0, 101)
+    plot_spectrum("evt.pha", ebins=ebins. xmin=0.5, xmax=7.0)
+
+For other customizations, consult the :func:`~soxs.events.plot_spectrum` API. 

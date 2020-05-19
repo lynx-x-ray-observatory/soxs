@@ -663,11 +663,11 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     hdu.writeto(out_file, overwrite=overwrite)
 
 
-def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
-                  ymin=None, ymax=None, xscale=None, yscale=None, 
-                  label=None, fontsize=18, fig=None, ax=None, 
-                  plot_counts=False, ebins=None, noerr=False,
-                  plot_used=False, **kwargs):
+def plot_spectrum(specfile, plot_energy=True, ebins=None, lw=2, 
+                  xmin=None, xmax=None, ymin=None, ymax=None, 
+                  xscale=None, yscale=None, label=None, 
+                  fontsize=18, fig=None, ax=None, plot_counts=False,
+                  noerr=False, plot_used=False, **kwargs):
     """
     Make a quick Matplotlib plot of a convolved spectrum
     from a file. A Matplotlib figure and axis is returned.
@@ -676,13 +676,14 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     ----------
     specfile : string
         The file to be opened for plotting.
-    figsize : tuple of integers, optional
-        The size of the figure on both sides in inches.
-        Default: (10,10)
     plot_energy : boolean, optional
         Whether to plot in energy or channel space. Default is
         to plot in energy, unless the RMF for the spectrum
-        cannot be found. 
+        cannot be found.
+    ebins : NumPy array, optional
+        If set, these are the energy bin edges in which the spectrum
+        will be binned. If not set, the counts will be binned according
+        to channel. Default: None
     lw : float, optional
         The width of the lines in the plots. Default: 2.0 px.
     xmin : float, optional
@@ -712,10 +713,17 @@ def plot_spectrum(specfile, plot_energy=True, lw=2, xmin=None, xmax=None,
     plot_counts : boolean, optional
         If set to True, the counts instead of the count rate will
         be plotted. Default: False
+    noerr : boolean, optional
+        If True, the spectrum will be plotted without errorbars. 
+        Default: False
+    plot_used : boolean, optional
+        If set to True, only the bins which contain more than 0 
+        counts will be plotted. Default: False
 
     Returns
     -------
-    A tuple of the :class:`~matplotlib.figure.Figure` and the :class:`~matplotlib.axes.Axes` objects.
+    A tuple of the :class:`~matplotlib.figure.Figure` and the 
+    :class:`~matplotlib.axes.Axes` objects.
     """
     import matplotlib.pyplot as plt
     from soxs.instrument import RedistributionMatrixFile

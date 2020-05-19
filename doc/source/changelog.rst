@@ -15,6 +15,8 @@ This major version update of SOXS contains new features and optimizations.
 * Generating the galactic foreground and the instrumental background is now
   faster and uses less memory. 
 * Exposure map calculation now uses far less memory and is slightly faster.
+* New options have been added to the :func:`~soxs.events.plot_spectrum` function.
+  See :ref:`write-spectrum` for details.
 * SOXS now uses the 
   `AstroPy Regions package <https://astropy-regions.readthedocs.io/en/latest/>`_ 
   for region handling.
