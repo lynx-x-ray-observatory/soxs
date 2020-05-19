@@ -459,7 +459,6 @@ def generate_events(input_events, exp_time, instrument, sky_center,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
-    import pyregion._region_filter as rfilter
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
