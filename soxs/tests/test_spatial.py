@@ -38,9 +38,9 @@ def test_point_source():
     os.chdir(tmpdir)
 
     pt_src_pos = PointSourceModel(ra0, dec0)
-    sim_cat = SimputCatalog.from_models("pt_src", "pt_src", spec, pt_src_pos,
+    sim_cat = SimputCatalog.from_models("pt_src", (spec, pt_src_pos),
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat.write_catalog("pt_src_simput.fits", overwrite=True)
 
     inst = get_instrument_from_registry("lynx_hdxi")
     inst["name"] = "hdxi_big_psf"
@@ -81,9 +81,9 @@ def test_annulus(answer_store, answer_dir):
 
     ann_pos = AnnulusModel(ra0, dec0, r_in, r_out)
 
-    sim_cat = SimputCatalog.from_models("ann", "ann", spec, ann_pos,
+    sim_cat = SimputCatalog.from_models("ann", (spec, ann_pos),
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat.write_catalog("ann_simput.fits", overwrite=True)
 
     instrument_simulator("ann_simput.fits", "ann_evt.fits", exp_time,
                          "lynx_hdxi", [ra0, dec0], ptsrc_bkgnd=False, 
@@ -113,9 +113,9 @@ def test_beta_model(answer_store, answer_dir):
     exp_time = Quantity(500.0, "ks")
 
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
-    sim_cat = SimputCatalog.from_models("beta", "beta", spec, beta_src_pos,
+    sim_cat = SimputCatalog.from_models("beta", (spec, beta_src_pos),
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat.write_catalog("beta_simput.fits", overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_evt.fits", exp_time,
                          "chandra_acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
@@ -149,10 +149,9 @@ def test_double_beta_model(answer_store, answer_dir):
 
     double_beta_src_pos = DoubleBetaModel(ra0, dec0, r_c1, beta1, r_c2, beta2,
                                           sb_ratio)
-    sim_cat = SimputCatalog.from_models("double_beta", "double_beta", spec,
-                                        double_beta_src_pos, exp_time, area,
-                                        prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat = SimputCatalog.from_models("double_beta", (spec, double_beta_src_pos),
+                                        exp_time, area, prng=prng)
+    sim_cat.write_catalog("double_beta_simput.fits", overwrite=True)
 
     instrument_simulator("double_beta_simput.fits", "double_beta_evt.fits", 
                          exp_time, "chandra_acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
@@ -180,9 +179,9 @@ def test_beta_model_flux(answer_store, answer_dir):
     prng = 34
 
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
-    sim_cat = SimputCatalog.from_models("beta", "beta", spec, beta_src_pos,
+    sim_cat = SimputCatalog.from_models("beta", (spec, beta_src_pos),
                                         exp_time, area, prng=prng)
-    sim_cat.write_catalog(overwrite=True)
+    sim_cat.write_catalog("beta_simput.fits", overwrite=True)
 
     instrument_simulator("beta_simput.fits", "beta_flux_evt.fits", exp_time,
                          "chandra_acisi_cy0", [ra0, dec0], ptsrc_bkgnd=False,
