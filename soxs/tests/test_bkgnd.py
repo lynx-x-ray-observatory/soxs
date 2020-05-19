@@ -78,10 +78,6 @@ def test_add_background():
     dec1 = 22.0
     exp_time = 50000.0
 
-    ra = np.array([])
-    dec = np.array([])
-    e = np.array([])
-
     instrument_simulator(None, "evt1.fits", exp_time, "lynx_hdxi",
                          [ra0, dec0], prng=prng1, overwrite=True)
 
