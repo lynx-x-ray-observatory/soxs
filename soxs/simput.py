@@ -323,8 +323,9 @@ class SimputPhotonList(SimputSource):
     src_type = "phlist"
 
     def __init__(self, ra, dec, energy, flux, name=None):
-        super(SimputPhotonList, self).__init__(energy.value.min(),
-                                               energy.value.max(), 
+        emin = np.asarray(energy).min()
+        emax = np.asarray(energy).max()
+        super(SimputPhotonList, self).__init__(emin, emax, 
                                                flux, name=name)
         self.events = {"ra": ra, "dec": dec, "energy": energy}
         self.num_events = energy.size
