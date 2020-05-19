@@ -473,9 +473,9 @@ def generate_events(source, exp_time, instrument, sky_center,
             parameters[key] = source[key]
         source_list = []
         for i in range(len(parameters["flux"])):
-            phlist = SimputPhotonList(parameters['src_names'],
-                                      source["ra"][i], source["dec"][i],
-                                      source["energy"][i], parameters['flux'])
+            phlist = SimputPhotonList(source["ra"][i], source["dec"][i],
+                                      source["energy"][i], parameters['flux'][i],
+                                      parameters['src_names'][i],)
             source_list.append(phlist)
     elif isinstance(source, str):
         # Assume this is a SIMPUT catalog
