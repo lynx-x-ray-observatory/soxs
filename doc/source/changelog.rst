@@ -11,6 +11,7 @@ Version 3.0.0
   argument to be ``None``. This is a backwards-incompatible change. 
 * Generating the galactic foreground and the instrumental background is now
   faster and uses less memory. 
+* Exposure map calculation now uses far less memory and is slightly faster.
 * SOXS now uses the 
   `AstroPy Regions package <https://astropy-regions.readthedocs.io/en/latest/>`_ 
   for region handling.
