@@ -128,7 +128,7 @@ def write_event_file(events, parameters, filename, overwrite=False):
 
 def make_exposure_map(event_file, expmap_file, energy, weights=None,
                       asol_file=None, normalize=True, overwrite=False,
-                      reblock=1, nhistx=16, nhisty=16, order=1):
+                      reblock=1, nhistx=16, nhisty=16):
     """
     Make an exposure map for a SOXS event file, and optionally write
     an aspect solution file. The exposure map will be created by
@@ -188,8 +188,6 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     ydel = hdu.header["TCDLT3"]
     x0 = hdu.header["TCRPX2"]
     y0 = hdu.header["TCRPX3"]
-    xdet0 = 0.5*(2*nx+1)
-    ydet0 = 0.5*(2*ny+1)
     xaim = hdu.header.get("AIMPT_X", 0.0)
     yaim = hdu.header.get("AIMPT_Y", 0.0)
     roll = hdu.header["ROLL_PNT"]
@@ -231,6 +229,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         asphist *= dt
         x_mid = 0.5*(x_edges[1:]+x_edges[:-1])/reblock
         y_mid = 0.5*(y_edges[1:]+y_edges[:-1])/reblock
+    else:
+        asphist = exp_time*np.ones((1,1))
 
     # Determine the effective area
     eff_area = arf.interpolate_area(energy).value
@@ -241,27 +241,34 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     args = []
     for i, chip in enumerate(instr["chips"]):
         rtypes.append(chip[0])
-        args.append(np.array(chip[1:]))
+        args.append(np.array(chip[1:])/reblock)
+    nchips = len(instr["chips"])
 
-    tmpmap = np.zeros((2*nx, 2*ny))
-
-    for rtype, arg in zip(rtypes, args):
-        r, _ = create_region(rtype, arg, xdet0-xaim-1.0, ydet0-yaim-1.0)
-        tmpmap += r.to_mask().to_image(tmpmap.shape).astype("float64")
-
-    tmpmap = downsample(tmpmap, reblock)
+    xdet0 = 0.5*(2*nx//reblock+1)
+    ydet0 = 0.5*(2*ny//reblock+1)
+    xaim //= reblock
+    yaim //= reblock
+    dx = xdet0-xaim-1.0
+    dy = ydet0-yaim-1.0
 
     if dither_params["dither_on"]:
-        expmap = np.zeros(tmpmap.shape)
-        niter = nhistx*nhisty
-        pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
-        for i in range(nhistx):
-            for j in range(nhisty):
-                expmap += shift(tmpmap, (x_mid[i], y_mid[j]), order=order)*asphist[i, j]
-            pbar.update(nhisty)
-        pbar.close()
+        niterx = nhistx
+        nitery = nhisty
     else:
-        expmap = tmpmap*exp_time
+        niterx = 1
+        nitery = 1
+
+    expmap = np.zeros((2*nx//reblock, 2*ny//reblock))
+    niter = niterx*nitery*nchips
+    pbar = tqdm(leave=True, total=niter, desc="Creating exposure map ")
+    for i in range(nhistx):
+        for j in range(nhisty):
+            for rtype, arg in zip(rtypes, args):
+                r, _ = create_region(rtype, arg, dx+x_mid[i], dy+y_mid[j])
+                dexp = r.to_mask().to_image(expmap.shape).astype("float64")
+                expmap += dexp*asphist[i,j]
+                pbar.update(nchips)
+    pbar.close()
 
     expmap *= eff_area
     if normalize:
