@@ -59,7 +59,7 @@ from soxs.background import \
     make_point_sources_file, \
     make_point_source_list
 
-from soxs.grid import \
+from soxs.mosaic import \
     make_mosaic_events, \
     make_mosaic_image
 
