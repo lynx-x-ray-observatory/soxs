@@ -60,8 +60,8 @@ from soxs.background import \
     make_point_source_list
 
 from soxs.grid import \
-    observe_grid_source, \
-    make_grid_image
+    make_mosaic_events, \
+    make_mosaic_image
 
 __version__ = get_versions()['version']
 del get_versions

@@ -3,7 +3,7 @@ import astropy.io.fits as pyfits
 import astropy.wcs as pywcs
 import os
 from soxs.utils import mylog, parse_value, get_rot_mat, \
-    downsample, create_region
+    create_region
 from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
 
