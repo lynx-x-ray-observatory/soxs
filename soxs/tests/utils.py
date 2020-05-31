@@ -1,5 +1,5 @@
 import os
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_equal
 from astropy.io import fits
 import shutil
 
@@ -24,10 +24,15 @@ def file_answer_testing(hdu, filename, answer_store, answer_dir):
     else:
         f_old = fits.open(oldf)
         f_new = fits.open(filename)
-        old_cols = f_old[hdu].data.names
-        new_cols = f_new[hdu].data.names
-        assert old_cols == new_cols
-        for name in old_cols:
-            assert_almost_equal(f_old[hdu].data[name], f_new[hdu].data[name])
+        if hdu in ["IMAGE", "EXPMAP"]:
+            for k in f_old[hdu].header:
+                assert_equal(f_old[hdu].header[k], f_new[hdu].header[k])
+            assert_almost_equal(f_old[hdu].data, f_new[hdu].data)
+        else:
+            old_cols = f_old[hdu].data.names
+            new_cols = f_new[hdu].data.names
+            assert old_cols == new_cols
+            for name in old_cols:
+                assert_almost_equal(f_old[hdu].data[name], f_new[hdu].data[name])
         f_old.close()
         f_new.close()

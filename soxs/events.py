@@ -659,6 +659,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         hdu.header["CUNIT2"] = "pixel"
 
     hdu.header["EXPOSURE"] = exp_time
+    hdu.name = "IMAGE"
 
     hdu.writeto(out_file, overwrite=overwrite)
 
