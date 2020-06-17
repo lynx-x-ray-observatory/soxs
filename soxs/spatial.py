@@ -29,7 +29,7 @@ def rotate_xy(theta, x, y):
     coords = np.dot(get_rot_mat(theta), np.array([x, y]))
     return coords
 
-class SpatialModel(object):
+class SpatialModel:
     def __init__(self, ra0, dec0):
         self.ra0 = parse_value(ra0, "deg")
         self.dec0 = parse_value(dec0, "deg")

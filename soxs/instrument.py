@@ -31,7 +31,7 @@ def get_response_path(fn):
                   "the SOXS response directory %s." % resp_path)
 
 
-class AuxiliaryResponseFile(object):
+class AuxiliaryResponseFile:
     r"""
     A class for auxiliary response files (ARFs).
 
@@ -212,7 +212,7 @@ class FlatResponse(AuxiliaryResponseFile):
         self.max_area = area
 
 
-class RedistributionMatrixFile(object):
+class RedistributionMatrixFile:
     r"""
     A class for redistribution matrix files (RMFs).
 

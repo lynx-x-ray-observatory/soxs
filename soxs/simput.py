@@ -187,7 +187,7 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy,
     handle_simput_catalog(simput_prefix, [phfile], [flux], [emin], 
                           [emax], [phlist_prefix], append, overwrite)
 
-class SimputCatalog(object):
+class SimputCatalog:
 
     @classmethod
     def from_models(cls, name, phlist_name, spectral_model, spatial_model,
@@ -299,7 +299,7 @@ class SimputCatalog(object):
         """
         self.photon_lists.append(photon_list)
 
-class PhotonList(object):
+class PhotonList:
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,

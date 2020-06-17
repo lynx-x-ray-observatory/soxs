@@ -41,7 +41,7 @@ def _generate_energies(spec, t_exp, rate, prng, quiet=False):
     return e
 
 
-class Spectrum(object):
+class Spectrum:
     _units = "photon/(cm**2*s*keV)"
 
     def __init__(self, ebins, flux):
@@ -583,7 +583,7 @@ class Spectrum(object):
         return fig, ax
 
 
-class ApecGenerator(object):
+class ApecGenerator:
     r"""
     Initialize a thermal gas emission model from the 
     AtomDB APEC tables available at http://www.atomdb.org. 

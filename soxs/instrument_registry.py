@@ -6,7 +6,7 @@ from copy import deepcopy
 # The Instrument Registry
 
 
-class InstrumentRegistry(object):
+class InstrumentRegistry:
     def __init__(self):
         self.registry = {}
 
