@@ -49,13 +49,13 @@ class Spectrum:
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         self.flux = u.Quantity(flux, self._units)
         self.nbins = len(self.emid)
-        self.de = self.ebins[1]-self.ebins[0]
+        self.de = np.diff(self.ebins)
         self._compute_total_flux()
 
     def _compute_total_flux(self):
-        self.total_flux = self.flux.sum()*self.de
-        self.total_energy_flux = (self.flux*self.emid.to("erg")).sum()*self.de/(1.0*u.photon)
-        cumspec = np.cumsum(self.flux.value*self.de.value)
+        self.total_flux = (self.flux*self.de).sum()
+        self.total_energy_flux = (self.flux*self.emid.to("erg")*self.de).sum()/(1.0*u.photon)
+        cumspec = np.cumsum((self.flux*self.de).value)
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
@@ -117,8 +117,8 @@ class Spectrum:
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
-        pflux = self.flux[range].sum()*self.de
-        eflux = (self.flux*self.emid.to("erg"))[range].sum()*self.de/(1.0*u.photon)
+        pflux = (self.flux*self.de)[range].sum()
+        eflux = (self.flux*self.emid.to("erg")*self.de)[range].sum()/(1.0*u.photon)
         return pflux, eflux
 
     @classmethod
@@ -201,7 +201,7 @@ class Spectrum:
         lines = f_s.readlines()
         f_s.close()
         ebins = np.array(lines[0].split()).astype("float64")
-        de = np.diff(ebins)[0]
+        de = np.diff(ebins)
         flux = np.array(lines[1].split()).astype("float64")/de
         os.chdir(curdir)
         shutil.rmtree(tmpdir)
@@ -347,9 +347,9 @@ class Spectrum:
         emax = parse_value(emax, 'keV')
         idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         if flux_type == "photons":
-            f = self.flux[idxs].sum()*self.de
+            f = (self.flux*self.de)[idxs].sum()
         elif flux_type == "energy":
-            f = (self.flux*self.emid.to("erg"))[idxs].sum()*self.de
+            f = (self.flux*self.emid.to("erg")*self.de)[idxs].sum()
         self.flux *= new_flux/f.value
         self._compute_total_flux()
 
