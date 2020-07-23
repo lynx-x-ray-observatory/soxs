@@ -173,12 +173,6 @@ class Spectrum:
         return cls._from_xspec(xspec_in, emin, emax, nbins)
 
     @classmethod
-    def from_xspec(cls, model_string, params, emin, emax, nbins):
-        mylog.warning("The 'from_xspec' method has been deprecated: "
-                      "use 'from_xspec_model' instead.")
-        cls.from_xspec_model(model_string, params, emin, emax, nbins)
-
-    @classmethod
     def _from_xspec(cls, xspec_in, emin, emax, nbins):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
