@@ -32,7 +32,7 @@ def write_event_file(events, parameters, filename, overwrite=False):
     col_e = pyfits.Column(name='ENERGY', format='E', unit='eV', array=events["energy"]*1000.)
     col_dx = pyfits.Column(name='DETX', format='D', unit='pixel', array=events["detx"])
     col_dy = pyfits.Column(name='DETY', format='D', unit='pixel', array=events["dety"])
-    col_id = pyfits.Column(name='CCD_ID', format='D', unit='pixel', array=events["ccd_id"])
+    col_id = pyfits.Column(name='CCD_ID', format='J', unit='pixel', array=events["ccd_id"])
 
     chantype = parameters["channel_type"]
     if chantype == "PHA":
