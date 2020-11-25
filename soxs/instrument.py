@@ -15,6 +15,7 @@ from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
 from regions import PixCoord
 
+
 def get_response_path(fn):
     if os.path.exists(fn):
         return os.path.abspath(fn)

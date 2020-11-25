@@ -1,8 +1,8 @@
 import os
-from numpy.testing import assert_almost_equal, assert_equal
+from numpy.testing import assert_allclose, assert_equal
 from astropy.io import fits
 import shutil
-
+import numpy as np
 
 def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
     testfile = os.path.join(answer_dir, filename)
@@ -10,9 +10,9 @@ def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
         spec.write_h5_file(testfile, overwrite=True)
     else:
         answer_spec = type(spec).from_file(testfile)
-        assert_almost_equal(answer_spec.emid.value,
+        assert_allclose(answer_spec.emid.value,
                              spec.emid.value)
-        assert_almost_equal(answer_spec.flux.value,
+        assert_allclose(answer_spec.flux.value,
                              spec.flux.value)
         assert answer_spec.flux.unit == spec.flux.unit
 
@@ -27,12 +27,27 @@ def file_answer_testing(hdu, filename, answer_store, answer_dir):
         if hdu in ["IMAGE", "EXPMAP"]:
             for k in f_old[hdu].header:
                 assert_equal(f_old[hdu].header[k], f_new[hdu].header[k])
-            assert_almost_equal(f_old[hdu].data, f_new[hdu].data)
+            dtype = f_old[hdu].data.dtype
+            if np.issubdtype(dtype, np.float32):
+                rtol = 1.0e-6
+            else:
+                rtol = 1.0e-8
+            assert_allclose(f_old[hdu].data, f_new[hdu].data, rtol=rtol)
         else:
             old_cols = f_old[hdu].data.names
             new_cols = f_new[hdu].data.names
             assert old_cols == new_cols
             for name in old_cols:
-                assert_almost_equal(f_old[hdu].data[name], f_new[hdu].data[name])
+                dtype = f_old[hdu].data[name].dtype
+                if np.issubdtype(dtype, np.integer):
+                    assert_equal(f_old[hdu].data[name], f_new[hdu].data[name])
+                else:
+                    if np.issubdtype(dtype, np.float32):
+                        rtol = 1.0e-6
+                    else:
+                        rtol = 1.0e-8
+                    assert_allclose(f_old[hdu].data[name],
+                                    f_new[hdu].data[name],
+                                    rtol=rtol)
         f_old.close()
         f_new.close()
