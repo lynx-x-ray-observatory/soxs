@@ -667,7 +667,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                     dither_params=None, roll_angle=0.0, subpixel_res=False, 
                     input_sources=None, absorb_model="wabs", nH=0.05, prng=None):
     """
-    Make background events. 
+    Make background events.
 
     Parameters
     ----------

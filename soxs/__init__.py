@@ -59,5 +59,9 @@ from soxs.background import \
     make_point_sources_file, \
     make_point_source_list
 
+from soxs.mosaic import \
+    make_mosaic_events, \
+    make_mosaic_image
+
 __version__ = get_versions()['version']
 del get_versions

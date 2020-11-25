@@ -157,7 +157,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
     reblock : integer, optional
-        Supply an integer power of 2 here to make an exposure map 
+        Supply an integer power of 2 here to make an exposure map
         with a different binning. Default: 1
     nhistx : integer, optional
         The number of bins in the aspect histogram in the DETX
@@ -570,11 +570,9 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
         The type of coordinate to bin into an image. 
         Can be "sky" or "det". Default: "sky"
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The minimum energy of the photons to put in the 
-        image, in keV.
+        The minimum energy of the photons to put in the image, in keV.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The maximum energy of the photons to put in the 
-        image, in keV.
+        The maximum energy of the photons to put in the image, in keV.
     overwrite : boolean, optional
         Whether or not to overwrite an existing file with 
         the same name. Default: False
