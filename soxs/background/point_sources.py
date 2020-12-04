@@ -66,13 +66,13 @@ def generate_fluxes(exp_time, area, fov, prng):
     eph_mean_erg = 1.0*erg_per_keV
 
     S_min_obs = eph_mean_erg/(exp_time*area)
-    mylog.debug("Flux of %g erg/cm^2/s gives roughly "
-                "one photon during exposure." % S_min_obs)
+    mylog.debug(f"Flux of {S_min_obs} erg/cm^2/s gives roughly "
+                f"one photon during exposure.")
     fov_area = fov**2
 
     n_gal = int(n_gal*fov_area/3600.0)
     n_agn = int(n_agn*fov_area/3600.0)
-    mylog.debug("%d AGN, %d galaxies in the FOV." % (n_agn, n_gal))
+    mylog.debug(f"{n_agn} AGN, {n_gal} galaxies in the FOV.")
 
     randvec1 = prng.uniform(size=n_agn)
     agn_fluxes = 10**f_agn(randvec1)
@@ -182,7 +182,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
                                                   area=area, prng=prng)
         num_sources = fluxes.size
     else:
-        mylog.info("Reading in point-source properties from %s." % input_sources)
+        mylog.info(f"Reading in point-source properties from {input_sources}.")
         t = ascii.read(input_sources)
         ra0 = t["RA"].data
         dec0 = t["Dec"].data
@@ -190,7 +190,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
         ind = t["index"].data
         num_sources = fluxes.size
 
-    mylog.debug("Generating spectra from %d sources." % num_sources)
+    mylog.debug(f"Generating spectra from {num_sources} sources.")
 
     # If requested, output the source properties to a file
     if output_sources is not None:
@@ -259,7 +259,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
         all_ra = all_ra[randvec < absorb]
         all_dec = all_dec[randvec < absorb]
         all_nph = all_energies.size
-    mylog.debug("%d photons remain after foreground galactic absorption." % all_nph)
+    mylog.debug(f"{all_nph} photons remain after foreground galactic absorption.")
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
 
