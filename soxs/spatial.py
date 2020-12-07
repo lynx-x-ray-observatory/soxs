@@ -4,15 +4,24 @@ from soxs.utils import parse_prng, parse_value, \
     get_rot_mat
 import astropy.units as u
 import astropy.wcs as pywcs
+import astropy.io.fits as pyfits
 
-def construct_wcs(ra0, dec0):
+
+def construct_wcs(ra0, dec0, dtheta=None, nx=None):
+    if dtheta is None:
+        dtheta = one_arcsec
+    if nx is None:
+        crpix = [0.0]*2
+    else:
+        crpix = [0.5*(nx+1)]*2
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = [ra0, dec0]
-    w.wcs.crpix = [0.0]*2
-    w.wcs.cdelt = [-one_arcsec, one_arcsec]
+    w.wcs.crpix = crpix
+    w.wcs.cdelt = [-dtheta, dtheta]
     w.wcs.ctype = ["RA---TAN","DEC--TAN"]
     w.wcs.cunit = ["deg"]*2
     return w
+
 
 def generate_radial_events(num_events, func, prng, ellipticity=1.0):
     rbins = np.linspace(0.0, 3000.0, 100000)
@@ -25,9 +34,19 @@ def generate_radial_events(num_events, func, prng, ellipticity=1.0):
     y = radius*np.sin(theta)*ellipticity
     return x, y
 
+
 def rotate_xy(theta, x, y):
     coords = np.dot(get_rot_mat(theta), np.array([x, y]))
     return coords
+
+
+def gen_img_coords(width, nx, theta):
+    x, y = np.mgrid[0:nx,0:nx]-0.5*(nx-1)
+    x += width / nx
+    y += width / nx
+    coords = rotate_xy(theta, x.flatten(), y.flatten())
+    return coords
+
 
 class SpatialModel:
     def __init__(self, ra0, dec0):
@@ -37,6 +56,16 @@ class SpatialModel:
 
     def _generate_coords(self, num_events, prng):
         pass
+
+    def _generate_image(self, width, nx):
+        pass
+
+    def generate_image(self, width, nx):
+        width = parse_value(width, "arcmin")
+        img = self._generate_image(width, nx)
+        img /= img.sum()
+        w = construct_wcs(0.0, 0.0, dtheta=width/60.0, nx=nx)
+        return pyfits.ImageHDU(data=img.T, header=w.to_header())
 
     def generate_coords(self, num_events, prng=None):
         """
@@ -58,6 +87,7 @@ class SpatialModel:
         ra, dec = self.w.wcs_pix2world(x, y, 1)
         return u.Quantity(ra, "deg"), u.Quantity(dec, "deg")
 
+
 class PointSourceModel(SpatialModel):
     """
     A model for positions of photons emanating from 
@@ -76,6 +106,12 @@ class PointSourceModel(SpatialModel):
     def _generate_coords(self, num_events, prng):
         return (np.zeros(num_events),)*2
  
+    def _generate_image(self, width, nx):
+        img = np.zeros((nx,nx))
+        img[nx//2, nx//2] = 1.0
+        return img
+
+
 class RadialFunctionModel(SpatialModel):
     """
     A model for positions of photons using a generic 
@@ -117,6 +153,13 @@ class RadialFunctionModel(SpatialModel):
         coords = rotate_xy(self.theta, x, y)
         return coords[0,:], coords[1,:]
 
+    def _generate_image(self, width, nx):
+        coords = gen_img_coords(width, nx, self.theta)
+        coords[1,] /= self.ellipticity
+        r = np.sqrt((coords**2).sum(axis=0))
+        return self.func(r.reshape(nx,nx))
+
+
 class RadialArrayModel(RadialFunctionModel):
     """
     Create positions for photons using a table of radii and 
@@ -148,6 +191,7 @@ class RadialArrayModel(RadialFunctionModel):
         func = lambda rr: np.interp(rr, r, S_r, left=0.0, right=0.0)
         super(RadialArrayModel, self).__init__(ra0, dec0, func, theta=theta, 
                                                ellipticity=ellipticity)
+
 
 class RadialFileModel(RadialArrayModel):
     """
@@ -181,6 +225,7 @@ class RadialFileModel(RadialArrayModel):
         super(RadialFileModel, self).__init__(ra0, dec0, r, S_r, theta=theta, 
                                               ellipticity=ellipticity)
 
+
 class BetaModel(RadialFunctionModel):
     """
     A model for positions of photons with a beta-model shape.
@@ -213,6 +258,7 @@ class BetaModel(RadialFunctionModel):
         func = lambda r: (1.0+(r/r_c)**2)**(-3*beta+0.5)
         super(BetaModel, self).__init__(ra0, dec0, func, theta=theta, 
                                         ellipticity=ellipticity)
+
 
 class DoubleBetaModel(RadialFunctionModel):
     """
@@ -255,6 +301,7 @@ class DoubleBetaModel(RadialFunctionModel):
         super(DoubleBetaModel, self).__init__(ra0, dec0, func, theta=theta,
                                               ellipticity=ellipticity)
 
+
 class AnnulusModel(RadialFunctionModel):
     """
     A model for positions of photons within an annulus shape 
@@ -295,6 +342,7 @@ class AnnulusModel(RadialFunctionModel):
                                            theta=theta,
                                            ellipticity=ellipticity)
 
+
 class RectangleModel(SpatialModel):
     """
     A model for positions of photons within a rectangle 
@@ -320,11 +368,20 @@ class RectangleModel(SpatialModel):
         self.height = parse_value(height, "arcsec")
         self.theta = parse_value(theta, "deg")
 
+    def _generate_image(self, width, nx):
+        img = np.zeros((nx, nx))
+        c = gen_img_coords(width, nx, self.theta)
+        rect = (-0.5*self.width < c[0]) & (c[0] < 0.5*self.width) 
+        rect &= (-0.5*self.height < c[1]) & (c[1] < 0.5*self.height)
+        img[rect.reshape(nx,nx)] = 1.0
+        return img
+
     def _generate_coords(self, num_events, prng):
         x = prng.uniform(low=-0.5*self.width, high=0.5*self.width, size=num_events)
         y = prng.uniform(low=-0.5*self.height, high=0.5*self.height, size=num_events)
         coords = rotate_xy(self.theta, x, y)
         return coords[0,:], coords[1,:]
+
 
 class FillFOVModel(RectangleModel):
     """

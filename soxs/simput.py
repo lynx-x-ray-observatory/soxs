@@ -7,6 +7,20 @@ from astropy.units import Quantity
 from collections import defaultdict
 
 
+def _parse_catalog_entry(src):
+    src_file, src_id = src.split("[")
+    src_id = src_id.strip("]")
+    # If no file is specified, assume the catalog and 
+    # source are in the same file
+    if src_file == "":
+        fn_src = filename
+    else:
+        fn_src = src_file
+    extname, extver = src_id.lower().strip("]").split(",")
+    extver = int(extver)
+    return fn_src, extname, extver
+
+
 def read_simput_catalog(simput_file):
     r"""
     Read events from a SIMPUT catalog. This will read 
@@ -31,15 +45,6 @@ def read_simput_catalog(simput_file):
     return sc.sources, parameters
 
 
-def _e_from_models(prng, t_exp, area, spectral_model, spatial_model):
-    prng = parse_prng(prng)
-    t_exp = parse_value(t_exp, "s")
-    area = parse_value(area, "cm**2")
-    e = spectral_model.generate_energies(t_exp, area, prng=prng)
-    ra, dec = spatial_model.generate_coords(e.size, prng=prng)
-    return ra, dec, e
-
-
 class SimputCatalog:
 
     def __init__(self, sources, src_names, fluxes, emin, emax):
@@ -56,7 +61,6 @@ class SimputCatalog:
         self.fluxes = ensure_numpy_array(fluxes)
         self.emin = ensure_numpy_array(emin)
         self.emax = ensure_numpy_array(emax)
-
 
     @classmethod
     def from_models(cls, src_names, src_models, t_exp, area, prng=None):
@@ -101,7 +105,7 @@ class SimputCatalog:
             sources.append(src)
         return cls(sources, src_names, 
                    [src.flux for src in sources],
-                   [src.emin for src in sources], 
+                   [src.emin for src in sources],
                    [src.emax for src in sources])
 
     @classmethod
@@ -116,31 +120,45 @@ class SimputCatalog:
             The name of the SIMPUT catalog file to read the 
             catalog and photon lists from. 
         """
+        from spectra import Spectrum
         sources = []
         f_simput = pyfits.open(filename)
         fluxes = f_simput["src_cat"].data["flux"]
         src_names = f_simput["src_cat"].data["src_name"]
         e_min = f_simput["src_cat"].data["e_min"]
         e_max = f_simput["src_cat"].data["e_max"]
+        ra0 = f_simput["src_cat"].data["ra"]
+        dec0 = f_simput["src_cat"].data["dec"]
         spectra = f_simput["src_cat"].data["spectrum"]
+        if "image" in f_simput["src_cat"]:
+            images = f_simput["src_cat"].data["image"]
+        else:
+            images = ["NULL"]*len(spectra)
         f_simput.close()
         for i, src in enumerate(spectra):
-            src_file, src_id = src.split("[")
-            src_id = src_id.strip("]")
-            # If no file is specified, assume the catalog and source are in the same file
-            if src_file == "":
-                fn_src = filename
-            else:
-                fn_src = src_file
-            extname, extver = src_id.lower().strip("]").split(",")
-            extver = int(extver)
+            fn_src, extname, extver = _parse_catalog_entry(src)
+            data = pyfits.getdata(fn_src, (extname, extver))
             if extname == "phlist":
-                data = pyfits.getdata(fn_src, (extname, extver))
                 ra = Quantity(data["ra"], "deg")
                 dec = Quantity(data["dec"], "deg")
                 energy = Quantity(data["energy"], "keV")
                 src = SimputPhotonList(ra, dec, energy,
                                        fluxes[i], name=src_names[i])
+            elif extname == "spectrum":
+                emid = data["energy"]
+                de = np.diff(emid)[0]
+                ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+                spec = Spectrum(ebins, data["fluxdensity"])
+                if images[i].upper() != "NULL":
+                    fn_img, extname, extver = _parse_catalog_entry(images[i])
+                    imdata, imheader = pyfits.getdata(
+                        fn_img, (extname, extver), header=True)
+                    imhdu = pyfits.ImageHDU(data=imdata,
+                                            header=imheader)
+                else:
+                    imhdu = None
+                src = SimputSpectrum(spec, ra0[i], dec0[i],
+                                     name=src_names[i], imhdu=imhdu)
             sources.append(src)
 
         return cls(sources, src_names, fluxes, e_min, e_max)
@@ -172,12 +190,12 @@ class SimputCatalog:
 
         for i, src in enumerate(self.sources):
             if src.name is None:
-                name = "soxs_src_{}".format(i)
+                name = f"soxs_src_{i}"
             else:
                 name = src.name
             src_id.append(i)
-            ra.append(0.0)
-            dec.append(0.0)
+            ra.append(src.ra)
+            dec.append(src.dec)
             e_min.append(src.emin)
             e_max.append(src.emax)
             flx.append(src.flux)
@@ -188,9 +206,14 @@ class SimputCatalog:
                 fn = filename
             extver[fn, src.src_type] += 1
             spec_fn = fn if fn != filename else ""
-            spec = "{}[{},{}]".format(spec_fn, src.src_type.upper(), extver[fn, src.src_type])
+            spec = f"{spec_fn}[{src.src_type.upper()},{extver[fn, src.src_type]}]"
             spectrum.append(spec)
-            image.append("NULL")
+            if getattr(spec, "imdata", None):
+                img_fn = fn if fn != filename else ""
+                img = f"{img_fn}[\"IMAGE\",{extver[fn, src.src_type]}]"
+            else:
+                img = "NULL"
+            image.append(img)
             timing.append("NULL")
 
         src_id = np.array(src_id).astype("int32")
@@ -253,12 +276,94 @@ class SimputCatalog:
 class SimputSource:
     src_type = "null"
 
-    def __init__(self, emin, emax, flux, name=None):
+    def __init__(self, emin, emax, flux, ra, dec, name=None):
         self.emin = emin
         self.emax = emax
         self.name = name
         self.flux = flux
-        self.name = name
+        self.ra = ra
+        self.dec = dec
+
+    def _write_source(self, coldefs, filename, append, overwrite, 
+                      header, imhdu=None):
+        tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+        tbhdu.name = self.src_type.upper()
+
+        hduclas1 = "PHOTONS" if self.src_type == "phlist" else self.src_type.upper()
+        tbhdu.header["HDUCLASS"] = "HEASARC/SIMPUT"
+        tbhdu.header["HDUCLAS1"] = hduclas1
+        tbhdu.header["HDUVERS"] = "1.1.0"
+        tbhdu.header.update(header)
+        if append:
+            extver = 1
+            f = pyfits.open(filename, mode='append')
+            for hdu in f:
+                if hdu.name == self.src_type.upper():
+                    extver = hdu.header["EXTVER"] + 1
+            tbhdu.header["EXTVER"] = extver
+            f.append(tbhdu)
+            if imhdu is not None:
+                for hdu in f:
+                    if hdu.name == "IMAGE":
+                        extver = hdu.header["EXTVER"] + 1
+                imhdu.header["EXTVER"] = extver
+                f.append(imhdu)
+            f.flush()
+            f.close()
+        else:
+            tbhdu.header["EXTVER"] = 1
+            f = [pyfits.PrimaryHDU(), tbhdu]
+            if imhdu is not None:
+                imhdu.header["EXTVER"] = 1
+                f.append(imhdu)
+            pyfits.HDUList(f).writeto(filename, overwrite=overwrite)
+
+
+class SimputSpectrum(SimputSource):
+    src_type = "spectrum"
+
+    def __init__(self, spec, ra, dec, name=None, imhdu=None):
+        super(SimputSpectrum, self).__init__(spec.ebins.value.min(),
+                                             spec.ebins.value.max(),
+                                             spec.flux.value, ra,
+                                             dec, name=name)
+        self.spec = spec
+        self.imhdu = imhdu
+
+    def write_source(self, filename, append=False, overwrite=False):
+        col1 = pyfits.Column(name='ENERGY', format='E',
+                             array=self.spec.emid.value)
+        col2 = pyfits.Column(name='FLUXDENSITY', format='D',
+                             array=self.spec.flux.value)
+        cols = [col1, col2]
+
+        coldefs = pyfits.ColDefs(cols)
+
+        header = {"REFRA": self.ra,
+                  "REFDEC": self.dec,
+                  "TUNIT1": "keV",
+                  "TUNIT2": "photon/(cm**2*s*keV)"}
+
+        self._write_source(coldefs, filename, append, overwrite, header,
+                           imhdu=self.imhdu)
+
+    @classmethod
+    def from_models(cls, name, ra, dec, spectral_model, spatial_model,
+                    width, nx):
+        imhdu = spatial_model.generate_image(width, nx)
+        cls(spectral_model, ra, dec, name=name, imhdu=imhdu)
+
+
+class SimputPhotonList(SimputSource):
+    src_type = "phlist"
+
+    def __init__(self, ra, dec, energy, flux, name=None):
+        emin = np.asarray(energy).min()
+        emax = np.asarray(energy).max()
+        super(SimputPhotonList, self).__init__(
+            emin, emax, flux, 0.0, 0.0, name=name)
+        self.events = {"ra": ra, "dec": dec, "energy": energy}
+        self.num_events = energy.size
 
     def __getitem__(self, item):
         return self.events[item]
@@ -275,60 +380,6 @@ class SimputSource:
 
     def pop(self, item):
         return self.events.pop(item)
-
-    def _write_source(self, coldefs, filename, append, overwrite):
-        tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
-        tbhdu.name = self.src_type.upper()
-
-        hduclas1 = "PHOTONS" if self.src_type == "phlist" else self.src_type.upper()
-        tbhdu.header["HDUCLASS"] = "HEASARC/SIMPUT"
-        tbhdu.header["HDUCLAS1"] = hduclas1
-        tbhdu.header["HDUVERS"] = "1.1.0"
-        tbhdu.header["REFRA"] = 0.0
-        tbhdu.header["REFDEC"] = 0.0
-        tbhdu.header["TUNIT1"] = "keV"
-        tbhdu.header["TUNIT2"] = "deg"
-        tbhdu.header["TUNIT3"] = "deg"
-        if append:
-            extver = 1
-            f = pyfits.open(filename, mode='append')
-            for hdu in f:
-                if hdu.name == self.src_type.upper():
-                    extver = hdu.header["EXTVER"] + 1
-            tbhdu.header["EXTVER"] = extver
-            f.append(tbhdu)
-            f.flush()
-            f.close()
-        else:
-            tbhdu.header["EXTVER"] = 1
-            tbhdu.writeto(filename, overwrite=overwrite)
-
-
-class SimputSpectrum(SimputSource):
-    src_type = "spectrum"
-
-    def __init__(self, spec, ra, dec, name=None):
-        super(SimputSpectrum, self).__init__(spec.ebins.value.min(), 
-                                             spec.ebins.value.max(), 
-                                             spec.flux.value, name=name)
-        self.ra = ra
-        self.dec = dec
-
-    def write_source(self, filename, append=False, overwrite=False):
-        coldefs = None
-        self._write_source(coldefs, filename, append, overwrite)
-
-
-class SimputPhotonList(SimputSource):
-    src_type = "phlist"
-
-    def __init__(self, ra, dec, energy, flux, name=None):
-        emin = np.asarray(energy).min()
-        emax = np.asarray(energy).max()
-        super(SimputPhotonList, self).__init__(emin, emax, 
-                                               flux, name=name)
-        self.events = {"ra": ra, "dec": dec, "energy": energy}
-        self.num_events = energy.size
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
@@ -390,7 +441,13 @@ class SimputPhotonList(SimputSource):
 
         coldefs = pyfits.ColDefs(cols)
 
-        self._write_source(coldefs, filename, append, overwrite)
+        header = {"REFRA": 0.0,
+                  "REFDEC": 0.0,
+                  "TUNIT1": "keV",
+                  "TUNIT2": "deg",
+                  "TUNIT3": "deg"}
+
+        self._write_source(coldefs, filename, append, overwrite, header)
 
     def plot(self, center, width, s=None, c=None, marker=None, stride=1,
              emin=None, emax=None, label=None, fontsize=18, fig=None, 

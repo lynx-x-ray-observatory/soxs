@@ -16,6 +16,17 @@ from tqdm import tqdm
 from regions import PixCoord
 
 
+def image_pos(hdu, nph, prng):
+    im = np.cumsum(hdu.data)/hdu.data.sum()
+    idxs = prng.choice(im.size, size=nph, p=im)
+    x, y = np.unravel_index(idxs, im.shape)
+    w = pywcs.WCS(header=hdu.header)
+    dx = prng.uniform(low=0.5, high=1.5, size=x.size)
+    dy = prng.uniform(low=0.5, high=1.5, size=y.size)
+    ra, dec = w.wcs_pix2world(x+dx, y+dy, 1)
+    return ra, dec
+
+
 def get_response_path(fn):
     if os.path.exists(fn):
         return os.path.abspath(fn)
@@ -94,8 +105,13 @@ class AuxiliaryResponseFile:
         prng = parse_prng(prng)
         cspec = ConvolvedSpectrum(src.spec, self).new_spec_from_band(refband[0], refband[1])
         energy = cspec.generate_energies(exp_time, quiet=True, prng=prng)
-        pones = np.ones_like(energy)
-        return {"energy": energy, "ra": src.ra*pones, "dec": src.dec*pones}
+        if getattr(src, "imhdu", None):
+            ra, dec = image_pos(src.imhdu, energy.size, prng)
+        else:
+            pones = np.ones_like(energy)
+            ra = src.ra*pones
+            dec = src.dec*pones
+        return {"energy": energy, "ra": ra, "dec": dec}
 
     def detect_events(self, events, exp_time, flux, refband, prng=None):
         """
@@ -297,15 +313,15 @@ class RedistributionMatrixFile:
     def _make_channels(self, k):
         # build channel number list associated to array value,
         # there are groups of channels in rmfs with nonzero probabilities
-        trueChannel = []
+        true_channel = []
         f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
         n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
         for start, nchan in zip(f_chan, n_chan):
             if nchan == 0:
-                trueChannel.append(start)
+                true_channel.append(start)
             else:
-                trueChannel += list(range(start, start + nchan))
-        return np.array(trueChannel)
+                true_channel += list(range(start, start + nchan))
+        return np.array(true_channel)
 
     def e_to_ch(self, energy):
         energy = parse_value(energy, "keV")
@@ -330,7 +346,7 @@ class RedistributionMatrixFile:
         eidxs = np.argsort(events["energy"])
         sorted_e = np.asarray(events["energy"])[eidxs]
 
-        detectedChannels = []
+        detected_channels = []
 
         # run through all photon energies and find which bin they go in
         fcurr = 0
@@ -350,10 +366,10 @@ class RedistributionMatrixFile:
             # weight function for probabilities from RMF
             weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
             weights /= weights.sum()
-            trueChannel = self._make_channels(k)
-            if len(trueChannel) > 0:
-                channelInd = prng.choice(len(weights), size=nn, p=weights)
-                detectedChannels.append(trueChannel[channelInd])
+            true_channel = self._make_channels(k)
+            if len(true_channel) > 0:
+                channel_ind = prng.choice(len(weights), size=nn, p=weights)
+                detected_channels.append(trueChannel[channe_ind])
                 fcurr += nn
                 pbar.update(nn)
 
@@ -361,7 +377,7 @@ class RedistributionMatrixFile:
 
         for key in events:
             events[key] = events[key][eidxs]
-        events[self.header["CHANTYPE"]] = np.concatenate(detectedChannels)
+        events[self.header["CHANTYPE"]] = np.concatenate(detected_channels)
 
         return events
 
@@ -814,6 +830,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     return events, event_params
 
+
 def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, no_dither=False, dither_params=None,
@@ -879,6 +896,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            absorb_model=absorb_model,
                                            nH=nH, prng=prng)
     write_event_file(events, event_params, out_file, overwrite=overwrite)
+
 
 def instrument_simulator(input_events, out_file, exp_time, instrument,
                          sky_center, overwrite=False, instr_bkgnd=True, 
