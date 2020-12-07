@@ -361,11 +361,12 @@ class SimputSpectrum(SimputSource):
         self._write_source(coldefs, filename, append, overwrite, header,
                            imhdu=self.imhdu)
 
+
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
                     width, nx):
         imhdu = spatial_model.generate_image(width, nx)
-        return cls(spectral_model, spatial_model.ra0, 
+        return cls(spectral_model, spatial_model.ra0,
                    spatial_model.dec0, name=name, imhdu=imhdu)
 
 

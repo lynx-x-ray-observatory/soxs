@@ -4,6 +4,7 @@ from astropy.io import fits
 import shutil
 import numpy as np
 
+
 def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
     testfile = os.path.join(answer_dir, filename)
     if answer_store:

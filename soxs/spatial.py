@@ -35,8 +35,11 @@ def generate_radial_events(num_events, func, prng, ellipticity=1.0):
     return x, y
 
 
-def rotate_xy(theta, x, y):
-    coords = np.dot(get_rot_mat(theta), np.array([x, y]))
+def rotate_xy(theta, x, y, inverse=False):
+    rot_mat = get_rot_mat(theta)
+    if inverse:
+        rot_mat = np.linalg.inv(rot_mat)
+    coords = np.dot(rot_mat, np.array([x, y]))
     return coords
 
 
@@ -72,8 +75,8 @@ class SpatialModel:
 
     def generate_coords(self, num_events, prng=None):
         """
-        Generate a sample of photon positions from this 
-        spatial model. 
+        Generate a sample of photon positions from this
+        spatial model.
 
         Parameters
         ----------
@@ -374,7 +377,7 @@ class RectangleModel(SpatialModel):
     def _generate_image(self, width, nx):
         img = np.zeros((nx, nx))
         c = gen_img_coords(width, nx, self.theta)
-        rect = (-0.5*self.width < c[0]) & (c[0] < 0.5*self.width) 
+        rect = (-0.5*self.width < c[0]) & (c[0] < 0.5*self.width)
         rect &= (-0.5*self.height < c[1]) & (c[1] < 0.5*self.height)
         img[rect.reshape(nx,nx)] = 1.0
         return img
