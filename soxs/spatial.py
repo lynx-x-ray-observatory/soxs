@@ -42,9 +42,9 @@ def rotate_xy(theta, x, y):
 
 def gen_img_coords(width, nx, theta):
     x, y = np.mgrid[0:nx,0:nx]-0.5*(nx-1)
-    x += width / nx
-    y += width / nx
-    coords = rotate_xy(theta, x.flatten(), y.flatten())
+    x *= width*60.0 / nx
+    y *= width*60.0 / nx
+    coords = rotate_xy(theta, x.flatten(), y.flatten(), inverse=True)
     return coords
 
 
