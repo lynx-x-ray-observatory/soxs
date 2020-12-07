@@ -369,7 +369,7 @@ class RedistributionMatrixFile:
             true_channel = self._make_channels(k)
             if len(true_channel) > 0:
                 channel_ind = prng.choice(len(weights), size=nn, p=weights)
-                detected_channels.append(trueChannel[channe_ind])
+                detected_channels.append(true_channel[channe_ind])
                 fcurr += nn
                 pbar.update(nn)
 
