@@ -10,15 +10,9 @@ from collections import defaultdict
 def _parse_catalog_entry(src):
     src_file, src_id = src.split("[")
     src_id = src_id.strip("]")
-    # If no file is specified, assume the catalog and 
-    # source are in the same file
-    if src_file == "":
-        fn_src = filename
-    else:
-        fn_src = src_file
     extname, extver = src_id.lower().strip("]").split(",")
     extver = int(extver)
-    return fn_src, extname, extver
+    return src_file, extname, extver
 
 
 def read_simput_catalog(simput_file):
@@ -57,10 +51,18 @@ class SimputCatalog:
             The photon list(s) to create this catalog with.
         """
         self.sources = ensure_list(sources)
-        self.src_names = ensure_list(src_names)
+        self.src_names = ensure_numpy_array(src_names)
         self.fluxes = ensure_numpy_array(fluxes)
         self.emin = ensure_numpy_array(emin)
         self.emax = ensure_numpy_array(emax)
+
+    @classmethod
+    def from_sources(cls, src_list):
+        sc = cls([], [], [], [], [])
+        src_list = ensure_list(src_list)
+        for src in src_list:
+            sc.append(src)
+        return sc
 
     @classmethod
     def from_models(cls, src_names, src_models, t_exp, area, prng=None):
@@ -120,7 +122,7 @@ class SimputCatalog:
             The name of the SIMPUT catalog file to read the 
             catalog and photon lists from. 
         """
-        from spectra import Spectrum
+        from .spectra import Spectrum
         sources = []
         f_simput = pyfits.open(filename)
         fluxes = f_simput["src_cat"].data["flux"]
@@ -130,13 +132,19 @@ class SimputCatalog:
         ra0 = f_simput["src_cat"].data["ra"]
         dec0 = f_simput["src_cat"].data["dec"]
         spectra = f_simput["src_cat"].data["spectrum"]
-        if "image" in f_simput["src_cat"]:
+        if "IMAGE" in f_simput["src_cat"].columns.names:
             images = f_simput["src_cat"].data["image"]
         else:
             images = ["NULL"]*len(spectra)
         f_simput.close()
         for i, src in enumerate(spectra):
-            fn_src, extname, extver = _parse_catalog_entry(src)
+            src_file, extname, extver = _parse_catalog_entry(src)
+            # If no file is specified, assume the catalog and
+            # source are in the same file
+            if src_file == "":
+                fn_src = filename
+            else:
+                fn_src = src_file
             data = pyfits.getdata(fn_src, (extname, extver))
             if extname == "phlist":
                 ra = Quantity(data["ra"], "deg")
@@ -150,7 +158,13 @@ class SimputCatalog:
                 ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
                 spec = Spectrum(ebins, data["fluxdensity"])
                 if images[i].upper() != "NULL":
-                    fn_img, extname, extver = _parse_catalog_entry(images[i])
+                    src_file, extname, extver = _parse_catalog_entry(images[i])
+                    # If no file is specified, assume the catalog and
+                    # source are in the same file
+                    if src_file == "":
+                        fn_img = filename
+                    else:
+                        fn_img = src_file
                     imdata, imheader = pyfits.getdata(
                         fn_img, (extname, extver), header=True)
                     imhdu = pyfits.ImageHDU(data=imdata,
@@ -208,9 +222,9 @@ class SimputCatalog:
             spec_fn = fn if fn != filename else ""
             spec = f"{spec_fn}[{src.src_type.upper()},{extver[fn, src.src_type]}]"
             spectrum.append(spec)
-            if getattr(spec, "imdata", None):
+            if getattr(src, "imhdu", None):
                 img_fn = fn if fn != filename else ""
-                img = f"{img_fn}[\"IMAGE\",{extver[fn, src.src_type]}]"
+                img = f"{img_fn}[IMAGE,{extver[fn, src.src_type]}]"
             else:
                 img = "NULL"
             image.append(img)
@@ -267,7 +281,7 @@ class SimputCatalog:
             The source to append to this catalog.
         """
         self.sources.append(source)
-        self.src_names.append(source.name)
+        self.src_names = np.append(self.src_names, source.name)
         self.fluxes = np.append(self.fluxes, source.flux)
         self.emin = np.append(self.emin, source.emin)
         self.emax = np.append(self.emax, source.emax)
@@ -325,7 +339,7 @@ class SimputSpectrum(SimputSource):
     def __init__(self, spec, ra, dec, name=None, imhdu=None):
         super(SimputSpectrum, self).__init__(spec.ebins.value.min(),
                                              spec.ebins.value.max(),
-                                             spec.flux.value, ra,
+                                             spec.total_flux.value, ra,
                                              dec, name=name)
         self.spec = spec
         self.imhdu = imhdu
@@ -348,10 +362,11 @@ class SimputSpectrum(SimputSource):
                            imhdu=self.imhdu)
 
     @classmethod
-    def from_models(cls, name, ra, dec, spectral_model, spatial_model,
+    def from_models(cls, name, spectral_model, spatial_model,
                     width, nx):
         imhdu = spatial_model.generate_image(width, nx)
-        cls(spectral_model, ra, dec, name=name, imhdu=imhdu)
+        return cls(spectral_model, spatial_model.ra0, 
+                   spatial_model.dec0, name=name, imhdu=imhdu)
 
 
 class SimputPhotonList(SimputSource):
@@ -368,18 +383,12 @@ class SimputPhotonList(SimputSource):
     def __getitem__(self, item):
         return self.events[item]
 
-    def __setitem__(self, item, value):
-        self.events[item] = value
-
     def __contains__(self, item):
         return item in self.events
 
     def __iter__(self):
         for key in self.events:
             yield key
-
-    def pop(self, item):
-        return self.events.pop(item)
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,

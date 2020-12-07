@@ -64,8 +64,11 @@ class SpatialModel:
         width = parse_value(width, "arcmin")
         img = self._generate_image(width, nx)
         img /= img.sum()
-        w = construct_wcs(0.0, 0.0, dtheta=width/60.0, nx=nx)
-        return pyfits.ImageHDU(data=img.T, header=w.to_header())
+        dtheta = width/60.0/nx
+        w = construct_wcs(0.0, 0.0, dtheta=dtheta, nx=nx)
+        imhdu = pyfits.ImageHDU(data=img.T, header=w.to_header())
+        imhdu.name = "IMAGE"
+        return imhdu
 
     def generate_coords(self, num_events, prng=None):
         """

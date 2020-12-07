@@ -18,7 +18,7 @@ def make_foreground(event_params, arf, rmf, prng=None):
 
     prng = parse_prng(prng)
 
-    conv_frgnd_spec = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, arf)
+    conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(hm_astro_bkgnd, arf)
 
     bkg_events = {}
     bkg_events["energy"] = []

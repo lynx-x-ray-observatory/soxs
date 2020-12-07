@@ -9,6 +9,7 @@ import h5py
 
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
+
     def __init__(self, ebins, flux):
         super(BackgroundSpectrum, self).__init__(ebins, flux)
 
@@ -77,7 +78,7 @@ class BackgroundSpectrum(Spectrum):
 
     def __mul__(self, other):
         if isinstance(other, AuxiliaryResponseFile):
-            return ConvolvedBackgroundSpectrum(self, other)
+            return ConvolvedBackgroundSpectrum.convolve(self, other)
         else:
             return BackgroundSpectrum(self.ebins, other*self.flux)
 
@@ -198,11 +199,11 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         flux *= (focal_length/self.default_focal_length)**2
         arf = FlatResponse(self.ebins.value[0], self.ebins.value[-1],
                            1.0, self.ebins.size-1)
-        return ConvolvedSpectrum(Spectrum(self.ebins.value, flux), arf)
+        return ConvolvedSpectrum.convolve(Spectrum(self.ebins.value, flux), arf)
 
     def new_spec_from_band(self, emin, emax):
         """
-        Create a new :class:`~soxs.spectra.Spectrum` object
+        Create a new :class:`~soxs.spectra.InstrumentalBackgroundSpectrum` object
         from a subset of an existing one defined by a particular
         energy band.
 
@@ -213,14 +214,8 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The maximum energy of the band in keV.
         """
-        emin = parse_value(emin, "keV")
-        emax = parse_value(emax, 'keV')
-        band = np.logical_and(self.ebins.value >= emin,
-                              self.ebins.value <= emax)
-        idxs = np.where(band)[0]
-        ebins = self.ebins.value[idxs]
-        flux = self.flux.value[idxs[:-1]]
-        return InstrumentalBackgroundSpectrum(ebins, flux, 
+        ebins, flux = self._new_spec_from_band(emin, emax)
+        return InstrumentalBackgroundSpectrum(ebins, flux,
                                               self.default_focal_length)
 
     def __mul__(self, other):

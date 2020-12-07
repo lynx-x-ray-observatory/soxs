@@ -72,7 +72,7 @@ class Spectrum:
 
     def __mul__(self, other):
         if hasattr(other, "eff_area"):
-            return ConvolvedSpectrum(self, other)
+            return ConvolvedSpectrum.convolve(self, other)
         else:
             return Spectrum(self.ebins, other*self.flux)
 
@@ -288,6 +288,16 @@ class Spectrum:
         flux = const_flux*np.ones(nbins)
         return cls(ebins, flux)
 
+    def _new_spec_from_band(self, emin, emax):
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, 'keV')
+        band = np.logical_and(self.ebins.value >= emin,
+                              self.ebins.value <= emax)
+        idxs = np.where(band)[0]
+        ebins = self.ebins.value[idxs]
+        flux = self.flux.value[idxs[:-1]]
+        return ebins, flux
+
     def new_spec_from_band(self, emin, emax):
         """
         Create a new :class:`~soxs.spectra.Spectrum` object
@@ -301,13 +311,7 @@ class Spectrum:
         emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The maximum energy of the band in keV.
         """
-        emin = parse_value(emin, "keV")
-        emax = parse_value(emax, 'keV')
-        band = np.logical_and(self.ebins.value >= emin, 
-                              self.ebins.value <= emax)
-        idxs = np.where(band)[0]
-        ebins = self.ebins.value[idxs]
-        flux = self.flux.value[idxs[:-1]]
+        ebins, flux = self._new_spec_from_band(emin, emax)
         return Spectrum(ebins, flux)
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
@@ -359,8 +363,8 @@ class Spectrum:
             file with the same name. Default: False
         """
         if os.path.exists(specfile) and not overwrite:
-            raise IOError("File %s exists and overwrite=False!" % specfile)
-        header = "Energy\tFlux\nkeV\t%s" % self._units
+            raise IOError(f"File {specfile} exists and overwrite=False!")
+        header = f"Energy\tFlux\nkeV\t{self._units}"
         np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
                    delimiter="\t", header=header)
 
@@ -982,7 +986,12 @@ def get_tbabs_absorb(e, nH):
 class ConvolvedSpectrum(Spectrum):
     _units = "photon/(s*keV)"
 
-    def __init__(self, spectrum, arf):
+    def __init__(self, ebins, flux, arf):
+        super(ConvolvedSpectrum, self).__init__(ebins, flux)
+        self.arf = arf
+
+    @classmethod
+    def convolve(cls, spectrum, arf):
         """
         Generate a convolved spectrum by convolving a spectrum with an
         ARF.
@@ -997,10 +1006,25 @@ class ConvolvedSpectrum(Spectrum):
         from soxs.instrument import AuxiliaryResponseFile
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
-        self.arf = arf
         earea = arf.interpolate_area(spectrum.emid.value)
         rate = spectrum.flux * earea
-        super(ConvolvedSpectrum, self).__init__(spectrum.ebins, rate)
+        return cls(spectrum.ebins, rate, arf)
+
+    def new_spec_from_band(self, emin, emax):
+        """
+        Create a new :class:`~soxs.spectra.ConvolvedSpectrum` object
+        from a subset of an existing one defined by a particular
+        energy band.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the band in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the band in keV.
+        """
+        ebins, flux = self._new_spec_from_band(emin, emax)
+        return ConvolvedSpectrum(ebins, flux, self.arf)
 
     def deconvolve(self):
         """
@@ -1042,31 +1066,6 @@ class ConvolvedSpectrum(Spectrum):
 
     def apply_foreground_absorption(self, nH, model="wabs"):
         raise NotImplementedError
-
-    def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
-        """
-        Rescale the flux of the convolved spectrum, optionally using 
-        a specific energy band.
-
-        Parameters
-        ----------
-        new_flux : float
-            The new flux in units of photons/s/cm**2.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The minimum energy of the band to consider, 
-            in keV. Default: Use the minimum energy of 
-            the entire spectrum.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The maximum energy of the band to consider, 
-            in keV. Default: Use the maximum energy of 
-            the entire spectrum.
-        flux_type : string, optional
-            The units of the flux to use in the rescaling:
-                "photons": photons/s
-                "energy": erg/s
-        """
-        super(ConvolvedSpectrum, self).rescale_flux(new_flux, emin=emin, emax=emax, 
-                                                    flux_type=flux_type)
 
     @classmethod
     def from_constant(cls, const_flux, emin=0.01, emax=50.0, nbins=10000):

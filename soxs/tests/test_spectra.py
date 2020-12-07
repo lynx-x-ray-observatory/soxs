@@ -67,7 +67,7 @@ def test_rescale_flux():
 def test_convolved_spectra():
     arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
     spec1 = Spectrum.from_powerlaw(2.0, 0.01, 1.0, 0.1, 10.0, 1000)
-    cspec1 = ConvolvedSpectrum(spec1, arf)
+    cspec1 = ConvolvedSpectrum.convolve(spec1, arf)
     cspec2 = spec1*arf
     spec2 = cspec1.deconvolve()
     assert_array_equal(cspec1.ebins.value, cspec2.ebins.value)

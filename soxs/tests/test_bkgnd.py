@@ -25,7 +25,7 @@ def test_uniform_bkgnd_scale():
     fov = (event_params["fov"]*60.0)**2
     S = ncts/t_exp/fov
     dS = np.sqrt(ncts)/t_exp/fov
-    foreground = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, hdxi_arf)
+    foreground = ConvolvedBackgroundSpectrum.convolve(hm_astro_bkgnd, hdxi_arf)
     f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]
     b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
@@ -54,7 +54,7 @@ def test_simulate_bkgnd_spectrum():
     f.close()
     S = ncts/exp_time/fov
     dS = np.sqrt(ncts)/exp_time/fov
-    foreground = ConvolvedBackgroundSpectrum(hm_astro_bkgnd, hdxi_arf)
+    foreground = ConvolvedBackgroundSpectrum.convolve(hm_astro_bkgnd, hdxi_arf)
     f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]
     b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value

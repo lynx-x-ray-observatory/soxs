@@ -16,11 +16,12 @@ from tqdm import tqdm
 from regions import PixCoord
 
 
-def image_pos(hdu, nph, prng):
-    im = np.cumsum(hdu.data)/hdu.data.sum()
-    idxs = prng.choice(im.size, size=nph, p=im)
+def image_pos(hdu, nph, center, prng):
+    im = hdu.data/hdu.data.sum()
+    idxs = prng.choice(im.size, size=nph, p=im.flatten())
     x, y = np.unravel_index(idxs, im.shape)
     w = pywcs.WCS(header=hdu.header)
+    w.wcs.crval = center
     dx = prng.uniform(low=0.5, high=1.5, size=x.size)
     dy = prng.uniform(low=0.5, high=1.5, size=y.size)
     ra, dec = w.wcs_pix2world(x+dx, y+dy, 1)
@@ -100,20 +101,22 @@ class AuxiliaryResponseFile:
                           left=0.0, right=0.0)
         return u.Quantity(earea, "cm**2")
 
-    def generate_events(self, src, exp_time, refband, prng=None):
+    def detect_events_spec(self, src, exp_time, refband, prng=None):
         from soxs.spectra import ConvolvedSpectrum
         prng = parse_prng(prng)
-        cspec = ConvolvedSpectrum(src.spec, self).new_spec_from_band(refband[0], refband[1])
-        energy = cspec.generate_energies(exp_time, quiet=True, prng=prng)
+        cspec = ConvolvedSpectrum.convolve(
+            src.spec, self).new_spec_from_band(refband[0], refband[1])
+        energy = cspec.generate_energies(exp_time, quiet=True, prng=prng).value
         if getattr(src, "imhdu", None):
-            ra, dec = image_pos(src.imhdu, energy.size, prng)
+            ra, dec = image_pos(src.imhdu, energy.size, [src.ra, src.dec], prng)
         else:
             pones = np.ones_like(energy)
             ra = src.ra*pones
             dec = src.dec*pones
+        mylog.info(f"{energy.size} events detected.")
         return {"energy": energy, "ra": ra, "dec": dec}
 
-    def detect_events(self, events, exp_time, flux, refband, prng=None):
+    def detect_events_phlist(self, events, exp_time, flux, refband, prng=None):
         """
         Use the ARF to determine a subset of photons which 
         will be detected.
@@ -145,16 +148,17 @@ class AuxiliaryResponseFile:
         n_ph = prng.poisson(lam=rate*exp_time)
         fak = float(n_ph)/energy.size
         if fak > 1.0:
-            mylog.error("Number of events in sample: %d, Number of events wanted: %d" % (energy.size, n_ph))
-            raise ValueError("This combination of exposure time and effective area "
-                             "will result in more photons being drawn than are available "
-                             "in the sample!!!")
+            mylog.error(f"Number of events in sample: {energy.size}, "
+                        f"Number of events wanted: {n_ph}")
+            raise ValueError("This combination of exposure time and effective "
+                             "area will result in more photons being drawn than "
+                             "are available in the sample!!!")
         w = earea / self.max_area
         randvec = prng.uniform(size=energy.size)
         eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("int64")
-        mylog.info("%s events detected." % n_ph)
+        mylog.info(f"{n_ph} events detected.")
         for key in events:
-            events[key] = events[key][eidxs]
+            events[key] = np.asarray(events[key][eidxs])
         return events
 
     def plot(self, xscale="log", yscale="log", xlabel=None,
@@ -369,7 +373,7 @@ class RedistributionMatrixFile:
             true_channel = self._make_channels(k)
             if len(true_channel) > 0:
                 channel_ind = prng.choice(len(weights), size=nn, p=weights)
-                detected_channels.append(true_channel[channe_ind])
+                detected_channels.append(true_channel[channel_ind])
                 fcurr += nn
                 pbar.update(nn)
 
@@ -562,16 +566,19 @@ def generate_events(source, exp_time, instrument, sky_center,
 
     for i, src in enumerate(source_list):
 
-        mylog.info("Detecting events from source %s." % parameters["src_names"][i])
+        mylog.info(f"Detecting events from source {parameters['src_names'][i]}")
 
         # Step 1: Use ARF to determine which photons are observed
 
-        mylog.info("Applying energy-dependent effective area from %s." % os.path.split(arf.filename)[-1])
+        mylog.info(f"Applying energy-dependent effective area from "
+                   f"{os.path.split(arf.filename)[-1]}.")
         refband = [parameters["emin"][i], parameters["emax"][i]]
         if src.src_type == "phlist":
-            events = arf.detect_events(src, exp_time, parameters["flux"][i], refband, prng=prng)
+            events = arf.detect_events_phlist(src.events.copy(), exp_time,
+                                              parameters["flux"][i], 
+                                              refband, prng=prng)
         elif src.src_type.endswith("spectrum"):
-            events = arf.generate_events(src, exp_time, refband, prng=prng)
+            events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
 
         n_evt = events["energy"].size
 
@@ -621,7 +628,8 @@ def generate_events(source, exp_time, instrument, sky_center,
                     detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
                     dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
                 else:
-                    raise NotImplementedError("PSF type %s not implemented!" % psf_type)
+                    raise NotImplementedError(f"PSF type {psf_type} "
+                                              f"not implemented!")
 
             # Convert detector coordinates to chip coordinates.
             # Throw out events that don't fall on any chip.
@@ -638,12 +646,13 @@ def generate_events(source, exp_time, instrument, sky_center,
                 events["chip_id"][inside] = i
             keep = events["chip_id"] > -1
 
-            mylog.info("%d events were rejected because " % (n_evt-keep.sum()) +
-                       "they do not fall on any CCD.")
+            mylog.info(f"{n_evt-keep.sum()} events were rejected because "
+                       f"they do not fall on any CCD.")
             n_evt = keep.sum()
 
             if n_evt == 0:
-                mylog.warning("No events are within the field of view for this source!!!")
+                mylog.warning("No events are within the field "
+                              "of view for this source!!!")
             else:
 
                 # Keep only those events which fall on a chip
@@ -658,8 +667,10 @@ def generate_events(source, exp_time, instrument, sky_center,
                     events["detx"] = detx[keep]
                     events["dety"] = dety[keep]
                 else:
-                    events["detx"] = cx[keep] + prng.uniform(low=-0.5, high=0.5, size=n_evt)
-                    events["dety"] = cy[keep] + prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                    events["detx"] = cx[keep] + prng.uniform(low=-0.5,
+                                                             high=0.5, size=n_evt)
+                    events["dety"] = cy[keep] + prng.uniform(low=-0.5,
+                                                             high=0.5, size=n_evt)
 
                 # Convert detector coordinates back to pixel coordinates by
                 # adding the dither offsets back in and applying the rotation
@@ -682,7 +693,7 @@ def generate_events(source, exp_time, instrument, sky_center,
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
-        mylog.info("Scattering energies with RMF %s." % os.path.split(rmf.filename)[-1])
+        mylog.info(f"Scattering energies with RMF {os.path.split(rmf.filename)[-1]}.")
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
     return all_events, event_params
@@ -1094,24 +1105,23 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
-    event_params = {}
-    event_params["RESPFILE"] = os.path.split(rmf.filename)[-1]
-    event_params["ANCRFILE"] = os.path.split(arf.filename)[-1]
-    event_params["TELESCOP"] = rmf.header["TELESCOP"]
-    event_params["INSTRUME"] = rmf.header["INSTRUME"]
-    event_params["MISSION"] = rmf.header.get("MISSION", "")
+    event_params = {"RESPFILE": os.path.split(rmf.filename)[-1],
+                    "ANCRFILE": os.path.split(arf.filename)[-1],
+                    "TELESCOP": rmf.header["TELESCOP"], 
+                    "INSTRUME": rmf.header["INSTRUME"],
+                    "MISSION": rmf.header.get("MISSION", "")}
 
     out_spec = np.zeros(rmf.n_ch)
 
     if spec is not None:
-        cspec = ConvolvedSpectrum(spec, arf)
+        cspec = ConvolvedSpectrum.convolve(spec, arf)
         out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng)
 
     fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
-        cspec_frgnd = ConvolvedSpectrum(hm_astro_bkgnd.to_spectrum(fov), arf)
+        cspec_frgnd = ConvolvedSpectrum.convolve(hm_astro_bkgnd.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_frgnd, exp_time, prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
@@ -1124,7 +1134,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         spec_plaw = BackgroundSpectrum.from_powerlaw(1.45, 0.0, 2.0e-7, emin=0.01,
                                                      emax=10.0, nbins=300000)
         spec_plaw.apply_foreground_absorption(nH, model=absorb_model)
-        cspec_plaw = ConvolvedSpectrum(spec_plaw.to_spectrum(fov), arf)
+        cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
 
     bins = (np.arange(rmf.n_ch)+rmf.cmin).astype("int32")
