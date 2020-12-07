@@ -64,6 +64,17 @@ class SpatialModel:
         pass
 
     def generate_image(self, width, nx):
+        """
+        Generate an ImageHDU from the :class:`~soxs.spatial.SpatialModel`.
+
+        Parameters
+        ----------
+        width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The width of the image in arcminutes.
+        nx : integer
+            The resolution of the image, e.g. the number of pixels
+            on a side.
+        """
         width = parse_value(width, "arcmin")
         img = self._generate_image(width, nx)
         img /= img.sum()

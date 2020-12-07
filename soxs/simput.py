@@ -345,6 +345,23 @@ class SimputSpectrum(SimputSource):
         self.imhdu = imhdu
 
     def write_source(self, filename, append=False, overwrite=False):
+        """
+        Write the SIMPUT spectrum to disk, attaching it to a SIMPUT catalog.
+
+        Parameters
+        ----------
+        filename : string
+            The filename to write the spectrum to. If it does not exist,
+            it will be created. Otherwise, the behavior depends on the
+            values of the *append* and *overwrite* keyword arguments.
+        append : boolean, optional
+            If True, append to an existing SIMPUT catalog. If False,
+            overwrite an existing SIMPUT catalog with this name (if it
+            exists) and create a new one with this photon list. Default: False
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing file with
+            the same name. Default: False
+        """
         col1 = pyfits.Column(name='ENERGY', format='E',
                              array=self.spec.emid.value)
         col2 = pyfits.Column(name='FLUXDENSITY', format='D',
@@ -361,10 +378,46 @@ class SimputSpectrum(SimputSource):
         self._write_source(coldefs, filename, append, overwrite, header,
                            imhdu=self.imhdu)
 
+    @classmethod
+    def from_spectrum(cls, name, spectral_model, ra, dec):
+        """
+        Generates a SIMPUT spectrum model for a point source
+        from a spectral model and a coordinate on the sky.
+
+        Parameters
+        ----------
+        name : string
+            The name of the SIMPUT spectrum.
+        spectral_model : :class:`~soxs.spectra.Spectrum`
+            The spectral model to use to generate the event energies.
+        ra : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The RA of the source in degrees.
+        dec : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The Dec of the source in degrees.
+        """
+        return cls(spectral_model, ra, dec, name=name)
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
                     width, nx):
+        """
+        Generate a SIMPUT spectrum from a spectral and a spatial
+        model, and parameters for an image.
+
+        Parameters
+        ----------
+        name : string
+            The name of the SIMPUT spectrum.
+        spectral_model : :class:`~soxs.spectra.Spectrum`
+            The spectral model to use to generate the event energies.
+        spatial_model : :class:`~soxs.spatial.SpatialModel`
+            The spatial model to use to generate the event coordinates.
+        width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The width of the image in arcminutes.
+        nx : integer
+            The resolution of the image, e.g. the number of pixels
+            on a side.
+        """
         imhdu = spatial_model.generate_image(width, nx)
         return cls(spectral_model, spatial_model.ra0,
                    spatial_model.dec0, name=name, imhdu=imhdu)
@@ -395,13 +448,13 @@ class SimputPhotonList(SimputSource):
     def from_models(cls, name, spectral_model, spatial_model,
                     t_exp, area, prng=None):
         """
-        Generate a single photon list from a spectral and a spatial
+        Generate a SIMPUT photon list from a spectral and a spatial
         model. 
 
         Parameters
         ----------
         name : string
-            The name of the photon list. 
+            The name of the SIMPUT photon list.
         spectral_model : :class:`~soxs.spectra.Spectrum`
             The spectral model to use to generate the event energies.
         spatial_model : :class:`~soxs.spatial.SpatialModel`
@@ -428,7 +481,7 @@ class SimputPhotonList(SimputSource):
 
     def write_source(self, filename, append=False, overwrite=False):
         """
-        Write the photon list to disk, attaching it to a SIMPUT catalog.
+        Write the SIMPUT photon list to disk, attaching it to a SIMPUT catalog.
 
         Parameters
         ----------
