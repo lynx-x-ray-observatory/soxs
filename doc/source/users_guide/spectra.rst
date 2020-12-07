@@ -611,16 +611,17 @@ See :ref:`simput` for more information.
 -------------------
 
 One may want to examine a spectrum after it has been convolved with a particular
-effective area curve. One can generate such a spectrum using 
-:class:`~soxs.spectra.ConvolvedSpectrum` from a :class:`~soxs.spectra.Spectrum`
-object and an ARF:
+effective area curve. One can generate such a 
+:class:`~soxs.spectra.ConvolvedSpectrum` using the 
+:meth:`~soxs.spectra.ConvolvedSpectrum.convolve` method, feeding it a 
+:class:`~soxs.spectra.Spectrum` object and an ARF:
 
 .. code-block:: python
 
     from soxs import ConvolvedSpectrum
     # Assuming one created an ApecGenerator agen...
     spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
-    cspec = ConvolvedSpectrum(spec2, "xrs_hdxi_3x10.arf")
+    cspec = ConvolvedSpectrum.convolve(spec2, "xrs_hdxi_3x10.arf")
     
 The spectrum in this object has units of 
 :math:`{\rm photons}~{\rm s}^{-1}~{\rm keV}^{-1}`, and one can use many of 
@@ -642,10 +643,6 @@ Or to generate an array of energies:
 
     t_exp = (500.0, "ks")
     e = cspec.generate_energies(t_exp)
-
-:class:`~soxs.spectra.ConvolvedSpectrum` objects are not used directly in the 
-instrument simulator, but can be used for convenient when one wants to examine 
-the properties of a convolved spectrum.
 
 If one has already loaded a :class:`~soxs.instrument.AuxiliaryResponseFile`,
 then one can also generate a :class:`~soxs.spectra.ConvolvedSpectrum` by simply
