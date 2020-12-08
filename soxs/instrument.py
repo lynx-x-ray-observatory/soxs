@@ -507,10 +507,10 @@ def generate_events(source, exp_time, instrument, sky_center,
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
-        raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
+        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
     if not instrument_spec["imaging"]:
-        raise RuntimeError("Instrument '%s' is not " % instrument_spec["name"] +
-                           "designed for imaging observations!")
+        raise RuntimeError(f"Instrument '{instrument_spec['name']}' is not "
+                           f"designed for imaging observations!")
 
     arf_file = get_response_path(instrument_spec["arf"])
     rmf_file = get_response_path(instrument_spec["rmf"])
