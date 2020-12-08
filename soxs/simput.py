@@ -8,11 +8,23 @@ from collections import defaultdict
 
 
 def _parse_catalog_entry(src):
-    src_file, src_id = src.split("[")
-    src_id = src_id.strip("]")
-    extname, extver = src_id.lower().strip("]").split(",")
-    extver = int(extver)
-    return src_file, extname, extver
+    import re
+    brackets = re.findall(r"[^[]*\[([^]]*)\]", src)
+    src_file = src.split("[")[0]
+    ext = brackets[0].lower().split(",")
+    extname = ext[0]
+    if len(ext) == 2:
+        extver = int(ext[1])
+    else:
+        extver = None
+    if len(brackets) == 2 and extname == "spectrum":
+        rowstr = brackets[1].lower()
+        row = rowstr.split("==")[1].strip("'")
+        if "row" in rowstr:
+            row = int(row)
+    else:
+        row = None
+    return src_file, extname, extver, row
 
 
 def read_simput_catalog(simput_file):
@@ -123,6 +135,7 @@ class SimputCatalog:
             catalog and photon lists from. 
         """
         from .spectra import Spectrum
+        from astropy.io.fits.column import _VLF
         sources = []
         f_simput = pyfits.open(filename)
         fluxes = f_simput["src_cat"].data["flux"]
@@ -138,14 +151,15 @@ class SimputCatalog:
             images = ["NULL"]*len(spectra)
         f_simput.close()
         for i, src in enumerate(spectra):
-            src_file, extname, extver = _parse_catalog_entry(src)
+            src_file, extname, extver, row = _parse_catalog_entry(src)
             # If no file is specified, assume the catalog and
             # source are in the same file
             if src_file == "":
                 fn_src = filename
             else:
                 fn_src = src_file
-            data = pyfits.getdata(fn_src, (extname, extver))
+            ext = extname if extver is None else (extname, extver)
+            data = pyfits.getdata(fn_src, ext)
             if extname == "phlist":
                 ra = Quantity(data["ra"], "deg")
                 dec = Quantity(data["dec"], "deg")
@@ -154,19 +168,29 @@ class SimputCatalog:
                                        fluxes[i], name=src_names[i])
             elif extname == "spectrum":
                 emid = data["energy"]
+                flux = data["fluxdensity"]
+                if isinstance(data["energy"], _VLF):
+                    emid = emid[0]
+                    flux = flux[0]
+                elif row is not None:
+                    if isinstance(row, str):
+                        row = np.where(data["name"])[0][0]
+                    emid = emid[row,:]
+                    flux = flux[row,:]
                 de = np.diff(emid)[0]
                 ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
-                spec = Spectrum(ebins, data["fluxdensity"])
+                spec = Spectrum(ebins, flux)
                 if images[i].upper() != "NULL":
-                    src_file, extname, extver = _parse_catalog_entry(images[i])
+                    src_file, extname, extver, _ = _parse_catalog_entry(images[i])
                     # If no file is specified, assume the catalog and
                     # source are in the same file
                     if src_file == "":
                         fn_img = filename
                     else:
                         fn_img = src_file
+                    ext = extname if extver is None else (extname, extver)
                     imdata, imheader = pyfits.getdata(
-                        fn_img, (extname, extver), header=True)
+                        fn_img, ext, header=True)
                     imhdu = pyfits.ImageHDU(data=imdata,
                                             header=imheader)
                 else:
