@@ -1,9 +1,9 @@
 import os
 import shutil
 import tempfile
-from soxs.spectra import Spectrum, get_tbabs_absorb
+from soxs.spectra import Spectrum
 from soxs.spatial import PointSourceModel
-from soxs.simput import SimputCatalog
+from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.instrument_registry import \
     make_simple_instrument
 from soxs.instrument import instrument_simulator
@@ -37,18 +37,21 @@ def plaw_fit(alpha_sim, answer_store, answer_dir):
     area = 40000.0
     inst_name = "new_hdxi"
 
-    spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 20000)
+    spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 
+                                  20000)
     spec.apply_foreground_absorption(nH_sim, model="tbabs")
 
     spectrum_answer_testing(spec, f"power_law_{alpha_sim}.h5", answer_store, 
                             answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("plaw_model", (spec, pt_src_pos),
-                                        exp_time, area, prng=prng)
-    sim_cat.write_catalog("plaw_model_simput.fits", overwrite=True)
+    pt_src = SimputPhotonList.from_models("plaw_model", spec, pt_src_pos,
+                                           exp_time, area, prng=prng)
+    cat = SimputCatalog.from_source("plaw_model_simput.fits", pt_src, 
+                                    overwrite=True)
 
-    instrument_simulator("plaw_model_simput.fits", f"plaw_model_{alpha_sim}_evt.fits",
+    instrument_simulator("plaw_model_simput.fits", 
+                         f"plaw_model_{alpha_sim}_evt.fits",
                          exp_time, inst_name, [30.0, 45.0], instr_bkgnd=False,
                          ptsrc_bkgnd=False, foreground=False, prng=prng)
 

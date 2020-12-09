@@ -26,11 +26,14 @@ def test_append():
     pos1 = PointSourceModel(ra0+0.05, dec0+0.05)
     pos2 = PointSourceModel(ra0-0.05, dec0-0.05)
 
-    sc = SimputCatalog.from_models("pt_src1", (spec, pos1), exp_time, area)
+    pl1 = SimputPhotonList.from_models("pt_src1", spec, pos1, exp_time, area)
     pl2 = SimputPhotonList.from_models("pt_src2", spec, pos2, exp_time, area)
-    sc.append(pl2)
-    fns = {0: "pt_src1_phlist.fits", 1: "pt_src2_phlist.fits"}
-    sc.write_catalog("pt_src_simput.fits", src_filenames=fns, overwrite=True)
+    sc = SimputCatalog.from_source("pt_src_simput.fits", pl1,
+                                   src_filename="pt_src1_phlist.fits", 
+                                   overwrite=True)
+
+    sc.append(pl2, src_filename="pt_src2_phlist.fits",
+              overwrite=True)
 
     assert os.path.exists("pt_src1_phlist.fits")
     assert os.path.exists("pt_src2_phlist.fits")

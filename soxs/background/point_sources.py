@@ -320,9 +320,8 @@ def make_point_sources_file(filename, exp_time, fov,
                                    output_sources=output_sources, prng=prng)
     phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"],
                               events["flux"], name="point_sources")
-    cat = SimputCatalog(phlist, phlist.name, events["flux"], events["energy"].min(),
-                        events["energy"].max())
-    cat.write_catalog(filename, overwrite=overwrite)
+    cat = SimputCatalog.from_source(filename, phlist, overwrite=overwrite)
+    return cat
 
 
 def make_point_source_list(output_file, exp_time, fov, sky_center,

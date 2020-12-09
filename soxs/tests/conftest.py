@@ -1,5 +1,5 @@
 import pytest
-
+import os
 
 def pytest_addoption(parser):
     parser.addoption("--answer_dir",
@@ -15,4 +15,4 @@ def answer_store(request):
 
 @pytest.fixture()
 def answer_dir(request):
-    return request.config.getoption('--answer_dir')
+    return os.path.abspath(request.config.getoption('--answer_dir'))

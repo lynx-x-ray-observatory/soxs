@@ -303,8 +303,7 @@ def make_cosmological_sources_file(filename, exp_time, fov,
                                        absorb_model=absorb_model, nH=nH,
                                        area=area, output_sources=output_sources,
                                        write_regions=write_regions,prng=prng)
-    phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"], 
+    phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"],
                               events["flux"], name="cosmo_sources")
-    cat = SimputCatalog(phlist, phlist.name, events["flux"], events["energy"].min(),
-                        events["energy"].max())
-    cat.write_catalog(filename, overwrite=overwrite)
+    cat = SimputCatalog.from_source(filename, phlist, overwrite=overwrite)
+    return cat

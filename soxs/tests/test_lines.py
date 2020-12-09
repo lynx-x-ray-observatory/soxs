@@ -5,7 +5,7 @@ from soxs.events import write_spectrum
 from soxs.instrument import instrument_simulator, \
     simulate_spectrum
 from soxs.spatial import PointSourceModel
-from soxs.simput import SimputCatalog
+from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spectra import Spectrum
 from soxs.tests.utils import spectrum_answer_testing, \
     file_answer_testing
@@ -35,9 +35,10 @@ def test_emission_line(answer_store, answer_dir):
                             answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("emission_line", (spec, pt_src_pos), 
-                                        exp_time, area, prng=prng)
-    sim_cat.write_catalog("emission_line_simput.fits", overwrite=True)
+    pt_src = SimputPhotonList.from_models("emission_line", spec, pt_src_pos, 
+                                          exp_time, area, prng=prng)
+    sim_cat = SimputCatalog.from_source("emission_line_simput.fits", pt_src, 
+                                        overwrite=True)
 
     instrument_simulator("emission_line_simput.fits", "emission_line_evt.fits",
                          exp_time, inst_name, [30.0, 45.0], instr_bkgnd=False,

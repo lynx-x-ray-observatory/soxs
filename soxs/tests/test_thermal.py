@@ -4,7 +4,7 @@ import shutil
 import tempfile
 from soxs.spectra import ApecGenerator
 from soxs.spatial import PointSourceModel
-from soxs.simput import SimputCatalog
+from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.instrument_registry import \
     get_instrument_from_registry
 from soxs.instrument import instrument_simulator, \
@@ -77,18 +77,22 @@ def test_thermal(answer_store, answer_dir):
     spectrum_answer_testing(spec, "thermal_spec.h5", answer_store, answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model", (spec, pt_src_pos), 
-                                        exp_time, area, prng=prng)
-    sim_cat.write_catalog("thermal_model_simput.fits", overwrite=True)
+    pt_src = SimputPhotonList.from_models("thermal_model", spec, pt_src_pos, 
+                                          exp_time, area, prng=prng)
+    sim_cat = SimputCatalog.from_source("thermal_model_simput.fits", pt_src, 
+                                        overwrite=True)
 
-    instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", exp_time, 
-                         inst_name, [30.0, 45.0], ptsrc_bkgnd=False, foreground=False,
-                         instr_bkgnd=False, prng=prng)
+    instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", 
+                         exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False, 
+                         foreground=False, instr_bkgnd=False, prng=prng)
 
-    write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", overwrite=True)
+    write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", 
+                   overwrite=True)
 
-    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store, answer_dir)
-    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store, answer_dir)
+    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store, 
+                        answer_dir)
+    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store, 
+                        answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -107,7 +111,8 @@ def test_thermal_from_spectrum(answer_store, answer_dir):
     simulate_spectrum(spec, inst["name"], exp_time,
                       "thermal_model_spec_evt.pha", prng=prng)
 
-    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", answer_store, answer_dir)
+    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", 
+                        answer_store, answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -146,12 +151,15 @@ def test_thermal_abund_table(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store, 
+                            answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model_aspl", (spec_aspl, pt_src_pos),
-                                        exp_time, area, prng=prng)
-    sim_cat.write_catalog("thermal_model_aspl_simput.fits", overwrite=True)
+    pt_src = SimputPhotonList.from_models("thermal_model_aspl", spec_aspl,
+                                          pt_src_pos, exp_time, area, 
+                                          prng=prng)
+    sim_cat = SimputCatalog.from_source("thermal_model_aspl_simput.fits", 
+                                        pt_src, overwrite=True)
 
     instrument_simulator("thermal_model_aspl_simput.fits",
                          "thermal_model_aspl_evt.fits", exp_time, inst_name,
@@ -162,8 +170,10 @@ def test_thermal_abund_table(answer_store, answer_dir):
                    "thermal_model_aspl_evt.pha",
                    overwrite=True)
 
-    file_answer_testing("EVENTS", "thermal_model_aspl_evt.fits", answer_store, answer_dir)
-    file_answer_testing("SPECTRUM", "thermal_model_aspl_evt.pha", answer_store, answer_dir)
+    file_answer_testing("EVENTS", "thermal_model_aspl_evt.fits", answer_store,
+                        answer_dir)
+    file_answer_testing("SPECTRUM", "thermal_model_aspl_evt.pha", answer_store,
+                        answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -177,22 +187,27 @@ def test_thermal_nei(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, 
+                            answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    sim_cat = SimputCatalog.from_models("thermal_model_nei", (spec_nei, pt_src_pos), 
-                                        exp_time, area, prng=prng)
-    sim_cat.write_catalog("thermal_model_nei_simput.fits", overwrite=True)
+    pt_src = SimputPhotonList.from_models("thermal_model_nei", spec_nei,
+                                          pt_src_pos, exp_time, area, prng=prng)
+    sim_cat = SimputCatalog.from_source("thermal_model_nei_simput.fits",
+                                        pt_src, overwrite=True)
 
-    instrument_simulator("thermal_model_nei_simput.fits", "thermal_model_nei_evt.fits",
+    instrument_simulator("thermal_model_nei_simput.fits",
+                         "thermal_model_nei_evt.fits",
                          exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False,
                          foreground=False, instr_bkgnd=False, prng=prng)
 
-    write_spectrum("thermal_model_nei_evt.fits", "thermal_model_nei_evt.pha", 
+    write_spectrum("thermal_model_nei_evt.fits", "thermal_model_nei_evt.pha",
                    overwrite=True)
 
-    file_answer_testing("EVENTS", "thermal_model_nei_evt.fits", answer_store, answer_dir)
-    file_answer_testing("SPECTRUM", "thermal_model_nei_evt.pha", answer_store, answer_dir)
+    file_answer_testing("EVENTS", "thermal_model_nei_evt.fits", answer_store,
+                        answer_dir)
+    file_answer_testing("SPECTRUM", "thermal_model_nei_evt.pha", answer_store,
+                        answer_dir)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

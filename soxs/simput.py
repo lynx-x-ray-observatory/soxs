@@ -335,7 +335,7 @@ class SimputSource:
             pyfits.HDUList(f).writeto(filename, overwrite=overwrite)
 
         if self.imhdu is not None:
-            self.imhdu.header.pop("EXTVER", None)
+            self.imhdu.header["EXTVER"] = 1
 
 
 class SimputSpectrum(SimputSource):
