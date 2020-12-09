@@ -17,7 +17,7 @@ from regions import PixCoord
 
 
 def image_pos(hdu, nph, center, prng):
-    im = hdu.data/hdu.data.sum()
+    im = hdu.data.T/hdu.data.sum()
     idxs = prng.choice(im.size, size=nph, p=im.flatten())
     x, y = np.unravel_index(idxs, im.shape)
     w = pywcs.WCS(header=hdu.header)
