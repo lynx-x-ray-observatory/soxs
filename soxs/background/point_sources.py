@@ -248,7 +248,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
 
     # Remove some of the photons due to Galactic foreground absorption.
     # We will throw a lot of stuff away, but this is more general and still
-    # faster. 
+    # faster.
     if nH is not None:
         if absorb_model == "wabs":
             absorb = get_wabs_absorb(all_energies, nH)

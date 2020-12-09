@@ -66,7 +66,7 @@ def read_simput_catalog(simput_file):
 
 class SimputCatalog:
 
-    def __init__(self, spectra, images, src_names, ra, dec, fluxes, 
+    def __init__(self, spectra, images, src_names, ra, dec, fluxes,
                  emin, emax, filename):
         self.spectra = ensure_numpy_array(spectra)
         self.images = ensure_numpy_array(images)
@@ -84,6 +84,31 @@ class SimputCatalog:
     @classmethod
     def from_source(cls, filename, source, src_filename=None,
                     overwrite=False):
+        """
+        Create a new :class:`~soxs.simput.SimputCatalog`
+        instance using a single :class:`~soxs.simput.SimputSource`
+        instance.
+
+        Parameters
+        ----------
+        filename : string
+            The name of the SIMPUT catalog file to write. The
+            file will be written 
+        source : :class:`~soxs.simput.SimputSource`
+            The SIMPUT source to create the catalog with.
+        src_filename : string, optional
+            If set, this will be the filename to write the source
+            to. By default, the source will be written to the same
+            file as the SIMPUT catalog.
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing file with
+            the same name. If src_filename=None and the source is
+            to the written to the SIMPUT catalog file, then this
+            argument is ignored. If src_filename is another value,
+            it exists, and overwrite=False, the source will be
+            appended to the file. Default: False
+
+        """
         sc = cls([], [], [], [], [], [], [], [], filename)
         sc._write_catalog(overwrite=overwrite)
         sc.append(source, src_filename=src_filename,
@@ -94,13 +119,13 @@ class SimputCatalog:
     def from_file(cls, filename):
         """
         Generate a SIMPUT catalog object by reading it in from
-        disk. 
+        disk.
 
         Parameters
         ----------
         filename : string
-            The name of the SIMPUT catalog file to read the 
-            catalog and photon lists from. 
+            The name of the SIMPUT catalog file to read the
+            catalog and photon lists from.
         """
         f_simput = pyfits.open(filename)
         fluxes = f_simput["src_cat"].data["flux"]
@@ -120,6 +145,10 @@ class SimputCatalog:
                    filename)
 
     def read_source(self, spec):
+        """
+        Read a source from the SIMPUT catalog with the identifier
+        *spec* for the SPECTRUM field.
+        """
         from .spectra import Spectrum
         from astropy.io.fits.column import _VLF
         i = np.where(self.spectra == spec)[0][0]
@@ -136,7 +165,7 @@ class SimputCatalog:
             ra = Quantity(data["ra"], "deg")
             dec = Quantity(data["dec"], "deg")
             energy = Quantity(data["energy"], "keV")
-            src = SimputPhotonList(ra, dec, energy, self.fluxes[i], 
+            src = SimputPhotonList(ra, dec, energy, self.fluxes[i],
                                    name=self.src_names[i])
         elif extname == "spectrum":
             emid = data["energy"]
@@ -225,7 +254,7 @@ class SimputCatalog:
         Parameters
         ----------
         source : :class:`~soxs.simput.SimputSource`
-            The source to append to this catalog.
+            The SIMPUT source to append to this catalog.
         src_filename : string, optional
             If set, this will be the filename to write the source
             to. By default, the source will be written to the same
@@ -466,7 +495,8 @@ class SimputPhotonList(SimputSource):
         return cls(ra, dec, e, e.flux.value, name=name)
 
     def _get_source_hdu(self):
-        col1 = pyfits.Column(name='ENERGY', format='E', array=self["energy"].value)
+        col1 = pyfits.Column(name='ENERGY', format='E', 
+                             array=self["energy"].value)
         col2 = pyfits.Column(name='RA', format='D', array=self["ra"].value)
         col3 = pyfits.Column(name='DEC', format='D', array=self["dec"].value)
         cols = [col1, col2, col3]
