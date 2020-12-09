@@ -7,6 +7,7 @@ from astropy.units import Quantity
 from collections import Sequence
 import os
 
+
 def _parse_catalog_entry(src):
     import re
     brackets = re.findall(r"[^[]*\[([^]]*)\]", src)
@@ -84,7 +85,8 @@ class SimputCatalog:
     def from_source(cls, filename, source, src_filename=None,
                     overwrite=False):
         sc = cls([], [], [], [], [], [], [], [], filename)
-        sc.append(source, src_filename=src_filename, 
+        sc._write_catalog(overwrite=overwrite)
+        sc.append(source, src_filename=src_filename,
                   overwrite=overwrite)
         return sc
 
@@ -173,18 +175,12 @@ class SimputCatalog:
 
         return src
 
-    def write_catalog(self, filename, overwrite=False):
+    def _write_catalog(self, overwrite=False):
         """
-        Write the SIMPUT catalog and associated sources to disk.
-
-        Parameters
-        ----------
-        overwrite : boolean, optional
-            Whether or not to overwrite an existing file with 
-            the same name. Default: False
+        Write the SIMPUT catalog to disk.
         """
-        col1 = pyfits.Column(name='SRC_ID', format='J',
-                             array=np.arange(self.num_sources))
+        src_id = np.arange(self.num_sources)
+        col1 = pyfits.Column(name='SRC_ID', format='J', array=src_id)
         col2 = pyfits.Column(name='RA', format='D', array=self.ra)
         col3 = pyfits.Column(name='DEC', format='D', array=self.dec)
         col4 = pyfits.Column(name='E_MIN', format='D', array=self.emin)
@@ -196,7 +192,7 @@ class SimputCatalog:
         col10 = pyfits.Column(name='SRC_NAME', format='80A',
                               array=self.src_names)
 
-        coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5, 
+        coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5,
                                   col6, col7, col8, col9, col10])
 
         wrhdu = pyfits.BinTableHDU.from_columns(coldefs)
@@ -214,7 +210,13 @@ class SimputCatalog:
         wrhdu.header["TUNIT5"] = "keV"
         wrhdu.header["TUNIT6"] = "erg/s/cm**2"
 
-        wrhdu.writeto(filename, overwrite=overwrite)
+        if os.path.exists(self.filename) and not overwrite:
+            with pyfits.open(self.filename, mode='update') as f:
+                f["SRC_CAT"] = wrhdu
+                f.flush()
+        else:
+            f = [pyfits.PrimaryHDU(), wrhdu]
+            pyfits.HDUList(f).writeto(self.filename, overwrite=True)
 
     def append(self, source, src_filename=None, overwrite=False):
         """
@@ -255,17 +257,18 @@ class SimputCatalog:
         spec_fn = src_filename if src_filename != self.filename else ""
         spec = f"{spec_fn}[{source.src_type.upper()},{extver}]"
         if source.imhdu is not None:
-            extver = _determine_extver(src_filename, "IMAGE")
+            img_extver = _determine_extver(src_filename, "IMAGE")
             img_fn = src_filename if src_filename != self.filename else ""
             img = f"{img_fn}[IMAGE,{extver}]"
         else:
             img = "NULL"
-
+            img_extver = None
         self.spectra = np.append(self.spectra, spec)
         self.images = np.append(self.images, img)
 
-        self.write_catalog(self.filename, overwrite=True)
-        source.write_source(src_filename, overwrite=overwrite)
+        self._write_catalog()
+        source._write_source(src_filename, extver, img_extver=img_extver,
+                             overwrite=overwrite)
 
 
 def _determine_extver(fn, extname):
@@ -274,7 +277,7 @@ def _determine_extver(fn, extname):
         with pyfits.open(fn) as f:
             for hdu in f:
                 if hdu.name == extname:
-                    extver = max(extver, hdu.header["EXTVER"]+1)
+                    extver = hdu.header["EXTVER"]+1
     return extver
 
 
@@ -292,25 +295,11 @@ class SimputSource:
         self.dec = dec
         self.imhdu = imhdu
 
-    def _write_source(self):
+    def _get_source_hdu(self):
         return None, None
 
-    def write_source(self, filename, overwrite=False):
-        """
-        Write the SIMPUT source to disk, attaching it to a SIMPUT catalog.
-
-        Parameters
-        ----------
-        filename : string
-            The filename to write the spectrum to. If it does not exist,
-            it will be created. Otherwise, the behavior depends on the
-            values of the *append* and *overwrite* keyword arguments.
-        overwrite : boolean, optional
-            Whether or not to overwrite an existing file with
-            the same name. If a file does exist and overwrite=False,
-            the source will be appended to the filename. Default: False
-        """
-        coldefs, header = self._write_source()
+    def _write_source(self, filename, extver, img_extver=None, overwrite=False):
+        coldefs, header = self._get_source_hdu()
 
         tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
         tbhdu.name = self.src_type.upper()
@@ -324,10 +313,9 @@ class SimputSource:
         tbhdu.header["HDUVERS"] = "1.1.0"
         tbhdu.header.update(header)
 
-        tbhdu.header["EXTVER"] = _determine_extver(filename,
-                                                   self.src_type.upper())
+        tbhdu.header["EXTVER"] = extver
         if self.imhdu is not None:
-            self.imhdu.header["EXTVER"] = _determine_extver(filename, "IMAGE")
+            self.imhdu.header["EXTVER"] = img_extver
 
         if os.path.exists(filename) and not overwrite:
             mylog.info(f"Appending this source to {filename}.")
@@ -360,7 +348,7 @@ class SimputSpectrum(SimputSource):
                                              dec, name=name, imhdu=imhdu)
         self.spec = spec
 
-    def _write_source(self):
+    def _get_source_hdu(self):
         col1 = pyfits.Column(name='ENERGY', format='E',
                              array=self.spec.emid.value)
         col2 = pyfits.Column(name='FLUXDENSITY', format='D',
@@ -477,7 +465,7 @@ class SimputPhotonList(SimputSource):
         ra, dec = spatial_model.generate_coords(e.size, prng=prng)
         return cls(ra, dec, e, e.flux.value, name=name)
 
-    def _write_source(self):
+    def _get_source_hdu(self):
         col1 = pyfits.Column(name='ENERGY', format='E', array=self["energy"].value)
         col2 = pyfits.Column(name='RA', format='D', array=self["ra"].value)
         col3 = pyfits.Column(name='DEC', format='D', array=self["dec"].value)
