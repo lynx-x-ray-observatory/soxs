@@ -394,10 +394,11 @@ class SimputSpectrum(SimputSource):
         return coldefs, header
 
     @classmethod
-    def from_spectrum(cls, name, spectral_model, ra, dec):
+    def from_spectrum(cls, name, spectral_model, ra, dec, imhdu=None):
         """
         Generates a SIMPUT spectrum model for a point source
-        from a spectral model and a coordinate on the sky.
+        from a spectral model and a coordinate on the sky. An image
+        can be optionally included for an extended source.
 
         Parameters
         ----------
@@ -409,8 +410,31 @@ class SimputSpectrum(SimputSource):
             The RA of the source in degrees.
         dec : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The Dec of the source in degrees.
+        imhdu : string or :class:`~astropy.io.fits.ImageHDU` instance
+            An image to be used to simulate an extended source. Can be an
+            ImageHDU instance or the name of a to read one from. If the
+            name contains an HDU extension, e.g. "cluster.fits[1]" or
+            "cluster.fits['perseus']", that extension will be loaded.
         """
-        return cls(spectral_model, ra, dec, name=name)
+        import re
+        if isinstance(imhdu, str):
+            fn = imhdu.split("[")[0]
+            brackets = re.findall(r"[^[]*\[([^]]*)\]", imhdu)
+            with pyfits.open(fn) as f:
+                if len(brackets) == 0:
+                    if isinstance(f[0], pyfits.ImageHDU):
+                        ext = 0
+                    elif len(f) == 2:
+                        ext = 1
+                    else:
+                        raise IOError("Multiple HDUs in this file, "
+                                      "please specify one to read!")
+                else:
+                    ext = brackets[0]
+                    if ext.isdigit():
+                        ext = int(ext)
+                imhdu = f[ext]
+        return cls(spectral_model, ra, dec, name=name, imhdu=imhdu)
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
