@@ -10,7 +10,7 @@ import regions
 
 # Configuration
 
-soxs_cfg_defaults = {"response_path": "/does/not/exist",
+soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
                      "abund_table": "angr"}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
@@ -58,6 +58,11 @@ mylog = soxsLogger
 
 mylog.setLevel('INFO')
 
+if soxs_cfg.has_option("soxs", "response_path"):
+    mylog.warning("The 'response_path' option in the SOXS configuration "
+                  "is deprecated and has been replaced with 'soxs_data_dir'. "
+                  "Please update your configuration accordingly.")
+    soxs_cfg.set("soxs", "soxs_data_dir", soxs_cfg.get("soxs", "response_path"))
 
 def issue_deprecation_warning(msg):
     import warnings
@@ -218,8 +223,8 @@ class PoochHandle:
         import pooch
         import pkg_resources
         if cache_dir is None:
-            if os.path.isdir(soxs_cfg.get("soxs", "response_path")):
-                cache_dir = soxs_cfg.get("soxs", "response_path")
+            if os.path.isdir(soxs_cfg.get("soxs", "soxs_data_dir")):
+                cache_dir = soxs_cfg.get("soxs", "soxs_data_dir")
             else:
                 cache_dir = pooch.os_cache("soxs")
         self._registry = json.load(
@@ -227,7 +232,7 @@ class PoochHandle:
         self.pooch_obj = pooch.create(
             path=cache_dir,
             registry=self._registry,
-            env="SOXS_RESP_PATH",
+            env="SOXS_DATA_DIR",
             base_url="https://hea-www.cfa.harvard.edu/soxs/soxs_responses/"
         )
         self.dl = pooch.HTTPDownloader(progressbar=True)
