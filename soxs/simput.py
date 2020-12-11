@@ -4,7 +4,7 @@ from soxs.utils import parse_prng, parse_value, \
     ensure_numpy_array, mylog
 from soxs.spatial import construct_wcs
 from astropy.units import Quantity
-from collections import Sequence
+from collections.abc import Sequence
 import os
 
 

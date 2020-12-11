@@ -166,7 +166,7 @@ class AuxiliaryResponseFile:
         xlabel : string
             The label of the x-axis. Default: "E (keV)"
         ylabel : string
-            The label of the y-axis. Default: "$\mathrm{A\ (cm^2)}$"
+            The label of the y-axis. Default: "$\\mathrm{A\\ (cm^2)}$"
         fig : :class:`~matplotlib.figure.Figure`, optional
             The figure to place the plot in. If not supplied, 
             one will be created.
@@ -187,7 +187,7 @@ class AuxiliaryResponseFile:
         if xlabel is None:
             xlabel = "E (keV)"
         if ylabel is None:
-            ylabel = "$\mathrm{A\ (cm^2)}$"
+            ylabel = "$\\mathrm{A\\ (cm^2)}$"
         if fig is None:
             fig = plt.figure(figsize=(10, 10))
         if ax is None:
