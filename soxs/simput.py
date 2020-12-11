@@ -110,6 +110,8 @@ class SimputCatalog:
 
         """
         sc = cls([], [], [], [], [], [], [], [], filename)
+        if os.path.exists(filename) and not overwrite:
+            raise IOError(f"{filename} exists and overwrite=False!")
         sc._write_catalog(overwrite=overwrite)
         sc.append(source, src_filename=src_filename,
                   overwrite=overwrite)
