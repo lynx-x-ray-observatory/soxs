@@ -8,8 +8,8 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV, sigma_to_fwhm
 from soxs.simput import read_simput_catalog, SimputPhotonList
 from soxs.utils import mylog, ensure_numpy_array, \
-    parse_prng, parse_value, get_rot_mat, create_region, \ 
-    process_fits_string, get_data_file
+    parse_prng, parse_value, get_rot_mat, create_region, \
+    get_data_file
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
