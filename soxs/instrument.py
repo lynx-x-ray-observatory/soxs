@@ -29,19 +29,7 @@ def image_pos(hdu, nph, center, prng):
 
 
 def get_response_path(fn):
-    if os.path.exists(fn):
-        return os.path.abspath(fn)
-    else:
-        resp_path = soxs_cfg.get("soxs", "response_path")
-        if not os.path.exists(resp_path):
-            raise IOError("The SOXS response directory %s does not exist!" % resp_path)
-        resp_fn = os.path.join(resp_path, fn)
-        if os.path.exists(resp_fn):
-            return resp_fn
-    raise IOError("Could not find file %s! Please download it from " % fn +
-                  "http://hea-www.cfa.harvard.edu/~jzuhone/soxs/responses.html "
-                  "and place it in the current working directory or place it in "
-                  "the SOXS response directory %s." % resp_path)
+    return instrument_registry.fetch_response(fn)
 
 
 class AuxiliaryResponseFile:

@@ -592,7 +592,8 @@ class SimputPhotonList(SimputSource):
             emax = self.emax
         else:
             emax = parse_value(emax, "keV")
-        idxs = np.logical_and(self["energy"].value >= emin, self["energy"].value <= emax)
+        idxs = np.logical_and(self["energy"].value >= emin, 
+                              self["energy"].value <= emax)
         ra = self["ra"][idxs][::stride].value
         dec = self["dec"][idxs][::stride].value
         x, y = wcs.wcs_world2pix(ra, dec, 1)

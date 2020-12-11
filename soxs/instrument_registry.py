@@ -1,5 +1,5 @@
 import json
-from soxs.utils import mylog, parse_value
+from soxs.utils import mylog, parse_value, finley
 import os
 from copy import deepcopy
 
@@ -30,6 +30,9 @@ class InstrumentRegistry:
 
     def set(self, key, value, default=None):
         self.registry.set(key, value, default)
+
+    def fetch_response(self, resp_name):
+        return finley.fetch(resp_name)
 
 
 instrument_registry = InstrumentRegistry()
@@ -112,8 +115,8 @@ instrument_registry["lynx_xgs"] = {"name": "lynx_xgs",
 # WFI
 
 instrument_registry["athena_wfi"] = {"name": "athena_wfi",
-                                     "arf": "athena_wfi_15row_20171107_wo_filter_OnAxis.arf",
-                                     "rmf": "athena_wfi_baseline.rmf",
+                                     "arf": "athena_wfi_rib2.3_B4C_20190122_wo_filter_OnAxis.arf",
+                                     "rmf": "athena_wfi_rib2.3_B4C_20190122_wo_filter_OnAxis.rmf",
                                      "bkgnd": "athena_wfi",
                                      "fov": 40.147153,
                                      "num_pixels": 1078,
@@ -151,10 +154,10 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
 # ACIS-I, Cycle 0 and 20
 
 for cycle in [0, 22]:
-    name = "chandra_acisi_cy%d" % cycle
+    name = f"chandra_acisi_cy{cycle}"
     instrument_registry[name] = {"name": name, 
-                                 "arf": "acisi_aimpt_cy%d.arf" % cycle,
-                                 "rmf": "acisi_aimpt_cy%d.rmf" % cycle,
+                                 "arf": f"acisi_aimpt_cy{cycle}.arf",
+                                 "rmf": f"acisi_aimpt_cy{cycle}.rmf",
                                  "bkgnd": "acisi",
                                  "fov": 20.008,
                                  "num_pixels": 2440,
@@ -172,10 +175,10 @@ for cycle in [0, 22]:
 # ACIS-S, Cycle 0 and 22
 
 for cycle in [0, 22]:
-    name = "chandra_aciss_cy%d" % cycle
+    name = f"chandra_aciss_cy{cycle}"
     instrument_registry[name] = {"name": name,
-                                 "arf": "aciss_aimpt_cy%d.arf" % cycle,
-                                 "rmf": "aciss_aimpt_cy%d.rmf" % cycle,
+                                 "arf": f"aciss_aimpt_cy{cycle}.arf",
+                                 "rmf": f"aciss_aimpt_cy{cycle}.rmf",
                                  "bkgnd": ["acisi", "aciss",
                                            "acisi", "aciss",
                                            "acisi", "acisi"],
@@ -201,9 +204,9 @@ orders = {"p1": 1, "m1": -1}
 
 for energy in ["meg", "heg"]:
     for order in ["p1", "m1"]:
-        for cycle in [0, 20]:
-            name = "chandra_aciss_%s_%s_cy%d" % (energy, order, cycle)
-            resp_name = "chandra_aciss_%s%d_cy%d" % (energy, orders[order], cycle)
+        for cycle in [0, 22]:
+            name = f"chandra_aciss_{energy}_{order}_cy{cycle}"
+            resp_name = f"chandra_aciss_{energy}{orders[order]}_cy{cycle}"
             instrument_registry[name] = {"name": name,
                                          "arf": "%s.garf" % resp_name,
                                          "rmf": "%s.grmf" % resp_name,
@@ -282,9 +285,8 @@ def add_instrument_to_registry(inst_spec):
     if isinstance(inst_spec, dict):
         inst = inst_spec
     elif os.path.exists(inst_spec):
-        f = open(inst_spec, "r")
-        inst = json.load(f)
-        f.close()
+        with open(inst_spec, "r") as f:
+            inst = json.load(f)
     name = inst["name"]
     if name in instrument_registry:
         raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
@@ -353,9 +355,8 @@ def write_instrument_json(inst_name, filename):
         The filename to write to.
     """
     inst_dict = instrument_registry[inst_name]
-    fp = open(filename, 'w')
-    json.dump(inst_dict, fp, indent=4)
-    fp.close()
+    with open(filename, 'w') as f:
+        json.dump(inst_dict, f, indent=4)
 
 
 def make_simple_instrument(base_inst, new_inst, fov, num_pixels,

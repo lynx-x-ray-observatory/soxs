@@ -5,18 +5,18 @@ import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
     parse_prng, parse_value, soxs_cfg, line_width_equiv, \
-    DummyPbar
+    DummyPbar, finley
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
-    m_u, elem_names, sigma_to_fwhm, abund_tables, sqrt2pi
+    m_u, elem_names, sigma_to_fwhm, abund_tables, sqrt2pi, \
+    default_apec_vers
 import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.modeling.functional_models import \
     Gaussian1D
-import glob
 from tqdm import tqdm
 
 
@@ -644,14 +644,8 @@ class ApecGenerator:
                  apec_vers=None, broadening=True, nolines=False,
                  abund_table=None, nei=False):
         if apec_vers is None:
-            filedir = os.path.join(os.path.dirname(__file__), 'files')
-            cfile = glob.glob("%s/apec_*_coco.fits" % filedir)[0]
-            apec_vers = cfile.split("/")[-1].split("_")[1][1:]
-        mylog.info("Using APEC version %s." % apec_vers)
-        if nei and apec_root is None:
-            raise RuntimeError("The NEI APEC tables are not supplied with "
-                               "SOXS! Download them from http://www.atomdb.org "
-                               "and set 'apec_root' to their location.")
+            apec_vers = default_apec_vers
+        mylog.info(f"Using APEC version {apec_vers}.")
         if nei and var_elem is None:
             raise RuntimeError("For NEI spectra, you must specify which elements "
                                "you want to vary using the 'var_elem' argument!")
@@ -664,32 +658,30 @@ class ApecGenerator:
         self.ebins = np.linspace(self.emin, self.emax, nbins+1)
         self.de = np.diff(self.ebins)
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
-        if apec_root is None:
-            apec_root = soxs_files_path
         if nei:
             neistr = "_nei"
             ftype = "comp"
         else:
             neistr = ""
             ftype = "coco"
-        self.cocofile = os.path.join(apec_root, "apec_v%s%s_%s.fits" % (apec_vers, neistr, ftype))
-        self.linefile = os.path.join(apec_root, "apec_v%s%s_line.fits" % (apec_vers, neistr))
+        cocofile = f"apec_v{apec_vers}{neistr}_{ftype}.fits"
+        linefile = f"apec_v{apec_vers}{neistr}_line.fits"
+        if apec_root is None:
+            self.cocofile = finley.fetch(cocofile)
+            self.linefile = finley.fetch(linefile)
+        else:
+            self.cocofile = os.path.join(apec_root, cocofile)
+            self.linefile = os.path.join(apec_root, linefile)
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
-            raise IOError("Cannot find the APEC files!\n %s\n, %s" % (self.cocofile,
-                                                                      self.linefile))
-        mylog.info("Using %s for generating spectral lines." % os.path.split(self.linefile)[-1])
-        mylog.info("Using %s for generating the continuum." % os.path.split(self.cocofile)[-1])
+            raise IOError(f"Cannot find the APEC files!\n {self.cocofile}\n, "
+                          f"{self.linefile}")
+        mylog.info(f"Using {cocofile} for generating spectral lines.")
+        mylog.info(f"Using {linefile} for generating the continuum.")
         self.nolines = nolines
         self.wvbins = hc/self.ebins[::-1]
         self.broadening = broadening
-        try:
-            self.line_handle = pyfits.open(self.linefile)
-        except IOError:
-            raise IOError("Line file %s does not exist" % self.linefile)
-        try:
-            self.coco_handle = pyfits.open(self.cocofile)
-        except IOError:
-            raise IOError("Continuum file %s does not exist" % self.cocofile)
+        self.line_handle = pyfits.open(self.linefile)
+        self.coco_handle = pyfits.open(self.cocofile)
         self.Tvals = self.line_handle[1].data.field("kT")
         self.nT = len(self.Tvals)
         self.dTvals = np.diff(self.Tvals)

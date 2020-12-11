@@ -64,6 +64,7 @@ def issue_deprecation_warning(msg):
     from numpy import VisibleDeprecationWarning
     warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
 
+
 soxs_path = os.path.abspath(os.path.dirname(__file__))
 soxs_files_path = os.path.join(soxs_path, "files")
 
@@ -205,3 +206,34 @@ def create_region(rtype, args, dx, dy):
     else:
         raise NotImplementedError
     return reg, bounds
+
+
+class PoochHandle:
+    r"""
+    Container for a pooch object used to fetch remote response that isn't
+    already stored locally.
+    """
+    def __init__(self, cache_dir=None):
+        import json
+        import pooch
+        import pkg_resources
+        if cache_dir is None:
+            if os.path.isdir(soxs_cfg.get("soxs", "response_path")):
+                cache_dir = soxs_cfg.get("soxs", "response_path")
+            else:
+                cache_dir = pooch.os_cache("soxs")
+        self._registry = json.load(
+            pkg_resources.resource_stream("soxs", "file_hash_registry.json"))
+        self.pooch_obj = pooch.create(
+            path=cache_dir,
+            registry=self._registry,
+            env="SOXS_RESP_PATH",
+            base_url="https://hea-www.cfa.harvard.edu/soxs/soxs_responses/"
+        )
+        self.dl = pooch.HTTPDownloader(progressbar=True)
+
+    def fetch(self, fname):
+        return self.pooch_obj.fetch(fname, downloader=self.dl)
+
+
+finley = PoochHandle()
