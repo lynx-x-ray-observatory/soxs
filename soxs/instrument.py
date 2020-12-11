@@ -29,7 +29,10 @@ def image_pos(hdu, nph, center, prng):
 
 
 def get_response_path(fn):
-    return instrument_registry.fetch_response(fn)
+    if os.path.exists(fn):
+        return fn
+    else:
+        return instrument_registry.fetch_response(os.path.split(fn)[-1])
 
 
 class AuxiliaryResponseFile:
