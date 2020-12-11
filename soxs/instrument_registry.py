@@ -205,8 +205,8 @@ for energy in ["meg", "heg"]:
             name = f"chandra_aciss_{energy}_{order}_cy{cycle}"
             resp_name = f"chandra_aciss_{energy}{orders[order]}_cy{cycle}"
             instrument_registry[name] = {"name": name,
-                                         "arf": "%s.garf" % resp_name,
-                                         "rmf": "%s.grmf" % resp_name,
+                                         "arf": f"{resp_name}.garf",
+                                         "rmf": f"{resp_name}.grmf",
                                          "bkgnd": None,
                                          "focal_length": 10.0,
                                          "imaging": False,
@@ -286,21 +286,24 @@ def add_instrument_to_registry(inst_spec):
             inst = json.load(f)
     name = inst["name"]
     if name in instrument_registry:
-        raise KeyError("The instrument with name %s is already in the registry! Assign a different name!" % name)
-    # Catch older JSON files which don't distinguish between imagings and non-imagings
+        raise KeyError(f"The instrument with name {name} is already in the "
+                       f"registry! Assign a different name!")
+    # Catch older JSON files which don't distinguish between imagings
+    # and non-imagings
     if "imaging" not in inst:
-        mylog.warning("Instrument specifications must now include an 'imaging' item, which "
-                      "determines whether or not this instrument specification supports "
-                      "imaging. Default is True.")
+        mylog.warning("Instrument specifications must now include an 'imaging' "
+                      "item, which determines whether or not this instrument "
+                      "specification supports imaging. Default is True.")
         inst["imaging"] = True
     if "grating" not in inst:
-        mylog.warning("Instrument specifications must now include an 'grating' item, which "
-                      "determines whether or not this instrument specification corresponds "
-                      "to a gratings instrument. Default is False.")
+        mylog.warning("Instrument specifications must now include an 'grating' "
+                      "item, which determines whether or not this instrument "
+                      "specification corresponds to a gratings instrument. "
+                      "Default is False.")
         inst["grating"] = False
     if inst["grating"] and inst["imaging"]:
-        raise RuntimeError("Currently, gratings instrument specifications cannot have "
-                           "'imaging' == True!")
+        raise RuntimeError("Currently, gratings instrument specifications cannot "
+                           "have 'imaging' == True!")
     if inst['imaging']:
         default_set = {"name", "arf", "rmf", "bkgnd", "fov", "chips",
                        "aimpt_coords", "focal_length", "num_pixels",
@@ -311,10 +314,11 @@ def add_instrument_to_registry(inst_spec):
     my_keys = set(inst.keys())
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
-        raise RuntimeError("One or more items is missing from the instrument specification!\n"
-                           "Items needed: %s" % missing)
+        raise RuntimeError(f"One or more items is missing from the instrument "
+                           f"specification!\nItems needed: {missing}")
     instrument_registry[name] = inst
-    mylog.debug("The %s instrument specification has been added to the instrument registry." % name)
+    mylog.debug(f"The {name} instrument specification has been added "
+                f"to the instrument registry.")
     return name
 
 
@@ -324,7 +328,7 @@ def get_instrument_from_registry(name):
     corresponding to *name*.
     """
     if name not in instrument_registry:
-        raise KeyError("Instrument '%s' not in registry!" % name)
+        raise KeyError(f"Instrument '{name}' not in registry!")
     return deepcopy(instrument_registry[name])
 
 
@@ -333,9 +337,9 @@ def show_instrument_registry():
     Print the contents of the instrument registry.
     """
     for name, spec in instrument_registry.items():
-        print("Instrument: %s" % name)
+        print(f"Instrument: {name}")
         for k, v in spec.items():
-            print("    %s: %s" % (k, v))
+            print(f"    {k}: {v}")
 
 
 def write_instrument_json(inst_name, filename):
