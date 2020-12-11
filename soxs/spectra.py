@@ -5,7 +5,7 @@ import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
     parse_prng, parse_value, soxs_cfg, line_width_equiv, \
-    DummyPbar, finley
+    DummyPbar, get_data_file
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
@@ -667,8 +667,8 @@ class ApecGenerator:
         cocofile = f"apec_v{apec_vers}{neistr}_{ftype}.fits"
         linefile = f"apec_v{apec_vers}{neistr}_line.fits"
         if apec_root is None:
-            self.cocofile = finley.fetch(cocofile)
-            self.linefile = finley.fetch(linefile)
+            self.cocofile = get_data_file(cocofile)
+            self.linefile = get_data_file(linefile)
         else:
             self.cocofile = os.path.join(apec_root, cocofile)
             self.linefile = os.path.join(apec_root, linefile)

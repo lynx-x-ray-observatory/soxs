@@ -214,6 +214,28 @@ def create_region(rtype, args, dx, dy):
     return reg, bounds
 
 
+def process_fits_string(fitsstr):
+    import re
+    import astropy.io.fits as pyfits
+    fn = fitsstr.split("[")[0]
+    brackets = re.findall(r"[^[]*\[([^]]*)\]", fitsstr)
+    with pyfits.open(fn) as f:
+        if len(brackets) == 0:
+            if isinstance(f[0], pyfits.ImageHDU):
+                ext = 0
+            elif len(f) == 2:
+                ext = 1
+            else:
+                raise IOError("Multiple HDUs in this file, "
+                              "please specify one to read!")
+        else:
+            ext = brackets[0]
+            if ext.isdigit():
+                ext = int(ext)
+        imhdu = f[ext]
+    return imhdu
+
+
 class PoochHandle:
     r"""
     Container for a pooch object used to fetch remote response that isn't
@@ -243,3 +265,15 @@ class PoochHandle:
 
 
 finley = PoochHandle()
+
+
+def get_data_file(fn):
+    soxs_data_dir = soxs_cfg.get("soxs", "soxs_data_dir")
+    rel_fn = os.path.split(fn)[-1]
+    data_fn = os.path.join(soxs_data_dir, rel_fn)
+    if os.path.exists(fn):
+        return fn
+    elif os.path.exists(data_fn):
+        return data_fn
+    else:
+        return finley.fetch(rel_fn)

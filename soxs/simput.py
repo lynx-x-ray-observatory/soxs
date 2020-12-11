@@ -1,7 +1,7 @@
 import astropy.io.fits as pyfits
 import numpy as np
 from soxs.utils import parse_prng, parse_value, \
-    ensure_numpy_array, mylog
+    ensure_numpy_array, mylog, process_fits_string
 from soxs.spatial import construct_wcs
 from astropy.units import Quantity
 from collections.abc import Sequence
@@ -416,24 +416,8 @@ class SimputSpectrum(SimputSource):
             name contains an HDU extension, e.g. "cluster.fits[1]" or
             "cluster.fits['perseus']", that extension will be loaded.
         """
-        import re
         if isinstance(imhdu, str):
-            fn = imhdu.split("[")[0]
-            brackets = re.findall(r"[^[]*\[([^]]*)\]", imhdu)
-            with pyfits.open(fn) as f:
-                if len(brackets) == 0:
-                    if isinstance(f[0], pyfits.ImageHDU):
-                        ext = 0
-                    elif len(f) == 2:
-                        ext = 1
-                    else:
-                        raise IOError("Multiple HDUs in this file, "
-                                      "please specify one to read!")
-                else:
-                    ext = brackets[0]
-                    if ext.isdigit():
-                        ext = int(ext)
-                imhdu = f[ext]
+            imhdu = process_fits_string(imhdu)
         return cls(spectral_model, ra, dec, name=name, imhdu=imhdu)
 
     @classmethod

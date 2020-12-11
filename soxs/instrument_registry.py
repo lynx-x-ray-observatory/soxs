@@ -31,9 +31,6 @@ class InstrumentRegistry:
     def set(self, key, value, default=None):
         self.registry.set(key, value, default)
 
-    def fetch_response(self, resp_name):
-        return finley.fetch(resp_name)
-
 
 instrument_registry = InstrumentRegistry()
 

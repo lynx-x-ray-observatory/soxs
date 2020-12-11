@@ -8,8 +8,8 @@ from collections import defaultdict
 from soxs.constants import erg_per_keV, sigma_to_fwhm
 from soxs.simput import read_simput_catalog, SimputPhotonList
 from soxs.utils import mylog, ensure_numpy_array, \
-    parse_prng, parse_value, get_rot_mat, soxs_cfg, \
-    create_region
+    parse_prng, parse_value, get_rot_mat, create_region, \ 
+    process_fits_string, get_data_file
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
@@ -28,11 +28,6 @@ def image_pos(hdu, nph, center, prng):
     return ra, dec
 
 
-def get_response_path(fn):
-    if os.path.exists(fn):
-        return fn
-    else:
-        return instrument_registry.fetch_response(os.path.split(fn)[-1])
 
 
 class AuxiliaryResponseFile:
@@ -49,7 +44,7 @@ class AuxiliaryResponseFile:
     >>> arf = AuxiliaryResponseFile("xrs_mucal_3x10_3.0eV.arf")
     """
     def __init__(self, filename):
-        self.filename = get_response_path(filename)
+        self.filename = get_data_file(filename)
         f = pyfits.open(self.filename)
         self.elo = f["SPECRESP"].data.field("ENERG_LO")
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
@@ -243,7 +238,7 @@ class RedistributionMatrixFile:
     >>> rmf = RedistributionMatrixFile("xrs_hdxi.rmf")
     """
     def __init__(self, filename):
-        self.filename = get_response_path(filename)
+        self.filename = get_data_file(filename)
         self.handle = pyfits.open(self.filename, memmap=True)
         if "MATRIX" in self.handle:
             self.mat_key = "MATRIX"
@@ -503,8 +498,8 @@ def generate_events(source, exp_time, instrument, sky_center,
         raise RuntimeError(f"Instrument '{instrument_spec['name']}' is not "
                            f"designed for imaging observations!")
 
-    arf_file = get_response_path(instrument_spec["arf"])
-    rmf_file = get_response_path(instrument_spec["rmf"])
+    arf_file = get_data_file(instrument_spec["arf"])
+    rmf_file = get_data_file(instrument_spec["rmf"])
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
@@ -757,9 +752,9 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 
     input_events = defaultdict(list)
 
-    arf_file = get_response_path(instrument_spec["arf"])
+    arf_file = get_data_file(instrument_spec["arf"])
     arf = AuxiliaryResponseFile(arf_file)
-    rmf_file = get_response_path(instrument_spec["rmf"])
+    rmf_file = get_data_file(instrument_spec["rmf"])
     rmf = RedistributionMatrixFile(rmf_file)
 
     if ptsrc_bkgnd:
@@ -1091,8 +1086,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     elif spec is None:
         raise RuntimeError("You have specified no source spectrum and no backgrounds!")
-    arf_file = get_response_path(instrument_spec["arf"])
-    rmf_file = get_response_path(instrument_spec["rmf"])
+    arf_file = get_data_file(instrument_spec["arf"])
+    rmf_file = get_data_file(instrument_spec["rmf"])
     arf = AuxiliaryResponseFile(arf_file)
     rmf = RedistributionMatrixFile(rmf_file)
 
