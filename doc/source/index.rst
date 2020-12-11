@@ -48,16 +48,18 @@ simulations simplfies this task.
 Second, SOXS is being developed in Python, reflecting the growing popularity 
 of the use of Python in astronomy and astrophysics. Though there are a number
 of command-line scripts provided in SOXS, which can carry out the most important
-tasks, the Python interface to SOXS is more powerful and flexible. Working with the
-Python interface also provides a direct connection to other Python packages for 
-science in general and astronomy in particular, including `NumPy <http://www.numpy.org>`_, 
-`SciPy <http://www.scipy.org>`_, `AstroPy <http://www.astropy.org>`_, `yt <http://yt-project.org/>`_,
-and `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyXSIM>`_. 
+tasks, the Python interface to SOXS is more powerful and flexible. Working with 
+the Python interface also provides a direct connection to other Python packages
+for science in general and astronomy in particular, including 
+`NumPy <http://www.numpy.org>`_, `SciPy <http://www.scipy.org>`_, 
+`AstroPy <http://www.astropy.org>`_, `yt <http://yt-project.org/>`_, and 
+`pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyXSIM>`_. 
 
 Thirdly, SOXS is being developed out in the open, on 
 `GitHub <http://github.com/lynx-x-ray-observatory/soxs>`_, 
 to encourage contributions in the form of bugfixes and enhancements, and to make
-contributing as simple as forking the code and submitting a pull request for review.
+contributing as simple as forking the code and submitting a pull request for 
+review.
 
 License
 -------
@@ -67,8 +69,8 @@ SOXS is released under a `BSD 3-clause license <https://opensource.org/licenses/
 Current Version
 ---------------
 
-The current stable version is 2.3.0. See the :ref:`changelog` for details on changes from previous
-versions.
+The current stable version is 3.0.0. See the :ref:`changelog` for details on changes 
+from previous versions.
 
 Documentation Contents
 ----------------------
