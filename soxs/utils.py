@@ -64,6 +64,7 @@ if soxs_cfg.has_option("soxs", "response_path"):
                   "Please update your configuration accordingly.")
     soxs_cfg.set("soxs", "soxs_data_dir", soxs_cfg.get("soxs", "response_path"))
 
+
 def issue_deprecation_warning(msg):
     import warnings
     from numpy import VisibleDeprecationWarning
