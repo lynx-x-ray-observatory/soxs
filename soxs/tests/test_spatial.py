@@ -1,4 +1,4 @@
-from soxs.spatial import PointSourceModel, BetaModel, \
+from soxs.spatial import BetaModel, \
     AnnulusModel, DoubleBetaModel
 from soxs.spectra import ApecGenerator
 import numpy as np
@@ -7,10 +7,11 @@ import shutil
 import tempfile
 import astropy.io.fits as pyfits
 from astropy.units import Quantity
+from soxs.constants import sigma_to_fwhm
 from soxs.events import write_radial_profile, make_exposure_map
 from soxs.simput import SimputCatalog, SimputSpectrum, \
     SimputPhotonList
-from soxs.instrument import instrument_simulator, sigma_to_fwhm
+from soxs.instrument import instrument_simulator
 from soxs.instrument_registry import get_instrument_from_registry, \
     add_instrument_to_registry
 from soxs.tests.utils import file_answer_testing
