@@ -169,8 +169,9 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         The interpolation order to use when making the exposure map. 
         Default: 1
     """
-    from scipy.ndimage.interpolation import rotate, shift
-    from soxs.instrument import AuxiliaryResponseFile, perform_dither
+    from scipy.ndimage.interpolation import rotate
+    from soxs.instrument import perform_dither
+    from soxs.response import AuxiliaryResponseFile
     if isinstance(energy, np.ndarray) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if "
                            "you do not supply weights!")
@@ -383,7 +384,7 @@ def write_spectrum(evtfile, specfile, overwrite=False):
         Whether or not to overwrite an existing file with 
         the same name. Default: False
     """
-    from soxs.instrument import RedistributionMatrixFile
+    from soxs.response import RedistributionMatrixFile
     parameters = {}
     if isinstance(evtfile, str):
         f = pyfits.open(evtfile)

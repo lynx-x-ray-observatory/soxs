@@ -995,7 +995,7 @@ class ConvolvedSpectrum(Spectrum):
         arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
             The ARF to use in the convolution.
         """
-        from soxs.instrument import AuxiliaryResponseFile
+        from soxs.response import AuxiliaryResponseFile
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
         earea = arf.interpolate_area(spectrum.emid.value)

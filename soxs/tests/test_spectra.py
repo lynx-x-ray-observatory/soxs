@@ -1,5 +1,5 @@
 from soxs.spectra import Spectrum, ConvolvedSpectrum
-from soxs.instrument import AuxiliaryResponseFile
+from soxs.response import AuxiliaryResponseFile
 from numpy.testing import assert_allclose, assert_array_equal
 import os
 import tempfile

@@ -1,9 +1,9 @@
-from soxs.instrument import make_background, AuxiliaryResponseFile, \
-    instrument_simulator, make_background_file, simulate_spectrum, \
-    RedistributionMatrixFile
+from soxs.instrument import make_background, \
+    instrument_simulator, make_background_file, simulate_spectrum
 from soxs.background.foreground import hm_astro_bkgnd
 from soxs.background.instrument import acisi_particle_bkgnd
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
+from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
 import astropy.io.fits as pyfits

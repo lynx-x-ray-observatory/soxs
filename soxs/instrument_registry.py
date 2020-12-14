@@ -1,5 +1,5 @@
 import json
-from soxs.utils import mylog, parse_value, finley
+from soxs.utils import mylog, parse_value
 import os
 from copy import deepcopy
 

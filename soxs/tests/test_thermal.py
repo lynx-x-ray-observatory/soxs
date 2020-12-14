@@ -1,14 +1,14 @@
-import numpy as np
 import os
 import shutil
 import tempfile
+from soxs.response import RedistributionMatrixFile
 from soxs.spectra import ApecGenerator
 from soxs.spatial import PointSourceModel
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.instrument_registry import \
     get_instrument_from_registry
 from soxs.instrument import instrument_simulator, \
-    RedistributionMatrixFile, simulate_spectrum
+    simulate_spectrum
 from soxs.events import write_spectrum
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
