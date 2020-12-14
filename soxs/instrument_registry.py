@@ -191,7 +191,7 @@ for cycle in [0, 22]:
                                  "psf": ["gaussian", 0.5],
                                  "focal_length": 10.0,
                                  "dither": True,
-                                 "imaging": True, 
+                                 "imaging": True,
                                  "grating": False}
 
 
@@ -226,7 +226,7 @@ instrument_registry["xrism_resolve"] = {"name": "xrism_resolve",
                                         "chips": [["Box", 0, 0, 6, 6]],
                                         "focal_length": 5.6,
                                         "dither": False,
-                                        "psf": ["gaussian", 72.0],
+                                        "psf": ["multi_image", "sxs_psfimage_20140618.fits"],
                                         "imaging": True,
                                         "grating": False}
 

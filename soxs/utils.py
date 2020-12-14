@@ -277,3 +277,17 @@ def get_data_file(fn):
         return data_fn
     else:
         return finley.fetch(rel_fn)
+
+
+def image_pos(im, nph, prng):
+    im[im < 0.0] = 0.0
+    im = im.T/im.sum()
+    idxs = prng.choice(im.size, size=nph, p=im.flatten())
+    x, y = np.unravel_index(idxs, im.shape)
+    dx = prng.uniform(low=0.5, high=1.5, size=x.size)
+    dy = prng.uniform(low=0.5, high=1.5, size=y.size)
+    return x+dx, y+dy
+
+
+def find_nearest(a, b):
+    return np.argmin(np.abs(a[:, np.newaxis] - b), axis=0)

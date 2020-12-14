@@ -4,30 +4,17 @@ import astropy.wcs as pywcs
 import astropy.units as u
 import os
 from collections import defaultdict
-
-from soxs.constants import erg_per_keV, sigma_to_fwhm
-from soxs.simput import read_simput_catalog, SimputPhotonList
-from soxs.utils import mylog, ensure_numpy_array, \
-    parse_prng, parse_value, get_rot_mat, create_region, \
-    get_data_file
-from soxs.events import write_event_file
-from soxs.instrument_registry import instrument_registry
 from tqdm import tqdm
 from regions import PixCoord
 
-
-def image_pos(hdu, nph, center, prng):
-    im = hdu.data.T/hdu.data.sum()
-    idxs = prng.choice(im.size, size=nph, p=im.flatten())
-    x, y = np.unravel_index(idxs, im.shape)
-    w = pywcs.WCS(header=hdu.header)
-    w.wcs.crval = center
-    dx = prng.uniform(low=0.5, high=1.5, size=x.size)
-    dy = prng.uniform(low=0.5, high=1.5, size=y.size)
-    ra, dec = w.wcs_pix2world(x+dx, y+dy, 1)
-    return ra, dec
-
-
+from soxs.constants import erg_per_keV
+from soxs.events import write_event_file
+from soxs.instrument_registry import instrument_registry
+from soxs.psf import psf_model_registry
+from soxs.simput import read_simput_catalog, SimputPhotonList
+from soxs.utils import mylog, ensure_numpy_array, \
+    parse_prng, parse_value, get_rot_mat, create_region, \
+    get_data_file, image_pos
 
 
 class AuxiliaryResponseFile:
@@ -94,7 +81,10 @@ class AuxiliaryResponseFile:
             src.spec, self).new_spec_from_band(refband[0], refband[1])
         energy = cspec.generate_energies(exp_time, quiet=True, prng=prng).value
         if getattr(src, "imhdu", None):
-            ra, dec = image_pos(src.imhdu, energy.size, [src.ra, src.dec], prng)
+            x, y = image_pos(src.imhdu.data, energy.size, prng)
+            w = pywcs.WCS(header=src.imhdu.header)
+            w.wcs.crval = [src.ra, src.dec]
+            ra, dec = w.wcs_pix2world(x, y, 1)
         else:
             pones = np.ones_like(energy)
             ra = src.ra*pones
@@ -539,6 +529,8 @@ def generate_events(source, exp_time, instrument, sky_center,
                     "dither_params": dither_dict,
                     "aimpt_coords": instrument_spec["aimpt_coords"]}
 
+    # Set up WCS
+
     w = pywcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
     w.wcs.crpix = event_params["pix_center"]
@@ -546,7 +538,13 @@ def generate_events(source, exp_time, instrument, sky_center,
     w.wcs.ctype = ["RA---TAN","DEC--TAN"]
     w.wcs.cunit = ["deg"]*2
 
+    # Determine rotation matrix
     rot_mat = get_rot_mat(roll_angle)
+
+    # Set up PSF
+    psf_type = instrument_spec["psf"][0]
+    psf_class = psf_model_registry[psf_type]
+    psf = psf_class(instrument_spec, prng=prng)
 
     all_events = defaultdict(list)
 
@@ -591,8 +589,8 @@ def generate_events(source, exp_time, instrument, sky_center,
             # Rotate physical coordinates to detector coordinates
 
             det = np.dot(rot_mat, np.array([xpix, ypix]))
-            detx = det[0,:] + event_params["aimpt_coords"][0]
-            dety = det[1,:] + event_params["aimpt_coords"][1]
+            detx = det[0, :] + event_params["aimpt_coords"][0]
+            dety = det[1, :] + event_params["aimpt_coords"][1]
 
             # Add times to events
             events['time'] = prng.uniform(size=n_evt, low=0.0,
@@ -607,15 +605,7 @@ def generate_events(source, exp_time, instrument, sky_center,
 
             # PSF scattering of detector coordinates
 
-            if instrument_spec["psf"] is not None:
-                psf_type, psf_spec = instrument_spec["psf"]
-                if psf_type == "gaussian":
-                    sigma = psf_spec/sigma_to_fwhm/plate_scale_arcsec
-                    detx += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-                    dety += prng.normal(loc=0.0, scale=sigma, size=n_evt)
-                else:
-                    raise NotImplementedError(f"PSF type {psf_type} "
-                                              f"not implemented!")
+            detx, dety = psf.scatter(detx, dety, events["energy"])
 
             # Convert detector coordinates to chip coordinates.
             # Throw out events that don't fall on any chip.
