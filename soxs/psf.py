@@ -94,8 +94,6 @@ class MultiImagePSF(PSF):
                 img_i.append(i)
         self.img_e, ie = np.unique(img_e, return_inverse=True)
         self.img_r2, ir = np.unique(img_r, return_inverse=True)
-        print(self.img_e, ie)
-        print(self.img_r2, ir)
         self.img_i = {j: (i, ie[j], ir[j]) for j, i in enumerate(img_i)}
         self.num_images = self.img_e.size
         self.img_r2 = (self.img_r2/plate_scale_arcmin)**2
@@ -103,22 +101,15 @@ class MultiImagePSF(PSF):
         self.img_s = np.array(img_s)/plate_scale_mm
 
     def scatter(self, x, y, e):
-        print("n_in = ", e.size)
         r2 = (x-self.det_ctr[0])**2 + (y-self.det_ctr[1])**2
         idx_e = find_nearest(self.img_e, e)
         idx_r = find_nearest(self.img_r2, r2)
-        n_out = 0
-        print(idx_e)
-        print(idx_r)
         with pyfits.open(self.img_file) as f:
             for j in range(self.num_images):
-                print("j = ", j)
                 i, ie, ir = self.img_i[j]
                 # This returns image coordinates from the PSF
                 # image
                 idxs = np.where((idx_e == ie) & (idx_r == ir))[0]
-                print("n_this = ", idxs.size)
-                n_out += idxs.size
                 dx, dy = image_pos(f[i].data, idxs.size, self.prng)
                 dx -= self.img_c[j][0]
                 dy -= self.img_c[j][1]
@@ -126,5 +117,4 @@ class MultiImagePSF(PSF):
                 dy *= self.img_s[j][1]
                 x[idxs] += dx
                 y[idxs] += dy
-        print("n_out = ", n_out)
         return x, y
