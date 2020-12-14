@@ -189,7 +189,7 @@ class InstrumentalBackgroundSpectrum(BackgroundSpectrum):
         return energies
 
     def to_scaled_spectrum(self, fov, focal_length=None):
-        from soxs.instrument import FlatResponse
+        from soxs.response import FlatResponse
         fov = parse_value(fov, "arcmin")
         if focal_length is None:
             focal_length = self.default_focal_length

@@ -672,7 +672,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     ...                        "my_spec.pi", overwrite=True)
     """
     from soxs.events import _write_spectrum
-    from soxs.instrument import RedistributionMatrixFile, \
+    from soxs.response import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
     from soxs.background.foreground import hm_astro_bkgnd
@@ -683,7 +683,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
-        raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
+        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
     if foreground or instr_bkgnd or ptsrc_bkgnd:
         if instrument_spec["grating"]:
             raise NotImplementedError("Backgrounds cannot be included in simulations "
@@ -702,7 +702,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
 
     event_params = {"RESPFILE": os.path.split(rmf.filename)[-1],
                     "ANCRFILE": os.path.split(arf.filename)[-1],
-                    "TELESCOP": rmf.header["TELESCOP"], 
+                    "TELESCOP": rmf.header["TELESCOP"],
                     "INSTRUME": rmf.header["INSTRUME"],
                     "MISSION": rmf.header.get("MISSION", "")}
 
