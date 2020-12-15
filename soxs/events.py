@@ -21,7 +21,7 @@ def wcs_from_event_file(f):
 
 def write_event_file(events, parameters, filename, overwrite=False):
     from astropy.time import Time, TimeDelta
-    mylog.info("Writing events to file %s." % filename)
+    mylog.info(f"Writing events to file {filename}.")
 
     t_begin = Time.now()
     dt = TimeDelta(parameters["exposure_time"], format='sec')
@@ -39,9 +39,11 @@ def write_event_file(events, parameters, filename, overwrite=False):
         cunit = "adu"
     elif chantype == "PI":
         cunit = "Chan"
-    col_ch = pyfits.Column(name=chantype.upper(), format='1J', unit=cunit, array=events[chantype])
+    col_ch = pyfits.Column(name=chantype.upper(), format='1J', unit=cunit, 
+                           array=events[chantype])
 
-    col_t = pyfits.Column(name="TIME", format='1D', unit='s', array=events['time'])
+    col_t = pyfits.Column(name="TIME", format='1D', unit='s', 
+                          array=events['time'])
 
     cols = [col_e, col_x, col_y, col_ch, col_t, col_dx, col_dy, col_id]
 
@@ -605,15 +607,15 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     x = f["EVENTS"].data[xcoord][idxs]
     y = f["EVENTS"].data[ycoord][idxs]
     exp_time = f["EVENTS"].header["EXPOSURE"]
-    xmin = f["EVENTS"].header["TLMIN%d" % xcol]
-    ymin = f["EVENTS"].header["TLMIN%d" % ycol]
-    xmax = f["EVENTS"].header["TLMAX%d" % xcol]
-    ymax = f["EVENTS"].header["TLMAX%d" % ycol]
+    xmin = f["EVENTS"].header[f"TLMIN{xcol}"]
+    ymin = f["EVENTS"].header[f"TLMIN{ycol}"]
+    xmax = f["EVENTS"].header[f"TLMAX{xcol}"]
+    ymax = f["EVENTS"].header[f"TLMAX{ycol}"]
     if coord_type == 'sky':
-        xctr = f["EVENTS"].header["TCRVL%d" % xcol]
-        yctr = f["EVENTS"].header["TCRVL%d" % ycol]
-        xdel = f["EVENTS"].header["TCDLT%d" % xcol]*reblock
-        ydel = f["EVENTS"].header["TCDLT%d" % ycol]*reblock
+        xctr = f["EVENTS"].header[f"TCRVL{xcol}"]
+        yctr = f["EVENTS"].header[f"TCRVL{ycol}"]
+        xdel = f["EVENTS"].header[f"TCDLT{xcol}"]*reblock
+        ydel = f["EVENTS"].header[f"TCDLT{ycol}"]*reblock
     f.close()
 
     nx = int(xmax-xmin)//reblock
@@ -750,7 +752,7 @@ def plot_spectrum(specfile, plot_energy=True, ebins=None, lw=2,
     else:
         xmid = hdu.data[chantype]
         xerr = 0.5
-        xlabel = "Channel (%s)" % chantype
+        xlabel = f"Channel ({chantype})"
     dx = 2.0*xerr
     yerr = np.sqrt(y)
     if not plot_counts:
@@ -793,9 +795,9 @@ def plot_spectrum(specfile, plot_energy=True, ebins=None, lw=2,
     ax.set_ylim(ymin, ymax)
     ax.set_xlabel(xlabel, fontsize=fontsize)
     if plot_counts:
-        ylabel = "Counts (counts/%s)"
+        ylabel = "Counts (counts/{0})"
     else:
-        ylabel = "Count Rate (counts/s/%s)"
-    ax.set_ylabel(ylabel % yunit, fontsize=fontsize)
+        ylabel = "Count Rate (counts/s/{0})"
+    ax.set_ylabel(ylabel.format(yunit), fontsize=fontsize)
     ax.tick_params(axis='both', labelsize=fontsize)
     return fig, ax

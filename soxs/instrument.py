@@ -353,10 +353,11 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     try:
         instrument_spec = instrument_registry[instrument]
     except KeyError:
-        raise KeyError("Instrument %s is not in the instrument registry!" % instrument)
+        raise KeyError(f"Instrument {instrument} is not in the "
+                       f"instrument registry!")
     if not instrument_spec["imaging"]:
-        raise RuntimeError("Instrument '%s' is not " % instrument_spec["name"] +
-                           "designed for imaging observations!")
+        raise RuntimeError(f"Instrument '{instrument_spec['name']}' is not "
+                           f"designed for imaging observations!")
     fov = instrument_spec["fov"]
 
     input_events = defaultdict(list)
@@ -386,7 +387,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                                                roll_angle=roll_angle,
                                                subpixel_res=subpixel_res,
                                                prng=prng)
-        mylog.info("Generated %d photons from the point-source background." % len(events["energy"]))
+        mylog.info(f"Generated {events['energy'].size} photons from "
+                   f"the point-source background.")
     else:
         nx = instrument_spec["num_pixels"]
         events = defaultdict(list)
@@ -585,7 +587,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     from soxs.background import add_background_from_file
     if not out_file.endswith(".fits"):
         out_file += ".fits"
-    mylog.info("Making observation of source in %s." % out_file)
+    mylog.info(f"Making observation of source in {out_file}.")
     # Make the source first
     events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
                                            no_dither=no_dither, dither_params=dither_params, 
@@ -598,17 +600,17 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             mylog.info("No backgrounds will be added to this observation.")
         else:
             mylog.info("Adding background events.")
-            bkg_events, _ = make_background(exp_time, instrument, sky_center,
-                                            foreground=foreground, instr_bkgnd=instr_bkgnd, 
-                                            no_dither=no_dither, dither_params=dither_params, 
-                                            ptsrc_bkgnd=ptsrc_bkgnd, prng=prng, 
-                                            subpixel_res=subpixel_res, roll_angle=roll_angle)
+            bkg_events, _ = make_background(
+                exp_time, instrument, sky_center, foreground=foreground,
+                instr_bkgnd=instr_bkgnd, no_dither=no_dither,
+                dither_params=dither_params, ptsrc_bkgnd=ptsrc_bkgnd, prng=prng,
+                subpixel_res=subpixel_res, roll_angle=roll_angle)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:
-        mylog.info("Adding background events from the file %s." % bkgnd_file)
+        mylog.info(f"Adding background events from the file {bkgnd_file}.")
         if not os.path.exists(bkgnd_file):
-            raise IOError("Cannot find the background event file %s!" % bkgnd_file)
+            raise IOError(f"Cannot find the background event file {bkgnd_file}!")
         events = add_background_from_file(events, event_params, bkgnd_file)
     if len(events["energy"]) == 0:
         raise RuntimeError("No events were detected from source or background!!")
