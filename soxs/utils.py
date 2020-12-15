@@ -204,8 +204,8 @@ def create_region(rtype, args, dx, dy):
         reg = regions.CirclePixelRegion(center=center, radius=radius)
         bounds = [x-radius, x+radius, y-radius, y+radius]
     elif rtype == "Polygon":
-        x = args[0]+dx
-        y = args[1]+dy
+        x = np.array(args[0])+dx
+        y = np.array(args[1])+dy
         vertices = regions.PixCoord(x=x, y=y)
         reg = regions.PolygonPixelRegion(vertices=vertices)
         bounds = [x.min(), x.max(), y.min(), y.max()]
@@ -221,13 +221,11 @@ def process_fits_string(fitsstr):
     brackets = re.findall(r"[^[]*\[([^]]*)\]", fitsstr)
     with pyfits.open(fn) as f:
         if len(brackets) == 0:
-            if isinstance(f[0], pyfits.ImageHDU):
-                ext = 0
-            elif len(f) == 2:
-                ext = 1
-            else:
+            imgs = np.array([hdu.is_image for hdu in f])
+            if imgs.sum() > 1:
                 raise IOError("Multiple HDUs in this file, "
                               "please specify one to read!")
+            ext = np.where(imgs)[0][0]
         else:
             ext = brackets[0]
             if ext.isdigit():
