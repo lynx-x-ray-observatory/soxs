@@ -224,6 +224,7 @@ def generate_events(source, exp_time, instrument, sky_center,
 
             # PSF scattering of detector coordinates
 
+            mylog.info(f"Scattering events with a {psf}-based PSF.")
             detx, dety = psf.scatter(detx, dety, events["energy"])
 
             # Convert detector coordinates to chip coordinates.

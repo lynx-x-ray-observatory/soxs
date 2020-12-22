@@ -23,6 +23,9 @@ class PSF(metaclass=RegisteredPSFModel):
     def __init__(self, prng=None):
         self.prng = parse_prng(prng)
 
+    def __str__(self):
+        return self._psf_type
+
 
 class GaussianPSF(PSF):
     _psf_type = "gaussian"
