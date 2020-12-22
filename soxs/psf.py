@@ -47,13 +47,17 @@ class ImagePSF(PSF):
         super().__init__(prng)
         img_file = get_data_file(inst['psf'][1])
         hdu = inst['psf'][2]
-        plate_scale_rad = np.deg2rad(inst['fov']/inst['num_pixels']/60.0)
-        plate_scale_mm = inst['focal_length']*1000.0*plate_scale_rad
+        plate_scale_arcmin = inst['fov']/inst['num_pixels']
+        plate_scale_deg = plate_scale_arcmin/60.0
+        plate_scale_mm = inst['focal_length']*1e3*np.deg2rad(plate_scale_deg)
         self.imhdu = pyfits.open(get_data_file(img_file))[hdu]
         self.imctr = np.array([self.imhdu.header["CRPIX1"],
                                self.imhdu.header["CRPIX2"]])
-        self.scale = np.array([self.imhdu.header["CDELT1"],
-                               self.imhdu.header["CDELT2"]])/plate_scale_mm
+        unit = self.imhdu.header.get("CUNIT1", "mm")
+        self.scale = Quantity([self.imhdu.header["CDELT1"],
+                               self.imhdu.header["CDELT2"]],
+                              unit).to_value('mm')
+        self.scale /= plate_scale_mm
 
     def scatter(self, x, y, e):
         n_evt = x.size
