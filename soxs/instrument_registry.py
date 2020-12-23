@@ -121,7 +121,7 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                                ["Box", 283, 283, 512, 512]],
                                      "focal_length": 12.0,
                                      "dither": False,
-                                     "psf": ["gaussian", 5.0],
+                                     "psf": ["multi_image", "athena_psf_15row.fits"],
                                      "imaging": True,
                                      "grating": False}
 
@@ -139,7 +139,7 @@ instrument_registry["athena_xifu"] = {"name": "athena_xifu",
                                                  [20, 38, 20, -20, -38, -20]]],
                                       "focal_length": 12.0,
                                       "dither": False,
-                                      "psf": ["gaussian", 5.0],
+                                      "psf": ["multi_image", "athena_psf_15row.fits"],
                                       "imaging": True, 
                                       "grating": False}
 
@@ -160,7 +160,7 @@ for cycle in [0, 22]:
                                            ["Box", 523, -523, 1024, 1024],
                                            ["Box", -523, 523, 1024, 1024],
                                            ["Box", 523, 523, 1024, 1024]],
-                                 "psf": ["gaussian", 0.5],
+                                 "psf": ["multi_image", "chandra_psf.fits"],
                                  "focal_length": 10.0,
                                  "dither": True,
                                  "imaging": True,
@@ -185,14 +185,14 @@ for cycle in [0, 22]:
                                            ["Box", 521, 0, 1024, 1024],
                                            ["Box", 1563, 0, 1024, 1024],
                                            ["Box", 2605, 0, 1024, 1024]],
-                                 "psf": ["gaussian", 0.5],
+                                 "psf": ["multi_image", "chandra_psf.fits"],
                                  "focal_length": 10.0,
                                  "dither": True,
                                  "imaging": True,
                                  "grating": False}
 
 
-# ACIS-S, Cycle 0 and 19 HETG
+# ACIS-S, Cycle 0 and 19 HETG (for spectra only)
 
 orders = {"p1": 1, "m1": -1}
 
