@@ -31,7 +31,8 @@ class AuxiliaryResponseFile:
         self.elo = f["SPECRESP"].data.field("ENERG_LO")
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
         self.emid = 0.5*(self.elo+self.ehi)
-        self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP")).astype("float64")
+        self.eff_area = np.nan_to_num(
+            f["SPECRESP"].data.field("SPECRESP")).astype("float64")
         self.max_area = self.eff_area.max()
         f.close()
 
@@ -122,8 +123,8 @@ class AuxiliaryResponseFile:
             mylog.error(f"Number of events in sample: {energy.size}, "
                         f"Number of events wanted: {n_ph}")
             raise ValueError("This combination of exposure time and effective "
-                             "area will result in more photons being drawn than "
-                             "are available in the sample!!!")
+                             "area will result in more photons being drawn "
+                             "than are available in the sample!!!")
         w = earea / self.max_area
         randvec = prng.uniform(size=energy.size)
         eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("int64")
@@ -230,9 +231,9 @@ class RedistributionMatrixFile:
         elif "SPECRESP MATRIX" in self.handle:
             self.mat_key = "SPECRESP MATRIX"
         else:
-            raise RuntimeError("Cannot find the response matrix in the RMF "
-                               "file %s! " % filename+"It should be named "
-                                                      "\"MATRIX\" or \"SPECRESP MATRIX\".")
+            raise RuntimeError(f"Cannot find the response matrix in the RMF "
+                               f"file {filename}! It should be named "
+                               f"\"MATRIX\" or \"SPECRESP MATRIX\".")
         self.header = self.handle[self.mat_key].header
         self.num_mat_columns = len(self.handle[self.mat_key].columns)
         self.ebounds_header = self.handle["EBOUNDS"].header
@@ -246,11 +247,11 @@ class RedistributionMatrixFile:
         self.n_ch = self.header["DETCHANS"]
         num = 0
         for i in range(1, self.num_mat_columns+1):
-            if self.header["TTYPE%d" % i] == "F_CHAN":
+            if self.header[f"TTYPE{i}"] == "F_CHAN":
                 num = i
                 break
-        self.cmin = self.header.get("TLMIN%d" % num, 1)
-        self.cmax = self.header.get("TLMAX%d" % num, self.n_ch)
+        self.cmin = self.header.get(f"TLMIN{num}", 1)
+        self.cmax = self.header.get(f"TLMAX{num}", self.n_ch)
 
     @classmethod
     def from_instrument(cls, name):
@@ -298,7 +299,7 @@ class RedistributionMatrixFile:
                 true_channel += list(range(start, start + nchan))
         return np.array(true_channel)
 
-    def e_to_ch(self, energy):
+    def eb_to_ch(self, energy):
         energy = parse_value(energy, "keV")
         return np.searchsorted(self.ebounds_data["E_MIN"], energy)-1
 
@@ -375,8 +376,10 @@ class RedistributionMatrixFile:
         else:
             # Otherwise, we have to go step-by-step
             for k in range(self.n_e):
-                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
-                n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
+                f_chan = ensure_numpy_array(
+                    np.nan_to_num(self.data["F_CHAN"][k]))
+                n_chan = ensure_numpy_array(
+                    np.nan_to_num(self.data["N_CHAN"][k]))
                 mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
                 mat_size = np.minimum(n_chan, self.n_ch-f_chan)
                 for i, f in enumerate(f_chan):

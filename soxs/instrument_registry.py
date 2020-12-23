@@ -45,7 +45,7 @@ instrument_registry["lynx_hdxi"] = {"name": "lynx_hdxi",
                                     "chips": [["Box", 0, 0, 4096, 4096]],
                                     "focal_length": 10.0,
                                     "dither": True,
-                                    "psf": ["gaussian", 0.5],
+                                    "psf": ["image", "chandra_psf.fits", 6],
                                     "imaging": True,
                                     "grating": False}
 
@@ -61,7 +61,7 @@ instrument_registry["lynx_lxm"] = {"name": "lynx_lxm",
                                    "chips": [["Box", 0, 0, 300, 300]],
                                    "focal_length": 10.0,
                                    "dither": True,
-                                   "psf": ["gaussian", 0.5],
+                                   "psf": ["image", "chandra_psf.fits", 6],
                                    "imaging": True,
                                    "grating": False}
 
@@ -75,7 +75,7 @@ instrument_registry["lynx_lxm_enh"] = {"name": "lynx_lxm_enh",
                                        "chips": [["Box", 0, 0, 120, 120]],
                                        "focal_length": 10.0,
                                        "dither": True,
-                                       "psf": ["gaussian", 0.5],
+                                       "psf": ["image", "chandra_psf.fits", 6],
                                        "imaging": True,
                                        "grating": False}
 
@@ -89,7 +89,7 @@ instrument_registry["lynx_lxm_ultra"] = {"name": "lynx_lxm_ultra",
                                          "chips": [["Box", 0, 0, 60, 60]],
                                          "focal_length": 10.0,
                                          "dither": True,
-                                         "psf": ["gaussian", 0.5],
+                                         "psf": ["image", "chandra_psf.fits", 6],
                                          "imaging": True,
                                          "grating": False}
 

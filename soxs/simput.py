@@ -505,10 +505,12 @@ class SimputPhotonList(SimputSource):
         return cls(ra, dec, e, e.flux.value, name=name)
 
     def _get_source_hdu(self):
-        col1 = pyfits.Column(name='ENERGY', format='E', 
-                             array=self["energy"].value)
-        col2 = pyfits.Column(name='RA', format='D', array=self["ra"].value)
-        col3 = pyfits.Column(name='DEC', format='D', array=self["dec"].value)
+        col1 = pyfits.Column(name='ENERGY', format='E',
+                             array=np.asarray(self["energy"]))
+        col2 = pyfits.Column(name='RA', format='D',
+                             array=np.asarray(self["ra"]))
+        col3 = pyfits.Column(name='DEC', format='D',
+                             array=np.asarray(self["dec"]))
         cols = [col1, col2, col3]
 
         coldefs = pyfits.ColDefs(cols)
