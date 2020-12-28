@@ -20,11 +20,7 @@ def make_foreground(event_params, arf, rmf, prng=None):
 
     conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(hm_astro_bkgnd, arf)
 
-    bkg_events = {}
-    bkg_events["energy"] = []
-    bkg_events["detx"] = []
-    bkg_events["dety"] = []
-    bkg_events["chip_id"] = []
+    bkg_events = {"energy": [], "detx": [], "dety": [], "chip_id": []}
     pixel_area = (event_params["plate_scale"]*60.0)**2
     for i, chip in enumerate(event_params["chips"]):
         rtype = chip[0]
@@ -51,8 +47,16 @@ def make_foreground(event_params, arf, rmf, prng=None):
         bkg_events[key] = np.concatenate(bkg_events[key])
 
     if bkg_events["energy"].size == 0:
-        raise RuntimeError("No astrophysical foreground events were detected!!!")
+        raise RuntimeError("No astrophysical foreground events "
+                           "were detected!!!")
     else:
-        mylog.info("Making %d events from the astrophysical foreground." % bkg_events["energy"].size)
+        mylog.info(f"Making {bkg_events['energy'].size} events from the "
+                   f"astrophysical foreground.")
 
-    return make_diffuse_background(bkg_events, event_params, rmf, prng=prng)
+    bkg_events = make_diffuse_background(bkg_events, 
+                                         event_params, rmf, prng=prng)
+    mylog.info(f"Scattering energies with "
+               f"RMF {os.path.split(rmf.filename)[-1]}.")
+
+    return rmf.scatter_energies(bkg_events, prng=prng)
+

@@ -1,107 +1,134 @@
-import os
-from soxs.utils import soxs_files_path, parse_prng, \
-    parse_value, mylog, create_region
-from soxs.background.spectra import \
-    InstrumentalBackgroundSpectrum
+from soxs.utils import parse_prng, \
+    parse_value, mylog, create_region, get_data_file
 from soxs.background.events import make_diffuse_background
 import numpy as np
+import astropy.io.fits as pyfits
 from regions import PixCoord
 
-# ACIS-I particle background
-acisi_bkgnd_file = os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
-acisi_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(acisi_bkgnd_file, 10.0)
 
-# ACIS-S BI particle background
-aciss_bkgnd_file = os.path.join(soxs_files_path, "aciss_particle_bkgnd.h5")
-aciss_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(aciss_bkgnd_file, 10.0)
+class InstrumentalBackground:
 
-# Athena-like microcalorimeter background 
-# (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
-mucal_bkgnd_file = os.path.join(soxs_files_path, "mucal_particle_bkgnd.h5")
-mucal_particle_bkgnd = InstrumentalBackgroundSpectrum.from_file(mucal_bkgnd_file, 10.0)
+    def __init__(self, channel, count_rate, default_focal_length,
+                 exp_time):
+        self.channel = channel
+        self.count_rate = count_rate
+        self.default_focal_length = default_focal_length
+        self.exp_time = exp_time
 
-# Athena microcalorimeter background 
-# (http://adsabs.harvard.edu/abs/2014A%26A...569A..54L)
-xifu_bkgnd_file = os.path.join(soxs_files_path, "xifu_bkgnd.h5")
-athena_xifu_bkgnd = InstrumentalBackgroundSpectrum.from_file(xifu_bkgnd_file, 12.0)
+    @classmethod
+    def from_filename(cls, filename, ext_area, focal_length):
+        """
+        Read an instrumental background spectrum from 
+        a FITS PHA file. 
 
-# Athena imager background 
-wfi_bkgnd_file = os.path.join(soxs_files_path, "wfi_bkgnd.h5")
-athena_wfi_bkgnd = InstrumentalBackgroundSpectrum.from_file(wfi_bkgnd_file, 12.0)
+        Parameters
+        ----------
+        filename : string
+            The path to the file containing the spectrum.
+        focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The default focal length of the instrument
+            in meters. 
+        """
+        fn = get_data_file(filename)
+        with pyfits.open(fn) as f:
+            hdu = f["SPECTRUM"]
+            exp_time = hdu.header["EXPOSURE"]
+            if "COUNTS" in hdu.data.names:
+                count_rate = hdu.data["COUNTS"]/exp_time
+            else:
+                count_rate = hdu.data["COUNT_RATE"]
+            count_rate /= ext_area
+            channel = hdu.data["CHANNEL"]
+        return cls(channel, count_rate, focal_length,
+                   exp_time)
 
-# Hitomi SXS background
-sxs_bkgnd_file = os.path.join(soxs_files_path, "hitomi_sxs_bkgnd.h5")
-hitomi_sxs_bkgnd = InstrumentalBackgroundSpectrum.from_file(sxs_bkgnd_file, 5.6)
+    def generate_channel_spectrum(self, t_exp, solid_angle, 
+                                  focal_length=None, prng=None):
+        """
+        Generate photon energy channels from this instrumental
+        background spectrum given an exposure time,
+        effective area, and solid angle.
 
-# AXIS wide-field imager background
-axis_bkgnd_file = os.path.join(soxs_files_path, "axis_leo_bkgnd.h5")
-axis_bkgnd = InstrumentalBackgroundSpectrum.from_file(axis_bkgnd_file, 9.5)
+        Parameters
+        ----------
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The exposure time in seconds.
+        solid_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The solid angle in arcmin**2.
+        focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The focal length in meters. Default is to use
+            the default focal length of the instrument
+            configuration.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
+        """
+        t_exp = parse_value(t_exp, "s")
+        solid_angle = parse_value(solid_angle, "arcmin**2")
+        prng = parse_prng(prng)
+        if focal_length is None:
+            focal_length = self.default_focal_length
+        else:
+            focal_length = parse_value(focal_length, "m")
+        fac = t_exp * solid_angle # Backgrounds are normalized to 1 arcmin**2
+        fac *= (focal_length / self.default_focal_length) ** 2
+        return prng.poisson(lam=self.count_rate*fac)
 
-instrument_backgrounds = {"acisi": acisi_particle_bkgnd,
-                          "aciss": aciss_particle_bkgnd,
-                          "mucal": mucal_particle_bkgnd,
-                          "athena_xifu": athena_xifu_bkgnd,
-                          "athena_wfi": athena_wfi_bkgnd,
-                          "hitomi_sxs": hitomi_sxs_bkgnd,
-                          "axis": axis_bkgnd}
+    def generate_channels(self, t_exp, solid_angle, focal_length=None,
+                          prng=None):
+        """
+        Generate photon energy channels from this instrumental
+        background spectrum given an exposure time,
+        effective area, and solid angle.
+
+        Parameters
+        ----------
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The exposure time in seconds.
+        solid_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The solid angle in arcmin**2.
+        focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The focal length in meters. Default is to use
+            the default focal length of the instrument
+            configuration.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only 
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None, 
+            which sets the seed based on the system time. 
+        """
+        ncts = self.generate_channel_spectrum(t_exp, solid_angle,
+                                              focal_length=focal_length, 
+                                              prng=prng)
+        return np.concatenate([self.channel[i]*np.ones(n)
+                               for i, n in enumerate(ncts)])
 
 
-def add_instrumental_background(name, filename, default_focal_length):
-    """
-    Add a particle/instrument background to the list 
-    of known backgrounds.
-
-    Parameters
-    ----------
-    name : string
-        The short name of the background, which will 
-        be the key in the registry.
-    filename : string
-        The file containing the background. It must 
-        have two columns: energy in keV, and background 
-        intensity in units of photons/s/cm**2/arcmin**2/keV.
-    default_focal_length : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The focal length of the telescope that this background
-        is scaled to. Used for rescaling the background if an
-        alternative focal length is provided in an instrument
-        specification.
-    """
-    default_focal_length = parse_value(default_focal_length, "m")
-    spec = InstrumentalBackgroundSpectrum.from_file(filename, default_focal_length)
-    instrument_backgrounds[name] = spec
-
-
-def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
+def make_instrument_background(inst_spec, event_params, rmf, prng=None):
+    from collections import defaultdict
 
     prng = parse_prng(prng)
 
-    if event_params["chips"] is None:
-        bkgnd_spec = [instrument_backgrounds[bkgnd_name]]
-    else:
-        if isinstance(bkgnd_name, str):
-            nchips = len(event_params["chips"])
-            bkgnd_names = [bkgnd_name]*nchips
-        else:
-            bkgnd_names = bkgnd_name
-        bkgnd_spec = []
-        for name in bkgnd_names:
-            spec = instrument_backgrounds[name].new_spec_from_band(rmf.elo[0], rmf.ehi[-1])
-            bkgnd_spec.append(spec)
+    bkgnd_spec = inst_spec["bkgnd"]
 
-    bkg_events = {}
-    bkg_events["energy"] = []
-    bkg_events["detx"] = []
-    bkg_events["dety"] = []
-    bkg_events["chip_id"] = []
+    if isinstance(bkgnd_spec[0], str):
+        nchips = len(event_params["chips"])
+        bkgnd_spec = [bkgnd_spec]*nchips
+
+    bkg_events = defaultdict(list)
     pixel_area = (event_params["plate_scale"]*60.0)**2
     for i, chip in enumerate(event_params["chips"]):
         rtype = chip[0]
         args = chip[1:]
         r, bounds = create_region(rtype, args, 0.0, 0.0)
-        fov = np.sqrt((bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area)
-        e = bkgnd_spec[i].generate_energies(event_params["exposure_time"],
-                                            fov, prng=prng, quiet=True).value
-        n_events = e.size
+        sa = (bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area
+        bkgnd_spec = InstrumentalBackground.from_filename(
+            bkgnd_spec[i][0], bkgnd_spec[i][1], inst_spec['focal_length'])
+        chan = bkgnd_spec.generate_channels(
+            event_params["exposure_time"], sa, prng=prng)
+        n_events = chan.size
         detx = prng.uniform(low=bounds[0], high=bounds[1], size=n_events)
         dety = prng.uniform(low=bounds[2], high=bounds[3], size=n_events)
         if rtype in ["Box", "Rectangle"]:
@@ -110,7 +137,10 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
         else:
             thisc = r.contains(PixCoord(detx, dety))
             n_det = thisc.sum()
-        bkg_events["energy"].append(e[thisc])
+        ch = chan[thisc].astype('int')
+        e = rmf.ch_to_eb(ch, prng=prng)
+        bkg_events["energy"].append(e)
+        bkg_events[rmf.chan_type].append(ch)
         bkg_events["detx"].append(detx[thisc])
         bkg_events["dety"].append(dety[thisc])
         bkg_events["chip_id"].append(i*np.ones(n_det))
@@ -120,6 +150,7 @@ def make_instrument_background(bkgnd_name, event_params, rmf, prng=None):
     if bkg_events["energy"].size == 0:
         raise RuntimeError("No instrumental background events were detected!!!")
     else:
-        mylog.info("Making %d events from the instrumental background." % bkg_events["energy"].size)
+        mylog.info(f"Making {bkg_events['energy'].size} events "
+                   f"from the instrumental background.")
 
     return make_diffuse_background(bkg_events, event_params, rmf, prng=prng)

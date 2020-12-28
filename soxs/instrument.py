@@ -432,7 +432,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
             events[key] = np.concatenate([events[key], bkg_events[key]])
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
-        bkg_events = make_instrument_background(instrument_spec["bkgnd"], 
+        bkg_events = make_instrument_background(instrument_spec, 
                                                 event_params, rmf, prng=prng)
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
@@ -679,8 +679,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
     from soxs.background.foreground import hm_astro_bkgnd
-    from soxs.background.instrument import instrument_backgrounds
     from soxs.background.spectra import BackgroundSpectrum
+    from soxs.background.instrument import InstrumentalBackground
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
     try:
@@ -723,10 +723,15 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         out_spec += rmf.convolve_spectrum(cspec_frgnd, exp_time, prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
-        instr_spec = instrument_backgrounds[instrument_spec["bkgnd"]]
-        cspec_instr = instr_spec.to_scaled_spectrum(fov,
-                                                    instrument_spec["focal_length"])
-        out_spec += rmf.convolve_spectrum(cspec_instr, exp_time, prng=prng)
+        bkgnd_spec = instrument_spec["bkgnd"]
+        # Temporary hack for ACIS-S
+        if "aciss" in instrument_spec["name"]:
+            bkgnd_spec = bkgnd_spec[1]
+        bkgnd_spec = InstrumentalBackground.from_filename(
+            bkgnd_spec[0], bkgnd_spec[1],
+            instrument_spec['focal_length'])
+        out_spec += bkgnd_spec.generate_channel_spectrum(exp_time, bkgnd_area,
+                                                         prng=prng)
     if ptsrc_bkgnd:
         mylog.info("Adding in background from unresolved point-sources.")
         spec_plaw = BackgroundSpectrum.from_powerlaw(1.45, 0.0, 2.0e-7, emin=0.01,

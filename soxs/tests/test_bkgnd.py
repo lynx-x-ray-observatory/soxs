@@ -1,9 +1,10 @@
 from soxs.instrument import make_background, \
     instrument_simulator, make_background_file, simulate_spectrum
 from soxs.background.foreground import hm_astro_bkgnd
-from soxs.background.instrument import acisi_particle_bkgnd
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
+from soxs.spectra import Spectrum
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+from soxs.utils import soxs_files_path
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
 import astropy.io.fits as pyfits
@@ -11,11 +12,14 @@ import tempfile
 import os
 import shutil
 import numpy as np
+import astropy.units as u
 
-prng = RandomState(24)
+acisi_particle_bkgnd = Spectrum.from_file(
+    os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5"))
 
 
 def test_uniform_bkgnd_scale():
+    prng = RandomState(25)
     hdxi_arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
     events, event_params = make_background((50, "ks"), "lynx_hdxi", [30., 45.], 
                                            foreground=True, instr_bkgnd=True,
@@ -27,7 +31,7 @@ def test_uniform_bkgnd_scale():
     dS = np.sqrt(ncts)/t_exp/fov
     foreground = ConvolvedBackgroundSpectrum.convolve(hm_astro_bkgnd, hdxi_arf)
     f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
-    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]
+    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
     b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
     assert np.abs(S-b_sum) < 1.645*dS
 
@@ -55,7 +59,7 @@ def test_simulate_bkgnd_spectrum():
     dS = np.sqrt(ncts)/exp_time/fov
     foreground = ConvolvedBackgroundSpectrum.convolve(hm_astro_bkgnd, hdxi_arf)
     f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
-    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]
+    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
     b_sum = (f_sum+i_sum).to_value("ph/(arcsec**2*s)")
     assert np.abs(S-b_sum) < 1.645*dS
 
@@ -91,8 +95,8 @@ def test_add_background():
     f2 = pyfits.open("evt2.fits")
 
     for key in ["X", "Y", "ENERGY", "PHA"]:
-        assert_allclose(f1["EVENTS"].data[key], f2["EVENTS"].data[key], 
-                            )
+        assert_allclose(f1["EVENTS"].data[key], f2["EVENTS"].data[key])
+
     f1.close()
     f2.close()
 

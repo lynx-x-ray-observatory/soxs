@@ -38,7 +38,7 @@ instrument_registry = InstrumentRegistry()
 instrument_registry["lynx_hdxi"] = {"name": "lynx_hdxi",
                                     "arf": "xrs_hdxi_3x10.arf",
                                     "rmf": "xrs_hdxi.rmf",
-                                    "bkgnd": "acisi",
+                                    "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0],
                                     "fov": 22.0,
                                     "num_pixels": 4096,
                                     "aimpt_coords": [0.0, 0.0],
@@ -54,7 +54,10 @@ instrument_registry["lynx_hdxi"] = {"name": "lynx_hdxi",
 instrument_registry["lynx_lxm"] = {"name": "lynx_lxm",
                                    "arf": "xrs_mucal_3x10_3.0eV.arf",
                                    "rmf": "xrs_mucal_3.0eV.rmf",
-                                   "bkgnd": "mucal",
+                                   "bkgnd": [
+                                       "lynx_lxm_particle_bkgnd.pha",
+                                       1.0
+                                   ],
                                    "fov": 5.0,
                                    "num_pixels": 300,
                                    "aimpt_coords": [0.0, 0.0],
@@ -68,7 +71,10 @@ instrument_registry["lynx_lxm"] = {"name": "lynx_lxm",
 instrument_registry["lynx_lxm_enh"] = {"name": "lynx_lxm_enh",
                                        "arf": "xrs_mucal_3x10_1.5eV.arf",
                                        "rmf": "xrs_mucal_1.5eV.rmf",
-                                       "bkgnd": "mucal",
+                                       "bkgnd": [
+                                           "lynx_lxm_enh_particle_bkgnd.pha",
+                                           1.0
+                                       ],
                                        "fov": 1.0,
                                        "num_pixels": 120,
                                        "aimpt_coords": [0.0, 0.0], 
@@ -82,7 +88,10 @@ instrument_registry["lynx_lxm_enh"] = {"name": "lynx_lxm_enh",
 instrument_registry["lynx_lxm_ultra"] = {"name": "lynx_lxm_ultra",
                                          "arf": "xrs_mucal_3x10_0.3eV.arf",
                                          "rmf": "xrs_mucal_0.3eV.rmf",
-                                         "bkgnd": "mucal",
+                                         "bkgnd": [
+                                             "lynx_lxm_ultra_particle_bkgnd.pha",
+                                             1.0
+                                         ],
                                          "fov": 1.0,
                                          "num_pixels": 60,
                                          "aimpt_coords": [0.0, 0.0],
@@ -109,9 +118,11 @@ instrument_registry["lynx_xgs"] = {"name": "lynx_xgs",
 # WFI
 
 instrument_registry["athena_wfi"] = {"name": "athena_wfi",
-                                     "arf": "athena_wfi_rib2.3_B4C_20190122_wo_filter_OnAxis.arf",
-                                     "rmf": "athena_wfi_rib2.3_B4C_20190122_wo_filter_OnAxis.rmf",
-                                     "bkgnd": "athena_wfi",
+                                     "arf": "athena_sixte_wfi_wo_filter_v20190122.arf",
+                                     "rmf": "athena_wfi_sixte_v20150504.rmf",
+                                     "bkgnd": [ 
+                                         "sixte_wfi_particle_bkg_20190829.pha",
+                                         79552.92570677],
                                      "fov": 40.147153,
                                      "num_pixels": 1078,
                                      "aimpt_coords": [53.69, -53.69],
@@ -120,7 +131,7 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
                                                ["Box", -283, 283, 512, 512],
                                                ["Box", 283, 283, 512, 512]],
                                      "focal_length": 12.0,
-                                     "dither": False,
+                                     "dither": True,
                                      "psf": ["multi_image", "athena_psf_15row.fits"],
                                      "imaging": True,
                                      "grating": False}
@@ -128,19 +139,25 @@ instrument_registry["athena_wfi"] = {"name": "athena_wfi",
 # XIFU
 
 instrument_registry["athena_xifu"] = {"name": "athena_xifu",
-                                      "arf": "XIFU_CC_BASELINECONF_2018_10_10.arf",
+                                      "arf": "sixte_xifu_cc_baselineconf_20180821.arf",
                                       "rmf": "XIFU_CC_BASELINECONF_2018_10_10.rmf",
-                                      "bkgnd": "athena_xifu",
+                                      "bkgnd": [
+                                          "xifu_nxb_20181209.pha",
+                                          79552.92570677
+                                      ],
                                       "fov": 5.991992621478149,
                                       "num_pixels": 84,
                                       "aimpt_coords": [0.0, 0.0],
-                                      "chips": [["Polygon", 
+                                      "chips": [["Polygon",
                                                  [-33, 0, 33, 33, 0, -33],
                                                  [20, 38, 20, -20, -38, -20]]],
                                       "focal_length": 12.0,
-                                      "dither": False,
-                                      "psf": ["multi_image", "athena_psf_15row.fits"],
-                                      "imaging": True, 
+                                      "dither": True,
+                                      "psf": [
+                                          "multi_image",
+                                          "athena_psf_15row.fits"
+                                      ],
+                                      "imaging": True,
                                       "grating": False}
 
 ## Chandra
@@ -152,7 +169,10 @@ for cycle in [0, 22]:
     instrument_registry[name] = {"name": name, 
                                  "arf": f"acisi_aimpt_cy{cycle}.arf",
                                  "rmf": f"acisi_aimpt_cy{cycle}.rmf",
-                                 "bkgnd": "acisi",
+                                 "bkgnd": [
+                                     f"chandra_acisi_cy{cycle}_particle_bkgnd.pha", 
+                                     1.0
+                                 ],
                                  "fov": 20.008,
                                  "num_pixels": 2440,
                                  "aimpt_coords": [86.0, 57.0],
@@ -173,9 +193,20 @@ for cycle in [0, 22]:
     instrument_registry[name] = {"name": name,
                                  "arf": f"aciss_aimpt_cy{cycle}.arf",
                                  "rmf": f"aciss_aimpt_cy{cycle}.rmf",
-                                 "bkgnd": ["acisi", "aciss",
-                                           "acisi", "aciss",
-                                           "acisi", "acisi"],
+                                 "bkgnd": [
+                                     [f"chandra_acisi_cy{cycle}_particle_bkgnd.pha",
+                                      1.0],
+                                     [f"chandra_aciss_cy{cycle}_particle_bkgnd.pha",
+                                      1.0],
+                                     [f"chandra_acisi_cy{cycle}_particle_bkgnd.pha",
+                                      1.0],
+                                     [f"chandra_aciss_cy{cycle}_particle_bkgnd.pha",
+                                      1.0],
+                                     [f"chandra_acisi_cy{cycle}_particle_bkgnd.pha",
+                                      1.0],
+                                     [f"chandra_acisi_cy{cycle}_particle_bkgnd.pha",
+                                      1.0]
+                                 ],
                                  "fov": 50.02,
                                  "num_pixels": 6100,
                                  "aimpt_coords": [206.0, 0.0],
@@ -216,14 +247,18 @@ for energy in ["meg", "heg"]:
 instrument_registry["xrism_resolve"] = {"name": "xrism_resolve",
                                         "arf": "xarm_res_flt_pa_20170818.arf",
                                         "rmf": "xarm_res_h5ev_20170818.rmf",
-                                        "bkgnd": "hitomi_sxs",
+                                        "bkgnd": [
+                                            "sxs_nxb_4ev_20110211_1Gs.pha",
+                                            9.130329009932256
+                                        ],
                                         "num_pixels": 6,
                                         "fov": 3.06450576,
                                         "aimpt_coords": [0.0, 0.0],
                                         "chips": [["Box", 0, 0, 6, 6]],
                                         "focal_length": 5.6,
                                         "dither": False,
-                                        "psf": ["multi_image", "sxs_psfimage_20140618.fits"],
+                                        "psf": ["multi_image",
+                                                "sxs_psfimage_20140618.fits"],
                                         "imaging": True,
                                         "grating": False}
 
@@ -232,14 +267,17 @@ instrument_registry["xrism_resolve"] = {"name": "xrism_resolve",
 instrument_registry["axis"] = {"name": "axis",
                                "arf": "axis-31jan18.arf",
                                "rmf": "axis-31jan18.rmf",
-                               "bkgnd": "axis",
-                               "num_pixels": 5200,
-                               "fov": 15.0,
+                               "bkgnd": [
+                                   "axis_nxb_leo_fov_10Msec_20180205.pha",
+                                   225.0
+                               ],
+                               "num_pixels": 4000,
+                               "fov": 24.0,
                                "aimpt_coords": [0.0, 0.0],
-                               "chips": [["Box", 0, 0, 5200, 5200]],
+                               "chips": [["Box", 0, 0, 4000, 4000]],
                                "focal_length": 9.5,
-                               "dither": False,
-                               "psf": ["gaussian", 0.3],
+                               "dither": True,
+                               "psf": ["multi_image", "axis_psf_gauss_v1.fits"],
                                "imaging": True,
                                "grating": False}
 
@@ -264,12 +302,12 @@ def add_instrument_to_registry(inst_spec):
     ...     "name": "lynx_hdxi", # The short name of the instrument
     ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf", # The file containing the RMF
-    ...     "bkgnd": "acisi", # The name of the particle background
+    ...     "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0], # The name of the particle background file and the area of extraction
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
     ...     "dither": True, # Whether or not to dither the instrument
-    ...     "psf": ["gaussian", 0.5], # The type of PSF and its HPD
+    ...     "psf": ["image", "chandra_psf.fits", 6], # The type of PSF and associated parameters
     ...     "chips": [["Box", 0, 0, 4096, 4096]], # The specification for the chips
     ...     "aimpt_coords": [0.0, 0.0], # The detector coordinates of the aimpoint
     ...     "imaging": True # Whether or not this is a imaging instrument

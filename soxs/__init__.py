@@ -1,12 +1,11 @@
 from ._version import get_versions
 
 from soxs.background import \
-    add_instrumental_background, \
     BackgroundSpectrum, \
     ConvolvedBackgroundSpectrum, \
-    InstrumentalBackgroundSpectrum, \
     make_point_sources_file, \
-    make_point_source_list
+    make_point_source_list, \
+    InstrumentalBackground
 
 from soxs.cosmology import \
     make_cosmological_sources_file

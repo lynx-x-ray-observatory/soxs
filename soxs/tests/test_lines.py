@@ -11,8 +11,6 @@ from soxs.tests.utils import spectrum_answer_testing, \
     file_answer_testing
 from numpy.random import RandomState
 
-prng = RandomState(69)
-
 
 def test_emission_line(answer_store, answer_dir):
     tmpdir = tempfile.mkdtemp()
@@ -36,13 +34,13 @@ def test_emission_line(answer_store, answer_dir):
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models("emission_line", spec, pt_src_pos, 
-                                          exp_time, area, prng=prng)
+                                          exp_time, area, prng=69)
     sim_cat = SimputCatalog.from_source("emission_line_simput.fits", pt_src, 
                                         overwrite=True)
 
     instrument_simulator("emission_line_simput.fits", "emission_line_evt.fits",
                          exp_time, inst_name, [30.0, 45.0], instr_bkgnd=False,
-                         ptsrc_bkgnd=False, foreground=False, prng=prng)
+                         ptsrc_bkgnd=False, foreground=False, prng=69)
 
     write_spectrum("emission_line_evt.fits", "emission_line_evt.pha",
                    overwrite=True)
@@ -76,7 +74,7 @@ def test_absorption_line(answer_store, answer_dir):
                             answer_dir)
 
     simulate_spectrum(spec, inst_name, exp_time, "absorption_line_evt.pha",
-                      overwrite=True, prng=prng)
+                      overwrite=True, prng=69)
 
     file_answer_testing("SPECTRUM", "absorption_line_evt.pha", answer_store,
                         answer_dir)
