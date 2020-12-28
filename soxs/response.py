@@ -377,7 +377,8 @@ class RedistributionMatrixFile:
         spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
-        if np.all(self.data["N_GRP"] == 1):
+        if not isinstance(self.data["MATRIX"], pyfits.column._VLF) and \
+                np.all(self.data["N_GRP"] == 1):
             # We can do things a bit faster if there is only one group each
             f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"]))
             n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"]))
