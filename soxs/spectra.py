@@ -979,7 +979,13 @@ class ConvolvedSpectrum(Spectrum):
     _units = "photon/(s*keV)"
 
     def __init__(self, ebins, flux, arf):
+        from numbers import Number
+        from soxs.response import AuxiliaryResponseFile, FlatResponse
         super(ConvolvedSpectrum, self).__init__(ebins, flux)
+        if isinstance(arf, Number):
+            arf = FlatResponse(ebins[0], ebins[-1], arf, ebins.size-1)
+        elif isinstance(arf, str):
+            arf = AuxiliaryResponseFile(arf)
         self.arf = arf
 
     @classmethod
