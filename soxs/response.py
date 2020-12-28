@@ -276,6 +276,10 @@ class RedistributionMatrixFile:
         return cls(instr["rmf"])
 
     @property
+    def chan_type(self):
+        return self.header["CHANTYPE"].lower()
+
+    @property
     def data(self):
         return self.handle[self.mat_key].data
 
@@ -302,6 +306,15 @@ class RedistributionMatrixFile:
     def eb_to_ch(self, energy):
         energy = parse_value(energy, "keV")
         return np.searchsorted(self.ebounds_data["E_MIN"], energy)-1
+
+    def ch_to_eb(self, channels, prng=None):
+        prng = parse_prng(prng)
+        emin = self.ebounds_data["E_MIN"]
+        emax = self.ebounds_data["E_MAX"]
+        de = emax-emin
+        ch = channels - self.cmin
+        e = emin[ch] + prng.uniform(size=channels.size)*de[ch]
+        return e
 
     def scatter_energies(self, events, prng=None):
         """
@@ -353,7 +366,7 @@ class RedistributionMatrixFile:
 
         for key in events:
             events[key] = events[key][eidxs]
-        events[self.header["CHANTYPE"]] = np.concatenate(detected_channels)
+        events[self.chan_type] = np.concatenate(detected_channels)
 
         return events
 
