@@ -17,7 +17,7 @@ matrix:
         - python: 3.8
           env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.8';
         - python: 3.9
-          env: NUMPY_VERSION=1.18; CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.9';
+          env: NUMPY_VERSION=1.19; CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.9';
 
 before_install:
 
