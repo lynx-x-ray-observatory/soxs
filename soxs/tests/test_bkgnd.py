@@ -95,7 +95,7 @@ def test_add_background():
     f2 = pyfits.open("evt2.fits")
 
     for key in ["X", "Y", "ENERGY", "PHA"]:
-        assert_allclose(f1["EVENTS"].data[key], f2["EVENTS"].data[key])
+        assert_allclose(f1["EVENTS"].data[key], f2["EVENTS"].data[key], rtol=1.0e-6)
 
     f1.close()
     f2.close()

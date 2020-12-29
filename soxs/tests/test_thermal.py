@@ -33,8 +33,8 @@ agen_nolines = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
 agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
                           broadening=True, abund_table="aspl")
 agen_nei = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e,
-                         broadening=True, var_elem=["O^6","O^3","N^4","Ca^5"],
-                         apec_root=os.getcwd(), nei=True)
+                         broadening=True, nei=True,
+                         var_elem=["O^6","O^3","N^4","Ca^5"])
 
 nH_sim = 0.02
 kT_sim = 5.0
@@ -77,21 +77,21 @@ def test_thermal(answer_store, answer_dir):
     spectrum_answer_testing(spec, "thermal_spec.h5", answer_store, answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    pt_src = SimputPhotonList.from_models("thermal_model", spec, pt_src_pos, 
+    pt_src = SimputPhotonList.from_models("thermal_model", spec, pt_src_pos,
                                           exp_time, area, prng=prng)
-    sim_cat = SimputCatalog.from_source("thermal_model_simput.fits", pt_src, 
+    sim_cat = SimputCatalog.from_source("thermal_model_simput.fits", pt_src,
                                         overwrite=True)
 
-    instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits", 
-                         exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False, 
+    instrument_simulator("thermal_model_simput.fits", "thermal_model_evt.fits",
+                         exp_time, inst_name, [30.0, 45.0], ptsrc_bkgnd=False,
                          foreground=False, instr_bkgnd=False, prng=prng)
 
-    write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", 
+    write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha",
                    overwrite=True)
 
-    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store, 
+    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store,
                         answer_dir)
-    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store, 
+    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store,
                         answer_dir)
 
     os.chdir(curdir)
@@ -111,7 +111,7 @@ def test_thermal_from_spectrum(answer_store, answer_dir):
     simulate_spectrum(spec, inst["name"], exp_time,
                       "thermal_model_spec_evt.pha", prng=prng)
 
-    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", 
+    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha",
                         answer_store, answer_dir)
 
     os.chdir(curdir)
@@ -151,14 +151,14 @@ def test_thermal_abund_table(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store, 
+    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store,
                             answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models("thermal_model_aspl", spec_aspl,
                                           pt_src_pos, exp_time, area, 
                                           prng=prng)
-    sim_cat = SimputCatalog.from_source("thermal_model_aspl_simput.fits", 
+    sim_cat = SimputCatalog.from_source("thermal_model_aspl_simput.fits",
                                         pt_src, overwrite=True)
 
     instrument_simulator("thermal_model_aspl_simput.fits",
@@ -187,7 +187,7 @@ def test_thermal_nei(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, 
+    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store,
                             answer_dir)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
