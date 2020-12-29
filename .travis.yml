@@ -51,8 +51,7 @@ install:
 
     # CORE DEPENDENCIES
     - conda config --add channels conda-forge
-    - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy scipy cython h5py tqdm pyyaml
-    - conda install --yes -c astropy pyregion
+    - conda install --yes numpy=$NUMPY_VERSION pytest pip astropy scipy cython h5py tqdm pyyaml regions
     
     # COVERAGE DEPENDENCIES
     - pip install coverage coveralls pytest-cov
