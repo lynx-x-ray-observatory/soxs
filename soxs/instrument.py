@@ -256,24 +256,27 @@ def generate_events(source, exp_time, instrument, sky_center,
                 for key in events:
                     events[key] = events[key][keep]
 
-                # Convert chip coordinates back to detector coordinates, unless the
-                # user has specified that they want subpixel resolution
+                # Convert chip coordinates back to detector coordinates,
+                # unless the user has specified that they want subpixel
+                # resolution
 
                 if subpixel_res:
                     events["detx"] = detx[keep]
                     events["dety"] = dety[keep]
                 else:
-                    events["detx"] = cx[keep] + prng.uniform(low=-0.5,
-                                                             high=0.5, size=n_evt)
-                    events["dety"] = cy[keep] + prng.uniform(low=-0.5,
-                                                             high=0.5, size=n_evt)
+                    events["detx"] = cx[keep] + \
+                                     prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                    events["dety"] = cy[keep] + \
+                                     prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
                 # Convert detector coordinates back to pixel coordinates by
                 # adding the dither offsets back in and applying the rotation
                 # matrix again
 
-                det = np.array([events["detx"] + x_offset[keep] - event_params["aimpt_coords"][0],
-                                events["dety"] + y_offset[keep] - event_params["aimpt_coords"][1]])
+                det = np.array([events["detx"] + x_offset[keep] -
+                                event_params["aimpt_coords"][0],
+                                events["dety"] + y_offset[keep] -
+                                event_params["aimpt_coords"][1]])
                 pix = np.dot(rot_mat.T, det)
 
                 events["xpix"] = pix[0,:] + event_params['pix_center'][0]
@@ -284,20 +287,23 @@ def generate_events(source, exp_time, instrument, sky_center,
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
     if len(all_events["energy"]) == 0:
-        mylog.warning("No events from any of the sources in the catalog were detected!")
-        for key in ["xpix", "ypix", "detx", "dety", "time", "chip_id", event_params["channel_type"]]:
+        mylog.warning("No events from any of the sources in "
+                      "the catalog were detected!")
+        for key in ["xpix", "ypix", "detx", "dety", "time", 
+                    "chip_id", event_params["channel_type"]]:
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
-        mylog.info(f"Scattering energies with RMF {os.path.split(rmf.filename)[-1]}.")
+        mylog.info(f"Scattering energies with "
+                   f"RMF {os.path.split(rmf.filename)[-1]}.")
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
     return all_events, event_params
 
 
-def make_background(exp_time, instrument, sky_center, foreground=True, 
+def make_background(exp_time, instrument, sky_center, foreground=True,
                     ptsrc_bkgnd=True, instr_bkgnd=True, no_dither=False,
-                    dither_params=None, roll_angle=0.0, subpixel_res=False, 
+                    dither_params=None, roll_angle=0.0, subpixel_res=False,
                     input_sources=None, absorb_model="wabs", nH=0.05, prng=None):
     """
     Make background events.
@@ -372,7 +378,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center,
                                              area=1.2*arf.max_area,
-                                             input_sources=input_sources, 
+                                             input_sources=input_sources,
                                              absorb_model=absorb_model,
                                              nH=nH, prng=prng)
         for key in ["ra", "dec", "energy"]:
@@ -384,7 +390,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         events, event_params = generate_events(input_events, exp_time,
                                                instrument, sky_center,
                                                no_dither=no_dither,
-                                               dither_params=dither_params, 
+                                               dither_params=dither_params,
                                                roll_angle=roll_angle,
                                                subpixel_res=subpixel_res,
                                                prng=prng)
@@ -432,7 +438,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
             events[key] = np.concatenate([events[key], bkg_events[key]])
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
-        bkg_events = make_instrument_background(instrument_spec, 
+        bkg_events = make_instrument_background(instrument_spec,
                                                 event_params, rmf, prng=prng)
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
