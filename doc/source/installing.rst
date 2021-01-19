@@ -4,7 +4,7 @@ Installation
 ============
 
 SOXS and its dependencies are installed as a standard Python package, and it is 
-compatible with Python 2.7, 3.5, and 3.6. You may use ``pip`` to install it (if 
+compatible with Python 3.6 and higher. You may use ``pip`` to install it (if 
 you do not have pip, check that your executable is not named ``pip3``, otherwise 
 visit https://pip.pypa.io/ to download it):
 
@@ -27,11 +27,12 @@ Note both the ``jzuhone`` and ``astropy`` channels are required. These methods
 install both the Python interface and the command-line scripts. 
 
 Of course, you can always clone the source from 
-`GitHub <http://github.com/XRStools/soxs>`_ and install it manually:
+`GitHub <https://github.com/lynx-x-ray-observatory/soxs>`_ and install it 
+manually:
 
 .. code-block:: bash
     
-    git clone http://github.com/XRStools/soxs
+    git clone https://github.com/lynx-x-ray-observatory/soxs
     cd soxs
     python setup.py install
     
@@ -45,12 +46,13 @@ SOXS Dependencies
 
 SOXS has the following Python dependencies:
 
-* `NumPy <http://www.numpy.org>`_
-* `AstroPy (v2.0 or higher) <http://www.astropy.org>`_
-* `SciPy <http://www.scipy.org>`_
-* `h5py <http://www.h5py.org>`_
-* `tqdm <http://github.com/noamraph/tqdm>`_
-* `pyregion <http://pyregion.readthedocs.io>`_
+* `NumPy <https://numpy.org>`_
+* `AstroPy (v2.0 or higher) <https://www.astropy.org>`_
+* `SciPy <https://www.scipy.org>`_
+* `h5py <https://www.h5py.org>`_
+* `tqdm <https://github.com/noamraph/tqdm>`_
+* `regions <https://astropy-regions.readthedocs.io/>`_
+* `pooch <https://www.fatiando.org/pooch>`_
 
 Using any installation method, these dependencies should automatically install 
 (if you do not already have them) provided you are connected to the internet.
@@ -62,5 +64,5 @@ There are also a number of optional packages which may be used with SOXS to
 enhance its capabilities. 
 
 * To make mock X-ray observations from 3D hydrodynamics models and other models
-  of astrophysical sources, use the `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_
-  package with SOXS.
+  of astrophysical sources, use the 
+  `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_ package with SOXS.

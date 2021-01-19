@@ -9,6 +9,22 @@ Version 3.0.0
 This major version update of SOXS contains new features and optimizations. 
 **NOTE: there are some backwards-incompatible changes in this release.**
 
+* SOXS now supports "spectrum" SIMPUT sources, with and without images, for
+  generating mock observations. See :ref:`simput` for details.
+* The capability to create mosaics of multiple SOXS event files into a single
+  FITS image, with options for exposure correction, has been added. See 
+  :ref:`mosaic` for details.
+* It is no longer necessary to download response files manually, as response
+  files will now be downloaded automatically if they are needed to simulate
+  an observation or create a spectrum. See :ref:`response_files` for details.
+* Similarly, the latest version of the APEC tables is no longer packaged with
+  SOXS, both the CIE and NEI versions of the APEC tables will be downloaded
+  automatically if they are needed. See :ref:`thermal-spectra` for details.
+* SOXS now uses the `new 201-bin temperature files from AtomDB 
+  <http://www.atomdb.org/download.php>`_ for thermal spectrum models.
+* The SOXS configuration option ``"response_path"`` has been changed to
+  ``"soxs_data_dir"`` and the former is deprecated. See :ref:`configuration`
+  for details.
 * All instrument specifications must now specifically implement at least one
   chip explicitly, so it is no longer permissible to specify the ``"chips"`` 
   argument to be ``None``. **This is a backwards-incompatible change.**
@@ -16,7 +32,8 @@ This major version update of SOXS contains new features and optimizations.
   faster and uses less memory. 
 * Exposure map calculation now uses far less memory and is slightly faster.
 * New options have been added to the :func:`~soxs.events.plot_spectrum` function.
-  See :ref:`write-spectrum` for details.
+  See :ref:`plot-spectrum` for details.
+* *Chandra* grating responses for ACIS-S have been updated to Cycle 22.
 * SOXS now uses the 
   `AstroPy Regions package <https://astropy-regions.readthedocs.io/en/latest/>`_ 
   for region handling.
