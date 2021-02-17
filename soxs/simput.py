@@ -594,3 +594,27 @@ class SimputPhotonList(SimputSource):
         ax.set_ylabel("Dec")
         ax.tick_params(axis='both', labelsize=fontsize)
         return fig, ax
+
+
+def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, 
+                      energy, overwrite=False):
+    """
+    This function is designed to preserve backwards-compatibility
+    with pyXSIM 2.x. It will be removed in a future release.
+
+    Parameters
+    ----------
+    simput_prefix
+    phlist_prefix
+    flux
+    ra
+    dec
+    energy
+    overwrite
+    """
+    simput_file = f"{simput_prefix}_simput.fits"
+    phlist_file = f"{phlist_prefix}_phlist.fits"
+    phlist = SimputPhotonList(ra, dec, energy, flux)
+    SimputCatalog.from_source(simput_file, phlist, 
+                              src_filename=phlist_file,
+                              overwrite=overwrite)

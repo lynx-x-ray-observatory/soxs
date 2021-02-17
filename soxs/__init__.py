@@ -43,7 +43,8 @@ from soxs.simput import \
     read_simput_catalog, \
     SimputPhotonList, \
     SimputCatalog, \
-    SimputSpectrum
+    SimputSpectrum, \
+    write_photon_list
 
 from soxs.spatial import \
     PointSourceModel, \
