@@ -42,6 +42,9 @@ This major version update of SOXS contains new features and optimizations.
   added. See :ref:`cosmo-source-catalog` for more details.
 * The :class:`~soxs.spatial.DoubleBetaModel` spatial source model has been 
   added.
+* An instrument specification for the 
+`_STAR-X_ mission concept <https://ui.adsabs.harvard.edu/abs/2017SPIE10399E..08M/abstract>`_ 
+has been added. 
 
 Version 2.3.0
 -------------
