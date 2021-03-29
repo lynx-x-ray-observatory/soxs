@@ -281,6 +281,22 @@ instrument_registry["axis"] = {"name": "axis",
                                "imaging": True,
                                "grating": False}
 
+## STAR-X
+
+instrument_registry["star-x"] = {"name": "star-x",
+                                 "arf": "starx_2020-11-26_fov_avg.arf",
+                                 "rmf": "starx.rmf",
+                                 "bkgnd": None,
+                                 "num_pixels": 3600,
+                                 "fov": 60.0,
+                                 "aimpt_coords": [0.0, 0.0],
+                                 "chips": [["Box", 0, 0, 3600, 3600]],
+                                 "focal_length": 4.5,
+                                 "dither": True,
+                                 "psf": ["gaussian", 3.0],
+                                 "imaging": True,
+                                 "grating": False}
+
 
 def add_instrument_to_registry(inst_spec):
     """
