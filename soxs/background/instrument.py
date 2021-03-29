@@ -124,9 +124,9 @@ def make_instrument_background(inst_spec, event_params, rmf, prng=None):
         args = chip[1:]
         r, bounds = create_region(rtype, args, 0.0, 0.0)
         sa = (bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area
-        bkgnd_spec = InstrumentalBackground.from_filename(
+        bspec = InstrumentalBackground.from_filename(
             bkgnd_spec[i][0], bkgnd_spec[i][1], inst_spec['focal_length'])
-        chan = bkgnd_spec.generate_channels(
+        chan = bspec.generate_channels(
             event_params["exposure_time"], sa, prng=prng)
         n_events = chan.size
         detx = prng.uniform(low=bounds[0], high=bounds[1], size=n_events)
