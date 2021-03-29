@@ -9,6 +9,13 @@ Version 3.0.0
 This major version update of SOXS contains new features and optimizations. 
 **NOTE: there are some backwards-incompatible changes in this release.**
 
+* SOXS now supports two new PSF model types, ``"image"``, which uses a single
+  FITS image for the PSF model, and ``"multi_image"``, which can use a number
+  of FITS images corresponding to different incident photon energies and 
+  different off-axis angles. See :ref:`psf-models` for details.
+* SOXS now uses standard PHA files with FITS tables of channel and count rate
+  to create instrumental/particle background. See :ref:`instr-bkgnd` for more 
+  details. 
 * SOXS now supports "spectrum" SIMPUT sources, with and without images, for
   generating mock observations. See :ref:`simput` for details.
 * The capability to create mosaics of multiple SOXS event files into a single
@@ -43,8 +50,8 @@ This major version update of SOXS contains new features and optimizations.
 * The :class:`~soxs.spatial.DoubleBetaModel` spatial source model has been 
   added.
 * An instrument specification for the 
-`_STAR-X_ mission concept <https://ui.adsabs.harvard.edu/abs/2017SPIE10399E..08M/abstract>`_ 
-has been added. 
+  `_STAR-X_ mission concept <https://ui.adsabs.harvard.edu/abs/2017SPIE10399E..08M/abstract>`_ 
+  has been added. 
 
 Version 2.3.0
 -------------
