@@ -10,8 +10,6 @@ matrix:
     include:
 
         # Try all python versions with the latest numpy
-        - python: 3.6
-          env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.6';
         - python: 3.7
           env: CMD="py.test --cov=soxs soxs/tests --answer_dir=$PWD/soxs_test_data"; PYTHON='python3.7';
         - python: 3.8
