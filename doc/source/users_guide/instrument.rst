@@ -38,52 +38,8 @@ following:
     instrument_simulator(simput_file, out_file, exp_time, instrument, 
                          sky_center, overwrite=True)
  
-The ``overwrite`` argument allows an existing file to be overwritten.
-
-.. _coords:
-
-Coordinate Systems in SOXS
---------------------------
-
-SOXS event files produced by the instrument simulator have two coordinate systems:
-the (X, Y) "sky" coordinate system and the (DETX, DETY) "detector" coordinate system.
-
-For a given instrument specification, the detector space is defined by the field of 
-view parameter ``fov``, which is in arcminutes, and is divided into ``num_pixels``
-pixels on a side. The field of view is shown in the schematic diagram in Figure 1 
-as the dashed red square. The center of the field of view has detector coordinates 
-0,0, as can be seen in Figure 1. 
-
-The sky coordinate system is defined to be twice the size of the ``fov`` parameter, with
-twice as many pixels. The center of the sky coordinate system is given by pixel 
-coordinates ``0.5*(2*num_pixels+1),0.5*(2*num_+pixels+1)``. The sky coordinate system is
-also shown in Figure 1. In event files and images, standard world coordinate system 
-(WCS) keywords are used to translate between sky coordinates and RA and Dec. 
-
-.. figure:: ../images/det_schematic.png
-    :width: 700px
-
-    Figure 1: Schematic showing the layout of sky and detector coordinate systems, 
-    as well as multiple chips, for an example instrument similar to *Chandra*/ACIS-I. 
-    A roll angle of 45 degrees has been specified. 
-
-If the ``roll_angle`` parameter of the instrument simulation is 0, the sky and detector
-coordinate systems will be aligned, but otherwise they will not. Figure 1 shows the 
-orientation of the detector in the sky coordinate system for a roll angle of 45 degrees. 
-For observations which have dither, the sky coordinates and the detector coordinates
-will not have a one-to-one mapping, but will change as a function of time. 
-
-Finally, Figure 1 also shows that multiple "chips" can be specified. In SOXS,
-chips are simply elements which are capable of detecting X-ray photons. Only 
-events which fall within chip regions are detected. For more information on how
-multiple chips can be specified for a particlular instrument, see :ref:`chips`.
-
-.. warning::
-
-    At the present time, the coordinate systems specified in SOXS do not 
-    correspond directly to those systems in event files produced by actual 
-    X-ray observatories. This is particularly true of detector coordinates. 
-    The conventions chosen by SOXS are mainly for convenience. 
+The ``overwrite`` argument allows an existing file to be overwritten. We now
+describe instrument simulation in more detail.
 
 .. _instrument-arg:
 
@@ -118,6 +74,12 @@ and spectral resolutions. They are:
 * ``"lynx_lxm_ultra"``: 1' field of view, 1" pixels, 0.3 eV spectral resolution
   (restricted to energies below ~1 keV)
 
+The default instrumental background in SOXS for the ``"lynx_hdxi"`` model is the 
+*Chandra*/ACIS-I particle background, and the default instrumental background
+for the ``"lynx_lxm_*"`` models is based on a model developed for the *Athena* 
+calorimeter 
+(`see here for details <http://adsabs.harvard.edu/abs/2014A%26A...569A..54L>`_).
+
 Gratings
 ########
 
@@ -136,16 +98,25 @@ Unit). For both of these specifications, a 12-meter focal length is assumed.
 The PSF model, response files, and background models are used from the 
 `SIXTE <https://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_ 
 software package. The WFI detector consists of four chips laid out in a 2x2 
-shape with a field of view of approximately 40 arcminutes, and the X-IFU detector 
-has a single hexagonal shape with an approximate diameter of 5 arcminutes. 
+shape with a field of view of approximately 40 arcminutes, and the X-IFU 
+detector has a single hexagonal shape with an approximate diameter of 5 
+arcminutes. 
 
 Chandra
 ~~~~~~~
 
 For simulating *Chandra* observations, a number of instrument specifications are 
-available. All specifications assume a 10-meter focal length, 0.5-arcsecond Gaussian 
-PSF, dithering, and 0.492-arcsecond pixels.
+available. All specifications assume a 10-meter focal length, dithering, and 
+0.492-arcsecond pixels. They also include a simplified model for the on and 
+off-axis *Chandra* PSF.
  
+The default instrumental background in SOXS for the *Chandra* ACIS-I models is 
+the *Chandra*/ACIS-I particle background. For ACIS-S, the ACIS-I background is
+used for the front-illuminated chips, and a model provided by Andrea Botteon 
+from `Botteon et al. 2017 <http://adsabs.harvard.edu/abs/2017arXiv170707038B>`_ 
+is used for the back-illuminated chips. Currently, the gratings instrument 
+models do not have instrumental backgrounds included.
+
 ACIS-I
 ######
 
@@ -161,16 +132,16 @@ filters compared to the ``"chandra_acisi_cy0"`` responses.
 ACIS-S
 ######
 
-The two ACIS-S specifications have 6 chips 8 arcminutes on a side in a single row.
-As in the ACIS-I case, the two specifications are for Cycle 0 ``"chandra_aciss_cy0"``, 
-and Cycle 22, ``"chandra_aciss_cy22"``. 
+The two ACIS-S specifications have 6 chips 8 arcminutes on a side in a single 
+row. As in the ACIS-I case, the two specifications are for Cycle 0 
+``"chandra_aciss_cy0"``, and Cycle 22, ``"chandra_aciss_cy22"``. 
 
 HETG
 ####
 
-Eight gratings specifications have been included for ACIS-S and the HETG, for both
-Cycle 0 and Cycle 20. These simulate spectra only for the MEG and HEG, for the 
-:math:`\pm` first order spectra. They are named:
+Eight gratings specifications have been included for ACIS-S and the HETG, for 
+both Cycle 0 and Cycle 20. These simulate spectra only for the MEG and HEG, for 
+the :math:`\pm` first order spectra. They are named:
 
 * ``"chandra_aciss_meg_m1_cy0"``
 * ``"chandra_aciss_meg_p1_cy0"``
@@ -188,9 +159,11 @@ XRISM
 
 A single instrument specification is available for *XRISM*, for the "Resolve"
 microcalorimeter instrument, named ``"xrism_resolve"``. It has a 5.6-meter focal 
-length, a 1.2-arcminute Gaussian PSF, no dithering, a 3-arcminute field of view, 
-and 0.5-arcminute pixels. The ARF assumes the full PSF without detector boundary, 
-and an extended source flat model. The RMF assumes 5 eV spectral resolution. 
+length, no dithering, a 3-arcminute field of view, and 0.5-arcminute pixels. The
+ARF assumes the full PSF without detector boundary, and an extended source flat
+model. The response files, PSF model, and instrumental background model used for
+*XRISM*/Resolve in SOXS were obtained from 
+`here <https://heasarc.gsfc.nasa.gov/docs/xrism/proposals/index.html>`_.
 
 .. _axis:
 
@@ -258,6 +231,53 @@ at :ref:`make-bkgnd`. The background event file must be for the same instrument
 as the one that is being simulated for the source and must have an exposure time
 at least as long as the source exposure. 
 
+.. _coords:
+
+Coordinate Systems in SOXS
+--------------------------
+
+SOXS event files produced by the instrument simulator have two coordinate 
+systems: the (X, Y) "sky" coordinate system and the (DETX, DETY) "detector" 
+coordinate system.
+
+For a given instrument, the detector coordinate system is defined by a square
+field of view divided into a number of pixels on each side. The field of view is 
+shown in the schematic diagram in Figure 1 as the dashed red square. The center 
+of the field of view has detector coordinates 0,0, as can be seen in Figure 1. 
+
+The sky coordinate system is defined to be twice the size of the field of view,
+with twice as many pixels. The center of the sky coordinate system is given by 
+pixel coordinates ``0.5*(2*num_pixels+1),0.5*(2*num_pixels+1)``. The sky 
+coordinate system is also shown in Figure 1. In event files and images, standard 
+world coordinate system (WCS) keywords are used to translate between sky 
+coordinates and RA and Dec. 
+
+.. figure:: ../images/det_schematic.png
+    :width: 700px
+
+    Figure 1: Schematic showing the layout of sky and detector coordinate 
+    systems, as well as multiple chips, for an example instrument similar to 
+    *Chandra*/ACIS-I. A roll angle of 45 degrees has been specified. 
+
+If the ``roll_angle`` parameter of the instrument simulation is 0, the sky and 
+detector coordinate systems will be aligned, but otherwise they will not. Figure 
+1 shows the orientation of the detector in the sky coordinate system for a roll 
+angle of 45 degrees. For observations which have dither, the sky coordinates and 
+the detector coordinates will not have a one-to-one mapping, but will change as 
+a function of time. 
+
+Finally, Figure 1 also shows that multiple "chips" can be specified. In SOXS,
+chips are simply elements which are capable of detecting X-ray photons. Only 
+events which fall within chip regions are detected. For more information on how
+multiple chips can be specified for a particlular instrument, see :ref:`chips`.
+
+.. warning::
+
+    At the present time, the coordinate systems specified in SOXS do not 
+    correspond directly to those systems in event files produced by actual 
+    X-ray observatories. This is particularly true of detector coordinates. 
+    The conventions chosen by SOXS are mainly for convenience. 
+
 .. _other-mods:
 
 Other Modifications
@@ -269,7 +289,8 @@ size and period of the Lissajous dither pattern, for instruments which have
 dithering enabled. The default dither pattern has amplitudes of 8.0 arcseconds 
 in the DETX and DETY directions, and a period of 1000.0 seconds in the DETX 
 direction and a period of 707.0 seconds in the DETY direction. You can change
-these numbers by supplying a list of parameters to the ``dither_params`` argument:
+these numbers by supplying a list of parameters to the ``dither_params`` 
+argument:
 
 .. code-block:: python
 
@@ -395,8 +416,8 @@ spectrum:
 .. image:: ../images/gratings_spectrum.png
 
 Adding backgrounds to grating instrument specifications in 
-:func:`~soxs.instrument.simulate_spectrum` is not supported at this time, but will
-be in a future release.
+:func:`~soxs.instrument.simulate_spectrum` is not supported at this time, but 
+will be in a future release.
 
 .. _instrument-registry:
 
@@ -425,33 +446,56 @@ gives (showing only a subset for brevity):
 .. code-block:: pycon
 
     Instrument: lynx_hdxi
-        name: hdxi_3x10
+        name: lynx_hdxi
         arf: xrs_hdxi_3x10.arf
         rmf: xrs_hdxi.rmf
-        bkgnd: acisi
-        fov: 20.0
+        bkgnd: ['lynx_hdxi_particle_bkgnd.pha', 1.0]
+        fov: 22.0
         num_pixels: 4096
         aimpt_coords: [0.0, 0.0]
-        chips: None
+        chips: [['Box', 0, 0, 4096, 4096]]
         focal_length: 10.0
         dither: True
-        psf: ['gaussian', 0.5]
+        psf: ['image', 'chandra_psf.fits', 6]
         imaging: True
         grating: False
-        dep_name: hdxi
-    Instrument: lynx_xgs
-        name: lynx_xgs
-        arf: xrs_cat.arf
-        rmf: xrs_cat.rmf
-        bkgnd: None
+    Instrument: lynx_lxm
+        name: lynx_lxm
+        arf: xrs_mucal_3x10_3.0eV.arf
+        rmf: xrs_mucal_3.0eV.rmf
+        bkgnd: ['lynx_lxm_particle_bkgnd.pha', 1.0]
+        fov: 5.0
+        num_pixels: 300
+        aimpt_coords: [0.0, 0.0]
+        chips: [['Box', 0, 0, 300, 300]]
         focal_length: 10.0
-        imaging: False
-        grating: True
+        dither: True
+        psf: ['image', 'chandra_psf.fits', 6]
+        imaging: True
+        grating: False
+    ...
+    Instrument: athena_wfi
+        name: athena_wfi
+        arf: athena_sixte_wfi_wo_filter_v20190122.arf
+        rmf: athena_wfi_sixte_v20150504.rmf
+        bkgnd: ['sixte_wfi_particle_bkg_20190829.pha', 79552.92570677]
+        fov: 40.147153
+        num_pixels: 1078
+        aimpt_coords: [53.69, -53.69]
+        chips: [['Box', -283, -283, 512, 512], 
+                ['Box', 283, -283, 512, 512], 
+                ['Box', -283, 283, 512, 512], 
+                ['Box', 283, 283, 512, 512]]
+        focal_length: 12.0
+        dither: True
+        psf: ['multi_image', 'athena_psf_15row.fits']
+        imaging: True
+        grating: False
     Instrument: athena_xifu
         name: athena_xifu
-        arf: athena_wfi_15row_20171107_wo_filter_OnAxis.arf
-        rmf: athena_wfi_baseline.rmf
-        bkgnd: athena_xifu
+        arf: sixte_xifu_cc_baselineconf_20180821.arf
+        rmf: XIFU_CC_BASELINECONF_2018_10_10.rmf
+        bkgnd: ['xifu_nxb_20181209.pha', 79552.92570677]
         fov: 5.991992621478149
         num_pixels: 84
         aimpt_coords: [0.0, 0.0]
@@ -459,15 +503,16 @@ gives (showing only a subset for brevity):
                 [-33, 0, 33, 33, 0, -33], 
                 [20, 38, 20, -20, -38, -20]]]
         focal_length: 12.0
-        dither: False
-        psf: ['gaussian', 5.0]
+        dither: True
+        psf: ['multi_image', 'athena_psf_15row.fits']
         imaging: True
         grating: False
-    Instrument: chandra_acisi_cy0
-        name: chandra_acisi_cy0
-        arf: acisi_aimpt_cy0.arf
-        rmf: acisi_aimpt_cy0.rmf
-        bkgnd: acisi
+    ...
+    Instrument: chandra_acisi_cy22
+        name: chandra_acisi_cy22
+        arf: acisi_aimpt_cy22.arf
+        rmf: acisi_aimpt_cy22.rmf
+        bkgnd: ['chandra_acisi_cy22_particle_bkgnd.pha', 1.0]
         fov: 20.008
         num_pixels: 2440
         aimpt_coords: [86.0, 57.0]
@@ -475,24 +520,9 @@ gives (showing only a subset for brevity):
                 ['Box', 523, -523, 1024, 1024], 
                 ['Box', -523, 523, 1024, 1024], 
                 ['Box', 523, 523, 1024, 1024]]
-        psf: ['gaussian', 0.5]
+        psf: ['multi_image', 'chandra_psf.fits']
         focal_length: 10.0
         dither: True
-        imaging: True
-        grating: False
-        dep_name: acisi_cy0
-    Instrument: hitomi_sxs
-        name: hitomi_sxs
-        arf: hitomi_sxs_ptsrc.arf
-        rmf: hitomi_sxs.rmf
-        bkgnd: hitomi_sxs
-        num_pixels: 6
-        fov: 3.06450576
-        aimpt_coords: [0.0, 0.0]
-        chips: None
-        focal_length: 5.6
-        dither: False
-        psf: ['gaussian', 72.0]
         imaging: True
         grating: False
     ...
@@ -505,12 +535,14 @@ The various parts of each instrument specification are:
 * ``"fov"``: The field of view in arcminutes. This may represent a single chip
   or an area within which chips are embedded.
 * ``"num_pixels"``: The number of resolution elements on a side of the field of 
-  view.
-* ``"chips"``: The specification for multiple chips, if desired. For more details
-  on how to specify chips, see :ref:`chips`. 
-* ``"bkgnd"``: The name of the instrumental background to use, stored in the 
-  background registry (see :ref:`background` for more details). This can also be
-  set to ``None`` for no particle background.
+  view ``"fov"``.
+* ``"chips"``: The specification for one or more chips. For more details on how
+  to specify chips, see :ref:`chips`. 
+* ``"bkgnd"``: A list containing (1) the filename of the PHA spectrum which 
+  contains the instrumental background count rate, and (2) the solid angle in 
+  square arcminutes from which the spectrum was extracted/modeled. This can also 
+  be set to ``None`` for no particle background. See :ref:`instr-bkgnd` for more
+  details.
 * ``"psf"``: The PSF specification to use. At time of writing, the only one 
   available is that of a Gaussian PSF, with a single parameter, the HPD of the 
   PSF. This is specified using a Python list, e.g. ``["gaussian", 0.5]``. This 
@@ -568,7 +600,8 @@ file for editing using :func:`~soxs.instrument.write_instrument_json`:
     are two differences one must note when creating JSON-based instrument 
     specifications:
     1. Python's ``None`` will convert to ``null``, and vice-versa.
-    2. ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
+    2. ``True`` and ``False`` are capitalized in Python, in JSON they are 
+       lowercase.
 
 .. _custom-non-imaging:
 
@@ -590,17 +623,17 @@ required for such instruments:
                                        "imaging": False,
                                        "grating": True}
 
-For non-imaging instruments, ``"imaging"`` must be set to ``False``. For gratings 
-instruments, ``"grating"`` must be set to ``True``.
+For non-imaging instruments, ``"imaging"`` must be set to ``False``. For 
+gratings instruments, ``"grating"`` must be set to ``True``.
 
 .. _chips:
 
 Defining Chips
 ++++++++++++++
 
-In SOXS, each instrument specification must use at least one chip. The ``"chips"``
-entry in the instrument specification is a list of lists, one for each chip, that
-specifies a region expression. 
+In SOXS, each instrument specification must use at least one chip. The 
+``"chips"`` entry in the instrument specification is a list of lists, one for 
+each chip, that specifies a region expression. 
 
 Three options are currently recognized by SOXS for chip shapes:
 
@@ -608,10 +641,11 @@ Three options are currently recognized by SOXS for chip shapes:
   (center in the x-coordinate), ``yc`` (center in the y-coordinate), ``width``,
   and ``height``.
 * Circle shapes, which use the ``Circle`` region. The three arguments are ``xc``
-  (center in the x-coordinate), ``yc`` (center in the y-coordinate), and ``radius``.
-* Generic polygon shapes, which use the ``Polygon`` region. The two arguments are
-  ``x`` and ``y``, which are lists of x and y coordinates for each point of the
-  polygon. 
+  (center in the x-coordinate), ``yc`` (center in the y-coordinate), and 
+  ``radius``.
+* Generic polygon shapes, which use the ``Polygon`` region. The two arguments 
+  are ``x`` and ``y``, which are lists of x and y coordinates for each point of 
+  the polygon. 
 
 To create a chip, simply supply a list starting with the name of the region 
 type and followed by the arguments in order. All coordinates and distances are
@@ -625,73 +659,81 @@ For example, the *Chandra* ACIS-I instrument configurations have a list of four
 .. code-block:: python
 
     instrument_registry["chandra_acisi_cy22"] = \
-        {"name": "chandra_acisi_cy22", 
-         "arf": f"acisi_aimpt_cy22.arf",
-         "rmf": f"acisi_aimpt_cy22.rmf",
-         "bkgnd": [
-             f"chandra_acisi_cy22_particle_bkgnd.pha", 
-             1.0
-         ],
-         "fov": 20.008,
-         "num_pixels": 2440,
-         "aimpt_coords": [86.0, 57.0],
-         "chips": [["Box", -523, -523, 1024, 1024],
-                   ["Box", 523, -523, 1024, 1024],
-                   ["Box", -523, 523, 1024, 1024],
-                   ["Box", 523, 523, 1024, 1024]],
-         "psf": ["multi_image", "chandra_psf.fits"],
-         "focal_length": 10.0,
-         "dither": True,
-         "imaging": True,
-         "grating": False
+        {
+             "name": "chandra_acisi_cy22", 
+             "arf": f"acisi_aimpt_cy22.arf",
+             "rmf": f"acisi_aimpt_cy22.rmf",
+             "bkgnd": [
+                 "chandra_acisi_cy22_particle_bkgnd.pha", 
+                 1.0
+             ],
+             "fov": 20.008,
+             "num_pixels": 2440,
+             "aimpt_coords": [86.0, 57.0],
+             "chips": [["Box", -523, -523, 1024, 1024],
+                       ["Box", 523, -523, 1024, 1024],
+                       ["Box", -523, 523, 1024, 1024],
+                       ["Box", 523, 523, 1024, 1024]],
+             "psf": ["multi_image", "chandra_psf.fits"],
+             "focal_length": 10.0,
+             "dither": True,
+             "imaging": True,
+             "grating": False
         }
 
-whereas the *Athena* XIFU instrument configuration uses a single ``Polygon`` region:
+whereas the *Athena* XIFU instrument configuration uses a single ``Polygon`` 
+region:
 
 .. code-block:: python
 
-    instrument_registry["athena_xifu"] = {"name": "athena_xifu",
-                                          "arf": "sixte_xifu_cc_baselineconf_20180821.arf",
-                                          "rmf": "XIFU_CC_BASELINECONF_2018_10_10.rmf",
-                                          "bkgnd": [
-                                              "xifu_nxb_20181209.pha",
-                                              79552.92570677
-                                          ],
-                                          "fov": 5.991992621478149,
-                                          "num_pixels": 84,
-                                          "aimpt_coords": [0.0, 0.0],
-                                          "chips": [["Polygon",
-                                                     [-33, 0, 33, 33, 0, -33],
-                                                     [20, 38, 20, -20, -38, -20]]],
-                                          "focal_length": 12.0,
-                                          "dither": True,
-                                          "psf": [
-                                              "multi_image",
-                                              "athena_psf_15row.fits"
-                                          ],
-                                          "imaging": True,
-                                          "grating": False}
+    instrument_registry["athena_xifu"] = \
+        {
+             "name": "athena_xifu",
+             "arf": "sixte_xifu_cc_baselineconf_20180821.arf",
+             "rmf": "XIFU_CC_BASELINECONF_2018_10_10.rmf",
+             "bkgnd": [
+                 "xifu_nxb_20181209.pha",
+                 79552.92570677
+             ],
+             "fov": 5.991992621478149,
+             "num_pixels": 84,
+             "aimpt_coords": [0.0, 0.0],
+             "chips": [["Polygon",
+                       [-33, 0, 33, 33, 0, -33],
+                       [20, 38, 20, -20, -38, -20]]],
+             "focal_length": 12.0,
+             "dither": True,
+             "psf": [
+                 "multi_image",
+                 "athena_psf_15row.fits"
+             ],
+             "imaging": True,
+             "grating": False
+        }
 
 and the ``"lynx_lxm"`` configuration uses a single square-shaped chip:
 
 .. code-block:: python
 
-    instrument_registry["lynx_lxm"] = {"name": "lynx_lxm",
-                                   "arf": "xrs_mucal_3x10_3.0eV.arf",
-                                   "rmf": "xrs_mucal_3.0eV.rmf",
-                                   "bkgnd": [
-                                       "lynx_lxm_particle_bkgnd.pha",
-                                       1.0
-                                   ],
-                                   "fov": 5.0,
-                                   "num_pixels": 300,
-                                   "aimpt_coords": [0.0, 0.0],
-                                   "chips": [["Box", 0, 0, 300, 300]],
-                                   "focal_length": 10.0,
-                                   "dither": True,
-                                   "psf": ["image", "chandra_psf.fits", 6],
-                                   "imaging": True,
-                                   "grating": False}
+    instrument_registry["lynx_lxm"] = \
+        {
+             "name": "lynx_lxm",
+             "arf": "xrs_mucal_3x10_3.0eV.arf",
+             "rmf": "xrs_mucal_3.0eV.rmf",
+             "bkgnd": [
+                 "lynx_lxm_particle_bkgnd.pha",
+                 1.0
+             ],
+             "fov": 5.0,
+             "num_pixels": 300,
+             "aimpt_coords": [0.0, 0.0],
+             "chips": [["Box", 0, 0, 300, 300]],
+             "focal_length": 10.0,
+             "dither": True,
+             "psf": ["image", "chandra_psf.fits", 6],
+             "imaging": True,
+             "grating": False
+        }
 
 .. _psf-models:
 
@@ -711,64 +753,94 @@ only argument is the FWHM of the Gaussian in arcseconds:
 
 .. code-block:: python
 
-    instrument_registry["star-x"] = {"name": "star-x",
-                                     "arf": "starx_2020-11-26_fov_avg.arf",
-                                     "rmf": "starx.rmf",
-                                     "bkgnd": None,
-                                     "num_pixels": 3600,
-                                     "fov": 60.0,
-                                     "aimpt_coords": [0.0, 0.0],
-                                     "chips": [["Box", 0, 0, 3600, 3600]],
-                                     "focal_length": 4.5,
-                                     "dither": True,
-                                     "psf": ["gaussian", 3.0],
-                                     "imaging": True,
-                                     "grating": False}
+    instrument_registry["star-x"] = \
+        {
+            "name": "star-x",
+            "arf": "starx_2020-11-26_fov_avg.arf",
+            "rmf": "starx.rmf",
+            "bkgnd": None,
+            "num_pixels": 3600,
+            "fov": 60.0,
+            "aimpt_coords": [0.0, 0.0],
+            "chips": [["Box", 0, 0, 3600, 3600]],
+            "focal_length": 4.5,
+            "dither": True,
+            "psf": ["gaussian", 3.0],
+            "imaging": True,
+            "grating": False
+        }
 
 
-and the ``"lynx_hdxi"`` instrument uses a single image from a file. The first
-argument is the filename, and the second argument is the number of the HDU in
-the FITS file:
+The ``"lynx_hdxi"`` instrument uses a single ``"image"`` from a file, and the 
+image is used as the probability distribution to scatter photons which are 
+incident on the detector. The first argument is the filename, and the second 
+argument is the number of the HDU in the FITS file:
 
 .. code-block:: python
 
-    instrument_registry["lynx_hdxi"] = {"name": "lynx_hdxi",
-                                        "arf": "xrs_hdxi_3x10.arf",
-                                        "rmf": "xrs_hdxi.rmf",
-                                        "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0],
-                                        "fov": 22.0,
-                                        "num_pixels": 4096,
-                                        "aimpt_coords": [0.0, 0.0],
-                                        "chips": [["Box", 0, 0, 4096, 4096]],
-                                        "focal_length": 10.0,
-                                        "dither": True,
-                                        "psf": ["image", "chandra_psf.fits", 6],
-                                        "imaging": True,
-                                        "grating": False}
+    instrument_registry["lynx_hdxi"] = \
+        {
+            "name": "lynx_hdxi",
+            "arf": "xrs_hdxi_3x10.arf",
+            "rmf": "xrs_hdxi.rmf",
+            "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0],
+            "fov": 22.0,
+            "num_pixels": 4096,
+            "aimpt_coords": [0.0, 0.0],
+            "chips": [["Box", 0, 0, 4096, 4096]],
+            "focal_length": 10.0,
+            "dither": True,
+            "psf": ["image", "chandra_psf.fits", 6],
+            "imaging": True,
+            "grating": False
+        }
+
+In this case, the selected HDU (``6``) in the FITS file (``"chandra_psf.fits"``) 
+needs to be an image of the PSF with the following header keywords set, where 
+:math:`n \in {1,2}`:
+
+* ``"CRPIX``:math:`n```"``: reference pixel x,y coordinates
+* ``"CUNIT``:math:`n```"``: (optional) length units of pixels, assumed mm by 
+  default if not set
+* ``"CDELT``:math:`n```"``: width of each pixel in the x and y directions in 
+  units of ``"CUNIT``:math:`n```"``
 
 Finally, the ``"multi_image"`` PSF type simply takes the filename as an argument:
 
 .. code-block:: python
 
-    instrument_registry["xrism_resolve"] = {"name": "xrism_resolve",
-                                            "arf": "xarm_res_flt_pa_20170818.arf",
-                                            "rmf": "xarm_res_h5ev_20170818.rmf",
-                                            "bkgnd": [
-                                                "sxs_nxb_4ev_20110211_1Gs.pha",
-                                                9.130329009932256
-                                            ],
-                                            "num_pixels": 6,
-                                            "fov": 3.06450576,
-                                            "aimpt_coords": [0.0, 0.0],
-                                            "chips": [["Box", 0, 0, 6, 6]],
-                                            "focal_length": 5.6,
-                                            "dither": False,
-                                            "psf": ["multi_image",
-                                                    "sxs_psfimage_20140618.fits"],
-                                            "imaging": True,
-                                            "grating": False}
+    instrument_registry["xrism_resolve"] = \
+        {
+            "name": "xrism_resolve",
+            "arf": "xarm_res_flt_pa_20170818.arf",
+            "rmf": "xarm_res_h5ev_20170818.rmf",
+            "bkgnd": [
+                "sxs_nxb_4ev_20110211_1Gs.pha",
+                9.130329009932256
+            ],
+            "num_pixels": 6,
+            "fov": 3.06450576,
+            "aimpt_coords": [0.0, 0.0],
+            "chips": [["Box", 0, 0, 6, 6]],
+            "focal_length": 5.6,
+            "dither": False,
+            "psf": ["multi_image",
+                    "sxs_psfimage_20140618.fits"],
+            "imaging": True,
+            "grating": False
+        }
 
-For PSFs in image files, the 
+In this case, the FITS file ``"sxs_psfimage_20140618.fits"`` contains multiple
+image HDUs, each having the image of the PSF and the header keywords listed
+above in the ``"image"`` PSF type, and each header must also have the following
+keywords:
+
+* ``"ENERGY"``: Energy of the PSF image in keV
+* ``"THETA"`` or ``"OFFAXIS"``: Off-axis angle in arcminutes
+
+In this case, the photons will be scattered by the images which are closest to 
+them in terms of energy and off-axis angle. 
+
 .. _simple-instruments:
 
 Making Simple Square-Shaped Instruments
