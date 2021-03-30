@@ -105,7 +105,8 @@ new :class:`~soxs.spectra.Spectrum` objects. You start by initializing an
 
 The ``broadening`` parameter sets whether or not spectral lines will be 
 thermally and velocity broadened. The ``apec_vers`` parameter sets the version 
-of the AtomDB tables to use. Version 3.0.9 is built into SOXS, and is the default.
+of the AtomDB tables to use. Version 3.0.9 is the default, and the tables will
+be downloaded if necessary. 
 
 You may also supply another location for the AtomDB tables. For example, the 
 following construction will look for the AtomDB tables in the current working 
@@ -114,6 +115,10 @@ directory:
 .. code-block:: python
 
     agen = ApecGenerator(0.05, 50.0, 10000, apec_root=".")
+
+If you set the ``apec_vers`` parameter but not the ``apec_root`` parameter, the
+AtomDB table files will be looked for in (1) the current working directory and
+(2) the location specified by ``soxs_data_dir`` in the :ref:`config`.
 
 Once you have an :class:`~soxs.spectra.ApecGenerator` object, you can use it to
 generate thermal spectra using the :meth:`~soxs.spectra.ApecGenerator.get_spectrum`

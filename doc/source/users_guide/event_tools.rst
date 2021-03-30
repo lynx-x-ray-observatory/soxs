@@ -253,6 +253,6 @@ them to :func:`~soxs.events.plot_spectrum` using the ``ebins`` argument:
     from soxs import plot_spectrum
     import numpy as np
     ebins = np.linspace(0.5, 7.0, 101)
-    plot_spectrum("evt.pha", ebins=ebins. xmin=0.5, xmax=7.0)
+    plot_spectrum("evt.pha", ebins=ebins, xmin=0.5, xmax=7.0)
 
 For other customizations, consult the :func:`~soxs.events.plot_spectrum` API. 
