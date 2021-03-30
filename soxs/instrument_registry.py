@@ -1,5 +1,5 @@
 import json
-from soxs.utils import mylog, parse_value
+from soxs.utils import mylog, parse_value, PoochHandle
 import os
 from copy import deepcopy
 
@@ -27,6 +27,41 @@ class InstrumentRegistry:
 
     def get(self, key, default=None):
         return self.registry.get(key, default)
+
+    def fetch_files(self, key, loc=None):
+        """
+        A handy method to fetch ARF, RMF, background,
+        and PSF files to a location of one's choice.
+        Files are only actually downloaded if they are 
+        not present already.
+        
+        Parameters
+        ----------
+        key : string
+            The instrument specification to download
+            the files for.
+        loc : string, optional
+            The path to download the files to. If not 
+            specified, it will download them to the 
+            current working directory.
+        """
+        inst_spec = self[key]
+        if loc is None:
+            loc = os.getcwd()
+        dog = PoochHandle(cache_dir=loc)
+        log_msg = f"Downloading %s \"%s\" for instrument \"{key}\"."
+        fns = [inst_spec['arf'], inst_spec['rmf']]
+        logs = ["ARF", "RMF"]
+        if inst_spec['bkgnd'] is not None:
+            fns.append(inst_spec['bkgnd'][0])
+            logs.append("instrumental background model")
+        if inst_spec['psf'] is not None:
+            if "image" in inst_spec['psf'][0]:
+                fns.append(inst_spec['psf'][1])
+                logs.append("PSF model")
+        for fn, log in zip(fns, logs):
+            mylog.info(log_msg % (log, fn))
+            dog.fetch(fn)
 
 
 instrument_registry = InstrumentRegistry()
