@@ -47,7 +47,7 @@ SOXS Dependencies
 SOXS has the following Python dependencies:
 
 * `NumPy <https://numpy.org>`_
-* `AstroPy (v2.0 or higher) <https://www.astropy.org>`_
+* `AstroPy <https://www.astropy.org>`_
 * `SciPy <https://www.scipy.org>`_
 * `h5py <https://www.h5py.org>`_
 * `tqdm <https://github.com/noamraph/tqdm>`_
