@@ -9,19 +9,15 @@ Path to the Response Files
 --------------------------
 
 To use either the ``instrument_simulator`` or ``simulate_spectrum`` command-line
-scripts, it is necessary to download the response files from the :ref:`responses` 
-page and place them in an appropriate location, of which there are two. The first 
-is simply to place the response files needed for the instrument simulator in the 
-current working directory from which you run SOXS. However, it is probably more
-convenient to place the response files in a default path, which can be specified 
-in the SOXS configuration file like this:
-
-.. code-block:: text
-
-    [soxs]
-    response_path = /Users/jzuhone/Data/soxs_responses
-
-See :ref:`config` for more information about the location of the configuration file
+scripts, data files such as the instrumental responses, background models, and 
+PSF models are required. In versions of SOXS previous to v3.0.0, it was 
+necessary to download these files on your own and place them either in the 
+current working directory, or in a location specified by the :ref:`config`. Now,
+whenever an instrument is used, SOXS will first check the current working 
+directory for the necessary files, and then will check the location specified by
+the ``soxs_data_dir`` entry in the configuration file. If the files are not 
+found in either direction, they will be downloaded automatically. See 
+:ref:`config` for more information about the location of the configuration file 
 and how to set its parameters.
 
 .. _cmd-units:

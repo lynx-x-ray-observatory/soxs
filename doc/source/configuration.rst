@@ -8,8 +8,8 @@ configuration file. On most systems, this is placed in the ``XDG_CONFIG_HOME``
 environment variable, which is ``$HOME/.config`` for most systems. The
 SOXS configuration file is therefore ``XDG_CONFIG_HOME/soxs/soxs.cfg``.
 
-In version 3.x, these are the options available for customization in the
-configuration file:
+In versions of SOXS post v3.0.0, these are the options available for 
+customization in the configuration file:
 
 .. code-block:: text
 
