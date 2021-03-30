@@ -92,6 +92,13 @@ Write the source properties to an ASCII text file:
 
     [~]$ make_cosmological_sources halos halos 100.0,ks 10.0 22.0,-12.0 --output_sources=my_halos.txt --overwrite
 
+Write out ds9 regions corresponding to the positions and the :math:`r_{500}` of
+the sources:
+
+.. code-block:: bash
+
+    [~]$ make_cosmological_sources halos halos 100.0,ks 10.0 22.0,-12.0 --write_regions=halos.reg --overwrite
+
 ``make_point_sources``
 ----------------------
 

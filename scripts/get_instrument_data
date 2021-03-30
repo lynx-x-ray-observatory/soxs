@@ -7,54 +7,11 @@ from soxs.instrument_registry import \
 
 parser = argparse.ArgumentParser(description='Download files associated with a particular '
                                              'instrument model.')
-parser.add_argument("key", type=str, help="The file containing the spectrum to be used. "
-                                          "If None, then only a simulated background "
-                                          "may be generated if they are turned on.")
-parser.add_argument("instrument", type=str, help='The name of the instrument to use, '
-                                                 'or alternatively the name of a JSON file '
-                                                 'which contains an instrument specification.')
-parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
-parser.add_argument("out_file", type=str, help="The file to write the convolved spectrum to.")
-parser.add_argument("--overwrite", action='store_true',
-                    help='Overwrite an existing file with the same name.')
-parser.add_argument("--absorb_model", type=str, default="wabs",
-                    help="The absorption model to use for foreground galactic absorption. Default: 'wabs'")
-parser.add_argument("--nh", default=0.05,
-                    help='The galactic hydrogen column in units of 10**22 atoms/cm**2. '
-                         'Default: 0.05')
-parser.add_argument("--bkgnd_area",
-                    help="The area on the sky for the background components, "
-                         "in square arcminutes. Default: None. Must be specified "
-                         "if any of the background components are turned on.")
-parser.add_argument("--random_seed", type=int,
-                    help="A constant integer random seed to produce a consistent set of random numbers.")
-ptsrc_parser = parser.add_mutually_exclusive_group(required=False)
-ptsrc_parser.add_argument("--ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_true',
-                          help='Turn the unresolved point-source background on.')
-ptsrc_parser.add_argument("--no_ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_false',
-                          help='Turn the unresolved point-source background off.')
-instr_parser = parser.add_mutually_exclusive_group(required=False)
-instr_parser.add_argument("--instr_bkgnd", dest='instr_bkgnd', action='store_true',
-                          help='Turn the instrumental background on.')
-instr_parser.add_argument("--no_instr_bkgnd", dest='instr_bkgnd', action='store_false',
-                          help='Turn the instrumental background off.')
-frgnd_parser = parser.add_mutually_exclusive_group(required=False)
-frgnd_parser.add_argument("--foreground", dest='foreground', action='store_true',
-                          help='Turn the galactic foreground on.')
-frgnd_parser.add_argument("--no_foreground", dest='foreground', action='store_false',
-                          help='Turn the galactic foreground off.')
-parser.set_defaults(foreground=False, ptsrc_bkgnd=False, instr_bkgnd=False)
-
+parser.add_argument("instrument", type=str, help="The name of the instrument to download "
+                                                 "files for.")
+parser.add_argument("--loc", type=str, default=os.getcwd(),
+                    help="The path to download the files to. Defaults to the current "
+                         "working directory.")
 args = parser.parse_args()
 
-if args.instrument not in instrument_registry and os.path.exists(args.instrument):
-    instrument = add_instrument_to_registry(args.instrument)
-else:
-    instrument = args.instrument
-
-if args.spec_file == "None":
-    spec = None
-else:
-    spec = Spectrum.from_file(args.spec_file)
-
-instrument_registry.fetch_files()
+instrument_registry.fetch_files(args.instrument, loc=args.loc)

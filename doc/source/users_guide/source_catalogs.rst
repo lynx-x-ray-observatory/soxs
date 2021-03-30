@@ -110,6 +110,16 @@ either direction:
                                         nH=nH, area=area, cat_center=cat_center, 
                                         append=True)
 
+One can also write out `ds9 <https://ds9.si.edu>`_ circle regions corresponding to
+the positions of the halos on the sky, with the radii of the circles given by the
+:math:`r_{500}` of the halos, using the ``write_regions`` argument:
+
+.. code-block:: python
+
+    soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
+                                        fov, sky_center, absorb_model=absorb_model,
+                                        nH=nH, area=area, write_regions="halos.reg")
+
 .. _point-source-catalog:
 
 Point Source Catalog

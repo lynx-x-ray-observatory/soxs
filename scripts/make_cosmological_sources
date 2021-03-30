@@ -31,6 +31,9 @@ parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--output_sources", type=str, 
                     help="Output the source properties to the specified file.")
+parser.add_argument("--write_regions", type=str,
+                    help="Write ds9 circle region files corresponding to the positions "
+                         "and r500 of the halos.")
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
 
@@ -46,4 +49,5 @@ make_cosmological_sources_file(args.simput_prefix, args.phlist_prefix, args.exp_
                                args.fov, sky_center, cat_center=cat_center, 
                                absorb_model=args.absorb_model, nH=args.nh, area=args.area, 
                                append=args.append, overwrite=args.overwrite, 
-                               output_sources=args.output_sources, prng=args.random_seed)
+                               output_sources=args.output_sources, 
+                               write_regions=args.write_regions, prng=args.random_seed)
