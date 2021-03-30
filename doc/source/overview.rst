@@ -45,22 +45,28 @@ which can be written to SIMPUT files, described next.
 SIMPUT Files
 ------------
 
-For storage and representation of source models, SOXS uses the SIMPUT file format. SIMPUT
-stands for "SIMulated inPUT", and was developed at the University of Erlangen-Nuremberg
-for use with the `SIXTE <http://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_
+For storage and representation of source models, SOXS uses the SIMPUT file 
+format. SIMPUT stands for "SIMulated inPUT", and was developed at the 
+University of Erlangen-Nuremberg for use with the 
+`SIXTE <http://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_
 mock X-ray observation package. However, other similar packages, such as 
-`SIMX <http://hea-www.cfa.harvard.edu/simx/>`_ and `MARX <http://space.mit.edu/CXC/MARX/>`_
-use SIMPUT as a possible input format for source models, making it possible to used models
-produced in or for SOXS with these packages to compare the expected performance of X-ray
-Surveyor with other instruments. 
+`SIMX <http://hea-www.cfa.harvard.edu/simx/>`_ and 
+`MARX <http://space.mit.edu/CXC/MARX/>`_ use SIMPUT as a possible input format 
+for source models, making it possible to used models produced in or for SOXS 
+with these packages to compare the expected performance of *Lynx* with other 
+instruments. 
 
-SOXS currently provides facilities for both input and output of SIMPUT catalogs with
-photon lists. Photon lists are FITS tables of RA, Dec, and energy from the simulated source,
-generated assuming a large exposure time and a large collecting area so that the sample is large
-enough that the instrument simulator is able to "observe" a representative subset. The SIMPUT
-outputs can be used to compare simulations made with SOXS to simulations of other X-ray instruments 
-past, current, and future, and likewise SIMPUT catalogs with photon lists not created with SOXS 
-can be used as inputs to SOXS's instrument simulator.
+SOXS currently provides facilities for both input and output of SIMPUT catalogs 
+with spectra, images, and photon lists. A SIMPUT spectral model is simply a FITS 
+table of energy and flux from a source. These may correspond to a point source, 
+or if included with a FITS image it may be an extended source. A SIMPUT photon 
+list model is a FITS table of RA, Dec, and energy of photons from the simulated 
+source, generated assuming a large exposure time and a large collecting area so 
+that the sample is large enough that the instrument simulator is able to 
+"observe" a representative subset. The SIMPUT outputs can be used to compare 
+simulations made with SOXS to simulations of other X-ray instruments past, 
+current, and future, and likewise SIMPUT catalogs with photon lists not created 
+with SOXS can be used as inputs to SOXS's instrument simulator.
 
 For more information, visit :ref:`simput`.
 
@@ -89,9 +95,9 @@ The instrument simulator is called using either the |instrument_simulator_py|_
 or the |instrument_simulator_cmd|_. 
 
 Currently, the instrument simulator can simulate certain "default" instrument 
-configurations for *Lynx*, *Athena*, *Chandra*, *AXIS*, and *XRISM*, but one 
-can also supply a modified instrument configuration for use with the instrument 
-simulator, which is laid out in more detail in :ref:`instrument`. 
+configurations for *Lynx*, *Athena*, *Chandra*, *AXIS*, *XRISM*, and *STAR-X*, 
+but one can also supply a modified instrument configuration for use with the 
+instrument simulator, which is laid out in more detail in :ref:`instrument`. 
 
 Working with Other Tools
 ------------------------
@@ -128,12 +134,13 @@ SIXTE
 
 Website: http://www.sternwarte.uni-erlangen.de/research/sixte/index.php
 
-SIXTE is a software package for X-ray telescope observation simulations developed 
-at the Erlangen Centre for Astroparticle Physics (ECAP) under the leadership of Christian
-Schmid. It allows to undertake instrument performance analyses and to produce simulated 
-event files for mission and analysis studies. Its primary goal is to produce simulated
-*Athena* observations, but it can produce observations of several other missions as
-well. The SIMPUT files produced by SOXS can be used as inputs to SIXTE.
+SIXTE is a software package for X-ray telescope observation simulations 
+developed at the Erlangen Centre for Astroparticle Physics (ECAP). It allows 
+one to undertake instrument performance analyses and to produce simulated 
+event files for mission and analysis studies. Its primary goal is to produce 
+simulated *Athena* observations, but it can produce observations of several 
+other missions as well. The SIMPUT files produced by SOXS can be used as 
+inputs to SIXTE.
 
 pyXSIM
 ++++++
