@@ -14,9 +14,11 @@ cython_extensions = [
               include_dirs=[np.get_include()])
 ]
 
+VERSION = "3.0.0.dev0"
+
 setup(name='soxs',
       packages=find_packages(),
-      version=versioneer.get_version(),
+      version=VERSION,
       description='Simulated Observations of X-ray Sources',
       author='John ZuHone',
       author_email='john.zuhone@cfa.harvard.edu',
