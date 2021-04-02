@@ -65,5 +65,6 @@ from soxs.spectra import \
 
 from soxs.utils import soxs_cfg
 
-__version__ = get_versions()['version']
-del get_versions
+#__version__ = get_versions()['version']
+#del get_versions
+__version__ = "3.0.0.dev0"
