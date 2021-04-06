@@ -119,7 +119,7 @@ def test_ptsrc():
     f_agn = np.zeros((cdf_fluxes.size-1, 100))
     f_gal = np.zeros((cdf_fluxes.size-1, 100))
     for k in range(100):
-        agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng)
+        agn_fluxes, gal_fluxes = generate_fluxes(fov, prng)
         f_agn[:,k] = np.histogram(agn_fluxes, bins=cdf_fluxes)[0]
         f_gal[:,k] = np.histogram(gal_fluxes, bins=cdf_fluxes)[0]
     mu_agn = np.mean(f_agn, axis=1)
