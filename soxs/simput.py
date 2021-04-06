@@ -264,7 +264,7 @@ class SimputCatalog:
         overwrite : boolean, optional
             Whether or not to overwrite an existing file with
             the same name. If src_filename=None and the source is
-            to the written to the SIMPUT catalog file, then this
+            to be written to the SIMPUT catalog file, then this
             argument is ignored. If src_filename is another value,
             it exists, and overwrite=False, the source will be
             appended to the file. Default: False

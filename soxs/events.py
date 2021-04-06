@@ -34,10 +34,10 @@ def write_event_file(events, parameters, filename, overwrite=False):
     col_dy = pyfits.Column(name='DETY', format='D', unit='pixel', array=events["dety"])
     col_id = pyfits.Column(name='CCD_ID', format='J', unit='pixel', array=events["ccd_id"])
 
-    chantype = parameters["channel_type"]
-    if chantype == "PHA":
+    chantype = parameters["channel_type"].lower()
+    if chantype == "pha":
         cunit = "adu"
-    elif chantype == "PI":
+    elif chantype == "pi":
         cunit = "Chan"
     col_ch = pyfits.Column(name=chantype.upper(), format='1J', unit=cunit, 
                            array=events[chantype])
