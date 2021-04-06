@@ -49,6 +49,7 @@ def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
 
 def generate_fluxes(fov, prng):
     from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
+    prng = parse_prng(prng)
 
     fov = parse_value(fov, "arcmin")
 

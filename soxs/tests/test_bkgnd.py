@@ -114,8 +114,6 @@ def test_ptsrc():
     os.chdir(tmpdir)
     prng = RandomState(33)
     fov = 20.0
-    exp_time = (500.0, "ks")
-    area = (30000.0, "cm**2")
     f_agn = np.zeros((cdf_fluxes.size-1, 100))
     f_gal = np.zeros((cdf_fluxes.size-1, 100))
     for k in range(100):
@@ -140,7 +138,7 @@ def test_ptsrc():
     sky_center = [20., 17.]
     prng1 = RandomState(33)
     prng2 = RandomState(33)
-    agn_fluxes, gal_fluxes = generate_fluxes(exp_time, area, fov, prng2)
+    agn_fluxes, gal_fluxes = generate_fluxes(fov, prng2)
     fluxes = np.concatenate([agn_fluxes, gal_fluxes])
     events = make_ptsrc_background(exp_time, fov, sky_center, area=area, 
                                    prng=prng1, nH=None, output_sources="src.dat")
