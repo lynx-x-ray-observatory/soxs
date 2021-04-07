@@ -634,7 +634,7 @@ class ApecGenerator:
         not supplied with SOXS but must be downloaded separately, in
         which case the *apec_root* parameter must also be set to their
         location. Default: False
-
+        
     Examples
     --------
     >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
@@ -682,15 +682,15 @@ class ApecGenerator:
         self.broadening = broadening
         self.line_handle = pyfits.open(self.linefile)
         self.coco_handle = pyfits.open(self.cocofile)
+        self.nT = self.line_handle[1].data.shape[0]
         self.Tvals = self.line_handle[1].data.field("kT")
-        self.nT = len(self.Tvals)
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
         self.var_elem_names = []
         self.var_ion_names = []
         if var_elem is None:
-            self.var_elem = np.empty((0,1), dtype='int')
+            self.var_elem = np.empty((0, 1), dtype='int')
         else:
             self.var_elem = []
             if len(var_elem) != len(set(var_elem)):
