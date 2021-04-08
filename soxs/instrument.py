@@ -10,7 +10,7 @@ from soxs.psf import psf_model_registry
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
 from soxs.simput import read_simput_catalog, SimputPhotonList
 from soxs.utils import mylog, parse_prng, parse_value, \
-    get_rot_mat, create_region, get_data_file
+    get_rot_mat, create_region, get_data_file, ensure_numpy_array
 
 
 def perform_dither(t, dither_dict):
@@ -29,7 +29,8 @@ def perform_dither(t, dither_dict):
 
 def generate_events(source, exp_time, instrument, sky_center, 
                     no_dither=False, dither_params=None, 
-                    roll_angle=0.0, subpixel_res=False, prng=None):
+                    roll_angle=0.0, subpixel_res=False, 
+                    aimpt_shift=None, prng=None):
     """
     Take unconvolved events and convolve them with instrumental responses. This 
     function does the following:
@@ -71,9 +72,13 @@ def generate_events(source, exp_time, instrument, sky_center,
         Default: [8.0, 8.0, 1000.0, 707.0].
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
-    subpixel_res: boolean, optional
+    subpixel_res : boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
+    aimpt_shift : array-like, optional
+        A two-float array-like object which shifts the aimpoint on the 
+        detector from the nominal position. Units are in arcseconds.
+        Default: None, which results in no shift from the nominal aimpoint. 
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -116,6 +121,11 @@ def generate_events(source, exp_time, instrument, sky_center,
     plate_scale = instrument_spec["fov"]/nx/60. # arcmin to deg
     plate_scale_arcsec = plate_scale * 3600.0
 
+    if aimpt_shift is None:
+        aimpt_shift = np.zeros(2)
+    aimpt_shift = ensure_numpy_array(aimpt_shift).astype('float64')
+    aimpt_shift /= plate_scale_arcsec
+
     if not instrument_spec["dither"]:
         dither_on = False
     else:
@@ -146,7 +156,8 @@ def generate_events(source, exp_time, instrument, sky_center,
                     "chan_lim": [rmf.cmin, rmf.cmax],
                     "chips": instrument_spec["chips"],
                     "dither_params": dither_dict,
-                    "aimpt_coords": instrument_spec["aimpt_coords"]}
+                    "aimpt_coords": instrument_spec["aimpt_coords"],
+                    "aimpt_shift": aimpt_shift}
 
     # Set up WCS
 
@@ -208,8 +219,8 @@ def generate_events(source, exp_time, instrument, sky_center,
             # Rotate physical coordinates to detector coordinates
 
             det = np.dot(rot_mat, np.array([xpix, ypix]))
-            detx = det[0, :] + event_params["aimpt_coords"][0]
-            dety = det[1, :] + event_params["aimpt_coords"][1]
+            detx = det[0, :] + event_params["aimpt_coords"][0] + aimpt_shift[0]
+            dety = det[1, :] + event_params["aimpt_coords"][1] + aimpt_shift[1]
 
             # Add times to events
             events['time'] = prng.uniform(size=n_evt, low=0.0,
@@ -274,9 +285,11 @@ def generate_events(source, exp_time, instrument, sky_center,
                 # matrix again
 
                 det = np.array([events["detx"] + x_offset[keep] -
-                                event_params["aimpt_coords"][0],
+                                event_params["aimpt_coords"][0] -
+                                aimpt_shift[0],
                                 events["dety"] + y_offset[keep] -
-                                event_params["aimpt_coords"][1]])
+                                event_params["aimpt_coords"][1] -
+                                aimpt_shift[1]])
                 pix = np.dot(rot_mat.T, det)
 
                 events["xpix"] = pix[0,:] + event_params['pix_center'][0]
@@ -304,7 +317,8 @@ def generate_events(source, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True,
                     ptsrc_bkgnd=True, instr_bkgnd=True, no_dither=False,
                     dither_params=None, roll_angle=0.0, subpixel_res=False,
-                    input_sources=None, absorb_model="wabs", nH=0.05, prng=None):
+                    input_sources=None, absorb_model="wabs", nH=0.05, 
+                    aimpt_shift=None, prng=None):
     """
     Make background events.
 
@@ -346,6 +360,10 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
         Default: 0.05
+    aimpt_shift : array-like, optional
+        A two-float array-like object which shifts the aimpoint on the 
+        detector from the nominal position. Units are in arcseconds.
+        Default: None, which results in no shift from the nominal aimpoint. 
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -393,11 +411,18 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                                                dither_params=dither_params,
                                                roll_angle=roll_angle,
                                                subpixel_res=subpixel_res,
+                                               aimpt_shift=aimpt_shift,
                                                prng=prng)
         mylog.info(f"Generated {events['energy'].size} photons from "
                    f"the point-source background.")
     else:
         nx = instrument_spec["num_pixels"]
+        plate_scale = instrument_spec["fov"]/nx/60.0
+        plate_scale_arcsec = plate_scale*3600.0
+        if aimpt_shift is None:
+            aimpt_shift = np.zeros(2)
+        aimpt_shift = ensure_numpy_array(aimpt_shift).astype('float64')
+        aimpt_shift /= plate_scale_arcsec
         events = defaultdict(list)
         if not instrument_spec["dither"]:
             dither_on = False
@@ -418,7 +443,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "channel_type": rmf.header["CHANTYPE"],
                         "sky_center": sky_center,
                         "dither_params": dither_dict,
-                        "plate_scale": instrument_spec["fov"]/nx/60.0,
+                        "plate_scale": plate_scale,
                         "chan_lim": [rmf.cmin, rmf.cmax],
                         "rmf": rmf_file, "arf": arf_file,
                         "telescope": rmf.header["TELESCOP"],
@@ -426,7 +451,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                         "mission": rmf.header.get("MISSION", ""),
                         "nchan": rmf.n_ch,
                         "roll_angle": roll_angle,
-                        "aimpt_coords": instrument_spec["aimpt_coords"]}
+                        "aimpt_coords": instrument_spec["aimpt_coords"],
+                        "aimpt_shift": aimpt_shift}
 
     if "chips" not in event_params:
         event_params["chips"] = instrument_spec["chips"]
@@ -518,7 +544,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                          foreground=True, ptsrc_bkgnd=True, 
                          bkgnd_file=None, no_dither=False, 
                          dither_params=None, roll_angle=0.0, 
-                         subpixel_res=False, prng=None):
+                         subpixel_res=False, aimpt_shift=None,
+                         prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -580,6 +607,10 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
+    aimpt_shift : array-like, optional
+        A two-float array-like object which shifts the aimpoint on the 
+        detector from the nominal position. Units are in arcseconds.
+        Default: None, which results in no shift from the nominal aimpoint. 
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -589,7 +620,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     Examples
     --------
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 
-    ...                      300000.0, "hdxi_3x10", [30., 45.], overwrite=True)
+    ...                      300000.0, "lynx_hdxi", [30., 45.], overwrite=True)
     """
     from soxs.background import add_background_from_file
     if not out_file.endswith(".fits"):
@@ -599,7 +630,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     events, event_params = generate_events(input_events, exp_time, instrument, sky_center,
                                            no_dither=no_dither, dither_params=dither_params, 
                                            roll_angle=roll_angle, subpixel_res=subpixel_res, 
-                                           prng=prng)
+                                           aimpt_shift=aimpt_shift, prng=prng)
     # If the user wants backgrounds, either make the background or add an already existing
     # background event file. It may be necessary to reproject events to a new coordinate system.
     if bkgnd_file is None:
@@ -611,7 +642,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                 exp_time, instrument, sky_center, foreground=foreground,
                 instr_bkgnd=instr_bkgnd, no_dither=no_dither,
                 dither_params=dither_params, ptsrc_bkgnd=ptsrc_bkgnd, prng=prng,
-                subpixel_res=subpixel_res, roll_angle=roll_angle)
+                subpixel_res=subpixel_res, roll_angle=roll_angle, 
+                aimpt_shift=aimpt_shift)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:

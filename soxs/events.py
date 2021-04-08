@@ -99,6 +99,8 @@ def write_event_file(events, parameters, filename, overwrite=False):
     tbhdu.header["ROLL_PNT"] = parameters["roll_angle"]
     tbhdu.header["AIMPT_X"] = parameters["aimpt_coords"][0]
     tbhdu.header["AIMPT_Y"] = parameters["aimpt_coords"][1]
+    tbhdu.header["AIMPT_DX"] = parameters["aimpt_shift"][0]
+    tbhdu.header["AIMPT_DY"] = parameters["aimpt_shift"][1]
     if parameters["dither_params"]["dither_on"]:
         tbhdu.header["DITHXAMP"] = parameters["dither_params"]["x_amp"]
         tbhdu.header["DITHYAMP"] = parameters["dither_params"]["y_amp"]
@@ -193,6 +195,8 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
     y0 = hdu.header["TCRPX3"]
     xaim = hdu.header.get("AIMPT_X", 0.0)
     yaim = hdu.header.get("AIMPT_Y", 0.0)
+    xaim += hdu.header.get("AIMPT_DX", 0.0)
+    yaim += hdu.header.get("AIMPT_DY", 0.0)
     roll = hdu.header["ROLL_PNT"]
     instr = instrument_registry[hdu.header["INSTRUME"].lower()]
     dither_params = {}

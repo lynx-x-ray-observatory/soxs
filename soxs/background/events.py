@@ -64,9 +64,11 @@ def add_background_from_file(events, event_params, bkg_file):
             x_off = 0.0
             y_off = 0.0
         det = np.array([hdu.data["DETX"][idxs] + x_off -
-                        event_params["aimpt_coords"][0],
+                        event_params["aimpt_coords"][0] -
+                        event_params["aimpt_shift"][0],
                         hdu.data["DETY"][idxs] + y_off -
-                        event_params["aimpt_coords"][1]])
+                        event_params["aimpt_coords"][1] -
+                        event_params["aimpt_shift"][1]])
         xpix, ypix = np.dot(rot_mat.T, det)
 
         xpix += hdu.header["TCRPX2"]
@@ -100,9 +102,11 @@ def make_diffuse_background(bkg_events, event_params, rmf, prng=None):
     rot_mat = get_rot_mat(event_params["roll_angle"])
 
     det = np.array([bkg_events["detx"] + x_offset -
-                    event_params["aimpt_coords"][0],
+                    event_params["aimpt_coords"][0] -
+                    event_params["aimpt_shift"][0],
                     bkg_events["dety"] + y_offset -
-                    event_params["aimpt_coords"][1]])
+                    event_params["aimpt_coords"][1] -
+                    event_params["aimpt_shift"][1]])
     pix = np.dot(rot_mat.T, det)
 
     bkg_events["xpix"] = pix[0, :] + event_params['pix_center'][0]

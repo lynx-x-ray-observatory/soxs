@@ -32,6 +32,9 @@ parser.add_argument("--dither_params", help="The parameters controlling the size
                                             "of x_amp,y_amp,x_period,y_period. The first two "
                                             "numbers are in arcseconds and the second are in "
                                             "seconds. Default: 8.0,8.0,1000.0,707.0")
+parser.add_argument("--aimpt_shift", type=str, 
+                    help="The shift of the aimpoint on the detector in both directions from "
+                         "the nominal aimpoint in arcseconds. Default: [0.0, 0.0]")
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
 ptsrc_parser = parser.add_mutually_exclusive_group(required=False)
@@ -55,6 +58,8 @@ args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
+aimpt_shift = np.array(args.aimpt_shift.split(',')).astype("float64")
+
 if args.dither_params is None:
     dither_params = None
 else:
@@ -71,4 +76,4 @@ instrument_simulator(args.simput_file, args.out_file, args.exp_time,
                      roll_angle=args.roll_angle, instr_bkgnd=args.instr_bkgnd, 
                      ptsrc_bkgnd=args.ptsrc_bkgnd, foreground=args.foreground, 
                      bkgnd_file=args.bkgnd_file, subpixel_res=args.subpixel_res, 
-                     prng=args.random_seed)
+                     aimpt_shift=aimpt_shift, prng=args.random_seed)
