@@ -1,33 +1,41 @@
 #!/usr/bin/env python
 
 import argparse
-from soxs import Spectrum, PhotonList, FillFOVModel
+import soxs
 
-parser = argparse.ArgumentParser(description='Create a SIMPUT photon list of a uniformly filled '+
-                                             'field of view source from a spectrum supplied in a file.')
-parser.add_argument("simput_prefix", type=str, 
-                    help='The prefix of the SIMPUT file to be used as the root of the '+
-                         'catalog. If it does not exist, it will be created.')
-parser.add_argument("phlist_prefix", type=str, 
-                    help='The prefix of the photon list file to be written.')
+parser = argparse.ArgumentParser(description='Create a SIMPUT source of a uniformly filled '+
+                                             'field of view from a spectrum supplied in a file.')
+parser.add_argument("name", type=str,
+                    help='The name of the source in the SIMPUT catalog.')
+parser.add_argument("filename", type=str,
+                    help='The filename of the SIMPUT catalog to write or to append to.')
 parser.add_argument("ra0", help="The right ascension of the source center in degrees.")
 parser.add_argument("dec0", help="The declination of the source center in degrees.")
 parser.add_argument("fov", help="The field of view on a side in arcminutes.")
 parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
-parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
-parser.add_argument("--area", default=30000.0, 
-                    help='The collecting area to use, in cm^2. Default: 30000.0')
+parser.add_argument("image_width", help="The width of the image in arcminutes.")
+parser.add_argument("nx", type=int, help="The resolution of the image.")
+parser.add_argument("--src_filename", type=str,
+                    help='An optional filename to store the source instead of the SIMPUT '
+                         'catalog file.')
 parser.add_argument("--append", action='store_true',
                     help='If set, append a new source an existing SIMPUT catalog. ')
 parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
-parser.add_argument("--random_seed", type=int,
-                    help="A constant integer random seed to produce a consistent set of random numbers.")
 
 args = parser.parse_args()
 
-spec = Spectrum.from_file(args.specfile)
-fov_src = FillFOVModel(args.ra0, args.dec0, args.fov)
-phlist = PhotonList.from_models(args.phlist_prefix, spec, fov_src, args.exp_time,
-                                args.area, prng=args.random_seed)
-phlist.write_photon_list(args.simput_prefix, append=args.append, overwrite=args.overwrite)
+spec = soxs.Spectrum.from_file(args.specfile)
+
+fov = soxs.FillFOVModel(args.ra0, args.dec0, args.fov)
+
+src = soxs.SimputSpectrum.from_models(args.name, spec, fov, args.image_width, 
+                                      args.nx)
+
+if args.append:
+    cat = soxs.SimputCatalog.from_file(args.filename)
+    cat.append(src, src_filename=args.src_filename, overwrite=args.overwrite)
+else:
+    cat = soxs.SimputCatalog.from_source(args.filename, src,
+                                         src_filename=args.src_filename,
+                                         overwrite=args.overwrite)
