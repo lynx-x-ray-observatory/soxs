@@ -319,6 +319,18 @@ To turn dithering off entirely for instruments that enable it, use the
     it. For example, for *Lynx*, dithering is on by default, but for *XRISM* 
     it is off. 
 
+To move the aimpoint of the observation away from the nominal aimpoint on the
+detector, use the ``aimpt_shift`` argument, which is a two-element array of 
+numbers (assumed units of arcseconds) which will shift the aimpoint by those
+values:
+
+.. code-block:: python
+
+    import soxs
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, 
+                              aimpt_shift=[10.0,-20.0])
+
 .. _simulate-spectrum:
 
 Simulating Spectra Only 
@@ -553,6 +565,22 @@ The various parts of each instrument specification are:
   only spectra can be simulated using this instrument specification. 
 * ``"grating"``: Whether or not this instrument specification corresponds to 
   a gratings instrument. 
+
+Downloading Instrument Files
+++++++++++++++++++++++++++++
+
+You may find that you want to download the files used in instrument simulation
+to a different location for use in fitting or other analysis. To do this, use
+the :meth:`~soxs.instrument_registry.fetch_files` method:
+
+.. code-block:: python
+
+    import soxs
+    # Download files to the current working directory
+    soxs.instrument_registry.fetch_files("lynx_hdxi")
+    # Download files to a specific directory
+    soxs.instrument_registry.fetch_files("xrism_resolve", 
+                                         loc="/Users/jzuhone/Data/soxs")
 
 .. _custom-instruments:
 

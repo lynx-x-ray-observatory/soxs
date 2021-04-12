@@ -237,3 +237,42 @@ Simulate backgrounds only.
 .. code-block:: bash
 
     [~]$ simulate_spectrum None lynx_lxm 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
+
+.. _cmd-get-instrument-data:
+
+``get_instrument_data``
+-----------------------
+
+Download the files needed for a particular instrument to a location of one's 
+choosing.
+
+.. code-block:: bash
+
+    usage: get_instrument_data [-h] [--loc LOC] instrument
+    
+    Download files associated with a particular instrument model.
+    
+    positional arguments:
+      instrument  The name of the instrument to download files for.
+    
+    optional arguments:
+      -h, --help  show this help message and exit
+      --loc LOC   The path to download the files to. Defaults to the current
+                  working directory.
+
+Examples
+++++++++
+
+Get the instrument files for the ``"lynx_hdxi"`` instrument model, saved to
+the current working directory. 
+
+.. code-block:: bash
+
+    [~]$ get_instrument_data lynx_hdxi
+
+Get the instrument files for the ``"xrism_resolve"`` instrument model, saved
+to a particular directory.
+
+.. code-block:: bash
+
+    [~]$ get_instrument_data lynx_hdxi --loc /Users/jzuhone/Data/soxs

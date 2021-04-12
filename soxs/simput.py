@@ -601,16 +601,6 @@ def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec,
     """
     This function is designed to preserve backwards-compatibility
     with pyXSIM 2.x. It will be removed in a future release.
-
-    Parameters
-    ----------
-    simput_prefix
-    phlist_prefix
-    flux
-    ra
-    dec
-    energy
-    overwrite
     """
     simput_file = f"{simput_prefix}_simput.fits"
     phlist_file = f"{phlist_prefix}_phlist.fits"
