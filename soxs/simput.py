@@ -290,7 +290,7 @@ class SimputCatalog:
         if source.imhdu is not None:
             img_extver = _determine_extver(src_filename, "IMAGE")
             img_fn = src_filename if src_filename != self.filename else ""
-            img = f"{img_fn}[IMAGE,{extver}]"
+            img = f"{img_fn}[IMAGE,{img_extver}]"
         else:
             img = "NULL"
             img_extver = None

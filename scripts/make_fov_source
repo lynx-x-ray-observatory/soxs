@@ -5,10 +5,10 @@ import soxs
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT source of a uniformly filled '+
                                              'field of view from a spectrum supplied in a file.')
-parser.add_argument("name", type=str,
-                    help='The name of the source in the SIMPUT catalog.')
 parser.add_argument("filename", type=str,
                     help='The filename of the SIMPUT catalog to write or to append to.')
+parser.add_argument("name", type=str,
+                    help='The name of the source in the SIMPUT catalog.')
 parser.add_argument("ra0", help="The right ascension of the source center in degrees.")
 parser.add_argument("dec0", help="The declination of the source center in degrees.")
 parser.add_argument("fov", help="The field of view on a side in arcminutes.")

@@ -58,7 +58,10 @@ args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
 
-aimpt_shift = np.array(args.aimpt_shift.split(',')).astype("float64")
+if args.aimpt_shift is None:
+    aimpt_shift = None
+else:
+    aimpt_shift = np.array(args.aimpt_shift.split(',')).astype("float64")
 
 if args.dither_params is None:
     dither_params = None

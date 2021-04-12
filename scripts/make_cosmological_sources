@@ -11,8 +11,8 @@ parser.add_argument("filename", type=str,
                          'catalog. If it does not exist, it will be created.')
 parser.add_argument("name", type=str,
                     help='The name of the source in the SIMPUT catalog.')
-parser.add_argument("exp_time", type=float, help='The exposure time to use, in seconds.')
-parser.add_argument("fov", type=float, help="The field of view on a side in arcminutes.")
+parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
+parser.add_argument("fov", help="The field of view on a side in arcminutes.")
 parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the ' +
                                                  'observation, in degrees, comma-separated')
 parser.add_argument("--cat_center", type=str, help='The center of the field in the coordinates '
@@ -43,6 +43,7 @@ parser.add_argument("--random_seed", type=int,
 args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(',')).astype("float64")
+
 if args.cat_center is None:
     cat_center = None
 else:

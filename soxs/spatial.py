@@ -351,7 +351,7 @@ class AnnulusModel(RadialFunctionModel):
         r_in = parse_value(r_in, "arcsec")
         r_out = parse_value(r_out, "arcsec")
         def func(r):
-            f = np.zeros(r.size)
+            f = np.zeros(r.shape)
             idxs = np.logical_and(r >= r_in, r < r_out)
             f[idxs] = 1.0
             return f

@@ -23,13 +23,13 @@ file.
 
 .. code-block:: text
 
-    usage: make_point_source [-h] [--src_filename SRC_FILENAME] [--append] [--overwrite] name filename ra0 dec0 specfile
+    usage: make_point_source [-h] [--src_filename SRC_FILENAME] [--append] [--overwrite] filename name ra0 dec0 specfile
     
     Create a SIMPUT source of a point from a spectrum supplied in a file.
     
     positional arguments:
-      name                  The name of the source in the SIMPUT catalog.
       filename              The filename of the SIMPUT catalog to write or to append to.
+      name                  The name of the source in the SIMPUT catalog.
       ra0                   The right ascension of the source in degrees.
       dec0                  The declination of the source in degrees.
       specfile              The file containing the spectrum to be used.
@@ -77,13 +77,13 @@ file. The functional form of the :math:`\beta`-model for a surface brightness pr
 .. code-block:: text
 
     usage: make_beta_model_source [-h] [--theta THETA] [--ellipticity ELLIPTICITY] [--src_filename SRC_FILENAME] [--append] [--overwrite]
-                                  name filename ra0 dec0 r_c beta specfile image_width nx
+                                  filename name ra0 dec0 r_c beta specfile image_width nx
     
     Create a SIMPUT source of a beta-model from a spectrum supplied in a file.
     
     positional arguments:
-      name                  The name of the source in the SIMPUT catalog.
       filename              The filename of the SIMPUT catalog to write or to append to.
+      name                  The name of the source in the SIMPUT catalog.
       ra0                   The right ascension of the source center in degrees.
       dec0                  The declination of the source center in degrees.
       r_c                   The core radius in arcseconds.
@@ -155,37 +155,37 @@ surface brightness profile is:
 
 .. code-block:: text
 
-usage: make_double_beta_model_source [-h] [--theta THETA] [--ellipticity ELLIPTICITY] [--src_filename SRC_FILENAME] [--append] [--overwrite]
-                                     name filename ra0 dec0 r_c1 beta1 r_c2 beta2 sb_ratio specfile image_width nx
-
-Create a SIMPUT source of a double-beta-model from a spectrum supplied in a file.
-
-positional arguments:
-  name                  The name of the source in the SIMPUT catalog.
-  filename              The filename of the SIMPUT catalog to write or to append to.
-  ra0                   The right ascension of the source center in degrees.
-  dec0                  The declination of the source center in degrees.
-  r_c1                  The inner core radius in arcseconds.
-  beta1                 The inner beta parameter.
-  r_c2                  The outer core radius in arcseconds.
-  beta2                 The outer beta parameter.
-  sb_ratio              The ratio of the outer to the inner SB peak value.
-  specfile              The file containing the spectrum to be used.
-  image_width           The width of the image in arcminutes.
-  nx                    The resolution of the image.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --theta THETA         The angle through which to rotate the beta model in degrees. Only makes sense if ellipticity is added. Default:
-                        0.0
-  --ellipticity ELLIPTICITY
-                        The ellipticity of the radial profile, expressed as the ratio between the length scales of the x and y
-                        coordinates. The value of this parameter will shrink or expand the profile in the direction of the "y"
-                        coordinate, so you may need to rotate to get the shape you want. Default: 1.0
-  --src_filename SRC_FILENAME
-                        An optional filename to store the source instead of the SIMPUT catalog file.
-  --append              If set, append a new source an existing SIMPUT catalog.
-  --overwrite           Overwrite an existing file with the same name.
+    usage: make_double_beta_model_source [-h] [--theta THETA] [--ellipticity ELLIPTICITY] [--src_filename SRC_FILENAME] [--append] [--overwrite]
+                                         filename name ra0 dec0 r_c1 beta1 r_c2 beta2 sb_ratio specfile image_width nx
+    
+    Create a SIMPUT source of a double-beta-model from a spectrum supplied in a file.
+    
+    positional arguments:
+      filename              The filename of the SIMPUT catalog to write or to append to.
+      name                  The name of the source in the SIMPUT catalog.
+      ra0                   The right ascension of the source center in degrees.
+      dec0                  The declination of the source center in degrees.
+      r_c1                  The inner core radius in arcseconds.
+      beta1                 The inner beta parameter.
+      r_c2                  The outer core radius in arcseconds.
+      beta2                 The outer beta parameter.
+      sb_ratio              The ratio of the outer to the inner SB peak value.
+      specfile              The file containing the spectrum to be used.
+      image_width           The width of the image in arcminutes.
+      nx                    The resolution of the image.
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      --theta THETA         The angle through which to rotate the beta model in degrees. Only makes sense if ellipticity is added. Default:
+                            0.0
+      --ellipticity ELLIPTICITY
+                            The ellipticity of the radial profile, expressed as the ratio between the length scales of the x and y
+                            coordinates. The value of this parameter will shrink or expand the profile in the direction of the "y"
+                            coordinate, so you may need to rotate to get the shape you want. Default: 1.0
+      --src_filename SRC_FILENAME
+                            An optional filename to store the source instead of the SIMPUT catalog file.
+      --append              If set, append a new source an existing SIMPUT catalog.
+      --overwrite           Overwrite an existing file with the same name.
 
 Examples
 ++++++++
@@ -232,13 +232,13 @@ from a spectrum supplied in a file.
 .. code-block:: text
 
     usage: make_annulus_source [-h] [--theta THETA] [--ellipticity ELLIPTICITY] [--src_filename SRC_FILENAME] [--append] [--overwrite]
-                               name filename ra0 dec0 r_in r_out specfile image_width nx
+                               filename name ra0 dec0 r_in r_out specfile image_width nx
     
     Create a SIMPUT source of an annulus with uniform surface brightness from a spectrum supplied in a file.
     
     positional arguments:
-      name                  The name of the source in the SIMPUT catalog.
       filename              The filename of the SIMPUT catalog to write or to append to.
+      name                  The name of the source in the SIMPUT catalog.
       ra0                   The right ascension of the source center in degrees.
       dec0                  The declination of the source center in degrees.
       r_in                  The inner annulus of the source center in arcseconds.
@@ -292,13 +292,13 @@ from a spectrum supplied in a file.
 .. code-block:: text
 
     usage: make_rectangle_source [-h] [--theta THETA] [--src_filename SRC_FILENAME] [--append] [--overwrite]
-                                 name filename ra0 dec0 width height specfile image_width nx
+                                 filename name ra0 dec0 width height specfile image_width nx
     
     Create a SIMPUT source of a uniformly filled rectangle from a spectrum supplied in a file.
     
     positional arguments:
-      name                  The name of the source in the SIMPUT catalog.
       filename              The filename of the SIMPUT catalog to write or to append to.
+      name                  The name of the source in the SIMPUT catalog.
       ra0                   The right ascension of the source center in degrees.
       dec0                  The declination of the source center in degrees.
       width                 The width of the rectangle in arcseconds.
@@ -352,13 +352,13 @@ from a spectrum supplied in a file.
 
 .. code-block:: text
 
-    usage: make_fov_source [-h] [--src_filename SRC_FILENAME] [--append] [--overwrite] name filename ra0 dec0 fov specfile image_width nx
+    usage: make_fov_source [-h] [--src_filename SRC_FILENAME] [--append] [--overwrite] filename name ra0 dec0 fov specfile image_width nx
     
     Create a SIMPUT source of a uniformly filled field of view from a spectrum supplied in a file.
     
     positional arguments:
-      name                  The name of the source in the SIMPUT catalog.
       filename              The filename of the SIMPUT catalog to write or to append to.
+      name                  The name of the source in the SIMPUT catalog.
       ra0                   The right ascension of the source center in degrees.
       dec0                  The declination of the source center in degrees.
       fov                   The field of view on a side in arcminutes.
