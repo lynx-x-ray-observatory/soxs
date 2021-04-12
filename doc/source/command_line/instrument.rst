@@ -15,10 +15,10 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
 
 .. code-block:: text
 
-    usage: instrument_simulator [-h] [--overwrite] [--dither_shape DITHER_SHAPE]
-                                [--dither_size DITHER_SIZE]
-                                [--roll_angle ROLL_ANGLE]
+    usage: instrument_simulator [-h] [--overwrite] [--roll_angle ROLL_ANGLE]
                                 [--bkgnd_file BKGND_FILE] [--subpixel_res]
+                                [--no_dither] [--dither_params DITHER_PARAMS]
+                                [--aimpt_shift AIMPT_SHIFT]
                                 [--random_seed RANDOM_SEED]
                                 [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
                                 [--instr_bkgnd | --no_instr_bkgnd]
@@ -42,13 +42,6 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
-      --no_dither           Turn dithering off entirely.
-      --dither_params DITHER_PARAMS
-                            The parameters controlling the size and period of
-                            dither. Four floats joined by commas, in the form of
-                            x_amp,y_amp,x_period,y_period. The first two numbers
-                            are in arcseconds and the second are in seconds.
-                            Default: 8.0,8.0,1000.0,707.0
       --roll_angle ROLL_ANGLE
                             The roll angle in degrees. Default: 0.0
       --bkgnd_file BKGND_FILE
@@ -56,6 +49,17 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
                             one.
       --subpixel_res        Don't uniformly distribute event positions within
                             pixels.
+      --no_dither           Turn dithering off entirely.
+      --dither_params DITHER_PARAMS
+                            The parameters controlling the size and period of
+                            dither. Four floats joined by commas, in the form of
+                            x_amp,y_amp,x_period,y_period. The first two numbers
+                            are in arcseconds and the second are in seconds.
+                            Default: 8.0,8.0,1000.0,707.0
+      --aimpt_shift AIMPT_SHIFT
+                            The shift of the aimpoint on the detector in both
+                            directions from the nominal aimpoint in arcseconds.
+                            Default: [0.0, 0.0]
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent
                             set of random numbers.
@@ -97,8 +101,8 @@ This example uses a JSON file created by the user, which contains a custom instr
 
 The following details how to change the other options, for more info see :ref:`other-mods`.
 
-Changing Roll Angle and Dither
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Changing Roll Angle, Dither, and Aimpoint Shift
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Change the roll angle to 45 degrees:
 
@@ -117,6 +121,12 @@ Turn dither off entirely:
 .. code-block:: bash
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --no_dither --overwrite
+
+Shift the aimpoint (units are in arcseconds):
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --aimpt_shift=10.0,-15.0 --overwrite
 
 Customizing Backgrounds
 ~~~~~~~~~~~~~~~~~~~~~~~

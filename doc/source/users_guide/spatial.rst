@@ -68,6 +68,8 @@ The normalization of the :class:`~soxs.spatial.BetaModel` will be determined
 by the :class:`~soxs.spectra.Spectrum` object it is combined with, so the 
 :math:`S_0` parameter is not specified. 
 
+.. _double-beta-model:
+
 ``DoubleBetaModel``
 +++++++++++++++++++
 

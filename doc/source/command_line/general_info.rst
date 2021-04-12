@@ -28,19 +28,19 @@ Special Argument Handling for Quantities with Units
 Many arguments in the command line scripts which have units can 
 take a special format which allows one to specify that particular
 quantity in the units desired by the user. For example, the 
-:ref:`cmd-make-point-source` script has the arguments ``exp_time``
+:ref:`cmd-make-cosmo-sources` script has the arguments ``exp_time``
 and ``area``, which assume the default units of seconds and :math:`\rm{cm^2}`,
 respectively, if one supplies floating-point numbers:
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100000.0 --overwrite --area=30000.0
+    [~]$ make_cosmological_sources halos.simput halos 100000.0 10.0 22.0,-12.0 --area=30000.0 --overwrite
 
 but can take other units, like ks and :math:`\rm{m^2}`, in this format:
 
 .. code-block:: bash
 
-    [~]$ make_point_source pt_src src1 20.0 -32.0 pt_src_spectrum.dat 100.0,ks --overwrite --area=3.0,m**2
+    [~]$ make_cosmological_sources halos.simput halos 100.0,ks 10.0 22.0,-12.0 --area==3.0,m**2 --overwrite
 
 Since the quantities are the same but in different units, these two calls would
 be equivalent. 

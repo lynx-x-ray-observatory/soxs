@@ -19,10 +19,10 @@ descr = "Create a SIMPUT source from an ASCII table of positions and energies. "
         "..."
 
 parser = argparse.ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter)
-parser.add_argument("name", type=str,
-                    help='The name of the source in the SIMPUT catalog.')
 parser.add_argument("filename", type=str,
                     help='The filename of the SIMPUT catalog to write or to append to.')
+parser.add_argument("name", type=str,
+                    help='The name of the source in the SIMPUT catalog.')
 parser.add_argument("infile", type=str, help="The file containing the flux and positions and energies.")
 parser.add_argument("--src_filename", type=str,
                     help='An optional filename to store the source instead of the SIMPUT '

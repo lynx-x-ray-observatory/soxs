@@ -48,7 +48,10 @@ This major version update of SOXS contains new features and optimizations.
   of the halos from events created from the cosmology source catalog has been
   added. See :ref:`cosmo-source-catalog` for more details.
 * The :class:`~soxs.spatial.DoubleBetaModel` spatial source model has been 
-  added.
+  added (see :ref:`double-beta-model`), along with the command-line script 
+  :ref:`cmd-make-double-beta-model-source`.
+* The ``make_beta_model`` command line script has been renamed to
+  :ref:`cmd-make-beta-model-source.
 * An instrument specification for the 
   `_STAR-X_ mission concept <https://ui.adsabs.harvard.edu/abs/2017SPIE10399E..08M/abstract>`_ 
   has been added. 
