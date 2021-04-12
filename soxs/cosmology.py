@@ -248,7 +248,7 @@ def make_cosmological_sources(exp_time, fov, sky_center, cat_center=None,
     return output_events
 
 
-def make_cosmological_sources_file(filename, exp_time, fov,
+def make_cosmological_sources_file(filename, name, exp_time, fov,
                                    sky_center, cat_center=None,
                                    absorb_model="wabs", nH=0.05, area=40000.0,
                                    overwrite=False, output_sources=None, 
@@ -262,6 +262,8 @@ def make_cosmological_sources_file(filename, exp_time, fov,
     ----------
     filename : string
         The filename for the SIMPUT catalog.
+    name : string
+        The name of the SIMPUT photon list.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
     fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -310,7 +312,7 @@ def make_cosmological_sources_file(filename, exp_time, fov,
                                        area=area, output_sources=output_sources,
                                        write_regions=write_regions,prng=prng)
     phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"],
-                              events["flux"], name="cosmo_sources")
+                              events["flux"], name=name)
     if append:
         cat = SimputCatalog.from_file(filename)
         cat.append(phlist, src_filename=src_filename, overwrite=overwrite)

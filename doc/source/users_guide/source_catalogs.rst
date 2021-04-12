@@ -85,17 +85,21 @@ file for a SIMPUT catalog using the cosmological sources model:
 
 .. code-block:: python
 
-    simput_prefix = "my_bkgnd"
-    phlist_prefix = "cosmo"
+    filename = "cosmo.simput"
+    name = "my_cosmo_sources"
     exp_time = (500.0, "ks") 
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     absorb_model = "wabs" # Choose a model for absorption, optional
     nH = 0.02 # Foreground galactic absorption, optional
     area = (4.0, "m**2") # Flat collecting area to generate photon sample
-    soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
-                                        fov, sky_center, absorb_model=absorb_model,
-                                        nH=nH, area=area)
+    soxs.make_cosmological_sources_file(filename, name, exp_time, fov, sky_center,
+                                        absorb_model=absorb_model, nH=nH, 
+                                        area=area)
+
+To append to an existing catalog ``filename``, set ``append=True``. If you 
+want to write the cosmological sources to a separate file, use the 
+``src_filename`` keyword argument.
 
 By default, a random position will be chosen within the halo catalog. If you 
 would prefer to simulate a specific region within the catalog, set the keyword
@@ -105,10 +109,9 @@ either direction:
 .. code-block:: python
 
     cat_center = [-0.2, 3.0]
-    soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
-                                        fov, sky_center, absorb_model=absorb_model,
-                                        nH=nH, area=area, cat_center=cat_center, 
-                                        append=True)
+    soxs.make_cosmological_sources_file(filename, name, exp_time, fov, sky_center, 
+                                        absorb_model=absorb_model, nH=nH, 
+                                        area=area, cat_center=cat_center)
 
 One can also write out `ds9 <https://ds9.si.edu>`_ circle regions corresponding to
 the positions of the halos on the sky, with the radii of the circles given by the
@@ -116,9 +119,9 @@ the positions of the halos on the sky, with the radii of the circles given by th
 
 .. code-block:: python
 
-    soxs.make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, 
-                                        fov, sky_center, absorb_model=absorb_model,
-                                        nH=nH, area=area, write_regions="halos.reg")
+    soxs.make_cosmological_sources_file(filename, name, exp_time, fov, sky_center, 
+                                        absorb_model=absorb_model, nH=nH, 
+                                        area=area, write_regions="halos.reg")
 
 .. _point-source-catalog:
 
@@ -138,25 +141,21 @@ described in :ref:`ptsrc-bkgnd`:
 
 .. code-block:: python
 
-    simput_prefix = "my_bkgnd"
-    phlist_prefix = "pt_src"
+    filename = "pt_src.simput"
+    name = "my_point_sources"
     exp_time = (500.0, "ks") 
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     absorb_model = "tbabs" # Choose a model for absorption, optional
     nH = 0.02 # Foreground galactic absorption, optional
     area = (4.0, "m**2") # Flat collecting area to generate photon sample
-    soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                                 sky_center, absorb_model=absorb_model, nH=nH, 
+    soxs.make_point_sources_file(filename, name, exp_time, fov, sky_center, 
+                                 absorb_model=absorb_model, nH=nH, 
                                  area=area)
 
-
-.. note::
-
-    For both cosmological and point sources, As with other SIMPUT catalogs, if 
-    you supply a value for ``simput_prefix`` to this function that refers to an 
-    existing catalog and set ``append=True``, the photon list file will be 
-    appended to an existing SIMPUT catalog.
+To append to an existing catalog ``filename``, set ``append=True``. If you 
+want to write the cosmological sources to a separate file, use the 
+``src_filename`` keyword argument.
 
 .. _point-source-list:
 
@@ -170,13 +169,13 @@ itself, using the ``output_sources`` keyword argument:
 
 .. code-block:: python
 
-    simput_prefix = "my_bkgnd"
-    phlist_prefix = "pt_src"
+    filename = "pt_src.simput"
+    name = "my_point_sources"
     exp_time = (500.0, "ks")
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     
-    soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+    soxs.make_point_sources_file(filename, name, exp_time, fov, 
                                  sky_center, output_sources="my_srcs.dat")
 
 This saves the point source properties of position, flux, and spectral index
@@ -188,11 +187,10 @@ method:
 .. code-block:: python
 
     output_file = "my_srcs.dat"
-    exp_time = (500.0, "ks") 
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     
-    soxs.make_point_source_list(output_file, exp_time, fov, sky_center)
+    soxs.make_point_source_list(output_file, fov, sky_center)
 
 Regardless of which method used, this ASCII table can be used as input to either
 :func:`~soxs.background.point_sources.make_point_sources_file` or 
@@ -201,13 +199,13 @@ argument, e.g.:
 
 .. code-block:: python
 
-    simput_prefix = "my_bkgnd"
-    phlist_prefix = "pt_src"
+    filename = "pt_src.simput"
+    name = "my_point_sources"
     exp_time = (500.0, "ks")
     fov = 20.0 # arcmin
     sky_center = [30.0, 45.0] # RA, Dec in degrees
     
-    soxs.make_point_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
+    soxs.make_point_sources_file(filename, name, exp_time, fov, 
                                  sky_center, input_sources="my_srcs.dat")
 
 Which ensures that one would have the same set of point sources every time it is

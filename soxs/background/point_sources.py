@@ -254,7 +254,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
     return output_events
 
 
-def make_point_sources_file(filename, exp_time, fov, 
+def make_point_sources_file(filename, name, exp_time, fov, 
                             sky_center, absorb_model="wabs", nH=0.05, 
                             area=40000.0, prng=None, append=False,
                             overwrite=False, src_filename=None,
@@ -267,6 +267,8 @@ def make_point_sources_file(filename, exp_time, fov,
     ----------
     filename : string
         The filename for the SIMPUT catalog.
+    name : string
+        The name of the SIMPUT photon list.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time of the observation in seconds.
     fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -309,7 +311,7 @@ def make_point_sources_file(filename, exp_time, fov,
                                    area=area, input_sources=input_sources, 
                                    output_sources=output_sources, prng=prng)
     phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"],
-                              events["flux"], name="point_sources")
+                              events["flux"], name=name)
     if append:
         cat = SimputCatalog.from_file(filename)
         cat.append(phlist, src_filename=src_filename, overwrite=overwrite)
