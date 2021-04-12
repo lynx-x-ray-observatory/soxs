@@ -35,15 +35,15 @@ numbers, they will be in a default set of units:
 .. code-block:: python
 
     import soxs
-    simput_prefix = "cosmo"
-    phlist_prefix = "cosmo"
+    filename = "cosmo.simput"
+    name = "cosmo_srcs"
     sky_center = [30.0, 45.0]
     exp_time = 500000.0 # seconds
     fov = 40.0 # arcmin
     area = 40000.0 # cm^2
     nH = 0.02 # atoms/cm^2
-    make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                                   sky_center, nH=nH, area=area):
+    soxs.make_cosmological_sources_file(filename, name, exp_time, fov, 
+                                        sky_center, nH=nH, area=area):
 
 However, these same arguments accept values with unit information, either in the
 form of ``(value, unit)`` tuples, :class:`~astropy.units.Quantity`, or
@@ -53,15 +53,15 @@ form of ``(value, unit)`` tuples, :class:`~astropy.units.Quantity`, or
 
     import soxs
     from astropy.units import Quantity
-    simput_prefix = "cosmo"
-    phlist_prefix = "cosmo"
+    filename = "cosmo.simput"
+    name = "cosmo_srcs"
     sky_center = [30.0, 45.0]
     exp_time = (500.0, "ks")
     fov = Quantity(0.666667, "deg")
     area = (4.0, "m**2") 
     nH = Quantity(2.0e20, "cm**-2") 
-    make_cosmological_sources_file(simput_prefix, phlist_prefix, exp_time, fov, 
-                                   sky_center, nH=nH, area=area):
+    soxs.make_cosmological_sources_file(filename, name, exp_time, fov, 
+                                        sky_center, nH=nH, area=area):
 
 Since the quantities are the same but in different units, these two calls would
 be equivalent. Check the :ref:`api` for any given function or class definition 
