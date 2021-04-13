@@ -15,7 +15,8 @@ from soxs.events import \
     write_image, \
     write_radial_profile, \
     plot_spectrum, \
-    make_exposure_map
+    make_exposure_map, \
+    plot_image
 
 from soxs.instrument import \
     instrument_simulator, \
