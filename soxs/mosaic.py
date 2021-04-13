@@ -117,10 +117,7 @@ def make_mosaic_image(evtfile_list, image_file, emin=None, emax=None,
     use_expmap : boolean, optional
         Whether or not to use (and potentially generate) an exposure map
         and a flux map. Default: False
-    expmap_file : filename, optional
-        If this is supplied, an existing exposure map file will be used
-        instead of generated. Default: None
-    expmap_energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, or NumPy array
+    expmap_energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, or NumPy array, optional
         The energy in keV to use when computing the exposure map, or 
         a set of energies to be used with the *weights* parameter. If
         providing a set, it must be in keV.
@@ -167,6 +164,9 @@ def make_mosaic_image(evtfile_list, image_file, emin=None, emax=None,
     hdu.writeto(image_file, overwrite=overwrite)
 
     if use_expmap:
+        if expmap_energy is None:
+            raise RuntimeError("The 'expmap_energy' argument must be set if "
+                               "making a mosaicked exposure map!")
         emap_hdus = [fits.open(fns[1], memmap=True)[1] for fns in files]
         emap, footprint = reproject_and_coadd(
             emap_hdus, wcs_out, shape_out=shape_out,
