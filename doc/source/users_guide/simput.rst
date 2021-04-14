@@ -46,14 +46,14 @@ An extended source can be created from a FITS image if you have one. Note that
 the image must have a header with some coordinate information, where 
 :math:`n \in {1,2}`:
 
-* ``"CRPIX``:math:`n```"``: reference pixel x,y coordinates, usually the image
+* ``"CRPIXn"``: reference pixel x,y coordinates, usually the image
   center
-* ``"CUNIT``:math:`n```"``: both should contain ``"deg"``
-* ``"CDELT``:math:`n```"``: width of each pixel in the x and y directions in 
-  units of ``"CUNIT``:math:`n```"``, ``"CDELT1"`` should be negative
-* ``"CRVAL``:math:`n```"``: reference celestial x,y coordinates--required, but 
+* ``"CUNITn"``: both should contain ``"deg"``
+* ``"CDELTn"``: width of each pixel in the x and y directions in 
+  units of ``"CUNITn"``, ``"CDELT1"`` should be negative
+* ``"CRVALn"``: reference celestial x,y coordinates--required, but 
   these will generally not be used. 
-* ``"CTYPE``:math:`n```"``: must be a projection type, typically ``"RA---TAN"``
+* ``"CTYPEn"``: must be a projection type, typically ``"RA---TAN"``
   and ``"DEC--TAN"`` are used. 
 
 .. code-block:: python

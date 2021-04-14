@@ -171,7 +171,7 @@ AXIS
 ~~~~
 
 A single instrument specification ``axis`` is available for 
-`*AXIS* <http://axis.astro.umd.edu>`_, the Advanced X-ray Imaging Satellite. 
+`AXIS <http://axis.astro.umd.edu>`_, the Advanced X-ray Imaging Satellite. 
 The specification is for the wide-field imaging instrument, with a 24' field of 
 view and a 9.5 m focal length. Response files, the PSF model, and the 
 instrumental background model are used from the 
@@ -184,7 +184,7 @@ STAR-X
 ~~~~~~
 
 A single instrument specification ``star-x`` is available for 
-`*STAR-X* <https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10399/1039908/The-STAR-X-X-Ray-Telescope-Assembly-XTA/10.1117/12.2272580.short?SSO=1>`_.
+`STAR-X <https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10399/1039908/The-STAR-X-X-Ray-Telescope-Assembly-XTA/10.1117/12.2272580.short?SSO=1>`_.
 The specification is for the wide-field imaging istrument, with a 1 degree field
 of view, a 4.5 m focal length, and a Gaussian PSF with a FWHM of 3 arcseconds.
 Currently, no instrumental background is included. The response files for 
@@ -628,8 +628,7 @@ file for editing using :func:`~soxs.instrument.write_instrument_json`:
     are two differences one must note when creating JSON-based instrument 
     specifications:
     1. Python's ``None`` will convert to ``null``, and vice-versa.
-    2. ``True`` and ``False`` are capitalized in Python, in JSON they are 
-       lowercase.
+    2. ``True`` and ``False`` are capitalized in Python, in JSON they are lowercase.
 
 .. _custom-non-imaging:
 
@@ -827,11 +826,11 @@ In this case, the selected HDU (``6``) in the FITS file (``"chandra_psf.fits"``)
 needs to be an image of the PSF with the following header keywords set, where 
 :math:`n \in {1,2}`:
 
-* ``"CRPIX``:math:`n```"``: reference pixel x,y coordinates
-* ``"CUNIT``:math:`n```"``: (optional) length units of pixels, assumed mm by 
+* ``"CRPIXn"``: reference pixel x,y coordinates
+* ``"CUNITn"``: (optional) length units of pixels, assumed mm by 
   default if not set
-* ``"CDELT``:math:`n```"``: width of each pixel in the x and y directions in 
-  units of ``"CUNIT``:math:`n```"``
+* ``"CDELTn"``: width of each pixel in the x and y directions in 
+  units of ``"CUNITn"``
 
 Finally, the ``"multi_image"`` PSF type simply takes the filename as an argument:
 

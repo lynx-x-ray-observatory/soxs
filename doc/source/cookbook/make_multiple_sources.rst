@@ -8,7 +8,7 @@ into a single SIMPUT catalog, which is then used to make a single event file.
 
 .. code-block:: bash
 
-#!/bin/sh
+    #!/bin/sh
 
     # We will use this script to illustrate how to combine multiple sources into
     # a single simput catalog from the command line.

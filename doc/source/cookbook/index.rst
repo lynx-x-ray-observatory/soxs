@@ -13,12 +13,12 @@ Jupyter Notebooks
 .. toctree::
    :maxdepth: 1
 
-   two_clusters
-   pyxsim_example
-   make_background_file
-   point_source_catalog
-   cosmo_source_catalog
-   radial_profile
+   Two_Clusters
+   pyXSIM_Example
+   Make_Background_File
+   Point_Source_Catalog
+   Cosmo_Source_Catalog
+   Radial_Profile
 
 Command Line Scripts
 --------------------
