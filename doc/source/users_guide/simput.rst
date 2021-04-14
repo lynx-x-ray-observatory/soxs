@@ -68,9 +68,8 @@ the image must have a header with some coordinate information, where
     ra2 = 22.01 # degrees
     dec2 = -29.98 # degrees
 
-    # Open the image file
-    f = fits.open("cluster_img.fits")
-    imhdu = f[0] # if the image is in the first extension
+    imhdu "cluster_image.fits[0]" # this specifies the name and extension of the 
+                                  # image
     
     name2 = "cluster1" # name of source
 
