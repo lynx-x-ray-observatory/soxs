@@ -18,6 +18,12 @@ This major version update of SOXS contains new features and optimizations.
   details. 
 * SOXS now supports "spectrum" SIMPUT sources, with and without images, for
   generating mock observations. See :ref:`simput` for details.
+* SOXS now uses the "spectrum" SIMPUT sources in all of the command line scripts
+  which create spatial models, so the signatures of those scripts have changed.
+  See :ref:`cmd-spatial` for details.
+* The Python function :meth:`~soxs.background.point_sources.make_point_source_list`
+  and the command line script :ref:`cmd-make-point-source-list` no longer require 
+  the ``exp_time`` and ``area`` arguments. 
 * The capability to create mosaics of multiple SOXS event files into a single
   FITS image, with options for exposure correction, has been added. See 
   :ref:`mosaic` for details.

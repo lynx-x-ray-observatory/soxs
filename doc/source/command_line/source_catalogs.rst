@@ -179,6 +179,8 @@ Use a previously written ASCII text file of point source properties as input:
         
     [~]$ make_point_sources pt_src.simput pt_src 75.0,ks 5.0 90.0,-10.0 --input_sources=my_ptsrc.txt --overwrite
 
+.. _cmd-make-point-source-list:
+
 ``make_point_source_list``
 --------------------------
 
