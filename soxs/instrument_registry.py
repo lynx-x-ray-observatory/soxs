@@ -34,7 +34,7 @@ class InstrumentRegistry:
         and PSF files to a location of one's choice.
         Files are only actually downloaded if they are 
         not present already.
-        
+
         Parameters
         ----------
         key : string
@@ -53,7 +53,12 @@ class InstrumentRegistry:
         fns = [inst_spec['arf'], inst_spec['rmf']]
         logs = ["ARF", "RMF"]
         if inst_spec['bkgnd'] is not None:
-            fns.append(inst_spec['bkgnd'][0])
+            bkgnd = inst_spec['bkgnd'][0]
+            if isinstance(bkgnd, list):
+                for b in inst_spec['bkgnd']:
+                    fns.append(b[0])
+            else:
+                fns.append(bkgnd)
             logs.append("instrumental background model")
         if inst_spec['psf'] is not None:
             if "image" in inst_spec['psf'][0]:
