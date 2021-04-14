@@ -16,7 +16,9 @@ Making Mosaics of SOXS Images
 SOXS has two functions to create a mosaic of simulated X-ray observations from 
 the same source. To create a mosaic event files from a single source, use the 
 :func:`~soxs.mosaic.make_mosaic_events` function. We'll use a SIMPUT catalog
-from a Chandra image of Cas A, and make four pointings using the *Lynx* LXM.
+from a Chandra image of Cas A (which you can get 
+`here <https://www.sternwarte.uni-erlangen.de/research/sixte/simput/casa.simput.gz>`_, 
+and make four pointings using the *Lynx* LXM.
 
 .. code-block:: python
 

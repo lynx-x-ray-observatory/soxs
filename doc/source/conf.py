@@ -51,8 +51,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
-    'RunNotebook.notebook_sphinxext',
-    'RunNotebook.notebookcell_sphinxext',
+    'nbsphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -361,7 +360,7 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/3/': None,
-                       'https://numpy.org/': None,
+                       'http://docs.scipy.org/doc/numpy/': None,
                        'https://matplotlib.org/': None,
                        'https://yt-project.org/doc/': None,
                        'https://docs.astropy.org/en/stable': None,
