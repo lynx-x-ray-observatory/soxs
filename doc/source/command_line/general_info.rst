@@ -78,10 +78,15 @@ Parameters Used in :ref:`cmd-make-annulus-source`
 * ``r_in``: Inner radius of annulus, default units of arcseconds
 * ``r_out``: Inner radius of annulus, default units of arcseconds
 
-Parameters Used in :ref:`cmd-make-beta-model`
-+++++++++++++++++++++++++++++++++++++++++++++
+Parameters Used in :ref:`cmd-make-beta-model-source`
+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 * ``r_c``: Core radius parameter, default units of arcseconds
+
+Parameters Used in :ref:`cmd-make-double-beta-model-source`
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+* ``r_c1``, ``r_c2``: Core radii parameters, default units of arcseconds
 
 Parameters Used in :ref:`cmd-make-rectangle-source`
 +++++++++++++++++++++++++++++++++++++++++++++++++++

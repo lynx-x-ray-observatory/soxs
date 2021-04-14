@@ -66,3 +66,5 @@ enhance its capabilities.
 * To make mock X-ray observations from 3D hydrodynamics models and other models
   of astrophysical sources, use the 
   `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_ package with SOXS.
+* To make mosaics of SOXS observations (see :ref:`mosaic`), install the 
+  `reproject <https://reproject.readthedocs.io>`_ package.
