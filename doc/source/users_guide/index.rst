@@ -16,3 +16,4 @@ This section documents the capabilities of SOXS and its Python interface.
    background
    source_catalogs
    event_tools
+   mosaic

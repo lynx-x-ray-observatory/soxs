@@ -16,9 +16,9 @@ def make_mosaic_events(pointing_list, input_source, out_prefix, exp_time,
 
     Parameters
     ----------
-    pointing_list : filename
-        A two-column ASCII table of RA and Dec pointings for each mock
-        observation.
+    pointing_list : list of tuples or str
+        Either a list of tuples or a two-column ASCII table, containing 
+        RA and Dec pointings for each mock observation.
     input_source : string
         The path to the SIMPUT catalog file which contains the input
         source(s).
