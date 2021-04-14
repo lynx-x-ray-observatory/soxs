@@ -4,7 +4,6 @@ from soxs.spectra import Spectrum, ConvolvedSpectrum, \
 from soxs.constants import erg_per_keV
 from soxs.utils import parse_prng, parse_value
 from soxs.response import AuxiliaryResponseFile
-import h5py
 
 
 class BackgroundSpectrum(Spectrum):

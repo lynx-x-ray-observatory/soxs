@@ -4,7 +4,7 @@ import astropy.io.fits as pyfits
 import astropy.units as u
 import astropy.wcs as pywcs
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from soxs.constants import erg_per_keV
 from soxs.instrument_registry import instrument_registry

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import h5py
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from astropy.cosmology import FlatLambdaCDM
 from astropy.table import Table

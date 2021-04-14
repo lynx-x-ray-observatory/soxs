@@ -17,7 +17,7 @@ import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.modeling.functional_models import \
     Gaussian1D
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 class Energies(u.Quantity):

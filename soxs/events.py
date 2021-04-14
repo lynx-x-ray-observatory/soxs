@@ -5,7 +5,7 @@ import os
 from soxs.utils import mylog, parse_value, get_rot_mat, \
     create_region
 from soxs.instrument_registry import instrument_registry
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 def wcs_from_event_file(f):
