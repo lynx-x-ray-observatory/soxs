@@ -806,11 +806,52 @@ def plot_spectrum(specfile, plot_energy=True, ebins=None, lw=2,
     return fig, ax
 
 
-def plot_image(img_file, hdu="IMAGE", stretch='linear', vmin=None, vmax=None, 
-               facecolor='k', center=None, radius=None, figsize=(10, 10),
+def plot_image(img_file, hdu="IMAGE", stretch='linear', vmin=None, vmax=None,
+               facecolor='black', center=None, width=None, figsize=(10, 10),
                cmap=None):
+    """
+    Plot a FITS image created by SOXS using Matplotlib.
+
+    Parameters
+    ----------
+    img_file : str
+        The on-disk FITS image to plot. 
+    hdu : str or int, optional
+        The image extension to plot. Default is "IMAGE"
+    stretch : str, optional
+        The stretch to apply to the colorbar scale. Options are "linear",
+        "log", and "sqrt". Default: "linear"
+    vmin : float, optional
+        The minimum value of the colorbar. If not set, it will be the minimum
+        value in the image.
+    vmax : float, optional
+        The maximum value of the colorbar. If not set, it will be the maximum
+        value in the image.
+    facecolor : str, optional
+        The color of zero-valued pixels. Default: "black"
+    center : array-like
+        A 2-element object giving an (RA, Dec) coordinate for the center
+        in degrees. If not set, the reference pixel of the image (usually
+        the center) is used.
+    width : float, optional
+        The width of the image in degrees. If not set, the width of the
+        entire image will be used.
+    figsize : tuple, optional
+        A 2-tuple giving the size of the image in inches, e.g. (12, 15).
+        Default: (10,10)
+    cmap : str, optional
+        The colormap to be used. If not set, the default Matplotlib
+        colormap will be used.
+
+    Returns
+    -------
+    A tuple of the :class:`~matplotlib.figure.Figure` and the 
+    :class:`~matplotlib.axes.Axes` objects.
+    """
     import matplotlib.pyplot as plt
     from matplotlib.colors import PowerNorm, LogNorm, Normalize
+    from astropy.wcs.utils import proj_plane_pixel_scales
+    from astropy.visualization.wcsaxes import WCSAxes
     if stretch == "linear":
         norm = Normalize(vmin=vmin, vmax=vmax)
     elif stretch == "log":
@@ -820,15 +861,25 @@ def plot_image(img_file, hdu="IMAGE", stretch='linear', vmin=None, vmax=None,
     else:
         raise RuntimeError(f"'{stretch}' is not a valid stretch!")
     with fits.open(img_file) as f:
-        hdu = f[hdu] 
+        hdu = f[hdu]
         w = wcs.WCS(hdu.header)
+        pix_scale = proj_plane_pixel_scales(w)
         if center is None:
             center = w.wcs.crpix
-        if radius is None:
-            radius = 0.5*max(hdu.shape)
-        fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(projection=w))
-        ax.imshow(hdu.data, norm=norm, cmap=cmap)
-        ax.set_xlim(center[0] - radius, center[0] + radius)
-        ax.set_ylim(center[1] - radius, center[1] + radius)
+        else:
+            center = w.wcs_world2pix(center[0], center[1], 0)
+        if width is None:
+            dx_pix = 0.5*hdu.shape[0]
+            dy_pix = 0.5*hdu.shape[1]
+        else:
+            dx_pix = width / pix_scale[0]
+            dy_pix = width / pix_scale[1]
+        fig = plt.figure(figsize=figsize)
+        ax = WCSAxes(fig, [0.15, 0.1, 0.8, 0.8], wcs=w)
+        fig.add_axes(ax)
+        im = ax.imshow(hdu.data, norm=norm, cmap=cmap)
+        ax.set_xlim(center[0] - 0.5*dx_pix, center[0] + 0.5*dx_pix)
+        ax.set_ylim(center[1] - 0.5*dy_pix, center[1] + 0.5*dy_pix)
         ax.set_facecolor(facecolor)
+        cbar = plt.colorbar(im)
     return fig, ax
