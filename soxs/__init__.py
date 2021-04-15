@@ -64,4 +64,4 @@ from soxs.spectra import \
 
 from soxs.utils import soxs_cfg
 
-__version__ = "v3.0.0"
+__version__ = "3.0.0"
