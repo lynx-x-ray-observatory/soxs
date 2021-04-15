@@ -8,3 +8,7 @@ Instrument API
 
 .. autoclass:: soxs.instrument_registry.InstrumentRegistry
     :members: fetch_files
+
+.. automodule:: soxs.instrument_registry
+    :members: make_simple_instrument
+

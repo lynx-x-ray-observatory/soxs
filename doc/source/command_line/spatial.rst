@@ -10,7 +10,7 @@ hood, see :ref:`spatial`, :ref:`spectra`, and :ref:`simput`.
 Each of these scripts accepts a ``specfile`` argument, which is a two-column ASCII
 table of energy (keV) and specific flux (:math:`\rm{photons~s^{-1}~cm^{-2}~keV^{-1}}`) 
 which can be written using the spectra command-line scripts (see :ref:`cmd-spectra`), 
-the Python method :meth:`~soxs.spectrum.Spectrum.write_file` (see :ref:`spectra`), 
+the Python method :meth:`~soxs.spectra.Spectrum.write_file` (see :ref:`spectra`), 
 or can be created by hand.
 
 .. _cmd-make-point-source:

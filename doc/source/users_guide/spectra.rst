@@ -713,7 +713,7 @@ Writing a Spectrum to Disk
 
 :class:`~soxs.spectra.Spectrum` objects can be written to disk to either an 
 ASCII text file or an HDF5 file. To write a spectrum to an ASCII file, use the
-:meth:`~soxs.spectra.Spectrum.write_file`:
+:meth:`~soxs.spectra.Spectrum.write_file` method:
 
 .. code-block:: python
 

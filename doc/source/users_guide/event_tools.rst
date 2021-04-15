@@ -194,7 +194,8 @@ supply an exposure map produced by :func:`~soxs.events.make_exposure_map`:
                          rmax, nbins, ctr_type="physical", emin=emin, emax=emax, 
                          expmap_file="my_expmap.fits", overwrite=True)
 
-A cookbook example showing how to extract a radial profile is shown in :ref:`radial-profile`.
+A cookbook example showing how to extract a radial profile is shown in 
+`Radial Profile <../cookbook/Radial_Profile.ipynb>`_.
 
 .. _write-spectrum:
 
@@ -256,3 +257,17 @@ them to :func:`~soxs.events.plot_spectrum` using the ``ebins`` argument:
     plot_spectrum("evt.pha", ebins=ebins, xmin=0.5, xmax=7.0)
 
 For other customizations, consult the :func:`~soxs.events.plot_spectrum` API. 
+
+``plot_image``
+--------------
+
+The :func:`~soxs.events.plot_image` function allows one to plot an image from a FITS
+file. Several examples of this are shown in the following cookbook recipes:
+
+* `Two Clusters <../cookbook/Two_Clusters.ipynb>`_
+* `pyXSIM Example <../cookbook/pyXSIM_Example.ipynb>`_
+* `Make Background File <../cookbook/Make_Background_File.ipynb>`_
+* `Point Source Catalog  <../cookbook/Point_Source_Catalog.ipynb>`_
+* `Cosmological Source Catalog <../cookbook/Cosmo_Source_Catalog.ipynb>`_
+
+For the full range of customizations, consult the :func:`~soxs.events.plot_image` API. 
