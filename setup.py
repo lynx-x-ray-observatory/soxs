@@ -3,7 +3,6 @@ from setuptools import setup, find_packages
 from setuptools.extension import Extension
 import numpy as np
 import glob
-import versioneer
 
 scripts = glob.glob("scripts/*")
 
@@ -14,7 +13,7 @@ cython_extensions = [
               include_dirs=[np.get_include()])
 ]
 
-VERSION = "3.0.0.dev0"
+VERSION = "v3.0.0"
 
 setup(name='soxs',
       packages=find_packages(),

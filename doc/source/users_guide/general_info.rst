@@ -16,9 +16,16 @@ place them either in the current working directory, or in a location specified
 by the :ref:`config`. Now, whenever an instrument is used, SOXS will first 
 check the current working directory for the necessary files, and then will 
 check the location specified by the ``soxs_data_dir`` entry in the configuration
-file. If the files are not found in either direction, they will be downloaded
-automatically. See :ref:`config` for more information about the location of the 
-configuration file and how to set its parameters.
+file. If the files are not found in either location, they will be downloaded
+automatically. If ``soxs_data_dir`` is not set in the configuration file, or is
+set to an invalid directory, a default directory will be chosen:
+
+.. code-block:: pycon
+
+    soxs : [WARNING  ] 2021-04-14 22:05:49,790 Setting 'soxs_data_dir' to /Users/jzuhone/Library/Caches/soxs for this session. Please update your configuration if you want it somewhere else.
+
+See :ref:`config` for more information about the location of the configuration 
+file and how to set its parameters.
 
 .. _units:
 

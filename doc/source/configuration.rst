@@ -16,3 +16,10 @@ customization in the configuration file:
     [soxs]
     soxs_data_dir = /does/not/exist # The path to instrument files and APEC tables
     abund_table = angr # The abundance table to use for APEC thermal spectra
+
+If ``soxs_data_dir`` is not set in the configuration file, or is
+set to an invalid directory, a default directory will be chosen:
+
+.. code-block:: pycon
+
+    soxs : [WARNING  ] 2021-04-14 22:05:49,790 Setting 'soxs_data_dir' to /Users/jzuhone/Library/Caches/soxs for this session. Please update your configuration if you want it somewhere else.

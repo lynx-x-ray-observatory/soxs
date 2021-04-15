@@ -67,8 +67,8 @@ if soxs_cfg.has_option("soxs", "response_path"):
 
 if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
     soxs_data_dir = appdirs.user_cache_dir("soxs")
-    mylog.info(f"Setting 'soxs_data_dir' to {soxs_data_dir} for this session. "
-               f"Please update your configuration if you want it somewhere else.")
+    mylog.warning(f"Setting 'soxs_data_dir' to {soxs_data_dir} for this session. "
+                  f"Please update your configuration if you want it somewhere else.")
     soxs_cfg.set("soxs", "soxs_data_dir", appdirs.user_cache_dir("soxs"))
 
 
