@@ -60,15 +60,22 @@ class Spectrum:
         self.cumspec = cumspec
         self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
 
-    def __add__(self, other):
+    def _check_binning_units(self, other):
         if self.nbins != other.nbins or \
-           not np.isclose(self.ebins.value, other.ebins.value).all():
+                not np.isclose(self.ebins.value, other.ebins.value).all():
             raise RuntimeError("Energy binning for these two "
                                "spectra is not the same!!")
         if self._units != other._units:
             raise RuntimeError("The units for these two spectra "
                                "are not the same!")
+
+    def __add__(self, other):
+        self._check_binning_units(other)
         return Spectrum(self.ebins, self.flux+other.flux)
+
+    def __sub__(self, other):
+        self._check_binning_units(other)
+        return Spectrum(self.ebins, self.flux-other.flux)
 
     def __mul__(self, other):
         if hasattr(other, "eff_area"):
@@ -634,7 +641,7 @@ class ApecGenerator:
         not supplied with SOXS but must be downloaded separately, in
         which case the *apec_root* parameter must also be set to their
         location. Default: False
-        
+
     Examples
     --------
     >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
