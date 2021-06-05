@@ -32,8 +32,13 @@ class InstrumentalBackground:
             hdu = f["SPECTRUM"]
             if "COUNTS" in hdu.data.names:
                 count_rate = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]
-            else:
+            elif "COUNT_RATE" in hdu.data.names:
                 count_rate = hdu.data["COUNT_RATE"]
+            elif "RATE" in hdu.data.names:
+                count_rate = hdu.data["RATE"]
+            else:
+                raise RuntimeError("Cannot find a field for either "
+                                   "counts or count rate!")
             count_rate /= ext_area
             channel = hdu.data["CHANNEL"]
         return cls(channel, count_rate, focal_length)
