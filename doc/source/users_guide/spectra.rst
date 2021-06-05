@@ -360,6 +360,12 @@ they have the same energy binning:
     
 If they do not, an error will be thrown. 
 
+Or they can be subtracted:
+
+.. code-block:: python
+
+    diff_spectrum = spec1-spec2
+
 You can also multiply a spectrum by a constant float number or divide it by one:
 
 .. code-block:: python
