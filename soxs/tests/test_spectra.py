@@ -10,9 +10,12 @@ def test_arithmetic():
     spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4, 0.1, 10.0, 10000)
     spec2 = Spectrum.from_powerlaw(2.0, 0.01, 1.0e-3, 0.1, 10.0, 10000)
     spec3 = spec1+spec2
+    spec3b = spec1-spec2
     flux3 = spec1.flux+spec2.flux
+    flux3b = spec1.flux-spec2.flux
 
     assert_allclose(spec3.flux, flux3)
+    assert_allclose(spec3b.flux, flux3b)
 
     spec4 = spec3*3.0
     spec5 = 3.0*spec3
