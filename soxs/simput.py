@@ -291,6 +291,9 @@ class SimputCatalog:
             img_extver = _determine_extver(src_filename, "IMAGE")
             img_fn = src_filename if src_filename != self.filename else ""
             img = f"{img_fn}[IMAGE,{img_extver}]"
+        elif source.src_type == "phlist":
+            img = spec
+            img_extver = extver
         else:
             img = "NULL"
             img_extver = None
