@@ -3,6 +3,19 @@
 ChangeLog
 =========
 
+Version 3.0.1
+-------------
+
+This bugfix update to SOXS contains bug fixes and a minor new feature.
+
+* A bug which prevented SIMPUT photon lists written by SOXS to be read in by
+  SIXTE has been fixed.
+* A bug which prevented the use of instrumental background files which do not
+  contain the ``"EXPOSURE"`` keyword in the header has been fixed. 
+* :func:`~soxs.instrument_registry.add_instrument_to_registry` now catches
+  more errors in the setup of custom instruments and flags them informatively.
+* Subtraction of two :class:`~soxs.spectra.Spectrum` objects is now possible.
+
 Version 3.0.0
 -------------
 
