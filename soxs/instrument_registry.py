@@ -402,6 +402,22 @@ def add_instrument_to_registry(inst_spec):
     else:
         default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", 
                        "imaging", "grating"}
+    if not isinstance(inst["psf"], list):
+        raise RuntimeError("The 'psf' option in the instrument needs to be "
+                           "a two-element list specifying the PSF type and "
+                           "additional arguments. See the SOXS documentation "
+                           "for details.")
+    if not isinstance(inst["bkgnd"], list):
+        raise RuntimeError("The 'bkgnd' option in the instrument needs to be "
+                           "either a two-element list specifying the background "
+                           "file and its area in square arcminutes, or a list of "
+                           "such two-element lists if the background is different "
+                           "on different chips. See the SOXS documentation for "
+                           "details.")
+    if "dep_name" in inst:
+        mylog.warning("The 'dep_name' option is no longer supported. Dropping it "
+                      "from the instrument specification.")
+        inst.pop("dep_name")
     my_keys = set(inst.keys())
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
