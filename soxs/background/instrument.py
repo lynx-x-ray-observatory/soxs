@@ -13,7 +13,6 @@ class InstrumentalBackground:
         self.channel = channel
         self.count_rate = count_rate
         self.default_focal_length = default_focal_length
-        self.exp_time = exp_time
 
     @classmethod
     def from_filename(cls, filename, ext_area, focal_length):
@@ -32,15 +31,13 @@ class InstrumentalBackground:
         fn = get_data_file(filename)
         with pyfits.open(fn) as f:
             hdu = f["SPECTRUM"]
-            exp_time = hdu.header["EXPOSURE"]
             if "COUNTS" in hdu.data.names:
-                count_rate = hdu.data["COUNTS"]/exp_time
+                count_rate = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]
             else:
                 count_rate = hdu.data["COUNT_RATE"]
             count_rate /= ext_area
             channel = hdu.data["CHANNEL"]
-        return cls(channel, count_rate, focal_length,
-                   exp_time)
+        return cls(channel, count_rate, focal_length)
 
     def generate_channel_spectrum(self, t_exp, solid_angle, 
                                   focal_length=None, prng=None):
