@@ -8,8 +8,7 @@ from regions import PixCoord
 
 class InstrumentalBackground:
 
-    def __init__(self, channel, count_rate, default_focal_length,
-                 exp_time):
+    def __init__(self, channel, count_rate, default_focal_length):
         self.channel = channel
         self.count_rate = count_rate
         self.default_focal_length = default_focal_length
