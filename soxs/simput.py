@@ -285,12 +285,17 @@ class SimputCatalog:
             overwrite = False
 
         extver = _determine_extver(src_filename, source.src_type.upper())
-        spec_fn = src_filename if src_filename != self.filename else ""
-        spec = f"{spec_fn}[{source.src_type.upper()},{extver}]"
+        if src_filename != self.filename:
+            src_fn = os.path.join(
+                os.path.relpath(os.path.dirname(src_filename), 
+                                os.path.dirname(self.filename)),
+                os.path.basename(src_filename))
+        else:
+            src_fn = ""
+        spec = f"{src_fn}[{source.src_type.upper()},{extver}]"
         if source.imhdu is not None:
             img_extver = _determine_extver(src_filename, "IMAGE")
-            img_fn = src_filename if src_filename != self.filename else ""
-            img = f"{img_fn}[IMAGE,{img_extver}]"
+            img = f"{src_fn}[IMAGE,{img_extver}]"
         elif source.src_type == "phlist":
             img = spec
             img_extver = extver
