@@ -995,6 +995,14 @@ class ConvolvedSpectrum(Spectrum):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
 
+    def __add__(self, other):
+        self._check_binning_units(other)
+        return ConvolvedSpectrum(self.ebins, self.flux+other.flux, self.arf)
+
+    def __sub__(self, other):
+        self._check_binning_units(other)
+        return ConvolvedSpectrum(self.ebins, self.flux-other.flux, self.arf)
+
     @classmethod
     def convolve(cls, spectrum, arf):
         """
