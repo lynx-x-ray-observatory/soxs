@@ -402,12 +402,13 @@ def add_instrument_to_registry(inst_spec):
     else:
         default_set = {"name", "arf", "rmf", "bkgnd", "focal_length", 
                        "imaging", "grating"}
-    if not isinstance(inst["psf"], list):
-        raise RuntimeError("The 'psf' option in the instrument needs to be "
-                           "a two-element list specifying the PSF type and "
-                           "additional arguments. See the SOXS documentation "
-                           "for details.")
-    if not isinstance(inst["bkgnd"], list):
+    if inst["imaging"]:
+        if inst["psf"] is not None and not isinstance(inst["psf"], list):
+            raise RuntimeError("The 'psf' option in the instrument needs to be "
+                               "a two-element list specifying the PSF type and "
+                               "additional arguments. See the SOXS documentation "
+                               "for details.")
+    if inst["bkgnd"] is not None and not isinstance(inst["bkgnd"], list):
         raise RuntimeError("The 'bkgnd' option in the instrument needs to be "
                            "either a two-element list specifying the background "
                            "file and its area in square arcminutes, or a list of "
