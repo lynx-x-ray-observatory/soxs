@@ -284,6 +284,7 @@ class SimputCatalog:
             # Don't overwrite the SIMPUT catalog file!!
             overwrite = False
         elif overwrite and os.path.exists(src_filename):
+            mylog.warning(f"Overwriting {src_filename}.")
             os.remove(src_filename)
     
         extver = _determine_extver(src_filename, source.src_type.upper())
