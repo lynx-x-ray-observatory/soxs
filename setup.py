@@ -13,7 +13,7 @@ cython_extensions = [
               include_dirs=[np.get_include()])
 ]
 
-VERSION = "3.0.1"
+VERSION = "3.0.2"
 
 setup(name='soxs',
       packages=find_packages(),
