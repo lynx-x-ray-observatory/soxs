@@ -53,13 +53,15 @@ The ``make_sloshing.py`` script that is called:
     redshift = 0.1
     
     # This line generates the photons
-    photons = pyxsim.PhotonList.from_data_source(sp, redshift, area, exp_time, source_model)
-        
+    n_photons, n_cells = pyxsim.make_photons("my_photons", sp, redshift, area, exp_time, source_model)
+    
     # Project the photons along the z-axis and absorb them
-    events = photons.project_photons("z", (30.0, 45.0), absorb_model="tbabs", nH=0.04)
+    n_events = pyxsim.project_photons("my_photons", "my_events", "z", (30.0, 45.0),
+                                      absorb_model="tbabs", nH=0.04)
     
     # Write the events to a SIMPUT catalog
-    events.write_simput_file("sloshing", overwrite=True)
+    events = pyxsim.EventList("my_events.h5")
+    events.write_to_simput("sloshing", overwrite=True)
     
 Download these scripts and JSON files here: 
 
