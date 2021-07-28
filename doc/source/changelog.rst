@@ -3,6 +3,19 @@
 ChangeLog
 =========
 
+Version 3.0.2
+-------------
+
+This version of SOXS contains bug fixes and a minor new feature.
+
+* Relative paths are now handled correctly in SIMPUT catalogs.
+* A number of problems in parsing instrument specifications have been fixed.
+* A bug which caused a crash when an RMF with ``N_CHAN`` = 0 in columns has 
+  been fixed.
+* :class:`~soxs.spectra.ConvolvedSpectrum` objects can now be added and 
+  subtracted.
+* Doc examples which use pyXSIM now use pyXSIM 3.0.0.
+
 Version 3.0.1
 -------------
 
