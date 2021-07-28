@@ -6,6 +6,7 @@ from soxs.spatial import construct_wcs
 from astropy.units import Quantity
 from collections.abc import Sequence
 import os
+from pathlib import Path
 
 
 def _parse_catalog_entry(src):
@@ -286,12 +287,12 @@ class SimputCatalog:
         elif overwrite and os.path.exists(src_filename):
             mylog.warning(f"Overwriting {src_filename}.")
             os.remove(src_filename)
-    
+
         extver = _determine_extver(src_filename, source.src_type.upper())
         if src_filename != self.filename:
             src_fn = os.path.join(
-                os.path.relpath(os.path.dirname(src_filename), 
-                                os.path.dirname(self.filename)),
+                os.path.relpath(Path(src_filename).parent,
+                                Path(self.filename).parent),
                 os.path.basename(src_filename))
         else:
             src_fn = ""

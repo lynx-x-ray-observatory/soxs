@@ -41,8 +41,8 @@ def test_append():
 
     f = pyfits.open("pt_src_simput.fits")
     cat = f["SRC_CAT"].data["SPECTRUM"]
-    assert cat[0] == "pt_src1_phlist.fits[PHLIST,1]"
-    assert cat[1] == "pt_src2_phlist.fits[PHLIST,1]"
+    assert cat[0] == "./pt_src1_phlist.fits[PHLIST,1]"
+    assert cat[1] == "./pt_src2_phlist.fits[PHLIST,1]"
     f.close()
 
     os.chdir(curdir)
