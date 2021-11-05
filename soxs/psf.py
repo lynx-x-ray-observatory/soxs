@@ -92,7 +92,7 @@ class MultiImagePSF(PSF):
         img_u = []
         with pyfits.open(self.img_file, lazy_load_hdus=True) as f:
             for i, hdu in enumerate(f):
-                if not hdu.is_image:
+                if not hdu.is_image or hdu.header["NAXIS"] != 2:
                     continue
                 img_e.append(hdu.header["ENERGY"])
                 key = "THETA" if "OFFAXIS" not in hdu.header else "OFFAXIS"
