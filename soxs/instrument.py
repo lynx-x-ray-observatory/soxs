@@ -669,6 +669,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     if len(events["energy"]) == 0:
         mylog.warning("No events were detected from source or background!! We "
                       "will not write an event file.")
+    else:
         write_event_file(events, event_params, out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 
