@@ -545,7 +545,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                          bkgnd_file=None, no_dither=False, 
                          dither_params=None, roll_angle=0.0, 
                          subpixel_res=False, aimpt_shift=None,
-                         prng=None):
+                         bkg_nH=0.05, prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -611,6 +611,10 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         A two-float array-like object which shifts the aimpoint on the 
         detector from the nominal position. Units are in arcseconds.
         Default: None, which results in no shift from the nominal aimpoint. 
+    bkg_nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2 for the power-law
+        component of the astrophysical background.
+        Default: 0.05
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -643,7 +647,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                 instr_bkgnd=instr_bkgnd, no_dither=no_dither,
                 dither_params=dither_params, ptsrc_bkgnd=ptsrc_bkgnd, prng=prng,
                 subpixel_res=subpixel_res, roll_angle=roll_angle, 
-                aimpt_shift=aimpt_shift)
+                aimpt_shift=aimpt_shift, nH=bkg_nH)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:
@@ -661,8 +665,8 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 def simulate_spectrum(spec, instrument, exp_time, out_file,
                       instr_bkgnd=False, foreground=False,
                       ptsrc_bkgnd=False, bkgnd_area=None,
-                      absorb_model="wabs", nH=0.05,
-                      overwrite=False, prng=None):
+                      absorb_model="wabs", bkg_nH=0.05,
+                      overwrite=False, prng=None, **kwargs):
     """
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
     by convolving it with responses. To be used if one wants to 
@@ -696,8 +700,9 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         are turned on. 
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    nH : float, optional
-        The hydrogen column in units of 10**22 atoms/cm**2. 
+    bkg_nH : float, optional
+        The hydrogen column in units of 10**22 atoms/cm**2 for the power-law
+        component of the astrophysical background.
         Default: 0.05
     overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
@@ -720,6 +725,11 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     from soxs.background.foreground import hm_astro_bkgnd
     from soxs.background.spectra import BackgroundSpectrum
     from soxs.background.instrument import InstrumentalBackground
+    import warnings
+    if "nH" in kwargs:
+        warnings.warn("The 'nH' keyword argument has been changed to "
+                      "'bkg_nH' and is deprecated.", DeprecationWarning)
+        bkg_nH = kwargs.pop("nH")
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
     try:
@@ -775,7 +785,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         mylog.info("Adding in background from unresolved point-sources.")
         spec_plaw = BackgroundSpectrum.from_powerlaw(1.45, 0.0, 2.0e-7, emin=0.01,
                                                      emax=10.0, nbins=300000)
-        spec_plaw.apply_foreground_absorption(nH, model=absorb_model)
+        spec_plaw.apply_foreground_absorption(bkg_nH, model=absorb_model)
         cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
 

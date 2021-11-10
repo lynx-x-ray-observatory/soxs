@@ -381,7 +381,7 @@ modeled using an absorbed power-law with the following parameters:
 * Power-law index :math:`\alpha = 1.45`
 * Normalization at 1 keV of :math:`2.0 \times 10^{-7} \rm{photons~cm^{-2}~keV^{-1}}`
 
-The foreground galactic absorption parameter ``nH`` and the absorption model
+The foreground galactic absorption parameter ``bkg_nH`` and the absorption model
 ``absorb_model`` can be set by hand:
 
 .. code-block:: python
@@ -391,7 +391,7 @@ The foreground galactic absorption parameter ``nH`` and the absorption model
     out_file = "lots_of_lines.pha"
     simulate_spectrum(spec, instrument, exp_time, out_file, 
                       ptsrc_bkgnd=True, foreground=True, 
-                      instr_bkgnd=True, overwrite=True, nH=0.02,
+                      instr_bkgnd=True, overwrite=True, bkg_nH=0.02,
                       absorb_model="tbabs", bkgnd_area=(1.0, "arcmin**2"))
 
 Instrument specifications with the ``"imaging"`` keyword set to ``False`` can 

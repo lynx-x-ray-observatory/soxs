@@ -62,8 +62,10 @@ spectral index of :math:`\alpha = 2.0`. The spectral indices of AGN sources are
 drawn from a fit to the spectral index distribution of sources given in 
 Figure 13a of `Hickox & Markevitch 2006 <http://adsabs.harvard.edu/abs/2006ApJ...645...95H>`_. 
 Sources are absorbed by foreground Galactic neutral hydrogen assuming a neutral 
-hydrogen column of :math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}`. The position of 
-each point source is uniformly randomly distributed within the field of view. 
+hydrogen column of :math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}` (though this can
+be changed in the call to :func:`~soxs.instrument.instrument_simulator`. The 
+position of each point source is uniformly randomly distributed within the field 
+of view. 
 
 Though a point-source population is automatically created as a background 
 component when an observation is simulated, one can also create a SIMPUT catalog
@@ -115,8 +117,8 @@ The ``"bkgnd"`` entry can also be set to ``None``, which corresponds to no
 particle background. To change the particle background, one would need to 
 define a new instrument specification with a different background. 
 
-Turning Background Components On and Off
-----------------------------------------
+Adjusting Background Components
+-------------------------------
 
 All components of the background are turned on in the instrument simulator by
 default. The various components of the background can be turned on or off 
@@ -142,6 +144,16 @@ the parameters ``ptsrc_bkgnd``, ``foreground``, and/or ``instr_bkgnd`` to
     soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
                               sky_center, overwrite=True, ptsrc_bkgnd=False,
                               instr_bkgnd=False, foreground=False)
+
+If you want to change the neutral hydrogen column used for the background point
+sources, set the ``bkg_nH`` (default value is 0.05) in the call to 
+:func:`~soxs.instrument.instrument_simulator`:
+
+.. code-block:: python
+
+    # change the value of the neutral hydrogen column
+    soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
+                              sky_center, overwrite=True, bkg_nH=0.02)
 
 .. _make-bkgnd:
 
