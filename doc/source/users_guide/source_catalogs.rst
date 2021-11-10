@@ -192,10 +192,9 @@ method:
     
     soxs.make_point_source_list(output_file, fov, sky_center)
 
-Regardless of which method used, this ASCII table can be used as input to either
-:func:`~soxs.background.point_sources.make_point_sources_file` or 
-:func:`~soxs.instrument.make_background_file` via the ``input_sources`` keyword
-argument, e.g.:
+Regardless of which method used, this ASCII table can be used as input to
+:func:`~soxs.background.point_sources.make_point_sources_file` via the
+``input_sources`` keyword argument, e.g.:
 
 .. code-block:: python
 
@@ -209,4 +208,6 @@ argument, e.g.:
                                  sky_center, input_sources="my_srcs.dat")
 
 Which ensures that one would have the same set of point sources every time it is
-run. 
+run. You can also pass this file to the ``input_pt_sources`` keyword argument of
+:func:`~soxs.instrument.instrument_simulator` or 
+:func:`~soxs.instrument.make_background_file`.

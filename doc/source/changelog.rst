@@ -3,6 +3,24 @@
 ChangeLog
 =========
 
+Version 3.1.0
+-------------
+
+* A bug which prevented the use of the ``xrism_resolve`` instrument has been
+  fixed.
+* A way to change the neutral hydrogen column for the astrophysical background
+  has been added to the :func:`~soxs.instrument.instrument_simulator`, as a new
+  keyword argument ``bkg_nH``. The keyword argument to do the same for 
+  :func:`~soxs.instrument.simulate_spectrum` is now renamed to ``bkg_nH`` from
+  ``nH`` for consistency.
+* The default APEC version can now be set in the :ref:`config`. 
+* The keyword argument ``input_pt_sources`` has been added to the 
+  :func:`~soxs.instrument.instrument_simulator`, to allow a consistent set of 
+  point sources to be simulated. See :ref:`point-source-list` for information
+  on how to create this file. The keyword argument to do the same for 
+  :func:`~soxs.instrument.make_background_file` is now renamed to 
+  ``input_pt_sources`` from ``input_sources`` for consistency.
+
 Version 3.0.2
 -------------
 
