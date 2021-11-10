@@ -9,7 +9,6 @@ from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spectra import Spectrum
 from soxs.tests.utils import spectrum_answer_testing, \
     file_answer_testing
-from numpy.random import RandomState
 
 
 def test_emission_line(answer_store, answer_dir):
