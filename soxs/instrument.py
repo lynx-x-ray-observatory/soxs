@@ -652,8 +652,9 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
             raise IOError(f"Cannot find the background event file {bkgnd_file}!")
         events = add_background_from_file(events, event_params, bkgnd_file)
     if len(events["energy"]) == 0:
-        raise RuntimeError("No events were detected from source or background!!")
-    write_event_file(events, event_params, out_file, overwrite=overwrite)
+        mylog.warning("No events were detected from source or background!! We "
+                      "will not write an event file.")
+        write_event_file(events, event_params, out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 
 
