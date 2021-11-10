@@ -9,8 +9,7 @@ from soxs.utils import soxs_files_path, mylog, \
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
-    m_u, elem_names, sigma_to_fwhm, abund_tables, sqrt2pi, \
-    default_apec_vers
+    m_u, elem_names, sigma_to_fwhm, abund_tables, sqrt2pi
 import astropy.io.fits as pyfits
 import astropy.units as u
 import h5py
@@ -614,8 +613,9 @@ class ApecGenerator:
         are stored. If not provided, the default is to 
         grab them from the tables stored with SOXS.
     apec_vers : string, optional
-        The version identifier string for the APEC files. 
-        Default: "3.0.9"
+        The version identifier string for the APEC files. Default is
+        set in the SOXS configuration file, the default for which is
+        "3.0.9".
     broadening : boolean, optional
         Whether or not the spectral lines should be 
         thermally and velocity broadened. Default: True
@@ -651,7 +651,7 @@ class ApecGenerator:
                  apec_vers=None, broadening=True, nolines=False,
                  abund_table=None, nei=False):
         if apec_vers is None:
-            apec_vers = default_apec_vers
+            apec_vers = soxs_cfg.get("soxs", "apec_vers")
         mylog.info(f"Using APEC version {apec_vers}.")
         if nei and var_elem is None:
             raise RuntimeError("For NEI spectra, you must specify which elements "

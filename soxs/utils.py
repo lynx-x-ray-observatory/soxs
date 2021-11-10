@@ -12,7 +12,8 @@ import appdirs
 # Configuration
 
 soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
-                     "abund_table": "angr"}
+                     "abund_table": "angr",
+                     "apec_vers": "3.0.9"}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                             os.path.join(os.path.expanduser('~'),
@@ -255,7 +256,6 @@ class PoochHandle:
                 cache_dir = soxs_cfg.get("soxs", "soxs_data_dir")
             else:
                 cache_dir = pooch.os_cache("soxs")
-                
         self._registry = json.load(
             pkg_resources.resource_stream("soxs", "file_hash_registry.json"))
         self.pooch_obj = pooch.create(
