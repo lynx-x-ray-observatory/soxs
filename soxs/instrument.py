@@ -3,6 +3,7 @@ import astropy.wcs as pywcs
 import os
 from collections import defaultdict
 from regions import PixCoord
+import warnings
 
 from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
@@ -317,7 +318,7 @@ def generate_events(source, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True,
                     ptsrc_bkgnd=True, instr_bkgnd=True, no_dither=False,
                     dither_params=None, roll_angle=0.0, subpixel_res=False,
-                    input_sources=None, absorb_model="wabs", nH=0.05, 
+                    input_pt_sources=None, absorb_model="wabs", nH=0.05, 
                     aimpt_shift=None, prng=None):
     """
     Make background events.
@@ -351,7 +352,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
-    input_sources : string, optional
+    input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
@@ -396,7 +397,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center,
                                              area=1.2*arf.max_area,
-                                             input_sources=input_sources,
+                                             input_sources=input_pt_sources,
                                              absorb_model=absorb_model,
                                              nH=nH, prng=prng)
         for key in ["ra", "dec", "energy"]:
@@ -475,8 +476,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
 def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, no_dither=False, dither_params=None,
-                         subpixel_res=False, input_sources=None, 
-                         absorb_model="wabs", nH=0.05, prng=None):
+                         subpixel_res=False, input_pt_sources=None, 
+                         absorb_model="wabs", nH=0.05, prng=None, **kwargs):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -510,7 +511,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
     subpixel_res: boolean, optional
         If True, event positions are not randomized within the pixels 
         within which they are detected. Default: False
-    input_sources : string, optional
+    input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
@@ -525,6 +526,11 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
+    if "input_sources" in kwargs:
+        warnings.warn("The 'input_sources' keyword argument has been changed "
+                      "to 'input_pt_sources' and is deprecated.", 
+                      DeprecationWarning)
+        input_pt_sources = kwargs.pop("input_sources")
     prng = parse_prng(prng)
     events, event_params = make_background(exp_time, instrument, sky_center, 
                                            ptsrc_bkgnd=ptsrc_bkgnd, 
@@ -533,7 +539,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            no_dither=no_dither,
                                            dither_params=dither_params, 
                                            subpixel_res=subpixel_res,
-                                           input_sources=input_sources,
+                                           input_pt_sources=input_pt_sources,
                                            absorb_model=absorb_model,
                                            nH=nH, prng=prng)
     write_event_file(events, event_params, out_file, overwrite=overwrite)
@@ -545,7 +551,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                          bkgnd_file=None, no_dither=False, 
                          dither_params=None, roll_angle=0.0, 
                          subpixel_res=False, aimpt_shift=None,
-                         bkg_nH=0.05, prng=None):
+                         bkg_nH=0.05, input_pt_sources=None, prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -615,6 +621,10 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         The hydrogen column in units of 10**22 atoms/cm**2 for the power-law
         component of the astrophysical background.
         Default: 0.05
+    input_pt_sources : string, optional
+        If set to a filename, input the point source positions, fluxes,
+        and spectral indices from an ASCII table instead of generating
+        them. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -646,8 +656,9 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                 exp_time, instrument, sky_center, foreground=foreground,
                 instr_bkgnd=instr_bkgnd, no_dither=no_dither,
                 dither_params=dither_params, ptsrc_bkgnd=ptsrc_bkgnd, prng=prng,
-                subpixel_res=subpixel_res, roll_angle=roll_angle, 
-                aimpt_shift=aimpt_shift, nH=bkg_nH)
+                subpixel_res=subpixel_res, roll_angle=roll_angle,
+                aimpt_shift=aimpt_shift, input_pt_sources=input_pt_sources,
+                nH=bkg_nH)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:
@@ -725,7 +736,6 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     from soxs.background.foreground import hm_astro_bkgnd
     from soxs.background.spectra import BackgroundSpectrum
     from soxs.background.instrument import InstrumentalBackground
-    import warnings
     if "nH" in kwargs:
         warnings.warn("The 'nH' keyword argument has been changed to "
                       "'bkg_nH' and is deprecated.", DeprecationWarning)
