@@ -21,9 +21,9 @@ parser.add_argument("--overwrite", action='store_true',
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--absorb_model", type=str, default="wabs",
                     help="The absorption model to use for foreground galactic absorption. Default: 'wabs'")
-parser.add_argument("--nh", default=0.05,
-                    help='The galactic hydrogen column in units of 10**22 atoms/cm**2. '
-                         'Default: 0.05')
+parser.add_argument("--bkg_nh", default=0.05,
+                    help='The galactic hydrogen column for the astrophysical background'
+                         ' in units of 10**22 atoms/cm**2. Default: 0.05')
 parser.add_argument("--bkgnd_area",
                     help="The area on the sky for the background components, "
                          "in square arcminutes. Default: None. Must be specified "
@@ -62,5 +62,5 @@ else:
 simulate_spectrum(spec, instrument, args.exp_time, args.out_file, 
                   overwrite=args.overwrite, foreground=args.foreground,
                   instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd,
-                  absorb_model=args.absorb_model, nH=args.nh, bkgnd_area=args.bkgnd_area,
-                  prng=args.random_seed)
+                  absorb_model=args.absorb_model, bkg_nH=args.bkg_nh, 
+                  bkgnd_area=args.bkgnd_area, prng=args.random_seed)
