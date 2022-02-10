@@ -337,6 +337,22 @@ instrument_registry["star-x"] = {"name": "star-x",
                                  "imaging": True,
                                  "grating": False}
 
+## LEM
+
+instrument_registry["lem"] = {"name": "lem",
+                              "arf": "lem.arf",
+                              "rmf": "lem.rmf",
+                              "bkgnd": None,
+                              "num_pixels": 128,
+                              "fov": 32.0,
+                              "aimpt_coords": [0.0, 0.0],
+                              "chips": [["Box", 0, 0, 128, 128]],
+                              "focal_length": 4.0,
+                              "dither": True,
+                              "psf": ["gaussian", 10.0],
+                              "imaging": True,
+                              "grating": False}
+
 
 def add_instrument_to_registry(inst_spec):
     """
