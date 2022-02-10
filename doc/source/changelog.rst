@@ -6,6 +6,8 @@ ChangeLog
 Version 3.1.0
 -------------
 
+* An instrument specification for the 
+  `*LEM* probe concept <https://lem.physics.wisc.edu>`_ has been added. 
 * A bug which prevented the use of the ``xrism_resolve`` instrument has been
   fixed.
 * A way to change the neutral hydrogen column for the astrophysical background
@@ -103,7 +105,7 @@ This major version update of SOXS contains new features and optimizations.
 * The ``make_beta_model`` command line script has been renamed to
   :ref:`cmd-make-beta-model-source.
 * An instrument specification for the 
-  `_STAR-X_ mission concept <https://ui.adsabs.harvard.edu/abs/2017SPIE10399E..08M/abstract>`_ 
+  `*STAR-X* mission concept <https://ui.adsabs.harvard.edu/abs/2017SPIE10399E..08M/abstract>`_ 
   has been added. 
 
 Version 2.3.0

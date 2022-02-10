@@ -184,11 +184,23 @@ STAR-X
 ~~~~~~
 
 A single instrument specification ``star-x`` is available for 
-`STAR-X <https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10399/1039908/The-STAR-X-X-Ray-Telescope-Assembly-XTA/10.1117/12.2272580.short?SSO=1>`_.
+`*STAR-X* <https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10399/1039908/The-STAR-X-X-Ray-Telescope-Assembly-XTA/10.1117/12.2272580.short?SSO=1>`_.
 The specification is for the wide-field imaging istrument, with a 1 degree field
 of view, a 4.5 m focal length, and a Gaussian PSF with a FWHM of 3 arcseconds.
 Currently, no instrumental background is included. The response files for 
 *STAR-X* were provided by Michael McDonald.
+
+.. _lem:
+
+Light Element Mapper
+~~~~~~~~~~~~~~~~~~~~
+
+A single instrument specification ``lem`` is available for the
+`Light Element Mapper (LEM) <https://lem.physics.wisc.edu>`_.
+This specification has a 32 arcminute field of view, a 4 m focal length, 
+an Gaussian PSF with a FWHM of 10 arcseconds. Currently, no instrumental 
+background is included. The response files for *LEM* were provided 
+`here <https://lem.physics.wisc.edu/LEM.html>`_.
 
 .. _bkgnds:
 
