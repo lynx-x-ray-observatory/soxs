@@ -72,6 +72,11 @@ class Spectrum:
         self._check_binning_units(other)
         return Spectrum(self.ebins, self.flux+other.flux)
 
+    def __iadd__(self, other):
+        self._check_binning_units(other)
+        self.flux += other.flux
+        return self
+
     def __sub__(self, other):
         self._check_binning_units(other)
         return Spectrum(self.ebins, self.flux-other.flux)
