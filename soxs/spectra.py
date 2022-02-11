@@ -264,11 +264,10 @@ class Spectrum:
             The path to the file containing the spectrum.
         """
         if filename.endswith(".h5"):
-            f = h5py.File(filename, "r")
-            flux = f["spectrum"][()]
-            nbins = flux.size
-            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
-            f.close()
+            with h5py.File(filename, "r") as f:
+                flux = f["spectrum"][()]
+                nbins = flux.size
+                ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
         else:
             emid, flux = np.loadtxt(filename, unpack=True)
             de = np.diff(emid)[0]
