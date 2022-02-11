@@ -318,7 +318,7 @@ def generate_events(source, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True,
                     ptsrc_bkgnd=True, instr_bkgnd=True, no_dither=False,
                     dither_params=None, roll_angle=0.0, subpixel_res=False,
-                    input_pt_sources=None, absorb_model="wabs", nH=0.05, 
+                    input_pt_sources=None, absorb_model="wabs", nH=0.01, 
                     aimpt_shift=None, prng=None):
     """
     Make background events.
@@ -346,7 +346,6 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         Default: [8.0, 8.0, 1000.0, 707.0].
     ptsrc_bkgnd : boolean, optional
         Whether or not to include the point-source background. Default: True
-        Default: 0.05
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
     subpixel_res: boolean, optional
@@ -360,7 +359,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
-        Default: 0.05
+        Default: 0.01
     aimpt_shift : array-like, optional
         A two-float array-like object which shifts the aimpoint on the 
         detector from the nominal position. Units are in arcseconds.
@@ -477,7 +476,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, no_dither=False, dither_params=None,
                          subpixel_res=False, input_pt_sources=None, 
-                         absorb_model="wabs", nH=0.05, prng=None, **kwargs):
+                         absorb_model="wabs", nH=0.01, prng=None, **kwargs):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -519,7 +518,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
-        Default: 0.05
+        Default: 0.01
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -551,7 +550,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                          bkgnd_file=None, no_dither=False, 
                          dither_params=None, roll_angle=0.0, 
                          subpixel_res=False, aimpt_shift=None,
-                         bkg_nH=0.05, input_pt_sources=None, prng=None):
+                         bkg_nH=0.01, input_pt_sources=None, prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -620,7 +619,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     bkg_nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2 for the power-law
         component of the astrophysical background.
-        Default: 0.05
+        Default: 0.01
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
@@ -677,7 +676,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 def simulate_spectrum(spec, instrument, exp_time, out_file,
                       instr_bkgnd=False, foreground=False,
                       ptsrc_bkgnd=False, bkgnd_area=None,
-                      absorb_model="wabs", bkg_nH=0.05,
+                      absorb_model="wabs", bkg_nH=0.01,
                       overwrite=False, prng=None, **kwargs):
     """
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
@@ -715,7 +714,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     bkg_nH : float, optional
         The hydrogen column in units of 10**22 atoms/cm**2 for the power-law
         component of the astrophysical background.
-        Default: 0.05
+        Default: 0.01
     overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
