@@ -3,7 +3,8 @@ from soxs.background import \
     ConvolvedBackgroundSpectrum, \
     make_point_sources_file, \
     make_point_source_list, \
-    InstrumentalBackground
+    InstrumentalBackground, \
+    create_frgnd_spec
 
 from soxs.cosmology import \
     make_cosmological_sources_file

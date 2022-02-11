@@ -1,4 +1,4 @@
-from .foreground import make_foreground
+from .foreground import make_foreground, create_frgnd_spec
 from .point_sources import make_ptsrc_background, \
     make_point_sources_file, make_point_source_list
 from .instrument import make_instrument_background
