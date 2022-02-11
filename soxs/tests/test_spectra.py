@@ -35,6 +35,10 @@ def test_arithmetic():
 
     assert_allclose(spec8.flux.value, spec1.flux.value+1.0e-4)
 
+    spec8 += spec1
+
+    assert_allclose(spec8.flux.value, (2.0*spec1+spec7).flux.value)
+
 
 def test_read_write():
 
