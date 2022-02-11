@@ -4,7 +4,7 @@ from soxs.background import \
     make_point_sources_file, \
     make_point_source_list, \
     InstrumentalBackground, \
-    create_frgnd_spec
+    make_frgnd_spec
 
 from soxs.cosmology import \
     make_cosmological_sources_file

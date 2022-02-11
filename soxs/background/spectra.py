@@ -29,7 +29,7 @@ class BackgroundSpectrum(Spectrum):
         """
         fov = parse_value(fov, "arcmin")
         flux = spec.flux.value/fov/fov
-        return cls(spec.flux.ebins.value, flux)
+        return cls(spec.ebins.value, flux)
 
     def generate_energies(self, t_exp, area, fov, prng=None, 
                           quiet=False):

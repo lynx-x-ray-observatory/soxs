@@ -24,27 +24,28 @@ XSPEC model used to create the foreground spectrum
             2e-07       0.01          0          0      1e+20      1e+24
 """
 
-frgnd_spec = None
+
+class MakeForegroundSpectrum:
+    def __init__(self):
+        self.create()
+
+    def create(self, apec_vers=None, abund_table=None, nH=0.01):
+        agen = ApecGenerator(0.05, 10.0, 10000, apec_vers=apec_vers,
+                             broadening=False, abund_table=abund_table)
+        spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
+        spec.apply_foreground_absorption(nH)
+        spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
+        self.spec = BackgroundSpectrum.from_spectrum(spec, 1.0)
 
 
-def create_frgnd_spec(apec_vers=None, abund_table=None, nH=0.01):
-    global frgnd_spec
-    agen = ApecGenerator(0.05, 10.0, 10000, apec_vers=apec_vers,
-                         broadening=False, abund_table=abund_table)
-    spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
-    spec.apply_foreground_absorption(nH)
-    spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
-    frgnd_spec = BackgroundSpectrum.from_spectrum(spec, 1.0)
+make_frgnd_spec = MakeForegroundSpectrum()
 
 
 def make_foreground(event_params, arf, rmf, prng=None):
 
-    if frgnd_spec is None:
-        create_frgnd_spec()
-
     prng = parse_prng(prng)
 
-    conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(frgnd_spec, arf)
+    conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(make_frgnd_spec.spec, arf)
 
     bkg_events = {"energy": [], "detx": [], "dety": [], "chip_id": []}
     pixel_area = (event_params["plate_scale"]*60.0)**2
