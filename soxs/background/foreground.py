@@ -28,7 +28,7 @@ class MakeForegroundSpectrum:
         self.create()
 
     def create(self, apec_vers=None, abund_table=None, nH=0.01):
-        agen = ApecGenerator(0.05, 10.0, 10000, apec_vers=apec_vers,
+        agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
                              broadening=False, abund_table=abund_table)
         spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
         spec.apply_foreground_absorption(nH)
