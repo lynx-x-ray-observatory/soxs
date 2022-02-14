@@ -20,8 +20,6 @@ XSPEC model used to create the foreground spectrum
                 1     -0.001          0          0          5          5
                 0      -0.01     -0.999     -0.999         10         10
           7.3e-07       0.01          0          0      1e+20      1e+24
-             1.52       0.01         -3         -2          9         10
-            2e-07       0.01          0          0      1e+20      1e+24
 """
 
 
