@@ -12,9 +12,10 @@ echo "[soxs]" > $HOME/.config/soxs/soxs.cfg
 echo "soxs_data_dir = \"${PWD}/soxs_data\"" >> $HOME/.config/soxs/soxs.cfg
 cat $HOME/.config/soxs/soxs.cfg
 
-# Install dependencies using conda
+# Install dependencies using conda and pip
 
-conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml regions
+conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml
+pip install regions
 
 # Install soxs
 
