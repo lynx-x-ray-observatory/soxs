@@ -778,7 +778,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
-        cspec_frgnd = ConvolvedSpectrum.convolve(make_frgnd_spec.spec, arf)
+        cspec_frgnd = ConvolvedSpectrum.convolve(
+            make_frgnd_spec.spec.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_frgnd, exp_time, prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
