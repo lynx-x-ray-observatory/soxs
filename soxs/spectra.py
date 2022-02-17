@@ -656,7 +656,7 @@ class ApecGenerator:
                  abund_table=None, nei=False):
         if apec_vers is None:
             apec_vers = soxs_cfg.get("soxs", "apec_vers")
-        mylog.info(f"Using APEC version {apec_vers}.")
+        mylog.debug(f"Using APEC version {apec_vers}.")
         if nei and var_elem is None:
             raise RuntimeError("For NEI spectra, you must specify which elements "
                                "you want to vary using the 'var_elem' argument!")
@@ -686,8 +686,8 @@ class ApecGenerator:
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError(f"Cannot find the APEC files!\n {self.cocofile}\n, "
                           f"{self.linefile}")
-        mylog.info(f"Using {cocofile} for generating spectral lines.")
-        mylog.info(f"Using {linefile} for generating the continuum.")
+        mylog.debug(f"Using {cocofile} for generating spectral lines.")
+        mylog.debug(f"Using {linefile} for generating the continuum.")
         self.nolines = nolines
         self.wvbins = hc/self.ebins[::-1]
         self.broadening = broadening
