@@ -26,11 +26,6 @@ parser.add_argument("--dither_params", help="The parameters controlling the size
                                             "of x_amp,y_amp,x_period,y_period. The first two "
                                             "numbers are in arcseconds and the second are in "
                                             "seconds. Default: 8.0,8.0,1000.0,707.0")
-parser.add_argument("--absorb_model", type=str, default="wabs",
-                    help="The absorption model to use for foreground galactic absorption. Default: 'wabs'")
-parser.add_argument("--nh", default=0.05,
-                    help='The galactic hydrogen column in units of 10**22 atoms/cm**2. '
-                         'Default: 0.05')
 parser.add_argument("--random_seed", type=int,
                     help="A constant integer random seed to produce a consistent set of random numbers.")
 ptsrc_parser = parser.add_mutually_exclusive_group(required=False)

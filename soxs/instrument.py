@@ -318,8 +318,8 @@ def generate_events(source, exp_time, instrument, sky_center,
 def make_background(exp_time, instrument, sky_center, foreground=True,
                     ptsrc_bkgnd=True, instr_bkgnd=True, no_dither=False,
                     dither_params=None, roll_angle=0.0, subpixel_res=False,
-                    input_pt_sources=None, absorb_model="wabs", nH=0.01, 
-                    aimpt_shift=None, prng=None):
+                    input_pt_sources=None, aimpt_shift=None, prng=None,
+                    **kwargs):
     """
     Make background events.
 
@@ -355,11 +355,6 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
-    absorb_model : string, optional
-        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    nH : float, optional
-        The hydrogen column in units of 10**22 atoms/cm**2. 
-        Default: 0.01
     aimpt_shift : array-like, optional
         A two-float array-like object which shifts the aimpoint on the 
         detector from the nominal position. Units are in arcseconds.
@@ -370,6 +365,13 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
+    if "nH" in kwargs or "absorb_model" in kwargs:
+        warnings.warn("The 'nH' and 'absorb_model' keyword arguments"
+                      "have been omitted. Please set the 'bkgnd_nH' "
+                      "and 'bkgnd_absorb_model' values in the SOXS"
+                      "configuration file if you want to change these "
+                      "values. ",
+                      DeprecationWarning)
     from soxs.background import make_instrument_background, \
         make_foreground, make_ptsrc_background
     prng = parse_prng(prng)
@@ -397,8 +399,7 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
         ptsrc_events = make_ptsrc_background(exp_time, fov, sky_center,
                                              area=1.2*arf.max_area,
                                              input_sources=input_pt_sources,
-                                             absorb_model=absorb_model,
-                                             nH=nH, prng=prng)
+                                             prng=prng)
         for key in ["ra", "dec", "energy"]:
             input_events[key].append(ptsrc_events[key])
         input_events["flux"].append(ptsrc_events["flux"])
@@ -476,7 +477,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                          overwrite=False, foreground=True, instr_bkgnd=True,
                          ptsrc_bkgnd=True, no_dither=False, dither_params=None,
                          subpixel_res=False, input_pt_sources=None, 
-                         absorb_model="wabs", nH=0.01, prng=None, **kwargs):
+                         prng=None, **kwargs):
     """
     Make an event file consisting entirely of background events. This will be 
     useful for creating backgrounds that can be added to simulations of sources.
@@ -514,17 +515,19 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
-    absorb_model : string, optional
-        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    nH : float, optional
-        The hydrogen column in units of 10**22 atoms/cm**2. 
-        Default: 0.01
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time. 
     """
+    if "nH" in kwargs or "absorb_model" in kwargs:
+        warnings.warn("The 'nH' and 'absorb_model' keyword arguments"
+                      "have been omitted. Please set the 'bkgnd_nH' "
+                      "and 'bkgnd_absorb_model' values in the SOXS"
+                      "configuration file if you want to change these "
+                      "values. ",
+                      DeprecationWarning)
     if "input_sources" in kwargs:
         warnings.warn("The 'input_sources' keyword argument has been changed "
                       "to 'input_pt_sources' and is deprecated.", 
@@ -539,8 +542,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
                                            dither_params=dither_params, 
                                            subpixel_res=subpixel_res,
                                            input_pt_sources=input_pt_sources,
-                                           absorb_model=absorb_model,
-                                           nH=nH, prng=prng)
+                                           prng=prng)
     write_event_file(events, event_params, out_file, overwrite=overwrite)
 
 
@@ -550,7 +552,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                          bkgnd_file=None, no_dither=False, 
                          dither_params=None, roll_angle=0.0, 
                          subpixel_res=False, aimpt_shift=None,
-                         bkg_nH=0.01, input_pt_sources=None, prng=None):
+                         input_pt_sources=None, prng=None):
     """
     Take unconvolved events and create an event file from them. This
     function calls generate_events to do the following:
@@ -616,10 +618,6 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
         A two-float array-like object which shifts the aimpoint on the 
         detector from the nominal position. Units are in arcseconds.
         Default: None, which results in no shift from the nominal aimpoint. 
-    bkg_nH : float, optional
-        The hydrogen column in units of 10**22 atoms/cm**2 for the power-law
-        component of the astrophysical background.
-        Default: 0.01
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
@@ -656,8 +654,7 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
                 instr_bkgnd=instr_bkgnd, no_dither=no_dither,
                 dither_params=dither_params, ptsrc_bkgnd=ptsrc_bkgnd, prng=prng,
                 subpixel_res=subpixel_res, roll_angle=roll_angle,
-                aimpt_shift=aimpt_shift, input_pt_sources=input_pt_sources,
-                nH=bkg_nH)
+                aimpt_shift=aimpt_shift, input_pt_sources=input_pt_sources)
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:
@@ -676,7 +673,6 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
 def simulate_spectrum(spec, instrument, exp_time, out_file,
                       instr_bkgnd=False, foreground=False,
                       ptsrc_bkgnd=False, bkgnd_area=None,
-                      absorb_model="wabs", bkg_nH=0.01,
                       overwrite=False, prng=None, **kwargs):
     """
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
@@ -709,12 +705,6 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
         The area on the sky for the background components, in square arcminutes.
         Default: None, necessary to specify if any of the background components
         are turned on. 
-    absorb_model : string, optional
-        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
-    bkg_nH : float, optional
-        The hydrogen column in units of 10**22 atoms/cm**2 for the power-law
-        component of the astrophysical background.
-        Default: 0.01
     overwrite : boolean, optional
         Whether or not to overwrite an existing file. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
@@ -733,13 +723,17 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     from soxs.response import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
-    from soxs.background.foreground import make_frgnd_spec
+    from soxs.background.foreground import frgnd_spec
     from soxs.background.spectra import BackgroundSpectrum
     from soxs.background.instrument import InstrumentalBackground
-    if "nH" in kwargs:
-        warnings.warn("The 'nH' keyword argument has been changed to "
-                      "'bkg_nH' and is deprecated.", DeprecationWarning)
-        bkg_nH = kwargs.pop("nH")
+    from soxs.utils import soxs_cfg
+    if "nH" in kwargs or "absorb_model" in kwargs:
+        warnings.warn("The 'nH' and 'absorb_model' keyword arguments"
+                      "have been omitted. Please set the 'bkgnd_nH' "
+                      "and 'bkgnd_absorb_model' values in the SOXS"
+                      "configuration file if you want to change these "
+                      "values. ",
+                      DeprecationWarning)
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
     try:
@@ -779,7 +773,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
         cspec_frgnd = ConvolvedSpectrum.convolve(
-            make_frgnd_spec.spec.to_spectrum(fov), arf)
+            frgnd_spec.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_frgnd, exp_time, prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
@@ -794,9 +788,11 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
                                                          prng=prng)
     if ptsrc_bkgnd:
         mylog.info("Adding in background from unresolved point-sources.")
-        spec_plaw = BackgroundSpectrum.from_powerlaw(1.45, 0.0, 2.0e-7, emin=0.01,
+        bkgnd_nH = soxs_cfg.get("soxs", "bkgnd_nH")
+        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+        spec_plaw = BackgroundSpectrum.from_powerlaw(1.52, 0.0, 2.0e-7, emin=0.01,
                                                      emax=10.0, nbins=300000)
-        spec_plaw.apply_foreground_absorption(bkg_nH, model=absorb_model)
+        spec_plaw.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
         cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
 

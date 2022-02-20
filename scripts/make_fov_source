@@ -29,7 +29,7 @@ spec = soxs.Spectrum.from_file(args.specfile)
 
 fov = soxs.FillFOVModel(args.ra0, args.dec0, args.fov)
 
-src = soxs.SimputSpectrum.from_models(args.name, spec, fov, args.image_width, 
+src = soxs.SimputSpectrum.from_models(args.name, spec, fov, args.image_width,
                                       args.nx)
 
 if args.append:

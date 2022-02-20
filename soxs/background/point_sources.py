@@ -2,7 +2,7 @@ import numpy as np
 from soxs.constants import keV_per_erg, erg_per_keV
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spectra import get_wabs_absorb, get_tbabs_absorb
-from soxs.utils import mylog, parse_prng, parse_value
+from soxs.utils import mylog, parse_prng, parse_value, soxs_cfg
 from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import erf
 from astropy.table import Table
@@ -120,8 +120,8 @@ def generate_sources(fov, sky_center, prng=None):
     return ra0, dec0, fluxes, ind
 
 
-def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs", 
-                          nH=0.05, area=40000.0, input_sources=None, 
+def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None, 
+                          nH=None, area=40000.0, input_sources=None, 
                           output_sources=None, prng=None):
     r"""
     Make a point-source background.
@@ -234,16 +234,19 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
     # Remove some of the photons due to Galactic foreground absorption.
     # We will throw a lot of stuff away, but this is more general and still
     # faster.
-    if nH is not None:
-        if absorb_model == "wabs":
-            absorb = get_wabs_absorb(all_energies, nH)
-        elif absorb_model == "tbabs":
-            absorb = get_tbabs_absorb(all_energies, nH)
-        randvec = prng.uniform(size=all_energies.size)
-        all_energies = all_energies[randvec < absorb]
-        all_ra = all_ra[randvec < absorb]
-        all_dec = all_dec[randvec < absorb]
-        all_nph = all_energies.size
+    if nH is None:
+        nH = soxs_cfg.get("soxs","bkgnd_nH")
+    if absorb_model is None:
+        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+    if absorb_model == "wabs":
+        absorb = get_wabs_absorb(all_energies, nH)
+    elif absorb_model == "tbabs":
+        absorb = get_tbabs_absorb(all_energies, nH)
+    randvec = prng.uniform(size=all_energies.size)
+    all_energies = all_energies[randvec < absorb]
+    all_ra = all_ra[randvec < absorb]
+    all_dec = all_dec[randvec < absorb]
+    all_nph = all_energies.size
     mylog.debug(f"{all_nph} photons remain after foreground galactic absorption.")
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
@@ -255,7 +258,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model="wabs",
 
 
 def make_point_sources_file(filename, name, exp_time, fov, 
-                            sky_center, absorb_model="wabs", nH=0.05, 
+                            sky_center, absorb_model=None, nH=None,
                             area=40000.0, prng=None, append=False,
                             overwrite=False, src_filename=None,
                             input_sources=None, output_sources=None):

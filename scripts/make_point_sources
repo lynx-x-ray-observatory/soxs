@@ -16,10 +16,11 @@ parser.add_argument("fov", help="The field of view on a side in arcminutes.")
 parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the ' +
                                                  'observation, in degrees, comma-separated.')
 parser.add_argument("--absorb_model", type=str, default="wabs",
-                    help="The absorption model to use for foreground galactic absorption. Default: 'wabs'")
+                    help="The absorption model to use for foreground galactic absorption. "
+                         "Defaults to the value in the SOXS configuration file.")
 parser.add_argument("--nh", default=0.05,
                     help='The galactic hydrogen column in units of 10**22 atoms/cm**2. '
-                         'Default: 0.05')
+                         'Defaults to the value in the SOXS configuration file.')
 parser.add_argument("--area", default=30000.0,
                     help='The collecting area to use, in cm^2. Default: 30000.0')
 parser.add_argument("--src_filename", type=str,

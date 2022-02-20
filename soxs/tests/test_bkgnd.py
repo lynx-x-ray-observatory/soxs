@@ -1,6 +1,6 @@
 from soxs.instrument import make_background, \
     instrument_simulator, make_background_file, simulate_spectrum
-from soxs.background.foreground import make_frgnd_spec
+from soxs.background.foreground import frgnd_spec
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
 from soxs.spectra import Spectrum
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
@@ -16,9 +16,6 @@ import astropy.units as u
 
 acisi_particle_bkgnd = Spectrum.from_file(
     os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5"))
-
-
-frgnd_spec = make_frgnd_spec.spec
 
 
 def test_uniform_bkgnd_scale():

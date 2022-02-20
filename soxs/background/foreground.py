@@ -4,7 +4,7 @@ from soxs.spectra import ApecGenerator
 from soxs.background.spectra import BackgroundSpectrum, \
     ConvolvedBackgroundSpectrum
 from soxs.background.events import make_diffuse_background
-from soxs.utils import parse_prng, mylog, create_region
+from soxs.utils import parse_prng, mylog, create_region, soxs_cfg
 import numpy as np
 from regions import PixCoord
 
@@ -23,27 +23,26 @@ XSPEC model used to create the foreground spectrum
 """
 
 
-class MakeForegroundSpectrum:
-    def __init__(self):
-        self.create()
 
-    def create(self, apec_vers=None, abund_table=None, nH=0.01):
-        agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
-                             broadening=False, abund_table=abund_table)
-        spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
-        spec.apply_foreground_absorption(nH)
-        spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
-        self.spec = BackgroundSpectrum.from_spectrum(spec, 1.0)
+def make_frgnd_spectrum(apec_vers=None, abund_table=None):
+    bkgnd_nH = soxs_cfg.get("soxs", "bkgnd_nH")
+    absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+    agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
+                         broadening=False, abund_table=abund_table)
+    spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
+    spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
+    spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
+    return BackgroundSpectrum.from_spectrum(spec, 1.0)
 
 
-make_frgnd_spec = MakeForegroundSpectrum()
+frgnd_spec = make_frgnd_spectrum()
 
 
 def make_foreground(event_params, arf, rmf, prng=None):
 
     prng = parse_prng(prng)
 
-    conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(make_frgnd_spec.spec, arf)
+    conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(frgnd_spec, arf)
 
     bkg_events = {"energy": [], "detx": [], "dety": [], "chip_id": []}
     pixel_area = (event_params["plate_scale"]*60.0)**2
