@@ -33,8 +33,8 @@ jobs:
         env:
           CIBW_BUILD: "cp38-* cp39-* cp310-*"
           CIBW_SKIP: "*-musllinux_*"  #  numpy doesn't have wheels for musllinux so we can't build some quickly and without bloating
-          CIBW_ARCHS_LINUX: "x86_64"
-          CIBW_ARCHS_MACOS: "x86_64"
+          CIBW_ARCHS_LINUX: "x86_64 aarch64"
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_ARCHS_WINDOWS: "auto"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_ENVIRONMENT: "LDFLAGS='-static-libstdc++'"
