@@ -3,12 +3,12 @@
 SOXS Configuration File
 =======================
 
-In SOXS version 2.0 and later, configuration elements can be set in the 
-configuration file. On most systems, this is placed in the ``XDG_CONFIG_HOME``
-environment variable, which is ``$HOME/.config`` for most systems. The
-SOXS configuration file is therefore ``XDG_CONFIG_HOME/soxs/soxs.cfg``.
+In SOXS, configuration elements can be set in the configuration file. 
+On most systems, this is placed in the ``XDG_CONFIG_HOME`` environment 
+variable, which is ``$HOME/.config`` for most systems. The SOXS configuration 
+file is therefore ``XDG_CONFIG_HOME/soxs/soxs.cfg``.
 
-In versions of SOXS post v3.0.0, these are the options available for 
+In versions of SOXS post v3.1.0, these are the options available for 
 customization in the configuration file:
 
 .. code-block:: text
@@ -16,6 +16,9 @@ customization in the configuration file:
     [soxs]
     soxs_data_dir = /does/not/exist # The path to instrument files and APEC tables
     abund_table = angr # The abundance table to use for APEC thermal spectra
+    apec_vers = 3.0.9 # The default version of APEC to use
+    bkgnd_nH = 0.01 # neutral hydrogen column for backgrounds, units of 1e22 cm**-2
+    bkgnd_absorb_model = wabs # absorption model, currently either wabs or tbabs
 
 If ``soxs_data_dir`` is not set in the configuration file, or is
 set to an invalid directory, a default directory will be chosen:
@@ -23,3 +26,17 @@ set to an invalid directory, a default directory will be chosen:
 .. code-block:: pycon
 
     soxs : [WARNING  ] 2021-04-14 22:05:49,790 Setting 'soxs_data_dir' to /Users/jzuhone/Library/Caches/soxs for this session. Please update your configuration if you want it somewhere else.
+
+The configuration can be changed in the file, or it can be changed from within
+a Python script or notebook itself, like this:
+
+.. code-block::
+
+    import soxs
+    from soxs.utils import soxs_cfg
+
+    soxs_cfg.set("soxs", "apec_vers", "2.0.1")
+
+    # this will now use APEC version 2.0.1
+    agen = soxs.ApecGenerator(0.1, 10.0, 10000)
+    

@@ -359,8 +359,8 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/3/': None,
-                       'http://docs.scipy.org/doc/numpy/': None,
+intersphinx_mapping = {'https://docs.python.org/': None,
+                       'https://numpy.org/doc/stable/': None,
                        "https://matplotlib.org/stable/": None,
                        'https://yt-project.org/doc/': None,
                        'https://docs.astropy.org/en/stable': None,
