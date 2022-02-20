@@ -177,8 +177,7 @@ only simulating spectra. Similar to XSPEC's "fakeit".
 
 .. code-block:: bash
 
-    usage: simulate_spectrum [-h] [--overwrite] [--absorb_model ABSORB_MODEL]
-                             [--nh NH] [--bkgnd_area BKGND_AREA]
+    usage: simulate_spectrum [-h] [--overwrite] [--bkgnd_area BKGND_AREA]
                              [--random_seed RANDOM_SEED]
                              [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
                              [--instr_bkgnd | --no_instr_bkgnd]
@@ -200,11 +199,6 @@ only simulating spectra. Similar to XSPEC's "fakeit".
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
-      --absorb_model ABSORB_MODEL
-                            The absorption model to use for foreground galactic
-                            absorption. Default: 'wabs'
-      --nh NH               The galactic hydrogen column in units of 10**22
-                            atoms/cm**2. Default: 0.05
       --bkgnd_area BKGND_AREA
                             The area on the sky for the background components, in
                             square arcminutes. Default: None. Must be specified if
@@ -234,13 +228,6 @@ added. Two square arcminutes of background assumed.
 .. code-block:: bash
 
     [~]$ simulate_spectrum power_law_spec.dat lynx_lxm 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
-
-The same spectrum with backgrounds, but adjusting the galactic hydrogen column and
-absorption model.
-
-.. code-block:: bash
-
-    [~]$ simulate_spectrum power_law_spec.dat lynx_lxm 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd --nh 0.02 --absorb_model tbabs
 
 Simulate backgrounds only.
 

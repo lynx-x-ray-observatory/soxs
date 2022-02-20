@@ -14,34 +14,32 @@ Galactic Foreground Model
 -------------------------
 
 The galactic foreground component is modeled as a sum of two thermal models, 
-``apec+apec``, with parameters:
+one absorbed, ``apec+wabs*apec``, with parameters:
 
-``apec`` **Model 1**
+``wabs*apec`` **Model 1**
 
-* ``kT``: :math:`\rm{0.2~keV}`
+* ``nH``: :math:`0.01 \times 10^{22}~\rm{cm}^{-2}`
+* ``kT``: :math:`\rm{0.225~keV}`
 * ``abund``: :math:`\rm{1.0~Z_\odot}`
 * ``redshift``: :math:`0.0`
-* ``norm``: :math:`\rm{6.82251 \times 10^{-7}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
+* ``norm``: :math:`\rm{7.3 \times 10^{-7}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
  
 ``apec`` **Model 2**
 
 * ``kT``: :math:`\rm{0.099~keV}`
 * ``abund``: :math:`\rm{1.0~Z_\odot}`
 * ``redshift``: :math:`0.0`
-* ``norm``: :math:`\rm{1.12328 \times 10^{-6}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
+* ``norm``: :math:`\rm{1.7 \times 10^{-6}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
 
-This fit is based on the results of 
-`Hickox & Markevitch 2007 <http://adsabs.harvard.edu/abs/2007ApJ...661L.117H>`_.
-This background is diffuse and uniformly fills the entire field of view of the
-instrument you choose to simulate. 
+This model is from `McCammon et al. (2002) <https://ui.adsabs.harvard.edu/abs/2002ApJ...576..188M>`_
+The background is diffuse and uniformly fills the entire field of view of the
+instrument you choose to simulate. To change the absorption model, neutral hydrogen column,
+or the APEC version for the background, use the :ref:`config`.
 
 .. note::
 
-    This model is slightly different from that normally assumed, which adopts 
-    instead a ``apec+phabs*apec`` model in addition to the power-law component 
-    from unresolved point sources, which we model separately in SOXS. See, for 
-    example, the 
-    `Athena Tools for Simulations <https://www.cosmos.esa.int/web/athena/resources-by-esa>`_.
+    The power-law component from unresolved point sources is not included in this
+    model since it is modeled separately in SOXS, as we detail next.
 
 .. _ptsrc-bkgnd:
 
@@ -62,10 +60,10 @@ spectral index of :math:`\alpha = 2.0`. The spectral indices of AGN sources are
 drawn from a fit to the spectral index distribution of sources given in 
 Figure 13a of `Hickox & Markevitch 2006 <http://adsabs.harvard.edu/abs/2006ApJ...645...95H>`_. 
 Sources are absorbed by foreground Galactic neutral hydrogen assuming a neutral 
-hydrogen column of :math:`n_H = 5 \times 10^{20}~\rm{cm}^{-2}` (though this can
-be changed in the call to :func:`~soxs.instrument.instrument_simulator`. The 
-position of each point source is uniformly randomly distributed within the field 
-of view. 
+hydrogen column of :math:`n_H = 0.01 \times 10^{22}~\rm{cm}^{-2}` and the ``wabs``
+model by default. The absorption model and the value of the hydrogen column can
+be changed using the :ref:`config`. The position of each point source is uniformly 
+randomly distributed within the field of view. 
 
 Though a point-source population is automatically created as a background 
 component when an observation is simulated, one can also create a SIMPUT catalog

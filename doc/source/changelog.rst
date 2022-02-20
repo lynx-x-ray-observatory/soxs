@@ -6,15 +6,21 @@ ChangeLog
 Version 3.1.0
 -------------
 
+* Python 3.10 is now officially supported. The minimum supported Python version 
+  is now 3.8.
+* For :func:`~soxs.instrument.simulate_spectrum`, the power-law index for the 
+  unresolved point-source component of the astrophysical background is now
+  :math:`\alpha = 1.52`.
 * An instrument specification for the 
   `*LEM* probe concept <https://lem.physics.wisc.edu>`_ has been added. 
 * A bug which prevented the use of the ``xrism_resolve`` instrument has been
   fixed.
-* A way to change the neutral hydrogen column for the astrophysical background
-  has been added to the :func:`~soxs.instrument.instrument_simulator`, as a new
-  keyword argument ``bkg_nH``. The keyword argument to do the same for 
-  :func:`~soxs.instrument.simulate_spectrum` is now renamed to ``bkg_nH`` from
-  ``nH`` for consistency.
+* The default neutral hydrogen column for the astrophysical background components
+  is now :math:`n_H = 0.01 10^{22} \rm{atoms}~\rm{cm}^{-2}`
+* The default value of the neutral hydrogen column and the absorption model for
+  astrophysical backgrounds can now be set in :ref:`config`. These can no longer
+  be fine tuned in :func:`~soxs.instrument.make_background_file` or 
+  :func:`~soxs.instrument.simulate_spectrum`. 
 * The default APEC version can now be set in the :ref:`config`. 
 * The keyword argument ``input_pt_sources`` has been added to the 
   :func:`~soxs.instrument.instrument_simulator`, to allow a consistent set of 

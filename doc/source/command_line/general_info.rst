@@ -115,3 +115,10 @@ like this:
 
 Check the documentation for the various command line scripts to see which
 functions have the ``random_seed`` argument. 
+
+Astrophysical Background Parameters
+-----------------------------------
+
+To change parameters for the astrophysical background, including the APEC model
+used for the thermal foreground components, and the absorption model as well as
+the value of the neutral hydrogen column, make edits to the :ref:`config`.
