@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - '*'
+      - 'soxs-*'
   workflow_dispatch:
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
         with:
           output-dir: dist
         env:
-          CIBW_BUILD: "cp38-* cp39-* cp3_10-*"
+          CIBW_BUILD: "cp38-* cp39-* cp310-*"
           CIBW_SKIP: "*-musllinux_*"  #  numpy doesn't have wheels for musllinux so we can't build some quickly and without bloating
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_MACOS: "x86_64"
