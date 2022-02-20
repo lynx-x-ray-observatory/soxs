@@ -18,7 +18,7 @@ fi
 
 # Install dependencies using conda and pip
 
-conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml
+conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs
 pip install regions
 
 if [[ ${mode} == "wheels" ]]; then
