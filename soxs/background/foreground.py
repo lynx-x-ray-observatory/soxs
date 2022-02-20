@@ -25,7 +25,7 @@ XSPEC model used to create the foreground spectrum
 
 
 def make_frgnd_spectrum(apec_vers=None, abund_table=None):
-    bkgnd_nH = soxs_cfg.get("soxs", "bkgnd_nH")
+    bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
     absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
     agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
                          broadening=False, abund_table=abund_table)

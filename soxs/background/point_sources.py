@@ -235,7 +235,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     # We will throw a lot of stuff away, but this is more general and still
     # faster.
     if nH is None:
-        nH = soxs_cfg.get("soxs","bkgnd_nH")
+        nH = float(soxs_cfg.get("soxs","bkgnd_nH"))
     if absorb_model is None:
         absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
     if absorb_model == "wabs":

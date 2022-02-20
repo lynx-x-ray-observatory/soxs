@@ -788,7 +788,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
                                                          prng=prng)
     if ptsrc_bkgnd:
         mylog.info("Adding in background from unresolved point-sources.")
-        bkgnd_nH = soxs_cfg.get("soxs", "bkgnd_nH")
+        bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
         absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
         spec_plaw = BackgroundSpectrum.from_powerlaw(1.52, 0.0, 2.0e-7, emin=0.01,
                                                      emax=10.0, nbins=300000)
