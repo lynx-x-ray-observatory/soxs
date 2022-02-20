@@ -16,7 +16,7 @@ Version 3.1.0
 * A bug which prevented the use of the ``xrism_resolve`` instrument has been
   fixed.
 * The default neutral hydrogen column for the astrophysical background components
-  is now :math:`n_H = 0.01 10^{22} \rm{atoms}~\rm{cm}^{-2}`
+  is now :math:`n_H = 0.018 \times 10^{22}~\rm{atoms}~\rm{cm}^{-2}`
 * The default value of the neutral hydrogen column and the absorption model for
   astrophysical backgrounds can now be set in :ref:`config`. These can no longer
   be fine tuned in :func:`~soxs.instrument.make_background_file` or 

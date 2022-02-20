@@ -14,7 +14,7 @@ import appdirs
 soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
                      "abund_table": "angr",
                      "apec_vers": "3.0.9",
-                     "bkgnd_nH": 0.05,
+                     "bkgnd_nH": 0.018,
                      "bkgnd_absorb_model": "wabs"}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',

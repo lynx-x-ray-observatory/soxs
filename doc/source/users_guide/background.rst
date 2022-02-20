@@ -18,7 +18,7 @@ one absorbed, ``apec+wabs*apec``, with parameters:
 
 ``wabs*apec`` **Model 1**
 
-* ``nH``: :math:`0.01 \times 10^{22}~\rm{cm}^{-2}`
+* ``nH``: :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
 * ``kT``: :math:`\rm{0.225~keV}`
 * ``abund``: :math:`\rm{1.0~Z_\odot}`
 * ``redshift``: :math:`0.0`
@@ -60,7 +60,7 @@ spectral index of :math:`\alpha = 2.0`. The spectral indices of AGN sources are
 drawn from a fit to the spectral index distribution of sources given in 
 Figure 13a of `Hickox & Markevitch 2006 <http://adsabs.harvard.edu/abs/2006ApJ...645...95H>`_. 
 Sources are absorbed by foreground Galactic neutral hydrogen assuming a neutral 
-hydrogen column of :math:`n_H = 0.01 \times 10^{22}~\rm{cm}^{-2}` and the ``wabs``
+hydrogen column of :math:`n_H = 0.018 \times 10^{22}~\rm{cm}^{-2}` and the ``wabs``
 model by default. The absorption model and the value of the hydrogen column can
 be changed using the :ref:`config`. The position of each point source is uniformly 
 randomly distributed within the field of view. 

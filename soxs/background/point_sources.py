@@ -135,10 +135,11 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     absorb_model : string, optional
-        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
+        The absorption model to use, "wabs" or "tbabs".
+        Defaults to the value in the SOXS configuration file.
     nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
-        Default: 0.05
+        Defaults to the value in the SOXS configuration file.
     area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
@@ -278,10 +279,11 @@ def make_point_sources_file(filename, name, exp_time, fov,
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     absorb_model : string, optional
-        The absorption model to use, "wabs" or "tbabs". Default: "wabs"
+        The absorption model to use, "wabs" or "tbabs".
+        Defaults to the value in the SOXS configuration file.
     nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The hydrogen column in units of 10**22 atoms/cm**2. 
-        Default: 0.05
+        Defaults to the value in the SOXS configuration file.
     area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 

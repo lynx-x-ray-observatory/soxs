@@ -392,7 +392,7 @@ modeled using an absorbed power-law with the following parameters:
 
 * Power-law index :math:`\alpha = 1.52`
 * Normalization at 1 keV of :math:`2.0 \times 10^{-7} \rm{photons~cm^{-2}~keV^{-1}}`
-* Neutral hydrogen column of :math:`0.01 \times 10^{22}~\rm{cm}^{-2}` 
+* Neutral hydrogen column of :math:`0.018 \times 10^{22}~\rm{cm}^{-2}` 
 
 Here the ``wabs`` model is assumed for the absorption. To change the default
 absorption model or the neutral hydrogen column, use the :ref:`config`. Similarly,
