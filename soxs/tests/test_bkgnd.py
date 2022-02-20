@@ -149,7 +149,7 @@ def test_ptsrc():
     dn = np.sqrt(n2)
     assert np.abs(n1-n2) < 1.645*dn
     events2 = make_ptsrc_background(exp_time, fov, sky_center, area=area,
-                                    prng=prng1, nH=None, input_sources="src.dat")
+                                    prng=prng1, nH=-1.0, input_sources="src.dat")
     assert_allclose(events["ra"].sum(), events2["ra"].sum(), rtol=1.0e-3)
     assert_allclose(events["dec"].sum(), events2["dec"].sum(), rtol=1.0e-3)
     assert_allclose(events["energy"].sum(), events2["energy"].sum(), rtol=1.0e-3)
