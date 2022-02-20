@@ -38,6 +38,7 @@ install SOXS using `conda`:
 ```
 [~]$ conda install -c jzuhone soxs
 ```
+NOTE: Currently, there is no Anaconda package for [regions](https://astropy-regions.readthedocs.io/en/stable/) on Python 3.10, which is a SOXS dependency. It must be installed via pip.
 
 These methods install both the Python interface and the command-line scripts.
 
