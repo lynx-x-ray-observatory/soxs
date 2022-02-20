@@ -229,25 +229,24 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     all_ra = np.concatenate(all_ra)
     all_dec = np.concatenate(all_dec)
 
-    all_nph = all_energies.size
-
     # Remove some of the photons due to Galactic foreground absorption.
     # We will throw a lot of stuff away, but this is more general and still
     # faster.
     if nH is None:
         nH = float(soxs_cfg.get("soxs","bkgnd_nH"))
-    if absorb_model is None:
-        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
-    if absorb_model == "wabs":
-        absorb = get_wabs_absorb(all_energies, nH)
-    elif absorb_model == "tbabs":
-        absorb = get_tbabs_absorb(all_energies, nH)
-    randvec = prng.uniform(size=all_energies.size)
-    all_energies = all_energies[randvec < absorb]
-    all_ra = all_ra[randvec < absorb]
-    all_dec = all_dec[randvec < absorb]
-    all_nph = all_energies.size
-    mylog.debug(f"{all_nph} photons remain after foreground galactic absorption.")
+    if nH > 0.0:
+        if absorb_model is None:
+            absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+        if absorb_model == "wabs":
+            absorb = get_wabs_absorb(all_energies, nH)
+        elif absorb_model == "tbabs":
+            absorb = get_tbabs_absorb(all_energies, nH)
+        randvec = prng.uniform(size=all_energies.size)
+        all_energies = all_energies[randvec < absorb]
+        all_ra = all_ra[randvec < absorb]
+        all_dec = all_dec[randvec < absorb]
+        all_nph = all_energies.size
+        mylog.debug(f"{all_nph} photons remain after foreground galactic absorption.")
 
     all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
 

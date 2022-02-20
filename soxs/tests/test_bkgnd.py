@@ -141,7 +141,7 @@ def test_ptsrc():
     agn_fluxes, gal_fluxes = generate_fluxes(fov, prng2)
     fluxes = np.concatenate([agn_fluxes, gal_fluxes])
     events = make_ptsrc_background(exp_time, fov, sky_center, area=area, 
-                                   prng=prng1, nH=None, output_sources="src.dat")
+                                   prng=prng1, nH=-1.0, output_sources="src.dat")
     idxs = np.logical_and(events["energy"] > 0.5, events["energy"] < 2.0)
     E_mean = events["energy"][idxs].mean()*erg_per_keV
     n1 = fluxes.sum()*exp_time*area/E_mean
