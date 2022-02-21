@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - 'soxs-*'
+      - '*'
   workflow_dispatch:
 
 jobs:
