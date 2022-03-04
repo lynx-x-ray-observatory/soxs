@@ -4,7 +4,8 @@ from soxs.background.foreground import make_frgnd_spectrum
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
 from soxs.spectra import Spectrum
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
-from soxs.utils import soxs_files_path
+from soxs.utils import soxs_files_path, soxs_cfg
+from soxs.tests.utils import spectrum_answer_testing
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
 import astropy.io.fits as pyfits
@@ -155,6 +156,20 @@ def test_ptsrc():
     assert_allclose(events["energy"].sum(), events2["energy"].sum(), rtol=1.0e-3)
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
+
+
+def test_change_bkgnd(answer_store, answer_dir):
+    from soxs.background.foreground import make_frgnd_spectrum
+    soxs_cfg.set("soxs", "frgnd_spec_model", "default")
+    make_frgnd_spectrum()
+    spectrum_answer_testing(make_frgnd_spectrum.spec, 
+                            f"default_frgnd_spectrum.h5", answer_store,
+                            answer_dir)
+    soxs_cfg.set("soxs", "frgnd_spec_model", "lem")
+    make_frgnd_spectrum()
+    spectrum_answer_testing(make_frgnd_spectrum.spec,
+                            f"lem_frgnd_spectrum.h5", answer_store,
+                            answer_dir)
 
 
 if __name__ == "__main__":
