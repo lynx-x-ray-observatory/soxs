@@ -723,7 +723,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     from soxs.response import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
-    from soxs.background.foreground import frgnd_spec
+    from soxs.background.foreground import make_frgnd_spectrum
     from soxs.background.spectra import BackgroundSpectrum
     from soxs.background.instrument import InstrumentalBackground
     from soxs.utils import soxs_cfg
@@ -773,7 +773,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
         cspec_frgnd = ConvolvedSpectrum.convolve(
-            frgnd_spec.to_spectrum(fov), arf)
+            make_frgnd_spectrum.spec.to_spectrum(fov), arf)
         out_spec += rmf.convolve_spectrum(cspec_frgnd, exp_time, prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")

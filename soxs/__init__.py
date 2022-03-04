@@ -62,6 +62,8 @@ from soxs.spectra import \
     ApecGenerator, \
     ConvolvedSpectrum
 
-from soxs.utils import soxs_cfg
+from soxs.utils import \
+    soxs_cfg, \
+    setup_lem_config
 
 __version__ = "3.1.0"

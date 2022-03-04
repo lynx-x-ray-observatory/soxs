@@ -1,6 +1,6 @@
 from soxs.instrument import make_background, \
     instrument_simulator, make_background_file, simulate_spectrum
-from soxs.background.foreground import frgnd_spec
+from soxs.background.foreground import make_frgnd_spectrum
 from soxs.background.spectra import ConvolvedBackgroundSpectrum
 from soxs.spectra import Spectrum
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
@@ -29,7 +29,7 @@ def test_uniform_bkgnd_scale():
     fov = (event_params["fov"]*60.0)**2
     S = ncts/t_exp/fov
     dS = np.sqrt(ncts)/t_exp/fov
-    foreground = ConvolvedBackgroundSpectrum.convolve(frgnd_spec, hdxi_arf)
+    foreground = ConvolvedBackgroundSpectrum.convolve(make_frgnd_spectrum.spec, hdxi_arf)
     f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
     b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
@@ -57,7 +57,7 @@ def test_simulate_bkgnd_spectrum():
         ncts = f["SPECTRUM"].data["COUNTS"][ch_min:ch_max].sum()
     S = ncts/exp_time/fov
     dS = np.sqrt(ncts)/exp_time/fov
-    foreground = ConvolvedBackgroundSpectrum.convolve(frgnd_spec, hdxi_arf)
+    foreground = ConvolvedBackgroundSpectrum.convolve(make_frgnd_spectrum.spec, hdxi_arf)
     f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
     b_sum = (f_sum+i_sum).to_value("ph/(arcsec**2*s)")

@@ -15,7 +15,8 @@ soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
                      "abund_table": "angr",
                      "apec_vers": "3.0.9",
                      "bkgnd_nH": 0.018,
-                     "bkgnd_absorb_model": "wabs"}
+                     "bkgnd_absorb_model": "wabs",
+                     "frgnd_spec_model": "default"}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                             os.path.join(os.path.expanduser('~'),
@@ -299,3 +300,9 @@ def image_pos(im, nph, prng):
 
 def find_nearest(a, b):
     return np.argmin(np.abs(a[:, np.newaxis] - b), axis=0)
+
+
+def setup_lem_config():
+    from soxs.background.foreground import make_frgnd_spectrum
+    soxs_cfg.set("soxs", "frgnd_spec_model", "lem")
+    make_frgnd_spectrum()
