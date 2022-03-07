@@ -160,11 +160,11 @@ def test_ptsrc():
 
 def test_change_bkgnd(answer_store, answer_dir):
     from soxs.background.foreground import make_frgnd_spectrum
-    set_soxs_config("soxs", "frgnd_spec_model", "default")
+    set_soxs_config("frgnd_spec_model", "default")
     spectrum_answer_testing(make_frgnd_spectrum.spec, 
                             f"default_frgnd_spectrum.h5", answer_store,
                             answer_dir)
-    set_soxs_config("soxs", "frgnd_spec_model", "lem")
+    set_soxs_config("frgnd_spec_model", "lem")
     spectrum_answer_testing(make_frgnd_spectrum.spec,
                             f"lem_frgnd_spectrum.h5", answer_store,
                             answer_dir)
