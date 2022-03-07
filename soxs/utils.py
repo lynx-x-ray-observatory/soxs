@@ -38,6 +38,7 @@ if not os.path.exists(CURRENT_CONFIG_FILE):
     except IOError:
         warnings.warn("unable to write new config file")
 
+
 soxs_cfg = ConfigParser(soxs_cfg_defaults)
 soxs_cfg.read([CURRENT_CONFIG_FILE, 'soxs.cfg'])
 if not soxs_cfg.has_section("soxs"):
@@ -302,7 +303,30 @@ def find_nearest(a, b):
     return np.argmin(np.abs(a[:, np.newaxis] - b), axis=0)
 
 
-def setup_lem_config():
+def set_mission_config(mission):
+    """
+    Set configuration options most appropriate for a specific
+    *mission*. Currently only takes "lem".
+    """
     from soxs.background.foreground import make_frgnd_spectrum
-    soxs_cfg.set("soxs", "frgnd_spec_model", "lem")
+    soxs_cfg.set("soxs", "frgnd_spec_model", mission)
     make_frgnd_spectrum()
+
+
+def set_soxs_config(option, value):
+    """
+    Set SOXS configuration values.
+
+    Parameters
+    ----------
+    option : string
+        The option to change.
+    value : number or string
+        The value to set the option to.
+    """
+    from soxs.background.foreground import make_frgnd_spectrum
+    bkgnd_options = ["abund_table", "apec_vers", "bkgnd_nH",
+                     "bkgnd_absorb_model", "frgnd_spec_model"]
+    soxs_cfg.set("soxs", option, value=value)
+    if option in bkgnd_options:
+        make_frgnd_spectrum()
