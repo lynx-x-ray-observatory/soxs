@@ -62,6 +62,8 @@ from soxs.spectra import \
     ApecGenerator, \
     ConvolvedSpectrum
 
-from soxs.utils import soxs_cfg
+from soxs.utils import \
+    set_soxs_config, \
+    set_mission_config
 
-__version__ = "3.1.0"
+__version__ = "3.2.0"

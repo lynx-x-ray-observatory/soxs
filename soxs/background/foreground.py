@@ -9,40 +9,65 @@ import numpy as np
 from regions import PixCoord
 
 """
-XSPEC model used to create the foreground spectrum
+XSPEC model used to create the "default" foreground spectrum
   model  apec + wabs*apec
-            0.099       0.01      0.008      0.008         64         64
-                1     -0.001          0          0          5          5
-                0      -0.01     -0.999     -0.999         10         10
-          1.7e-06       0.01          0          0      1e+20      1e+24
-            0.018      0.001          0          0     100000      1e+06
-            0.225       0.01      0.008      0.008         64         64
-                1     -0.001          0          0          5          5
-                0      -0.01     -0.999     -0.999         10         10
-          7.3e-07       0.01          0          0      1e+20      1e+24
+            0.099
+                1
+                0
+          1.7e-06
+            0.018
+            0.225
+                1
+                0
+          7.3e-07
+
+XSPEC model used to create the "lem" foreground spectrum
+  model  apec + wabs*(apec+apec)
+            0.099
+                1
+                0
+          1.7e-06
+            0.018
+            0.225
+                1
+                0
+          7.3e-07
+              0.7
+                1
+                0
+         8.76e-08 
 """
 
 
+class MakeFrgndSpectrum:
+    def __init__(self):
+        self._make_frgnd_spectrum()
 
-def make_frgnd_spectrum(apec_vers=None, abund_table=None):
-    bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
-    absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
-    agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
-                         broadening=False, abund_table=abund_table)
-    spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
-    spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
-    spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
-    return BackgroundSpectrum.from_spectrum(spec, 1.0)
+    def __call__(self, apec_vers=None, abund_table=None):
+        self._make_frgnd_spectrum(apec_vers=apec_vers, abund_table=abund_table)
+
+    def _make_frgnd_spectrum(self, apec_vers=None, abund_table=None):
+        bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
+        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+        frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
+        agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
+                             broadening=False, abund_table=abund_table)
+        spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
+        if frgnd_spec_model == "halosat":
+            spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8)
+        spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
+        spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
+        self.spec = BackgroundSpectrum.from_spectrum(spec, 1.0)
 
 
-frgnd_spec = make_frgnd_spectrum()
+make_frgnd_spectrum = MakeFrgndSpectrum()
 
 
 def make_foreground(event_params, arf, rmf, prng=None):
 
     prng = parse_prng(prng)
 
-    conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(frgnd_spec, arf)
+    conv_frgnd_spec = ConvolvedBackgroundSpectrum.convolve(make_frgnd_spectrum.spec, arf)
 
     bkg_events = {"energy": [], "detx": [], "dety": [], "chip_id": []}
     pixel_area = (event_params["plate_scale"]*60.0)**2

@@ -3,6 +3,18 @@
 ChangeLog
 =========
 
+Version 3.2.0
+-------------
+
+* More customizations to the astrophysical X-ray foreground are now available. 
+  See :ref:`foreground` and :ref:`config` for details.
+* A new function, :func:`~soxs.utils.set_soxs_config`, for setting configuration
+  values, has been added. See :ref:`config` for details. 
+* A new function, :func:`~soxs.utils.set_mission_config`, for setting 
+  mission-specific configuration values, has been added. See :ref:`mission-config`
+  for details.
+
+
 Version 3.1.0
 -------------
 

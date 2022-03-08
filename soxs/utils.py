@@ -15,7 +15,8 @@ soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
                      "abund_table": "angr",
                      "apec_vers": "3.0.9",
                      "bkgnd_nH": 0.018,
-                     "bkgnd_absorb_model": "wabs"}
+                     "bkgnd_absorb_model": "wabs",
+                     "frgnd_spec_model": "default"}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                             os.path.join(os.path.expanduser('~'),
@@ -36,6 +37,7 @@ if not os.path.exists(CURRENT_CONFIG_FILE):
             cp.write(new_cfg)
     except IOError:
         warnings.warn("unable to write new config file")
+
 
 soxs_cfg = ConfigParser(soxs_cfg_defaults)
 soxs_cfg.read([CURRENT_CONFIG_FILE, 'soxs.cfg'])
@@ -299,3 +301,34 @@ def image_pos(im, nph, prng):
 
 def find_nearest(a, b):
     return np.argmin(np.abs(a[:, np.newaxis] - b), axis=0)
+
+
+def set_soxs_config(option, value):
+    """
+    Set SOXS configuration values.
+
+    Parameters
+    ----------
+    option : string
+        The option to change.
+    value : number or string
+        The value to set the option to.
+    """
+    from soxs.background.foreground import make_frgnd_spectrum
+    bkgnd_options = ["abund_table", "apec_vers", "bkgnd_nH",
+                     "bkgnd_absorb_model", "frgnd_spec_model"]
+    soxs_cfg.set("soxs", option, value=value)
+    if option in bkgnd_options:
+        make_frgnd_spectrum()
+
+
+def set_mission_config(mission):
+    """
+    Set configuration options most appropriate for a specific
+    *mission*. Currently only takes "lem".
+    """
+    if mission == "lem":
+        spec_model = "halosat"
+    else:
+        raise RuntimeError(f"Mission '{mission}' is not implemented!")
+    set_soxs_config("frgnd_spec_model", spec_model)
