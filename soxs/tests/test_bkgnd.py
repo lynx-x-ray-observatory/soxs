@@ -164,7 +164,7 @@ def test_change_bkgnd(answer_store, answer_dir):
     spectrum_answer_testing(make_frgnd_spectrum.spec, 
                             f"default_frgnd_spectrum.h5", answer_store,
                             answer_dir)
-    set_soxs_config("frgnd_spec_model", "lem")
+    set_soxs_config("frgnd_spec_model", "halosat")
     spectrum_answer_testing(make_frgnd_spectrum.spec,
                             f"lem_frgnd_spectrum.h5", answer_store,
                             answer_dir)

@@ -303,16 +303,6 @@ def find_nearest(a, b):
     return np.argmin(np.abs(a[:, np.newaxis] - b), axis=0)
 
 
-def set_mission_config(mission):
-    """
-    Set configuration options most appropriate for a specific
-    *mission*. Currently only takes "lem".
-    """
-    from soxs.background.foreground import make_frgnd_spectrum
-    soxs_cfg.set("soxs", "frgnd_spec_model", mission)
-    make_frgnd_spectrum()
-
-
 def set_soxs_config(option, value):
     """
     Set SOXS configuration values.
@@ -330,3 +320,15 @@ def set_soxs_config(option, value):
     soxs_cfg.set("soxs", option, value=value)
     if option in bkgnd_options:
         make_frgnd_spectrum()
+
+
+def set_mission_config(mission):
+    """
+    Set configuration options most appropriate for a specific
+    *mission*. Currently only takes "lem".
+    """
+    if mission == "lem":
+        spec_model = "halosat"
+    else:
+        raise RuntimeError(f"Mission '{mission}' is not implemented!")
+    set_soxs_config("frgnd_spec_model", spec_model)
