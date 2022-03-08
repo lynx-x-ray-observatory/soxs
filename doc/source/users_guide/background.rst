@@ -10,13 +10,21 @@ are not tied to any particular instrument specification, whereas the latter
 depends on the instrument being simulated. We will describe each of these
 background components in turn. 
 
+.. _foreground:
+
 Galactic Foreground Model
 -------------------------
 
-The galactic foreground component is modeled as a sum of two thermal models, 
-one absorbed, ``apec+wabs*apec``, with parameters:
+Two models for the galactic foreground are available in SOXS, ``"default"``
+and ``"halosat"``. The
 
-``wabs*apec`` **Model 1**
+The ``"default"`` Foreground Model
+++++++++++++++++++++++++++++++++++
+
+The ``"default"`` galactic foreground component is modeled as a sum of two 
+thermal models, one absorbed, ``apec+wabs*apec``, with parameters:
+
+``wabs*apec`` **Model 1, Hot Halo**
 
 * ``nH``: :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
 * ``kT``: :math:`\rm{0.225~keV}`
@@ -24,17 +32,34 @@ one absorbed, ``apec+wabs*apec``, with parameters:
 * ``redshift``: :math:`0.0`
 * ``norm``: :math:`\rm{7.3 \times 10^{-7}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
  
-``apec`` **Model 2**
+``apec`` **Model 2, Local Hot Bubble**
 
 * ``kT``: :math:`\rm{0.099~keV}`
 * ``abund``: :math:`\rm{1.0~Z_\odot}`
 * ``redshift``: :math:`0.0`
 * ``norm``: :math:`\rm{1.7 \times 10^{-6}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
 
-This model is from `McCammon et al. (2002) <https://ui.adsabs.harvard.edu/abs/2002ApJ...576..188M>`_
-The background is diffuse and uniformly fills the entire field of view of the
-instrument you choose to simulate. To change the absorption model, neutral hydrogen column,
-or the APEC version for the background, use the :ref:`config`.
+This model is from `McCammon et al. (2002) <https://ui.adsabs.harvard.edu/abs/2002ApJ...576..188M>`_.
+
+The ``"halosat"`` Foreground Model
+++++++++++++++++++++++++++++++
+
+The ``"halosat"`` foreground model is the same as the ``"default"``, except that it 
+includes an additional absorbed thermal model for the Hot Halo, based on HaloSat 
+observations:
+
+``wabs*apec`` **Model 3, Hot Halo**
+
+* ``nH``: :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
+* ``kT``: :math:`\rm{0.7~keV}`
+* ``abund``: :math:`\rm{1.0~Z_\odot}`
+* ``redshift``: :math:`0.0`
+* ``norm``: :math:`\rm{8.76 \times 10^{-8}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
+
+In either case, the background is diffuse and uniformly fills the entire field of 
+view of the instrument you choose to simulate. To change the absorption model, 
+neutral hydrogen column density, or the APEC version for the background, use the 
+:ref:`config`.
 
 .. note::
 
