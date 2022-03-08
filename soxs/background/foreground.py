@@ -53,7 +53,7 @@ class MakeFrgndSpectrum:
         agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
                              broadening=False, abund_table=abund_table)
         spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
-        if frgnd_spec_model == "lem":
+        if frgnd_spec_model == "halosat":
             spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8)
         spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
         spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
