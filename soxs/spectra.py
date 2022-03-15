@@ -70,7 +70,7 @@ class Spectrum:
 
     def __add__(self, other):
         self._check_binning_units(other)
-        return Spectrum(self.ebins, self.flux+other.flux)
+        return type(self)(self.ebins, self.flux+other.flux)
 
     def __iadd__(self, other):
         self._check_binning_units(other)
@@ -79,24 +79,24 @@ class Spectrum:
 
     def __sub__(self, other):
         self._check_binning_units(other)
-        return Spectrum(self.ebins, self.flux-other.flux)
+        return type(self)(self.ebins, self.flux-other.flux)
 
     def __mul__(self, other):
         if hasattr(other, "eff_area"):
             return ConvolvedSpectrum.convolve(self, other)
         else:
-            return Spectrum(self.ebins, other*self.flux)
+            return type(self)(self.ebins, other*self.flux)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
-        return Spectrum(self.ebins, self.flux/other)
+        return type(self)(self.ebins, self.flux/other)
 
     __div__ = __truediv__
 
     def __repr__(self):
-        s = "Spectrum (%s - %s)\n" % (self.ebins[0], self.ebins[-1])
-        s += "    Total Flux:\n    %s\n    %s\n" % (self.total_flux, self.total_energy_flux)
+        s = f"{type(self).__name__} ({self.ebins[0]} - {self.ebins[-1]})\n"
+        s += f"    Total Flux:\n    {self.total_flux}\n    {self.total_energy_flux}\n"
         return s
 
     def __call__(self, e):
