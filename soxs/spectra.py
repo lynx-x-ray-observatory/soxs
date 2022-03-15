@@ -148,9 +148,8 @@ class Spectrum:
         nbins : integer
             The number of bins in the spectrum.
         """
-        f = open(infile, "r")
-        xspec_in = f.readlines()
-        f.close()
+        with open(infile, "r") as f:
+            xspec_in = f.readlines()
         return cls._from_xspec(xspec_in, emin, emax, nbins)
 
     @classmethod
@@ -194,16 +193,14 @@ class Spectrum:
                      "tclout energies\n", "puts $fp $xspec_tclout\n",
                      "tclout modval\n", "puts $fp $xspec_tclout\n",
                      "close $fp\n", "quit\n"]
-        f_xin = open("xspec.in", "w")
-        f_xin.writelines(xspec_in)
-        f_xin.close()
+        with open("xspec.in", "w") as f_xin:
+            f_xin.writelines(xspec_in)
         logfile = os.path.join(curdir, "xspec.log")
         with open(logfile, "ab") as xsout:
             subprocess.call(["xspec", "-", "xspec.in"],
                             stdout=xsout, stderr=xsout)
-        f_s = open("spec_therm.xspec", "r")
-        lines = f_s.readlines()
-        f_s.close()
+        with open("spec_therm.xspec", "r") as f_s:
+            lines = f_s.readlines()
         ebins = np.array(lines[0].split()).astype("float64")
         de = np.diff(ebins)
         flux = np.array(lines[1].split()).astype("float64")/de
