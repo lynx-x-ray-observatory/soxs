@@ -34,12 +34,12 @@ def write_event_file(events, parameters, filename, overwrite=False):
     col_dy = fits.Column(name='DETY', format='D', unit='pixel', array=events["dety"])
     col_id = fits.Column(name='CCD_ID', format='J', unit='pixel', array=events["ccd_id"])
 
-    chantype = parameters["channel_type"].lower()
-    if chantype == "pha":
+    chantype = parameters["channel_type"].upper()
+    if chantype == "PHA":
         cunit = "adu"
-    elif chantype == "pi":
+    elif chantype == "PI":
         cunit = "Chan"
-    col_ch = fits.Column(name=chantype.upper(), format='1J', unit=cunit, 
+    col_ch = fits.Column(name=chantype, format='1J', unit=cunit, 
                            array=events[chantype])
 
     col_t = fits.Column(name="TIME", format='1D', unit='s', 

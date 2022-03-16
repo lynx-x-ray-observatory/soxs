@@ -277,7 +277,7 @@ class RedistributionMatrixFile:
 
     @property
     def chan_type(self):
-        return self.header["CHANTYPE"].lower()
+        return self.header["CHANTYPE"].upper()
 
     @property
     def data(self):
