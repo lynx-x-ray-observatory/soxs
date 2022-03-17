@@ -48,7 +48,7 @@ def test_filter():
         x = f["EVENTS"].data["X"]
         y = f["EVENTS"].data["Y"]
         r = np.sqrt((x-2430)**2+(y-2454)**2)
-        assert np.all(r < 200.0)
+        assert np.all(r < 201.0)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
