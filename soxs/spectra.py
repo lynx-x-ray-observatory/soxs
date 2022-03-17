@@ -70,7 +70,7 @@ class Spectrum:
 
     def __add__(self, other):
         self._check_binning_units(other)
-        return Spectrum(self.ebins, self.flux+other.flux)
+        return type(self)(self.ebins, self.flux+other.flux)
 
     def __iadd__(self, other):
         self._check_binning_units(other)
@@ -79,24 +79,24 @@ class Spectrum:
 
     def __sub__(self, other):
         self._check_binning_units(other)
-        return Spectrum(self.ebins, self.flux-other.flux)
+        return type(self)(self.ebins, self.flux-other.flux)
 
     def __mul__(self, other):
         if hasattr(other, "eff_area"):
             return ConvolvedSpectrum.convolve(self, other)
         else:
-            return Spectrum(self.ebins, other*self.flux)
+            return type(self)(self.ebins, other*self.flux)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
-        return Spectrum(self.ebins, self.flux/other)
+        return type(self)(self.ebins, self.flux/other)
 
     __div__ = __truediv__
 
     def __repr__(self):
-        s = "Spectrum (%s - %s)\n" % (self.ebins[0], self.ebins[-1])
-        s += "    Total Flux:\n    %s\n    %s\n" % (self.total_flux, self.total_energy_flux)
+        s = f"{type(self).__name__} ({self.ebins[0]} - {self.ebins[-1]})\n"
+        s += f"    Total Flux:\n    {self.total_flux}\n    {self.total_energy_flux}\n"
         return s
 
     def __call__(self, e):
@@ -148,9 +148,8 @@ class Spectrum:
         nbins : integer
             The number of bins in the spectrum.
         """
-        f = open(infile, "r")
-        xspec_in = f.readlines()
-        f.close()
+        with open(infile, "r") as f:
+            xspec_in = f.readlines()
         return cls._from_xspec(xspec_in, emin, emax, nbins)
 
     @classmethod
@@ -194,16 +193,14 @@ class Spectrum:
                      "tclout energies\n", "puts $fp $xspec_tclout\n",
                      "tclout modval\n", "puts $fp $xspec_tclout\n",
                      "close $fp\n", "quit\n"]
-        f_xin = open("xspec.in", "w")
-        f_xin.writelines(xspec_in)
-        f_xin.close()
+        with open("xspec.in", "w") as f_xin:
+            f_xin.writelines(xspec_in)
         logfile = os.path.join(curdir, "xspec.log")
         with open(logfile, "ab") as xsout:
             subprocess.call(["xspec", "-", "xspec.in"],
                             stdout=xsout, stderr=xsout)
-        f_s = open("spec_therm.xspec", "r")
-        lines = f_s.readlines()
-        f_s.close()
+        with open("spec_therm.xspec", "r") as f_s:
+            lines = f_s.readlines()
         ebins = np.array(lines[0].split()).astype("float64")
         de = np.diff(ebins)
         flux = np.array(lines[1].split()).astype("float64")/de

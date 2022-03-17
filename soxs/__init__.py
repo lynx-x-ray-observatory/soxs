@@ -14,7 +14,8 @@ from soxs.events import \
     write_radial_profile, \
     plot_spectrum, \
     make_exposure_map, \
-    plot_image
+    plot_image, \
+    filter_events
 
 from soxs.instrument import \
     instrument_simulator, \
@@ -66,4 +67,4 @@ from soxs.utils import \
     set_soxs_config, \
     set_mission_config
 
-__version__ = "3.2.0"
+__version__ = "3.3.0"

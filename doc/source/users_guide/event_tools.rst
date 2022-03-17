@@ -6,6 +6,48 @@ Event File Tools
 This section documents some helpful tools to take event files produced by the SOXS instrument
 simulator and make derivative products from them. 
 
+``filter_events``
+-----------------
+
+.. _filtering-events:
+
+The :func:`~soxs.events.filter_events` function is used to filter event files on event 
+position or energy, and make a new event file. This may be useful if you want to analyze
+a subset of the data only. To filter out events based on energy:
+
+.. code-block:: python
+
+    # Filter out everything less than 0.5 keV
+    soxs.filter_events("evt.fits", "evt_lt0.5.fits", emin=0.5, overwrite=True)
+
+    # Filter out everything greater than 2.0 keV
+    soxs.filter_events("evt.fits", "evt_gt2.0.fits", emin=2.0, overwrite=True)
+
+    # Filter out everything except within the 0.1-3.0 eV band
+    soxs.filter_events("evt.fits", "evt_gt2.0.fits", emin=0.1, emax=3.0, overwrite=True)
+
+To filter out events based on position, we use a region file from ds9, CIAO, etc.:
+
+.. code-block:: python
+
+    soxs.filter_events("evt.fits", "evt_circle.fits", region="circle.reg",
+                       overwrite=True)
+                       
+Alternatively, you can use a region string:
+
+.. code-block:: python
+ 
+    reg = '# Region file format: DS9\nimage\ncircle(147.10,254.17,3.1) # color=green\n'
+    soxs.filter_events("evt.fits", "evt_circle.fits", region=reg,
+                       overwrite=True)
+
+Energy and region filtering can be combined:
+
+.. code-block:: python
+
+    soxs.filter_events("evt.fits", "evt_circle.fits", region="circle.reg",
+                       overwrite=True, emin=0.1, emax=0.5)
+
 ``make_exposure_map``
 ---------------------
 

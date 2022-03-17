@@ -6,6 +6,7 @@ from soxs.utils import mylog, parse_value, get_rot_mat, \
     create_region
 from soxs.instrument_registry import instrument_registry
 from tqdm.auto import tqdm
+from pathlib import Path, PurePath
 
 
 def wcs_from_event_file(f):
@@ -34,12 +35,12 @@ def write_event_file(events, parameters, filename, overwrite=False):
     col_dy = fits.Column(name='DETY', format='D', unit='pixel', array=events["dety"])
     col_id = fits.Column(name='CCD_ID', format='J', unit='pixel', array=events["ccd_id"])
 
-    chantype = parameters["channel_type"].lower()
-    if chantype == "pha":
+    chantype = parameters["channel_type"].upper()
+    if chantype == "PHA":
         cunit = "adu"
-    elif chantype == "pi":
+    elif chantype == "PI":
         cunit = "Chan"
-    col_ch = fits.Column(name=chantype.upper(), format='1J', unit=cunit, 
+    col_ch = fits.Column(name=chantype, format='1J', unit=cunit, 
                            array=events[chantype])
 
     col_t = fits.Column(name="TIME", format='1D', unit='s', 
@@ -87,9 +88,9 @@ def write_event_file(events, parameters, filename, overwrite=False):
     tbhdu.header["DATE"] = t_begin.tt.isot
     tbhdu.header["DATE-OBS"] = t_begin.tt.isot
     tbhdu.header["DATE-END"] = t_end.tt.isot
-    tbhdu.header["RESPFILE"] = os.path.split(parameters["rmf"])[-1]
+    tbhdu.header["RESPFILE"] = PurePath(parameters["rmf"]).parts[-1]
     tbhdu.header["PHA_BINS"] = parameters["nchan"]
-    tbhdu.header["ANCRFILE"] = os.path.split(parameters["arf"])[-1]
+    tbhdu.header["ANCRFILE"] = PurePath(parameters["arf"]).parts[-1]
     tbhdu.header["CHANTYPE"] = parameters["channel_type"]
     tbhdu.header["MISSION"] = parameters["mission"]
     tbhdu.header["TELESCOP"] = parameters["telescope"]
@@ -374,6 +375,65 @@ def _write_spectrum(bins, spec, exp_time, spectype, parameters,
     hdulist.writeto(specfile, overwrite=overwrite)
 
 
+def filter_events(evtfile, newfile, region=None, emin=None,
+                  emax=None, format='ds9', overwrite=False):
+    r"""
+    
+    Parameters
+    ----------
+    evtfile : string 
+        The input events file to be read in.
+    newfile : string
+        The new event file that will be written.
+    region : string or Region, optional
+        The region to be used for the filtering. Default: None
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the events to be binned in keV. 
+        Default is the lowest energy available.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the events to be binned in keV. 
+        Default is the highest energy available.
+    format : string, optional
+        The file format specifier for the region. "ds9", 
+        "crtf", "fits", etc. Default: "ds9"    
+    overwrite : boolean, optional
+        Whether or not to overwrite an existing file with the 
+        same name. Default: False
+    """
+    from regions import Region, Regions, SkyRegion, PixelRegion, PixCoord
+    if region is not None:
+        if isinstance(region, str):
+            if Path(region).exists():
+                region = Regions.read(region, format=format)[0]
+            else:
+                region = Regions.parse(region, format=format)[0]
+        elif not isinstance(Region):
+            raise RuntimeError("'region' argument is not valid!")
+    evt_mask = True
+    with fits.open(evtfile) as f:
+        hdu = f["EVENTS"]
+        if region is not None:
+            pixcoords = PixCoord(hdu.data['X'], hdu.data['Y'])
+            if isinstance(region, PixelRegion):
+                evt_mask &= region.contains(pixcoords)
+            elif isinstance(region, SkyRegion):
+                w = wcs_from_event_file(f)
+                skycoords = pixcoords.to_sky(w, origin=1)
+                evt_mask &= region.contains(skycoords, w)
+            else:
+                raise NotImplementedError
+        if emin is not None:
+            emin = parse_value(emin, "keV")
+            emin *= 1000.
+            evt_mask &= hdu.data["ENERGY"] > emin
+        if emax is not None:
+            emax = parse_value(emax, "keV")
+            emax *= 1000.
+            evt_mask &= hdu.data["ENERGY"] < emax
+        hdu.data = hdu.data[evt_mask]
+        f.writeto(newfile, overwrite=overwrite)
+
+
 def write_spectrum(evtfile, specfile, overwrite=False):
     r"""
     Bin event energies into a spectrum and write it to 
@@ -405,8 +465,8 @@ def write_spectrum(evtfile, specfile, overwrite=False):
         rmf = evtfile["rmf"]
         spectype = evtfile["channel_type"]
         p = evtfile[spectype]
-        parameters["RESPFILE"] = os.path.split(rmf)[-1]
-        parameters["ANCRFILE"] = os.path.split(evtfile["arf"])[-1]
+        parameters["RESPFILE"] = PurePath(rmf).parts[-1]
+        parameters["ANCRFILE"] = PurePath(evtfile["arf"]).parts[-1]
         parameters["TELESCOP"] = evtfile["telescope"] 
         parameters["INSTRUME"] = evtfile["instrument"]
         parameters["MISSION"] = evtfile["mission"] 

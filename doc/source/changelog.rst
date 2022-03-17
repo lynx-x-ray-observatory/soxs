@@ -3,6 +3,17 @@
 ChangeLog
 =========
 
+Version 3.3.0
+-------------
+
+* New instrument specifications for the 
+  `LEM probe concept <https://lem.physics.wisc.edu>`_ have been added, for
+  spectral resolutions of 0.9 eV and 2 eV.
+* A new function for filtering event files, :func:`~soxs.events.filter_events`,
+  has been added. See :ref:`filtering-events` for more details.
+* A number of small bugs have been fixed.
+
+
 Version 3.2.0
 -------------
 
@@ -24,7 +35,7 @@ Version 3.1.0
   unresolved point-source component of the astrophysical background is now
   :math:`\alpha = 1.52`.
 * An instrument specification for the 
-  `*LEM* probe concept <https://lem.physics.wisc.edu>`_ has been added. 
+  `LEM probe concept <https://lem.physics.wisc.edu>`_ has been added. 
 * A bug which prevented the use of the ``xrism_resolve`` instrument has been
   fixed.
 * The default neutral hydrogen column for the astrophysical background components
