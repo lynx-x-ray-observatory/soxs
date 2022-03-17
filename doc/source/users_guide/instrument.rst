@@ -170,7 +170,7 @@ model. The response files, PSF model, and instrumental background model used for
 AXIS
 ~~~~
 
-A single instrument specification ``axis`` is available for 
+A single instrument specification ``"axis"`` is available for 
 `AXIS <http://axis.astro.umd.edu>`_, the Advanced X-ray Imaging Satellite. 
 The specification is for the wide-field imaging instrument, with a 24' field of 
 view and a 9.5 m focal length. Response files, the PSF model, and the 
@@ -183,7 +183,7 @@ software package.
 STAR-X
 ~~~~~~
 
-A single instrument specification ``star-x`` is available for 
+A single instrument specification ``"star-x"`` is available for 
 `*STAR-X* <https://www.spiedigitallibrary.org/conference-proceedings-of-spie/10399/1039908/The-STAR-X-X-Ray-Telescope-Assembly-XTA/10.1117/12.2272580.short?SSO=1>`_.
 The specification is for the wide-field imaging istrument, with a 1 degree field
 of view, a 4.5 m focal length, and a Gaussian PSF with a FWHM of 3 arcseconds.
@@ -192,11 +192,11 @@ Currently, no instrumental background is included. The response files for
 
 .. _lem:
 
-Light Element Mapper
-~~~~~~~~~~~~~~~~~~~~
+Light Element Mapper (LEM)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A single instrument specification ``lem`` is available for the
-`Light Element Mapper (LEM) <https://lem.physics.wisc.edu>`_.
+Two instrument specifications ``"lem_2eV"`` and ``"lem_0.9eV"``, are 
+available for the `Light Element Mapper (LEM) <https://lem.physics.wisc.edu>`_.
 This specification has a 32 arcminute field of view, a 4 m focal length, 
 an Gaussian PSF with a FWHM of 10 arcseconds. Currently, no instrumental 
 background is included. The response files for *LEM* were provided 
