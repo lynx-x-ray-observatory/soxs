@@ -72,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SOXS'
-copyright = '2018, Lynx Science Support Office'
+copyright = '2022, John ZuHone'
 author = 'John ZuHone'
 
 # The version info for the project you're documenting, acts as replacement for
