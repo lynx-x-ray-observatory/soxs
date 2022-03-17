@@ -6,6 +6,7 @@ from soxs.utils import mylog, parse_value, get_rot_mat, \
     create_region
 from soxs.instrument_registry import instrument_registry
 from tqdm.auto import tqdm
+from pathlib import Path, PurePath
 
 
 def wcs_from_event_file(f):
@@ -87,9 +88,9 @@ def write_event_file(events, parameters, filename, overwrite=False):
     tbhdu.header["DATE"] = t_begin.tt.isot
     tbhdu.header["DATE-OBS"] = t_begin.tt.isot
     tbhdu.header["DATE-END"] = t_end.tt.isot
-    tbhdu.header["RESPFILE"] = os.path.split(parameters["rmf"])[-1]
+    tbhdu.header["RESPFILE"] = PurePath(parameters["rmf"]).parts[-1]
     tbhdu.header["PHA_BINS"] = parameters["nchan"]
-    tbhdu.header["ANCRFILE"] = os.path.split(parameters["arf"])[-1]
+    tbhdu.header["ANCRFILE"] = PurePath(parameters["arf"]).parts[-1]
     tbhdu.header["CHANTYPE"] = parameters["channel_type"]
     tbhdu.header["MISSION"] = parameters["mission"]
     tbhdu.header["TELESCOP"] = parameters["telescope"]
@@ -405,8 +406,8 @@ def write_spectrum(evtfile, specfile, overwrite=False):
         rmf = evtfile["rmf"]
         spectype = evtfile["channel_type"]
         p = evtfile[spectype]
-        parameters["RESPFILE"] = os.path.split(rmf)[-1]
-        parameters["ANCRFILE"] = os.path.split(evtfile["arf"])[-1]
+        parameters["RESPFILE"] = PurePath(rmf).parts[-1]
+        parameters["ANCRFILE"] = PurePath(evtfile["arf"]).parts[-1]
         parameters["TELESCOP"] = evtfile["telescope"] 
         parameters["INSTRUME"] = evtfile["instrument"]
         parameters["MISSION"] = evtfile["mission"] 
