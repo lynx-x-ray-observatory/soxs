@@ -425,11 +425,11 @@ def filter_events(evtfile, newfile, region=None, emin=None,
         if emin is not None:
             emin = parse_value(emin, "keV")
             emin *= 1000.
-            evt_mask &= e > emin
+            evt_mask &= hdu.data["ENERGY"] > emin
         if emax is not None:
             emax = parse_value(emax, "keV")
             emax *= 1000.
-            evt_mask &= e < emax
+            evt_mask &= hdu.data["ENERGY"] < emax
         hdu.data = hdu.data[evt_mask]
         f.writeto(newfile, overwrite=overwrite)
 
