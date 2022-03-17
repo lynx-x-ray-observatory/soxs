@@ -67,4 +67,4 @@ from soxs.utils import \
     set_soxs_config, \
     set_mission_config
 
-__version__ = "3.2.0"
+__version__ = "3.3.0"
