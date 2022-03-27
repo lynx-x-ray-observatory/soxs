@@ -50,7 +50,7 @@ class MakeFrgndSpectrum:
         bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
         absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
         frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
-        agen = ApecGenerator(0.1, 10.0, 10000, apec_vers=apec_vers,
+        agen = ApecGenerator(0.1, 5.0, 20000, apec_vers=apec_vers,
                              broadening=False, abund_table=abund_table)
         spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
         if frgnd_spec_model == "halosat":
