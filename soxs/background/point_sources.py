@@ -122,7 +122,7 @@ def generate_sources(fov, sky_center, prng=None):
 
 def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None, 
                           nH=None, area=40000.0, input_sources=None, 
-                          output_sources=None, prng=None):
+                          output_sources=None, dump_fluxes=None, prng=None):
     r"""
     Make a point-source background.
 
@@ -195,7 +195,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     invoma[oma == 0.0] = 1.0
     fac1 = spec_emin**oma
     fac2 = spec_emax**oma-fac1
-
     fluxscale = get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax)
 
     # Using the energy flux, determine the photon flux by simple scaling
@@ -228,6 +227,13 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
             all_dec.append(dec)
 
     mylog.debug("Finished generating spectra.")
+
+    if dump_fluxes is not None:
+        dfluxes = []
+        for e in all_energies:
+            idxs = (e > 0.5) & (e < 2.0)
+            dfluxes.append(np.sum(e[idxs])*erg_per_keV/area/exp_time)
+        np.savetxt(dump_fluxes, dfluxes)
 
     all_energies = np.concatenate(all_energies)
     all_ra = np.concatenate(all_ra)
