@@ -215,7 +215,10 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
                 energies = spec_emin*(eratio**u)
             else:
                 energies = fac1[i] + u*fac2[i]
-                energies **= invoma[i]
+                if invoma[i] == -1.0:
+                    energies = 1.0/energies
+                else:
+                    energies **= invoma[i]
             # Assign positions for this source
             ra = ra0[i]*np.ones(nph)
             dec = dec0[i]*np.ones(nph)
