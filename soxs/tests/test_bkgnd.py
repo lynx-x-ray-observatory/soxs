@@ -25,17 +25,19 @@ def test_uniform_bkgnd_scale():
     events, event_params = make_background((50, "ks"), "lynx_hdxi", [30., 45.], 
                                            foreground=True, instr_bkgnd=True,
                                            ptsrc_bkgnd=False, prng=prng)
-    ncts = np.logical_and(events["energy"] >= 0.7, events["energy"] <= 2.0).sum()
+    ch_min = hdxi_rmf.eb_to_ch(0.5)-hdxi_rmf.cmin
+    ch_max = hdxi_rmf.eb_to_ch(2.0)-hdxi_rmf.cmin
+    ncts = np.logical_and(events[hdxi_rmf.chan_type] >= ch_min, 
+                          events[hdxi_rmf.chan_type] <= ch_max).sum()
     t_exp = event_params["exposure_time"]
     fov = (event_params["fov"]*60.0)**2
     S = ncts/t_exp/fov
     dS = np.sqrt(ncts)/t_exp/fov
     foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
-    f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]/(fov*u.arcsec**2)
-    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
+    f_sum = foreground.get_flux_in_band(0.5, 2.0)[0]/u.arcmin**2
+    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.5, 2.0)[0]*(u.cm/u.arcmin)**2
     b_sum = (f_sum+i_sum).to_value("ph/(arcsec**2*s)")
-    print(S, b_sum)
-    assert np.abs(S-b_sum) < 1.645*dS
+    assert np.abs(S-b_sum)/b_sum < 0.02
 
 
 def test_simulate_bkgnd_spectrum():
@@ -53,17 +55,17 @@ def test_simulate_bkgnd_spectrum():
     simulate_spectrum(None, "lynx_hdxi", exp_time, "test_bkgnd.pha",
                       instr_bkgnd=True, foreground=True, prng=prng,
                       overwrite=True, bkgnd_area=(fov, "arcsec**2"))
-    ch_min = hdxi_rmf.eb_to_ch(0.7)-hdxi_rmf.cmin
+    ch_min = hdxi_rmf.eb_to_ch(0.5)-hdxi_rmf.cmin
     ch_max = hdxi_rmf.eb_to_ch(2.0)-hdxi_rmf.cmin
     with pyfits.open("test_bkgnd.pha") as f:
         ncts = f["SPECTRUM"].data["COUNTS"][ch_min:ch_max].sum()
     S = ncts/exp_time/fov
     dS = np.sqrt(ncts)/exp_time/fov
     foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
-    f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]/(fov*u.arcsec**2)
-    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
+    f_sum = foreground.get_flux_in_band(0.5, 2.0)[0]/u.arcmin**2
+    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.5, 2.0)[0]*(u.cm/u.arcmin)**2
     b_sum = (f_sum+i_sum).to_value("ph/(arcsec**2*s)")
-    assert np.abs(S-b_sum) < 1.645*dS
+    assert np.abs(S-b_sum)/b_sum < 0.02
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
