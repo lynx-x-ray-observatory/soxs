@@ -769,7 +769,7 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
         frgnd_spec = rmf.convolve_spectrum(make_frgnd_spectrum(arf, rmf),
-            event_params["exposure_time"], noisy=False, rate=True)
+            exp_time, noisy=False, rate=True)
         out_spec += generate_channel_spectrum(frgnd_spec, exp_time, bkgnd_area,
                                               prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
