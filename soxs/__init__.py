@@ -2,8 +2,7 @@ from soxs.background import \
     BackgroundSpectrum, \
     ConvolvedBackgroundSpectrum, \
     make_point_sources_file, \
-    make_point_source_list, \
-    InstrumentalBackground
+    make_point_source_list
 
 from soxs.cosmology import \
     make_cosmological_sources_file

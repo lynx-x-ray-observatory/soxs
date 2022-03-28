@@ -372,8 +372,8 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
                       "configuration file if you want to change these "
                       "values. ",
                       DeprecationWarning)
-    from soxs.background import make_instrument_background, \
-        make_foreground, make_ptsrc_background
+    from soxs.background import make_diffuse_background, \
+        make_ptsrc_background
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
@@ -458,15 +458,11 @@ def make_background(exp_time, instrument, sky_center, foreground=True,
     if "chips" not in event_params:
         event_params["chips"] = instrument_spec["chips"]
 
-    if foreground:
-        mylog.info("Adding in astrophysical foreground.")
-        bkg_events = make_foreground(event_params, arf, rmf, prng=prng)
-        for key in bkg_events:
-            events[key] = np.concatenate([events[key], bkg_events[key]])
-    if instr_bkgnd and instrument_spec["bkgnd"] is not None:
-        mylog.info("Adding in instrumental background.")
-        bkg_events = make_instrument_background(instrument_spec,
-                                                event_params, rmf, prng=prng)
+    instr_bkgnd &= instrument_spec["bkgnd"] is not None
+
+    if foreground or instr_bkgnd:
+        bkg_events = make_diffuse_background(foreground, instr_bkgnd,
+            instrument_spec, event_params, arf, rmf, prng=prng)
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
 
@@ -723,9 +719,9 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     from soxs.response import RedistributionMatrixFile, \
         AuxiliaryResponseFile
     from soxs.spectra import ConvolvedSpectrum
-    from soxs.background.foreground import make_frgnd_spectrum
     from soxs.background.spectra import BackgroundSpectrum
-    from soxs.background.instrument import InstrumentalBackground
+    from soxs.background.diffuse import read_instr_spectrum, \
+        make_frgnd_spectrum, generate_channel_spectrum
     from soxs.utils import soxs_cfg
     if "nH" in kwargs or "absorb_model" in kwargs:
         warnings.warn("The 'nH' and 'absorb_model' keyword arguments"
@@ -772,20 +768,19 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
-        cspec_frgnd = ConvolvedSpectrum.convolve(
-            make_frgnd_spectrum.spec.to_spectrum(fov), arf)
-        out_spec += rmf.convolve_spectrum(cspec_frgnd, exp_time, prng=prng)
+        frgnd_spec = rmf.convolve_spectrum(make_frgnd_spectrum(arf, rmf),
+            event_params["exposure_time"], noisy=False, rate=True)
+        out_spec += generate_channel_spectrum(frgnd_spec, exp_time, bkgnd_area,
+                                              prng=prng)
     if instr_bkgnd and instrument_spec["bkgnd"] is not None:
         mylog.info("Adding in instrumental background.")
         bkgnd_spec = instrument_spec["bkgnd"]
         # Temporary hack for ACIS-S
         if "aciss" in instrument_spec["name"]:
             bkgnd_spec = bkgnd_spec[1]
-        bkgnd_spec = InstrumentalBackground.from_filename(
-            bkgnd_spec[0], bkgnd_spec[1],
-            instrument_spec['focal_length'])
-        out_spec += bkgnd_spec.generate_channel_spectrum(exp_time, bkgnd_area,
-                                                         prng=prng)
+        bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
+        out_spec += generate_channel_spectrum(bkgnd_spec, exp_time, bkgnd_area,
+                                              prng=prng)
     if ptsrc_bkgnd:
         mylog.info("Adding in background from unresolved point-sources.")
         bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))

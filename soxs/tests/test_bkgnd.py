@@ -1,7 +1,6 @@
 from soxs.instrument import make_background, \
     instrument_simulator, make_background_file, simulate_spectrum
-from soxs.background.foreground import make_frgnd_spectrum
-from soxs.background.spectra import ConvolvedBackgroundSpectrum
+from soxs.background.diffuse import make_frgnd_spectrum
 from soxs.spectra import Spectrum
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
 from soxs.utils import soxs_files_path, set_soxs_config
@@ -22,6 +21,7 @@ acisi_particle_bkgnd = Spectrum.from_file(
 def test_uniform_bkgnd_scale():
     prng = RandomState(25)
     hdxi_arf = AuxiliaryResponseFile("xrs_hdxi_3x10.arf")
+    hdxi_rmf = RedistributionMatrixFile("xrs_hdxi.rmf")
     events, event_params = make_background((50, "ks"), "lynx_hdxi", [30., 45.], 
                                            foreground=True, instr_bkgnd=True,
                                            ptsrc_bkgnd=False, prng=prng)
@@ -30,10 +30,11 @@ def test_uniform_bkgnd_scale():
     fov = (event_params["fov"]*60.0)**2
     S = ncts/t_exp/fov
     dS = np.sqrt(ncts)/t_exp/fov
-    foreground = ConvolvedBackgroundSpectrum.convolve(make_frgnd_spectrum.spec, hdxi_arf)
-    f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
+    foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
+    f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]/(fov*u.arcsec**2)
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
-    b_sum = (f_sum+i_sum).to("ph/(arcsec**2*s)").value
+    b_sum = (f_sum+i_sum).to_value("ph/(arcsec**2*s)")
+    print(S, b_sum)
     assert np.abs(S-b_sum) < 1.645*dS
 
 
@@ -58,8 +59,8 @@ def test_simulate_bkgnd_spectrum():
         ncts = f["SPECTRUM"].data["COUNTS"][ch_min:ch_max].sum()
     S = ncts/exp_time/fov
     dS = np.sqrt(ncts)/exp_time/fov
-    foreground = ConvolvedBackgroundSpectrum.convolve(make_frgnd_spectrum.spec, hdxi_arf)
-    f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]
+    foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
+    f_sum = foreground.get_flux_in_band(0.7, 2.0)[0]/(fov*u.arcsec**2)
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.7, 2.0)[0]*(u.cm/u.arcmin)**2
     b_sum = (f_sum+i_sum).to_value("ph/(arcsec**2*s)")
     assert np.abs(S-b_sum) < 1.645*dS
@@ -159,13 +160,14 @@ def test_ptsrc():
 
 
 def test_change_bkgnd(answer_store, answer_dir):
-    from soxs.background.foreground import make_frgnd_spectrum
     set_soxs_config("frgnd_spec_model", "default")
-    spectrum_answer_testing(make_frgnd_spectrum.spec, 
+    lem_arf = AuxiliaryResponseFile("lem_030322a.arf")
+    lem_rmf = RedistributionMatrixFile("lem_09ev_030322.rmf")
+    spectrum_answer_testing(make_frgnd_spectrum(lem_arf, lem_rmf),
                             f"default_frgnd_spectrum.h5", answer_store,
                             answer_dir)
     set_soxs_config("frgnd_spec_model", "halosat")
-    spectrum_answer_testing(make_frgnd_spectrum.spec,
+    spectrum_answer_testing(make_frgnd_spectrum(lem_arf, lem_rmf),
                             f"lem_frgnd_spectrum.h5", answer_store,
                             answer_dir)
 

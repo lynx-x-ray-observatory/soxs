@@ -375,7 +375,10 @@ class RedistributionMatrixFile:
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
         counts = cspec.flux.value * exp_time * cspec.de.value
-        spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
+        if np.isclose(cspec.ebins.value, self.ebins).all() and len(cspec.emid) == self.n_e:
+            spec = counts
+        else:
+            spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
         if not isinstance(self.data["MATRIX"], pyfits.column._VLF) and \

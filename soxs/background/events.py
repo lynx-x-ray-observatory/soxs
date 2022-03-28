@@ -86,30 +86,3 @@ def add_background_from_file(events, event_params, bkg_file):
     f.close()
 
     return all_events
-
-
-def make_diffuse_background(bkg_events, event_params, rmf, prng=None):
-    from soxs.instrument import perform_dither
-
-    n_e = bkg_events["energy"].size
-
-    bkg_events['time'] = prng.uniform(size=n_e, low=0.0,
-                                      high=event_params["exposure_time"])
-
-    x_offset, y_offset = perform_dither(bkg_events["time"],
-                                        event_params["dither_params"])
-
-    rot_mat = get_rot_mat(event_params["roll_angle"])
-
-    det = np.array([bkg_events["detx"] + x_offset -
-                    event_params["aimpt_coords"][0] -
-                    event_params["aimpt_shift"][0],
-                    bkg_events["dety"] + y_offset -
-                    event_params["aimpt_coords"][1] -
-                    event_params["aimpt_shift"][1]])
-    pix = np.dot(rot_mat.T, det)
-
-    bkg_events["xpix"] = pix[0, :] + event_params['pix_center'][0]
-    bkg_events["ypix"] = pix[1, :] + event_params['pix_center'][1]
-
-    return bkg_events

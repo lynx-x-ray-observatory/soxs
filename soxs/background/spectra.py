@@ -87,6 +87,25 @@ class BackgroundSpectrum(Spectrum):
 class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
     _units = "photon/(s*keV*arcmin**2)"
 
+    @classmethod
+    def from_spectrum(cls, spec, fov):
+        """
+        Create a convolved background spectrum from a regular
+        :class:`~soxs.spectra.ConvolvedSpectrum` object and the width
+        of a field of view on a side.
+
+        Parameters
+        ----------
+        spec : :class:`~soxs.spectra.ConvolvedSpectrum`
+            The spectrum to be used.
+        fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The width of the field of view on a side in 
+            arcminutes.
+        """
+        fov = parse_value(fov, "arcmin")
+        flux = spec.flux.value/fov/fov
+        return cls(spec.ebins.value, flux)
+
     def generate_energies(self, t_exp, fov, prng=None, 
                           quiet=False):
         """

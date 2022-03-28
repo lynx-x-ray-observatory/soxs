@@ -314,12 +314,7 @@ def set_soxs_config(option, value):
     value : number or string
         The value to set the option to.
     """
-    from soxs.background.foreground import make_frgnd_spectrum
-    bkgnd_options = ["abund_table", "apec_vers", "bkgnd_nH",
-                     "bkgnd_absorb_model", "frgnd_spec_model"]
     soxs_cfg.set("soxs", option, value=value)
-    if option in bkgnd_options:
-        make_frgnd_spectrum()
 
 
 def set_mission_config(mission):
