@@ -49,6 +49,7 @@ def make_frgnd_spectrum(arf, rmf):
         spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8)
     spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
     spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
+    spec.restrict_within_band(emin=0.1)
     spec = ConvolvedSpectrum.convolve(spec, arf)
     return spec
 

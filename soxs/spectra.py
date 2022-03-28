@@ -106,6 +106,15 @@ class Spectrum:
             e = e.to("keV").value
         return u.Quantity(self.func(e), self._units)
 
+    def restrict_within_band(self, emin=None, emax=None):
+        if emin is not None:
+            emin = parse_value(emin, "keV")
+            self.flux[self.emid.value < emin] = 0.0
+        if emax is not None:
+            emax = parse_value(emax, "keV")
+            self.flux[self.emid.value > emax] = 0.0
+        self._compute_total_flux()
+
     def get_flux_in_band(self, emin, emax):
         """
         Determine the total flux within a band specified 
