@@ -999,8 +999,46 @@ def get_tbabs_absorb(e, nH):
     return np.exp(-nH*1.0e22*sigma)
 
 
-class ConvolvedSpectrum(Spectrum):
+class CountRateSpectrum(Spectrum):
     _units = "photon/(s*keV)"
+
+    def generate_energies(self, t_exp, prng=None, quiet=False):
+        """
+        Generate photon energies from this count rate spectrum given an
+        exposure time.
+
+        Parameters
+        ----------
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The exposure time in seconds.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. Typically will only
+            be specified if you have a reason to generate the same 
+            set of random numbers, such as for a test. Default is None,
+            which sets the seed based on the system time.
+        quiet : boolean, optional
+            If True, log messages will not be displayed when 
+            creating energies. Useful if you have to loop over 
+            a lot of spectra. Default: False
+        """
+        t_exp = parse_value(t_exp, "s")
+        prng = parse_prng(prng)
+        rate = self.total_flux.value
+        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
+        energies = u.Quantity(energy, "keV")
+        return energies
+
+    @classmethod
+    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0,
+                         nbins=10000):
+        raise NotImplementedError
+
+    @classmethod
+    def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
+        raise NotImplementedError
+
+
+class ConvolvedSpectrum(CountRateSpectrum):
 
     def __init__(self, ebins, flux, arf):
         from numbers import Number

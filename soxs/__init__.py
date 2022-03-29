@@ -60,6 +60,7 @@ from soxs.spatial import \
 from soxs.spectra import \
     Spectrum, \
     ApecGenerator, \
+    CountRateSpectrum, \
     ConvolvedSpectrum
 
 from soxs.utils import \
