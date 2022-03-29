@@ -12,9 +12,9 @@ def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
     else:
         answer_spec = type(spec).from_file(testfile)
         assert_allclose(answer_spec.emid.value,
-                             spec.emid.value)
+                        spec.emid.value)
         assert_allclose(answer_spec.flux.value,
-                             spec.flux.value)
+                        spec.flux.value)
         assert answer_spec.flux.unit == spec.flux.unit
 
 

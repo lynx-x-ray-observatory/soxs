@@ -269,16 +269,22 @@ class Spectrum:
         filename : string
             The path to the file containing the spectrum.
         """
+        arf = None
         if filename.endswith(".h5"):
             with h5py.File(filename, "r") as f:
                 flux = f["spectrum"][()]
                 nbins = flux.size
                 ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
+                if "arf" in f.attrs:
+                    arf = f.attrs["arf"]
         else:
             emid, flux = np.loadtxt(filename, unpack=True)
             de = np.diff(emid)[0]
             ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
-        return cls(ebins, flux)
+        if arf is not None:
+            return cls(ebins, flux, arf)
+        else:
+            return cls(ebins, flux)
 
     @classmethod
     def from_constant(cls, const_flux, emin, emax, nbins):
@@ -398,11 +404,12 @@ class Spectrum:
         """
         if os.path.exists(specfile) and not overwrite:
             raise IOError("File %s exists and overwrite=False!" % specfile)
-        f = h5py.File(specfile, "w")
-        f.create_dataset("emin", data=self.ebins[0].value)
-        f.create_dataset("emax", data=self.ebins[-1].value)
-        f.create_dataset("spectrum", data=self.flux.value)
-        f.close()
+        with h5py.File(specfile, "w") as f:
+            f.create_dataset("emin", data=self.ebins[0].value)
+            f.create_dataset("emax", data=self.ebins[-1].value)
+            f.create_dataset("spectrum", data=self.flux.value)
+            if hasattr(self, "arf"):
+                f.attrs["arf"] = self.arf.filename
 
     def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0):
         """

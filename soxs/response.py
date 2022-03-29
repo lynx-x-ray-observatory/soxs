@@ -375,7 +375,7 @@ class RedistributionMatrixFile:
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
         counts = cspec.flux.value * exp_time * cspec.de.value
-        if np.isclose(cspec.ebins.value, self.ebins).all() and len(cspec.emid) == self.n_e:
+        if len(cspec.emid) == self.n_e and np.isclose(cspec.ebins.value, self.ebins).all():
             spec = counts
         else:
             spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
