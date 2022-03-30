@@ -121,7 +121,8 @@ def generate_sources(fov, sky_center, prng=None):
 
 def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None, 
                           nH=None, area=40000.0, input_sources=None, 
-                          output_sources=None, dump_fluxes=None, prng=None):
+                          output_sources=None, dump_fluxes_band=None, 
+                          diffuse_unresolved=True, prng=None):
     r"""
     Make a point-source background.
 
@@ -150,6 +151,9 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
+    diffuse_unresolved : boolean, optional
+        Add a diffuse component across the entire field of view to represent
+        the unresolved flux from sources at very small fluxes. Default: True
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 
@@ -186,6 +190,24 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
         t["index"].unit = ""
         t.write(output_sources, format='ascii.ecsv', overwrite=True)
 
+    # Add in the diffuse component for completely unresolved sources
+    if diffuse_unresolved:
+        """
+        We add a diffuse background across the field of view, from completely
+        unresolved sources, to match the fluxes in Table 3 of Hickox & Markevitch
+        2006, ApJ, 645, 95. The first number "F12" is in erg/s/cm**2/deg**2, and
+        is the difference between the total flux in sources below 5e-17 erg/s/cm**2
+        and the "average" value in Table 3 for the unresolved flux in the 1-2 keV
+        band of 1.04e-12 erg/s/cm**2/deg**2. The factor of 2.0 comes from the 
+        scaling between the fluxes in the 1-2 keV and 0.5-2 keV bands, assuming 
+        a spectral index of 2. The whole thing finally needs to be scaled by the 
+        FOV at the end.
+        """ 
+        F12 = 0.676e-12 # erg/s/cm**2/deg**2 in 1-2 keV band
+        diffuse_flux = 2.0*F12*(fov/60)**2
+        fluxes = np.append(fluxes, diffuse_flux)
+        ind = np.append(ind, 2.0)
+
     # Pre-calculate for optimization
     eratio = spec_emax/spec_emin
     oma = 1.0-ind
@@ -206,7 +228,9 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     detected = []
 
     for i, nph in enumerate(n_photons):
+
         if nph > 0:
+
             # Generate the energies in the source frame
             u = prng.uniform(size=nph)
             if ind[i] == 1.0:
@@ -217,9 +241,14 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
                     energies = 1.0/energies
                 else:
                     energies **= invoma[i]
+
             # Assign positions for this source
-            ra = ra0[i]*np.ones(nph)
-            dec = dec0[i]*np.ones(nph)
+            if i < num_sources:
+                ra = ra0[i]*np.ones(nph)
+                dec = dec0[i]*np.ones(nph)
+            else:
+                # this is the diffuse source--fill the whole FOV
+                ra, dec = generate_positions(nph, fov, sky_center, prng)
 
             all_energies.append(energies)
             all_ra.append(ra)
@@ -228,12 +257,13 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
 
     mylog.debug("Finished generating spectra.")
 
-    if dump_fluxes is not None:
-        dfluxes = []
-        for e in all_energies:
-            idxs = (e > 0.5) & (e < 2.0)
-            dfluxes.append(np.sum(e[idxs])*erg_per_keV/area/exp_time)
-        np.savetxt(dump_fluxes, dfluxes)
+    if dump_fluxes_band is not None:
+        dfluxes = np.zeros_like(ref_ph_flux)
+        for idx, e in zip(detected, all_energies):
+            eidxs = (e > dump_fluxes_band[0]) & (e < dump_fluxes_band[1])
+            dfluxes[idx] = np.sum(e[eidxs])*erg_per_keV/area/exp_time
+        filename = f"dump_fluxes_{dump_fluxes_band[0]}_{dump_fluxes_band[1]}.dat"
+        np.savetxt(filename, dfluxes)
 
     all_energies = np.concatenate(all_energies)
     all_ra = np.concatenate(all_ra)
@@ -266,11 +296,12 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     return output_events
 
 
-def make_point_sources_file(filename, name, exp_time, fov, 
+def make_point_sources_file(filename, name, exp_time, fov,
                             sky_center, absorb_model=None, nH=None,
-                            area=40000.0, prng=None, append=False,
+                            area=40000.0, append=False,
                             overwrite=False, src_filename=None,
-                            input_sources=None, output_sources=None):
+                            input_sources=None, output_sources=None,
+                            diffuse_unresolved=True, prng=None):
     """
     Make a SIMPUT catalog made up of contributions from
     point sources. 
@@ -297,11 +328,6 @@ def make_point_sources_file(filename, name, exp_time, fov,
         The effective area in cm**2. It must be large enough 
         so that a sufficiently large sample is drawn for the 
         ARF. Default: 40000.
-    prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time.
     append : boolean, optional
         If True, the photon list source will be appended to an existing
         SIMPUT catalog. Default: False
@@ -318,11 +344,20 @@ def make_point_sources_file(filename, name, exp_time, fov,
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
+    diffuse_unresolved : boolean, optional
+        Add a diffuse component across the entire field of view to represent
+        the unresolved flux from sources at very small fluxes. Default: True
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only 
+        be specified if you have a reason to generate the same 
+        set of random numbers, such as for a test. Default is None, 
+        which sets the seed based on the system time.
     """
     events = make_ptsrc_background(exp_time, fov, sky_center, 
                                    absorb_model=absorb_model, nH=nH, 
                                    area=area, input_sources=input_sources, 
-                                   output_sources=output_sources, prng=prng)
+                                   output_sources=output_sources, prng=prng,
+                                   diffuse_unresolved=diffuse_unresolved)
     phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"],
                               events["flux"], name=name)
     if append:
