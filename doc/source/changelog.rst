@@ -3,6 +3,20 @@
 ChangeLog
 =========
 
+Version 3.4.0
+-------------
+
+* The astrophysical foreground calculation method has been updated so that 
+  its spectral bins always match the binning of the RMF for the instrument
+  being simulated, which results in more accurate spectral fits for this
+  component.
+* The point-source background :math:`\log N-\log S` distribution has been 
+  extended to fluxes up to :math:`S \sim 10^{-12}~\rm{erg}~\rm{s}~\rm{cm}^{-2}`.
+  See :ref:`ptsrc-bkgnd` for more details.
+* A diffuse component to the point-source background has been added, to model
+  completely unresolved sources at low flux. See :ref:`ptsrc-bkgnd` for more 
+  details.
+
 Version 3.3.0
 -------------
 
