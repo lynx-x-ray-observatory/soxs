@@ -148,7 +148,9 @@ def test_ptsrc():
                                    prng=prng1, nH=-1.0, output_sources="src.dat")
     idxs = np.logical_and(events["energy"] > 0.5, events["energy"] < 2.0)
     E_mean = events["energy"][idxs].mean()*erg_per_keV
-    n1 = fluxes.sum()*exp_time*area/E_mean
+    F12 = 0.676e-12  # erg/s/cm**2/deg**2 in 1-2 keV band
+    diffuse_flux = 2.0 * F12 * (fov / 60) ** 2
+    n1 = (fluxes.sum()+diffuse_flux)*exp_time*area/E_mean
     n2 = idxs.sum()
     dn = np.sqrt(n2)
     assert np.abs(n1-n2) < 1.645*dn
