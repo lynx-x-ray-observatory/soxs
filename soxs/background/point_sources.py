@@ -79,7 +79,7 @@ def generate_fluxes(fov, prng):
 
 
 def generate_positions(num, fov, sky_center, prng):
-    fov /= 60.0 # convert to degrees
+    fov *= 60.0 # convert to arcsec
     x = prng.uniform(low=-0.5*fov, high=0.5*fov, size=num)
     y = prng.uniform(low=-0.5*fov, high=0.5*fov, size=num)
     w = construct_wcs(*sky_center)
