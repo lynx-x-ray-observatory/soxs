@@ -165,7 +165,6 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     area = parse_value(area, "cm**2")
     if input_sources is None:
         ra0, dec0, fluxes, ind = generate_sources(fov, sky_center, prng=prng)
-        num_sources = fluxes.size
     else:
         mylog.info(f"Reading in point-source properties from {input_sources}.")
         t = ascii.read(input_sources)
@@ -173,7 +172,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
         dec0 = t["Dec"].data
         fluxes = t["flux_0.5_2.0_keV"].data
         ind = t["index"].data
-        num_sources = fluxes.size
+    num_sources = fluxes.size
 
     mylog.debug(f"Generating spectra from {num_sources} sources.")
 
@@ -242,7 +241,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     # We will throw a lot of stuff away, but this is more general and still
     # faster.
     if nH is None:
-        nH = float(soxs_cfg.get("soxs","bkgnd_nH"))
+        nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
     if nH > 0.0:
         if absorb_model is None:
             absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
