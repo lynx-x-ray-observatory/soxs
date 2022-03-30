@@ -203,6 +203,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
     all_energies = []
     all_ra = []
     all_dec = []
+    detected = []
 
     for i, nph in enumerate(n_photons):
         if nph > 0:
@@ -223,6 +224,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
             all_energies.append(energies)
             all_ra.append(ra)
             all_dec.append(dec)
+            detected.append(i)
 
     mylog.debug("Finished generating spectra.")
 
