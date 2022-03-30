@@ -1,6 +1,7 @@
 import numpy as np
 from soxs.constants import keV_per_erg, erg_per_keV
 from soxs.simput import SimputCatalog, SimputPhotonList
+from soxs.spatial import construct_wcs
 from soxs.spectra import get_wabs_absorb, get_tbabs_absorb
 from soxs.utils import mylog, parse_prng, parse_value, soxs_cfg
 from scipy.interpolate import InterpolatedUnivariateSpline
@@ -78,13 +79,11 @@ def generate_fluxes(fov, prng):
 
 
 def generate_positions(num, fov, sky_center, prng):
-    dec_scal = np.fabs(np.cos(sky_center[1] * np.pi / 180))
-    ra_min = sky_center[0] - fov / (2.0 * 60.0 * dec_scal)
-    dec_min = sky_center[1] - fov / (2.0 * 60.0)
-
-    ra0 = prng.uniform(size=num) * fov / (60.0 * dec_scal) + ra_min
-    dec0 = prng.uniform(size=num) * fov / 60.0 + dec_min
-
+    fov /= 60.0 # convert to degrees
+    x = prng.uniform(low=-0.5*fov, high=0.5*fov, size=num)
+    y = prng.uniform(low=-0.5*fov, high=0.5*fov, size=num)
+    w = construct_wcs(*sky_center)
+    ra0, dec0 = w.wcs_pix2world(x, y, 1)
     return ra0, dec0
 
 
