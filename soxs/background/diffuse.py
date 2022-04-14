@@ -1,5 +1,6 @@
 from soxs.instrument import perform_dither
-from soxs.spectra import ApecGenerator, ConvolvedSpectrum
+from soxs.spectra import ConvolvedSpectrum
+from soxs.apec import ApecGenerator
 from soxs.utils import parse_prng, \
     parse_value, mylog, create_region, \
     get_data_file, get_rot_mat, soxs_cfg

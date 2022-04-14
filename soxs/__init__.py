@@ -59,9 +59,11 @@ from soxs.spatial import \
 
 from soxs.spectra import \
     Spectrum, \
-    ApecGenerator, \
     CountRateSpectrum, \
     ConvolvedSpectrum
+
+from soxs.apec import \
+    ApecGenerator
 
 from soxs.utils import \
     set_soxs_config, \

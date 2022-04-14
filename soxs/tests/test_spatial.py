@@ -1,6 +1,6 @@
 from soxs.spatial import BetaModel, \
     AnnulusModel, DoubleBetaModel
-from soxs.spectra import ApecGenerator
+from soxs.apec import ApecGenerator
 import numpy as np
 import os
 import shutil
