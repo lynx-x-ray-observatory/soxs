@@ -340,8 +340,8 @@ instrument_registry["star-x"] = {"name": "star-x",
 ## LEM
 
 instrument_registry["lem_2eV"] = {"name": "lem_2eV",
-                                  "arf": "lem_030322a.arf",
-                                  "rmf": "lem_2ev_030322.rmf",
+                                  "arf": "lem_110422.arf",
+                                  "rmf": "lem_2ev_110422.rmf",
                                   "bkgnd": None,
                                   "num_pixels": 128,
                                   "fov": 32.0,
@@ -355,8 +355,8 @@ instrument_registry["lem_2eV"] = {"name": "lem_2eV",
 
 
 instrument_registry["lem_0.9eV"] = {"name": "lem_0.9eV",
-                                    "arf": "lem_030322a.arf",
-                                    "rmf": "lem_09ev_030322.rmf",
+                                    "arf": "lem_110422.arf",
+                                    "rmf": "lem_09ev_110422.rmf",
                                     "bkgnd": None,
                                     "num_pixels": 128,
                                     "fov": 32.0,
@@ -367,6 +367,14 @@ instrument_registry["lem_0.9eV"] = {"name": "lem_0.9eV",
                                     "psf": ["gaussian", 10.0],
                                     "imaging": True,
                                     "grating": False}
+
+
+instrument_registry["lem_2eV_0322"] = instrument_registry["lem_2eV"].copy()
+instrument_registry["lem_2eV_0322"]["arf"] = "lem_030322a.arf"
+instrument_registry["lem_2eV_0322"]["rmf"] = "lem_2ev_030322.rmf"
+instrument_registry["lem_0.9eV_0322"] = instrument_registry["lem_0.9eV"].copy()
+instrument_registry["lem_0.9eV_0322"]["arf"] = "lem_030322a.arf"
+instrument_registry["lem_0.9eV_0322"]["rmf"] = "lem_09ev_030322.rmf"
 
 
 def add_instrument_to_registry(inst_spec):
