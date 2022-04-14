@@ -8,7 +8,7 @@ from astropy.cosmology import FlatLambdaCDM
 from astropy.table import Table
 
 from soxs.spatial import BetaModel, construct_wcs
-from soxs.spectra import ApecGenerator
+from soxs.apec import ApecGenerator
 from soxs.utils import soxs_files_path, mylog, parse_prng, \
     parse_value
 from soxs.simput import SimputCatalog, SimputPhotonList
