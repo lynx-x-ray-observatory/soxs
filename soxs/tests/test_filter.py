@@ -10,6 +10,7 @@ from soxs.instrument import instrument_simulator
 from soxs.simput import SimputSpectrum, SimputCatalog
 from soxs.events import filter_events
 
+
 def test_filter():
 
     tmpdir = tempfile.mkdtemp()

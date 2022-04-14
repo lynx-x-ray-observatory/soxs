@@ -157,6 +157,12 @@ To append to an existing catalog ``filename``, set ``append=True``. If you
 want to write the cosmological sources to a separate file, use the 
 ``src_filename`` keyword argument.
 
+A uniform background across the field of view, associated with many completely 
+unresolved point sources, is also added, with a spectral index of :math:`\alpha = 2.0` 
+and a flux of :math:`1.352 \times 10^{-12}~\rm{erg}~\rm{s}^{-1}~\rm{cm}^{-2}~\rm{deg}^{-2}` 
+in the 0.5-2 keV band. This can be turned off by setting ``diffuse_unresolved=False`` in the
+call to :func:`~soxs.background.point_sources.make_point_sources_file`.
+
 .. _point-source-list:
 
 Saving the Point Source Properties to Disk for Later Use

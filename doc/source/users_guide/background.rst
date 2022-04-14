@@ -42,7 +42,7 @@ thermal models, one absorbed, ``apec+wabs*apec``, with parameters:
 This model is from `McCammon et al. (2002) <https://ui.adsabs.harvard.edu/abs/2002ApJ...576..188M>`_.
 
 The ``"halosat"`` Foreground Model
-++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++
 
 The ``"halosat"`` foreground model is the same as the ``"default"``, except that it 
 includes an additional absorbed thermal model for the Hot Halo, based on HaloSat 
@@ -77,7 +77,7 @@ cosmologically distant AGN and galaxies. The fluxes for these sources are drawn
 from :math:`\rm{log}~N-\rm{log}~S` distributions taken from
 `Lehmer et al. (2012) <http://adsabs.harvard.edu/abs/2012ApJ...752...46L>`_'s
 study of the *Chandra* Deep Field South. The point sources have fluxes in the 
-0.5-2 keV band in the :math:`7.63 \times 10^{-22} - 1.0 \times 10^{-13}~\rm{erg}~\rm{s}^{-1}~\rm{cm}^{-2}` 
+0.5-2 keV band in the :math:`7.63 \times 10^{-22} - 1.0 \times 10^{-12}~\rm{erg}~\rm{s}^{-1}~\rm{cm}^{-2}` 
 range.
 
 Each point source is given a power-law spectrum. Galaxies are assumed to have a
@@ -88,7 +88,11 @@ Sources are absorbed by foreground Galactic neutral hydrogen assuming a neutral
 hydrogen column of :math:`n_H = 0.018 \times 10^{22}~\rm{cm}^{-2}` and the ``wabs``
 model by default. The absorption model and the value of the hydrogen column can
 be changed using the :ref:`config`. The position of each point source is uniformly 
-randomly distributed within the field of view. 
+randomly distributed within the field of view. A uniform background across the field
+of view, associated with many completely unresolved point sources, is also added, 
+with a spectral index of :math:`\alpha = 2.0` and a flux of 
+:math:`1.352 \times 10^{-12}~\rm{erg}~\rm{s}^{-1}~\rm{cm}^{-2}~\rm{deg}^{-2}` in the
+0.5-2 keV band.
 
 Though a point-source population is automatically created as a background 
 component when an observation is simulated, one can also create a SIMPUT catalog
@@ -190,7 +194,7 @@ using the ``input_pt_sources`` keyword argument:
     fov = 20.0 # arcmin
     soxs.make_point_source_list('my_ptsrc.dat', fov, sky_center)
     soxs.instrument_simulator(simput_file, out_file, exp_time, instrument, 
-                              sky_center, overwrite=True, input)
+                              sky_center, overwrite=True, input_pt_sources="my_ptsrc.dat")
 
 See :ref:`point-source-list` for more information on this feature. 
 

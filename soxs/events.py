@@ -1,7 +1,6 @@
 import numpy as np
 from astropy.io import fits
 from astropy import wcs
-import os
 from soxs.utils import mylog, parse_value, get_rot_mat, \
     create_region
 from soxs.instrument_registry import instrument_registry

@@ -20,14 +20,14 @@ bb = 0.5
 cc = 0.5
 dd = 1.8
 
-# Here x = log10(flux)
 
+# Here x = log10(flux)
 def get_agn_index(x):
     y = (x-aa)/bb
     return cc*erf(y)+dd
 
-# Index for galaxies
 
+# Index for galaxies
 gal_index = 2.0
 
 fb_emin = 0.5  # keV, low energy bound for the logN-logS flux band
