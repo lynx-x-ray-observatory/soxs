@@ -4,8 +4,14 @@ from astropy.units import Quantity
 
 from soxs.constants import sigma_to_fwhm
 from soxs.utils import parse_prng, get_data_file, \
-    image_pos, find_nearest
+    image_pos
 
+
+def score_img(img_bins, e, r):
+    de = np.abs(img_bins[0][:, np.newaxis] - e)
+    dr = np.abs(img_bins[1][:, np.newaxis] - r)
+    score = 100*de+dr
+    return score
 
 psf_model_registry = {}
 
@@ -101,14 +107,14 @@ class MultiImagePSF(PSF):
                 img_s.append([hdu.header["CDELT1"], hdu.header["CDELT2"]])
                 img_i.append(i)
                 img_u.append(hdu.header.get("CUNIT1", "mm"))
-        self.img_e, ie = np.unique(img_e, return_inverse=True)
-        if np.all(self.img_e > 100.0):
+        img_e = np.array(img_e)
+        img_r = (np.array(img_r)/plate_scale_arcmin)**2
+        if np.all(img_e > 100.0):
             # this is probably in eV
-            self.img_e *= 1.0e-3
-        self.img_r2, ir = np.unique(img_r, return_inverse=True)
-        self.img_i = {j: (i, ie[j], ir[j]) for j, i in enumerate(img_i)}
+            img_e *= 1.0e-3
+        self.img_bins = np.array([img_e, img_r])
+        self.img_i = img_i
         self.num_images = len(img_e)
-        self.img_r2 = (self.img_r2/plate_scale_arcmin)**2
         self.img_c = np.array(img_c)
         unit = list(set(img_u))
         if len(unit) > 1:
@@ -117,18 +123,17 @@ class MultiImagePSF(PSF):
 
     def scatter(self, x, y, e):
         r2 = (x-self.det_ctr[0])**2 + (y-self.det_ctr[1])**2
-        idx_e = find_nearest(self.img_e, e)
-        idx_r = find_nearest(self.img_r2, r2)
+        score = score_img(self.img_bins, e, r2)
+        idx_score = np.argmin(score, axis=0)
         n_in = x.size
         n_out = 0
         with pyfits.open(self.img_file) as f:
             for j in range(self.num_images):
-                i, ie, ir = self.img_i[j]
                 # This returns image coordinates from the PSF
                 # image
-                idxs = np.where((idx_e == ie) & (idx_r == ir))[0]
+                idxs = np.where(idx_score == j)[0]
                 n_out += idxs.size
-                dx, dy = image_pos(f[i].data, idxs.size, self.prng)
+                dx, dy = image_pos(f[self.img_i[j]].data, idxs.size, self.prng)
                 dx -= self.img_c[j][0]
                 dy -= self.img_c[j][1]
                 dx *= self.img_s[j][0]

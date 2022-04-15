@@ -299,10 +299,6 @@ def image_pos(im, nph, prng):
     return x+dx, y+dy
 
 
-def find_nearest(a, b):
-    return np.argmin(np.abs(a[:, np.newaxis] - b), axis=0)
-
-
 def set_soxs_config(option, value):
     """
     Set SOXS configuration values.
