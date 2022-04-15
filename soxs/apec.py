@@ -8,7 +8,6 @@ from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
     cosmic_elem, metal_elem, atomic_weights, clight, \
     m_u, elem_names, abund_tables
-from soxs.spectra import Spectrum
 
 
 class ApecGenerator:
@@ -297,6 +296,7 @@ class ApecGenerator:
             units to vary freely of the abund parameter, e.g.
             {"O": 0.4, "N": 0.3, "He": 0.9}. Default: None
         """
+        from soxs.spectra import Spectrum
         if self.nei:
             raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
         if elem_abund is None:
@@ -341,6 +341,7 @@ class ApecGenerator:
             The velocity broadening parameter, in units of 
             km/s. Default: 0.0
         """
+        from soxs.spectra import Spectrum
         if not self.nei:
             raise RuntimeError("Use 'get_spectrum' for CIE spectra!")
         if set(elem_abund.keys()) != set(self.var_ion_names):

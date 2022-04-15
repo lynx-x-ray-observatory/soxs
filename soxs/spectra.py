@@ -12,6 +12,7 @@ import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.modeling.functional_models import \
     Gaussian1D
+from soxs.apec import ApecGenerator
 
 
 class Energies(u.Quantity):
