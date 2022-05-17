@@ -4,7 +4,8 @@ import tempfile
 import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
-    parse_prng, parse_value, line_width_equiv
+    parse_prng, parse_value, line_width_equiv, \
+    issue_deprecation_warning
 from soxs.constants import erg_per_keV, hc, \
     sigma_to_fwhm, sqrt2pi
 import astropy.units as u
@@ -13,6 +14,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.modeling.functional_models import \
     Gaussian1D
 from soxs.apec import ApecGenerator
+from astropy.io import ascii
 
 
 class Energies(u.Quantity):
@@ -272,21 +274,9 @@ class Spectrum:
     @classmethod
     def from_file(cls, filename):
         """
-        Read a spectrum from an ASCII or HDF5 file.
-
-        If ASCII: accepts a file with three columns,
-        the first being the lower energy of each bin in 
-        keV, the second the higher energy of each bin in
-        keV, and the third being the spectrum in the
-        appropriate units, assuming either a linear binning 
-        with constant bin widths or a log-spaced binning
-        with constant bin widths in log-space.
-
-        If HDF5: accepts a file with one array dataset, 
-        named "spectrum", which is the spectrum in the 
-        appropriate units, and two scalar datasets, 
-        "emin" and "emax", which are the minimum and 
-        maximum energies in keV.
+        Read a spectrum from an ASCII or HDF5 file, in
+        the forms written by :meth:`~soxs.Spectrum.write_ascii_file`
+        and :meth:`~soxs.Spectrum.write_h5_file`.
 
         Parameters
         ----------
@@ -294,11 +284,11 @@ class Spectrum:
             The path to the file containing the spectrum.
         """
         arf = None
-        if filename.endswith(".h5"):
+        try:
             with h5py.File(filename, "r") as f:
                 flux = f["spectrum"][()]
                 nbins = flux.size
-                binscale = f.attrs["binscale"]
+                binscale = f.attrs.get("binscale", "linear")
                 if binscale == "linear":
                     ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
                 elif binscale == "log":
@@ -306,10 +296,13 @@ class Spectrum:
                                         np.log10(f["emin"][()]), nbins+1)
                 if "arf" in f.attrs:
                     arf = f.attrs["arf"]
-        else:
-            emid, flux = np.loadtxt(filename, unpack=True)
-            de = np.diff(emid)[0]
-            ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+        except OSError:
+            t = ascii.read(filename)
+            ebins = np.append(t["elo"].data, t["ehi"].data[-1])
+            flux = t["flux"].data
+            binscale = t.meta.get("binscale", "linear")
+            if "arf" in t.meta:
+                arf = t.meta["arf"]
         if arf is not None:
             return cls(ebins, flux, arf, binscale=binscale)
         else:
@@ -404,9 +397,10 @@ class Spectrum:
         self.flux *= new_flux/f.value
         self._compute_total_flux()
 
-    def write_file(self, specfile, overwrite=False):
+    def write_ascii_file(self, specfile, overwrite=False):
         """
-        Write the spectrum to a file.
+        Write the spectrum to an ASCII file in the ECSV format
+        (https://docs.astropy.org/en/stable/io/ascii/ecsv.html).
 
         Parameters
         ----------
@@ -416,11 +410,18 @@ class Spectrum:
             Whether or not to overwrite an existing 
             file with the same name. Default: False
         """
-        if os.path.exists(specfile) and not overwrite:
-            raise IOError(f"File {specfile} exists and overwrite=False!")
-        header = f"Energy\tFlux\nkeV\t{self._units}"
-        np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
-                   delimiter="\t", header=header)
+        from astropy.table import QTable
+        meta = {"binscale": self.binscale}
+        if hasattr(self, "arf"):
+            meta["arf"] = self.arf.filename
+        t = QTable([self.ebins[:-1], self.ebins[1:], self.flux],
+                   names=["elo", "ehi", "flux"], meta=meta)
+        t.write(specfile, overwrite=overwrite, format="ascii.ecsv")
+
+    def write_file(self, specfile, overwrite=False):
+        issue_deprecation_warning("'Spectrum.write_file' is deprecated and has been "
+                                  "superseded by 'Spectrum.write_ascii_file'")
+        self.write_ascii_file(specfile, overwrite=overwrite)
 
     def write_h5_file(self, specfile, overwrite=False):
         """
