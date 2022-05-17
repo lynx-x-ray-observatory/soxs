@@ -3,6 +3,16 @@
 ChangeLog
 =========
 
+Version 3.5.0
+-------------
+
+* An option to create a mosaicked event file in addition to an image file has been
+  added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
+  for more details.
+* The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
+  has been added to the options for abundance tables for the :class:`~soxs.apec.ApecGenerator`
+  class.
+
 Version 3.4.0
 -------------
 

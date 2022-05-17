@@ -63,7 +63,15 @@ from these event files, this list needs to be fed into the
     soxs.make_mosaic_image(obs_list, "casa_all_image.fits", overwrite=True)
     
 Which will create an image of each pointing, save it to disk, and then combine
-them into a final image. 
+them into a final image.
+
+Optionally, if you provide a filename to the ``evt_file`` argument, the events from
+the separate files will be combined into a single event file:
+
+.. code-block:: python
+
+    soxs.make_mosaic_image(obs_list, "casa_all_image.fits", evt_file="casa_all_evt.fits",
+                           overwrite=True)
 
 :func:`~soxs.mosaic.make_mosaic_image` takes many parameters which can be 
 supplied to :func:`~soxs.events.write_image`, and also allows one to create an
