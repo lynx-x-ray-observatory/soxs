@@ -52,6 +52,7 @@ class Spectrum:
         self.de = np.diff(self.ebins)
         self.binscale = binscale
         self._compute_total_flux()
+        self._check_binning_scale()
 
     def _compute_total_flux(self):
         self.total_flux = (self.flux*self.de).sum()
@@ -62,6 +63,15 @@ class Spectrum:
         self.cumspec = cumspec
         self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
 
+    def _check_binning_scale(self):
+        if np.isclose(self.de, self.de[0]).all():
+            bscale = "linear"
+        elif np.isclose(np.log10(self.de), np.log10(self.de[0])).all():
+            bscale = "log"
+        if bscale != self.binscale:
+            raise RuntimeError(f"The specified binscale={binscale} does not"
+                               "seem to match the energy bins!!")
+        
     def _check_binning_units(self, other):
         if self.nbins != other.nbins or \
                 not np.isclose(self.ebins.value, other.ebins.value).all():
