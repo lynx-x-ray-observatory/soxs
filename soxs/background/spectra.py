@@ -9,8 +9,8 @@ from soxs.response import AuxiliaryResponseFile
 class BackgroundSpectrum(Spectrum):
     _units = "photon/(cm**2*s*keV*arcmin**2)"
 
-    def __init__(self, ebins, flux):
-        super(BackgroundSpectrum, self).__init__(ebins, flux)
+    def __init__(self, ebins, flux, binscale="linear"):
+        super().__init__(ebins, flux, binscale=binscale)
 
     @classmethod
     def from_spectrum(cls, spec, fov):
@@ -29,7 +29,7 @@ class BackgroundSpectrum(Spectrum):
         """
         fov = parse_value(fov, "arcmin")
         flux = spec.flux.value/fov/fov
-        return cls(spec.ebins.value, flux)
+        return cls(spec.ebins.value, flux, binscale=spec.binscale)
 
     def generate_energies(self, t_exp, area, fov, prng=None, 
                           quiet=False):
@@ -65,7 +65,7 @@ class BackgroundSpectrum(Spectrum):
         area = parse_value(area, "cm**2")
         prng = parse_prng(prng)
         rate = area*fov*fov*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
+        energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
         energies = Energies(energy, flux)
         return energies
@@ -73,13 +73,14 @@ class BackgroundSpectrum(Spectrum):
     def to_spectrum(self, fov):
         fov = parse_value(fov, "arcmin")
         flux = self.flux.value*fov*fov
-        return Spectrum(self.ebins.value, flux)
+        return Spectrum(self.ebins.value, flux, binscale=self.binscale)
 
     def __mul__(self, other):
         if isinstance(other, AuxiliaryResponseFile):
             return ConvolvedBackgroundSpectrum.convolve(self, other)
         else:
-            return BackgroundSpectrum(self.ebins, other*self.flux)
+            return BackgroundSpectrum(self.ebins, other*self.flux, 
+                                      binscale=self.binscale)
 
     __rmul__ = __mul__
 
@@ -104,7 +105,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         """
         fov = parse_value(fov, "arcmin")
         flux = spec.flux.value/fov/fov
-        return cls(spec.ebins.value, flux)
+        return cls(spec.ebins.value, flux, spec.binscale)
 
     def generate_energies(self, t_exp, fov, prng=None, 
                           quiet=False):
@@ -134,7 +135,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         fov = parse_value(fov, "arcmin")
         prng = parse_prng(prng)
         rate = fov*fov*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
+        energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)

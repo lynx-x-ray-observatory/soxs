@@ -72,9 +72,11 @@ class ApecGenerator:
     >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
     ...                            broadening=True)
     """
-    def __init__(self, emin, emax, nbins, var_elem=None, apec_root=None,
+    def __init__(self, emin, emax, nbins, binscale='linear', 
+                 var_elem=None, apec_root=None,
                  apec_vers=None, broadening=True, nolines=False,
                  abund_table=None, nei=False):
+        self.binscale = binscale
         if apec_vers is None:
             apec_vers = soxs_cfg.get("soxs", "apec_vers")
         mylog.debug(f"Using APEC version {apec_vers}.")
@@ -87,7 +89,10 @@ class ApecGenerator:
         self.emin = emin
         self.emax = emax
         self.nbins = nbins
-        self.ebins = np.linspace(self.emin, self.emax, nbins+1)
+        if binscale == "linear":
+            self.ebins = np.linspace(self.emin, self.emax, nbins+1)
+        elif binscale == "log":
+            self.ebins = np.logspace(np.log10(self.emin), np.log10(self.emax), nbins+1)
         self.de = np.diff(self.ebins)
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         if nei:
@@ -319,7 +324,7 @@ class ApecGenerator:
                 j = self.var_elem_names.index(elem)
                 spec += eabund*(vspec[j,0,:]*(1.-dT)+vspec[j,1,:]*dT)
         spec = 1.0e14*norm*spec/self.de
-        return Spectrum(self.ebins, spec)
+        return Spectrum(self.ebins, spec, binscale=self.binscale)
 
     def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
         """
@@ -359,4 +364,4 @@ class ApecGenerator:
             j = self.var_ion_names.index(elem)
             spec += eabund*(vspec[j,0,:]*(1.-dT) + vspec[j,1,:]*dT)
         spec = 1.0e14*norm*spec/self.de
-        return Spectrum(self.ebins, spec)
+        return Spectrum(self.ebins, spec, binscale=self.binscale)
