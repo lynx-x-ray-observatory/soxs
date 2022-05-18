@@ -1,6 +1,8 @@
 from astropy.io import fits
 from soxs.constants import K_per_keV
-from soxs.utils import parse_value, get_data_file
+from soxs.utils import parse_value, get_data_file, mylog
+import numpy as np
+
 
 class IGMGenerator:
     def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=1.0,
@@ -28,13 +30,13 @@ class IGMGenerator:
                 self.metal_tables = (get_data_file("igm_v2ph_me.fits"),)
         self.cxb_factor = cxb_factor
         self.max_tables = 2 if resonant_scattering else 1
-        self.var_elem = var_elem
-        self.emin = emin
-        self.emax = emax
-        self.nvar_elem = 0
         self.var_elem = ["O", "Ne", "Si", "S", "Fe"] if use_var_elem else None
         if self.var_elem is not None:
             self.nvar_elem = len(var_elem)
+        else:
+            self.nvar_elem = 0
+        self.emin = emin
+        self.emax = emax
         with fits.open(self.cosmic_table) as f:
             self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
             self.Dvals = f["PARAMETERS"].data["VALUE"][0][:self.n_D]
@@ -59,7 +61,6 @@ class IGMGenerator:
     def _get_table(self, ne, eidxs, redshift):
         norm_fac = 5.50964e-5*np.array([1.0, self.cxb_factor])
         scale_factor = 1.0/(1.0+redshift)
-        cosmic_spec = np.zeros((self.n_T*self.n_D, ne))
         metal_spec = np.zeros((self.n_T*self.n_D, ne))
         var_spec = None
         mylog.debug(f"Opening {self.cosmic_table}.")
@@ -67,7 +68,7 @@ class IGMGenerator:
             cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs]*norm_fac[0]
         cosmic_spec *= scale_factor
         for j, mfile in enumerate(self.metal_tables):
-            mylog.info(f"Opening {mfile}.")
+            mylog.debug(f"Opening {mfile}.")
             with fits.open(mfile) as f:
                 metal_spec += f["SPECTRA"].data["INTPSPEC"][:,eidxs]*norm_fac[j]
         metal_spec *= scale_factor
