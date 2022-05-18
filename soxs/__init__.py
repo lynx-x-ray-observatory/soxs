@@ -65,6 +65,9 @@ from soxs.spectra import \
 from soxs.apec import \
     ApecGenerator
 
+from soxs.igm import \
+    IGMGenerator
+
 from soxs.utils import \
     set_soxs_config, \
     set_mission_config
