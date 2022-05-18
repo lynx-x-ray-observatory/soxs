@@ -270,7 +270,7 @@ class ApecGenerator:
         pbar.close()
         return cspec, mspec, vspec
 
-    def _spectrum_init(self, kT, velocity, elem_abund):
+    def _spectrum_init(self, kT, velocity):
         kT = parse_value(kT, "keV")
         velocity = parse_value(velocity, "km/s")
         v = velocity*1.0e5
@@ -312,7 +312,7 @@ class ApecGenerator:
                                "same as that was originally set!\n"
                                "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
                                                                       set(self.var_elem_names)))
-        kT, dT, tindex, v = self._spectrum_init(kT, velocity, elem_abund)
+        kT, dT, tindex, v = self._spectrum_init(kT, velocity)
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
         cspec, mspec, vspec = self._get_table([tindex, tindex+1], redshift, v)
@@ -355,7 +355,7 @@ class ApecGenerator:
                                "same as that was originally set!\n"
                                "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
                                                                       set(self.var_ion_names)))
-        kT, dT, tindex, v = self._spectrum_init(kT, velocity, elem_abund)
+        kT, dT, tindex, v = self._spectrum_init(kT, velocity)
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
             return np.zeros(self.nbins)
         cspec, _, vspec = self._get_table([tindex, tindex+1], redshift, v)
