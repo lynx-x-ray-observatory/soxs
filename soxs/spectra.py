@@ -66,9 +66,11 @@ class Spectrum:
         self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
 
     def _check_binning_scale(self):
-        if np.isclose(self.de, self.de[0]).all():
+        diff1 = self.de.value
+        diff2 = np.diff(np.log10(self.ebins.value))
+        if np.isclose(diff1, diff1[0]).all():
             bscale = "linear"
-        elif np.isclose(np.log10(self.de), np.log10(self.de[0])).all():
+        elif np.isclose(diff2, diff2[0]).all():
             bscale = "log"
         if bscale != self.binscale:
             raise RuntimeError(f"The specified binscale={binscale} does not"
