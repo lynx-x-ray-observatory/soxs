@@ -254,14 +254,16 @@ def generate_events(source, exp_time, instrument, sky_center,
                 events["chip_id"][inside] = i
             keep = events["chip_id"] > -1
 
-            mylog.info(f"{n_evt-keep.sum()} events were rejected because "
-                       f"they do not fall on any CCD.")
+            mylog.debug(f"{n_evt-keep.sum()} events were rejected because "
+                        f"they do not fall on any CCD.")
             n_evt = keep.sum()
 
             if n_evt == 0:
                 mylog.warning("No events are within the field "
                               "of view for this source!!!")
             else:
+
+                mylog.info(f"{n_evt} events were detected from the source.")
 
                 # Keep only those events which fall on a chip
 

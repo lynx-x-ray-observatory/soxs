@@ -85,7 +85,7 @@ class AuxiliaryResponseFile:
             pones = np.ones_like(energy)
             ra = src.ra*pones
             dec = src.dec*pones
-        mylog.info(f"{energy.size} events detected.")
+        mylog.debug(f"{energy.size} events detected from this spectrum.")
         return {"energy": energy, "ra": ra, "dec": dec}
 
     def detect_events_phlist(self, events, exp_time, flux, refband, prng=None):
@@ -128,7 +128,7 @@ class AuxiliaryResponseFile:
         w = earea / self.max_area
         randvec = prng.uniform(size=energy.size)
         eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("int64")
-        mylog.info(f"{n_ph} events detected.")
+        mylog.debug(f"{n_ph} events detected out of {energy.size}.")
         for key in events:
             events[key] = np.asarray(events[key][eidxs])
         return events
