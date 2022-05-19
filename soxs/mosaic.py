@@ -183,7 +183,6 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
 
     hdulist = [fits.PrimaryHDU(), tbhdu, tbhdu_gti]
 
-    print(outfile)
     fits.HDUList(hdulist).writeto(outfile, overwrite=overwrite)
 
 
