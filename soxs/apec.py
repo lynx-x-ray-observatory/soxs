@@ -314,7 +314,7 @@ class ApecGenerator:
                                                                       set(self.var_elem_names)))
         kT, dT, tindex, v = self._spectrum_init(kT, velocity)
         if tindex >= self.Tvals.shape[0]-1 or tindex < 0:
-            return np.zeros(self.nbins)
+            return Spectrum(self.ebins, np.zeros(self.nbins), binscale=self.binscale)
         cspec, mspec, vspec = self._get_table([tindex, tindex+1], redshift, v)
         cosmic_spec = cspec[0,:]*(1.-dT)+cspec[1,:]*dT
         metal_spec = mspec[0,:]*(1.-dT)+mspec[1,:]*dT

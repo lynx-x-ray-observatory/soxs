@@ -37,7 +37,7 @@ def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
         bin_edges = np.log10(spec.ebins.value)
     e = np.interp(randvec, cumspec, bin_edges)
     if binscale == "log":
-        e = 10*e
+        e = 10**e
     if not quiet:
         mylog.info("Finished creating energies.")
     return e
@@ -68,9 +68,10 @@ class Spectrum:
     def _check_binning_scale(self):
         diff1 = self.de.value
         diff2 = np.diff(np.log10(self.ebins.value))
-        if np.isclose(diff1, diff1[0]).all():
+        bscale = None
+        if np.isclose(diff1, diff1[0], rtol=1.0e-4).all():
             bscale = "linear"
-        elif np.isclose(diff2, diff2[0]).all():
+        elif np.isclose(diff2, diff2[0], rtol=1.0e-4).all():
             bscale = "log"
         if bscale != self.binscale:
             raise RuntimeError(f"The specified binscale={binscale} does not"

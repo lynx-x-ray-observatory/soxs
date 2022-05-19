@@ -31,10 +31,7 @@ class IGMGenerator:
         self.cxb_factor = cxb_factor
         self.max_tables = 2 if resonant_scattering else 1
         self.var_elem = ["O", "Ne", "Si", "S", "Fe"] if use_var_elem else None
-        if self.var_elem is not None:
-            self.nvar_elem = len(var_elem)
-        else:
-            self.nvar_elem = 0
+        self.nvar_elem = len(self.var_elem)
         self.emin = emin
         self.emax = emax
         with fits.open(self.cosmic_table) as f:
@@ -120,9 +117,9 @@ class IGMGenerator:
         didx = np.searchsorted(self.Dvals, lnH)-1
         eidxs, ne, ebins, emid, de = self._get_energies(redshift)
         if tidx >= self.Tvals.size-1 or tidx < 0:
-            return np.zeros(ne)
+            return Spectrum(self.ebins, np.zeros(ne), binscale=self.binscale)
         if didx >= self.Dvals.size-1 or didx < 0:
-            return np.zeros(ne)
+            return Spectrum(self.ebins, np.zeros(ne), binscale=self.binscale)
         cspec, mspec, vspec = self._get_table(ne, eidxs, redshift)
         dT = (lkT - self.Tvals[tidx]) / self.dTvals[tidx]
         dn = (lnH - self.Dvals[didx]) / self.dDvals[didx]
@@ -150,5 +147,5 @@ class IGMGenerator:
                 spec += dx2*vspec[j,idx2,:]
                 spec += dx3*vspec[j,idx3,:]
                 spec += dx4*vspec[j,idx4,:]
-        spec = 1.0e14*norm*spec/de
+        spec = 1.0e14*norm*spec[0,:]/de
         return Spectrum(ebins, spec, binscale=self.binscale)
