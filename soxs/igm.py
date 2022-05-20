@@ -10,7 +10,7 @@ class IGMGenerator:
         self.binscale = "log"
         self.resonant_scattering = resonant_scattering
         self.cosmic_table = get_data_file("igm_v2ph_nome.fits")
-        self.metal_tab_names = ["ox", "ne", "si", "su", "fe"] 
+        self.metal_tab_names = ["ox", "ne", "mg", "si", "su", "fe"] 
         if resonant_scattering:
             if use_var_elem:
                 self.metal_tables = (get_data_file("igm_v2ph_mxx.fits"), 
@@ -29,8 +29,7 @@ class IGMGenerator:
             else:
                 self.metal_tables = (get_data_file("igm_v2ph_me.fits"),)
         self.cxb_factor = cxb_factor
-        self.max_tables = 2 if resonant_scattering else 1
-        self.var_elem = ["O", "Ne", "Si", "S", "Fe"] if use_var_elem else None
+        self.var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"] if use_var_elem else []
         self.nvar_elem = len(self.var_elem)
         self.emin = emin
         self.emax = emax
