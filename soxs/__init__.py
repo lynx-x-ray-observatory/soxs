@@ -19,7 +19,8 @@ from soxs.events import \
 from soxs.instrument import \
     instrument_simulator, \
     make_background_file, \
-    simulate_spectrum
+    simulate_spectrum, \
+    simple_event_list
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \

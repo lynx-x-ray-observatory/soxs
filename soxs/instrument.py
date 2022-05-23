@@ -196,7 +196,7 @@ def generate_events(source, exp_time, instrument, sky_center,
         refband = [parameters["emin"][i], parameters["emax"][i]]
         if src.src_type == "phlist":
             events = arf.detect_events_phlist(src.events.copy(), exp_time,
-                                              parameters["flux"][i], 
+                                              parameters["flux"][i],
                                               refband, prng=prng)
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
@@ -803,3 +803,153 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
 
     _write_spectrum(bins, out_spec, exp_time, rmf.header["CHANTYPE"], 
                     event_params, out_file, overwrite=overwrite)
+
+
+def simple_event_list(input_events, out_file, exp_time, instrument,
+                      overwrite=False, prng=None):
+    from astropy.time import Time, TimeDelta
+    from astropy.io import fits
+    from pathlib import PurePath
+
+    if not out_file.endswith(".fits"):
+        out_file += ".fits"
+    mylog.info(f"Making simple observation of source in {out_file}.")
+    exp_time = parse_value(exp_time, "s")
+    prng = parse_prng(prng)
+    source_list, parameters = make_source_list(input_events)
+
+    try:
+        instrument_spec = instrument_registry[instrument]
+    except KeyError:
+        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
+    if not instrument_spec["imaging"]:
+        raise RuntimeError(f"Instrument '{instrument_spec['name']}' is not "
+                           f"designed for imaging observations!")
+
+    arf_file = get_data_file(instrument_spec["arf"])
+    rmf_file = get_data_file(instrument_spec["rmf"])
+    arf = AuxiliaryResponseFile(arf_file)
+    rmf = RedistributionMatrixFile(rmf_file)
+
+    event_params = {"exposure_time": exp_time,
+                    "arf": arf.filename,
+                    "rmf": rmf.filename,
+                    "channel_type": rmf.chan_type.upper(),
+                    "telescope": rmf.header["TELESCOP"],
+                    "instrument": instrument_spec['name'],
+                    "mission": rmf.header.get("MISSION", ""),
+                    "nchan": rmf.n_ch,
+                    "chan_lim": [rmf.cmin, rmf.cmax]}
+
+    all_events = defaultdict(list)
+
+    for i, src in enumerate(source_list):
+
+        mylog.info(f"Detecting events from source {parameters['src_names'][i]}")
+
+        mylog.info(f"Applying energy-dependent effective area from "
+                   f"{os.path.split(arf.filename)[-1]}.")
+        refband = [parameters["emin"][i], parameters["emax"][i]]
+        if src.src_type == "phlist":
+            events = arf.detect_events_phlist(src.events.copy(), exp_time,
+                                              parameters["flux"][i],
+                                              refband, prng=prng)
+        elif src.src_type.endswith("spectrum"):
+            events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
+
+        n_evt = events["energy"].size
+
+        if n_evt == 0:
+            mylog.warning("No events were observed for this source!!!")
+        else:
+            # Add times to events
+            events['time'] = prng.uniform(size=n_evt, low=0.0, high=exp_time)
+
+        if n_evt > 0:
+            for key in events:
+                all_events[key] = np.concatenate([all_events[key], events[key]])
+
+    if len(all_events["energy"]) == 0:
+        mylog.warning("No events from any of the sources in "
+                      "the catalog were detected!")
+        for key in ["ra", "dec", "time", event_params["channel_type"]]:
+            all_events[key] = np.array([])
+    else:
+        # Step 4: Scatter energies with RMF
+        mylog.info(f"Scattering energies with "
+                   f"RMF {os.path.split(rmf.filename)[-1]}.")
+        all_events = rmf.scatter_energies(all_events, prng=prng)
+
+    mylog.info(f"Writing events to file {out_file}.")
+
+    t_begin = Time.now()
+    dt = TimeDelta(parameters["exposure_time"], format='sec')
+    t_end = t_begin + dt
+
+    col_ra = fits.Column(name='RA', format='E', unit='deg',
+                         array=all_events["ra"])
+    col_dec = fits.Column(name='DEC', format='E', unit='deg',
+                          array=all_events["dec"])
+    col_e = fits.Column(name='ENERGY', format='E', unit='eV',
+                        array=all_events["energy"]*1000.)
+
+    chantype = parameters["channel_type"].upper()
+    if chantype == "PHA":
+        cunit = "adu"
+    elif chantype == "PI":
+        cunit = "Chan"
+    col_ch = fits.Column(name=chantype, format='1J', unit=cunit,
+                         array=all_events[chantype])
+
+    col_t = fits.Column(name="TIME", format='1D', unit='s',
+                        array=all_events['time'])
+
+    cols = [col_e, col_ra, col_dec, col_ch, col_t]
+
+    coldefs = fits.ColDefs(cols)
+    tbhdu = fits.BinTableHDU.from_columns(coldefs)
+    tbhdu.name = "EVENTS"
+
+    tbhdu.header["TLMIN4"] = parameters["chan_lim"][0]
+    tbhdu.header["TLMAX4"] = parameters["chan_lim"][1]
+    tbhdu.header["EXPOSURE"] = parameters["exposure_time"]
+    tbhdu.header["TSTART"] = 0.0
+    tbhdu.header["TSTOP"] = parameters["exposure_time"]
+    tbhdu.header["HDUVERS"] = "1.1.0"
+    tbhdu.header["RADECSYS"] = "FK5"
+    tbhdu.header["EQUINOX"] = 2000.0
+    tbhdu.header["HDUCLASS"] = "OGIP"
+    tbhdu.header["HDUCLAS1"] = "EVENTS"
+    tbhdu.header["HDUCLAS2"] = "ACCEPTED"
+    tbhdu.header["DATE"] = t_begin.tt.isot
+    tbhdu.header["DATE-OBS"] = t_begin.tt.isot
+    tbhdu.header["DATE-END"] = t_end.tt.isot
+    tbhdu.header["RESPFILE"] = PurePath(parameters["rmf"]).parts[-1]
+    tbhdu.header["PHA_BINS"] = parameters["nchan"]
+    tbhdu.header["ANCRFILE"] = PurePath(parameters["arf"]).parts[-1]
+    tbhdu.header["CHANTYPE"] = parameters["channel_type"]
+    tbhdu.header["MISSION"] = parameters["mission"]
+    tbhdu.header["TELESCOP"] = parameters["telescope"]
+    tbhdu.header["INSTRUME"] = parameters["instrument"]
+
+    start = fits.Column(name='START', format='1D', unit='s',
+                        array=np.array([0.0]))
+    stop = fits.Column(name='STOP', format='1D', unit='s',
+                       array=np.array([parameters["exposure_time"]]))
+
+    tbhdu_gti = fits.BinTableHDU.from_columns([start,stop])
+    tbhdu_gti.name = "STDGTI"
+    tbhdu_gti.header["TSTART"] = 0.0
+    tbhdu_gti.header["TSTOP"] = parameters["exposure_time"]
+    tbhdu_gti.header["HDUCLASS"] = "OGIP"
+    tbhdu_gti.header["HDUCLAS1"] = "GTI"
+    tbhdu_gti.header["HDUCLAS2"] = "STANDARD"
+    tbhdu_gti.header["RADECSYS"] = "FK5"
+    tbhdu_gti.header["EQUINOX"] = 2000.0
+    tbhdu_gti.header["DATE"] = t_begin.tt.isot
+    tbhdu_gti.header["DATE-OBS"] = t_begin.tt.isot
+    tbhdu_gti.header["DATE-END"] = t_end.tt.isot
+
+    hdulist = [fits.PrimaryHDU(), tbhdu, tbhdu_gti]
+
+    fits.HDUList(hdulist).writeto(out_file, overwrite=overwrite)
