@@ -28,6 +28,26 @@ def perform_dither(t, dither_dict):
     return x_offset, y_offset
 
 
+def make_source_list(source):
+    if source is None:
+        source_list = []
+        parameters = {}
+    elif isinstance(source, dict):
+        parameters = {}
+        for key in ["flux", "emin", "emax", "src_names"]:
+            parameters[key] = source[key]
+        source_list = []
+        for i in range(len(parameters["flux"])):
+            phlist = SimputPhotonList(source["ra"][i], source["dec"][i],
+                                      source["energy"][i], parameters['flux'][i],
+                                      parameters['src_names'][i])
+            source_list.append(phlist)
+    elif isinstance(source, str):
+        # Assume this is a SIMPUT catalog
+        source_list, parameters = read_simput_catalog(source)
+    return source_list, parameters
+
+
 def generate_events(source, exp_time, instrument, sky_center, 
                     no_dither=False, dither_params=None, 
                     roll_angle=0.0, subpixel_res=False, 
@@ -89,21 +109,7 @@ def generate_events(source, exp_time, instrument, sky_center,
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
-    if source is None:
-        source_list = []
-    elif isinstance(source, dict):
-        parameters = {}
-        for key in ["flux", "emin", "emax", "src_names"]:
-            parameters[key] = source[key]
-        source_list = []
-        for i in range(len(parameters["flux"])):
-            phlist = SimputPhotonList(source["ra"][i], source["dec"][i],
-                                      source["energy"][i], parameters['flux'][i],
-                                      parameters['src_names'][i])
-            source_list.append(phlist)
-    elif isinstance(source, str):
-        # Assume this is a SIMPUT catalog
-        source_list, parameters = read_simput_catalog(source)
+    source_list, parameters = make_source_list(source)
 
     try:
         instrument_spec = instrument_registry[instrument]
