@@ -15,6 +15,7 @@ from astropy.modeling.functional_models import \
     Gaussian1D
 from soxs.apec import ApecGenerator
 from astropy.io import ascii
+from astropy.table import QTable
 
 
 class Energies(u.Quantity):
@@ -245,7 +246,8 @@ class Spectrum:
     def from_powerlaw(cls, photon_index, redshift, norm, emin, emax,
                       nbins, binscale="linear"):
         """
-        Create a spectrum from a power-law model.
+        Create a spectrum from a power-law model. Form of the model
+        is F(E) = norm*(e/1 keV)**-photon_index.
 
         Parameters
         ----------
@@ -277,9 +279,10 @@ class Spectrum:
     @classmethod
     def from_file(cls, filename):
         """
-        Read a spectrum from an ASCII or HDF5 file, in
+        Read a spectrum from an ASCII ECSV, FITS, or HDF5 file, in
         the forms written by :meth:`~soxs.Spectrum.write_ascii_file`
-        and :meth:`~soxs.Spectrum.write_h5_file`.
+        :meth:`~soxs.Spectrum.write_fits_file`, and 
+        :meth:`~soxs.Spectrum.write_h5_file`.
 
         Parameters
         ----------
@@ -288,6 +291,7 @@ class Spectrum:
         """
         arf = None
         try:
+            # First try reading the file as HDF5
             with h5py.File(filename, "r") as f:
                 flux = f["spectrum"][()]
                 nbins = flux.size
@@ -300,7 +304,9 @@ class Spectrum:
                 if "arf" in f.attrs:
                     arf = f.attrs["arf"]
         except OSError:
-            t = ascii.read(filename)
+            # If that fails, try reading the file as ASCII or FITS
+            # using AstroPy QTable
+            t = QTable.read(filename)
             ebins = np.append(t["elo"].data, t["ehi"].data[-1])
             flux = t["flux"].data
             binscale = t.meta.get("binscale", "linear")
@@ -314,8 +320,7 @@ class Spectrum:
     @classmethod
     def from_constant(cls, const_flux, emin, emax, nbins, binscale="linear"):
         """
-        Create a spectrum from a constant model using 
-        XSPEC.
+        Create a spectrum from a constant model.
 
         Parameters
         ----------
@@ -400,6 +405,14 @@ class Spectrum:
         self.flux *= new_flux/f.value
         self._compute_total_flux()
 
+    def _write_fits_or_ascii(self):
+        meta = {"binscale": self.binscale}
+        if hasattr(self, "arf"):
+            meta["arf"] = self.arf.filename
+        t = QTable([self.ebins[:-1], self.ebins[1:], self.flux],
+                   names=["elo", "ehi", "flux"], meta=meta)
+        return t
+
     def write_ascii_file(self, specfile, overwrite=False):
         """
         Write the spectrum to an ASCII file in the ECSV format
@@ -413,12 +426,7 @@ class Spectrum:
             Whether or not to overwrite an existing 
             file with the same name. Default: False
         """
-        from astropy.table import QTable
-        meta = {"binscale": self.binscale}
-        if hasattr(self, "arf"):
-            meta["arf"] = self.arf.filename
-        t = QTable([self.ebins[:-1], self.ebins[1:], self.flux],
-                   names=["elo", "ehi", "flux"], meta=meta)
+        t = self._write_fits_or_ascii()
         t.write(specfile, overwrite=overwrite, format="ascii.ecsv")
 
     def write_file(self, specfile, overwrite=False):
@@ -426,7 +434,7 @@ class Spectrum:
                                   "superseded by 'Spectrum.write_ascii_file'")
         self.write_ascii_file(specfile, overwrite=overwrite)
 
-    def write_h5_file(self, specfile, overwrite=False):
+    def write_hdf5_file(self, specfile, overwrite=False):
         """
         Write the spectrum to an HDF5 file.
 
@@ -447,6 +455,26 @@ class Spectrum:
             f.attrs["binscale"] = self.binscale
             if hasattr(self, "arf"):
                 f.attrs["arf"] = self.arf.filename
+
+    def write_h5_file(self, specfile, overwrite=False):
+        issue_deprecation_warning("'Spectrum.write_h5_file' is deprecated and has been "
+                                  "superseded by 'Spectrum.write_hdf5_file'")
+        self.write_hdf5_file(specfile, overwrite=overwrite)
+
+    def write_fits_file(self, specfile, overwrite=False):
+        """
+        Write the spectrum to a FITS file.
+
+        Parameters
+        ----------
+        specfile : string
+            The filename to write the file to.
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing 
+            file with the same name. Default: False
+        """
+        t = self._write_fits_or_ascii()
+        t.write(specfile, overwrite=overwrite, format="fits")
 
     def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0):
         """
