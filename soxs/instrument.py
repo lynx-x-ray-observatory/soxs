@@ -883,7 +883,7 @@ def simple_event_list(input_events, out_file, exp_time, instrument,
     mylog.info(f"Writing events to file {out_file}.")
 
     t_begin = Time.now()
-    dt = TimeDelta(parameters["exposure_time"], format='sec')
+    dt = TimeDelta(event_params["exposure_time"], format='sec')
     t_end = t_begin + dt
 
     col_ra = fits.Column(name='RA', format='E', unit='deg',
@@ -912,9 +912,9 @@ def simple_event_list(input_events, out_file, exp_time, instrument,
 
     tbhdu.header["TLMIN4"] = parameters["chan_lim"][0]
     tbhdu.header["TLMAX4"] = parameters["chan_lim"][1]
-    tbhdu.header["EXPOSURE"] = parameters["exposure_time"]
+    tbhdu.header["EXPOSURE"] = event_params["exposure_time"]
     tbhdu.header["TSTART"] = 0.0
-    tbhdu.header["TSTOP"] = parameters["exposure_time"]
+    tbhdu.header["TSTOP"] = event_params["exposure_time"]
     tbhdu.header["HDUVERS"] = "1.1.0"
     tbhdu.header["RADECSYS"] = "FK5"
     tbhdu.header["EQUINOX"] = 2000.0
@@ -935,12 +935,12 @@ def simple_event_list(input_events, out_file, exp_time, instrument,
     start = fits.Column(name='START', format='1D', unit='s',
                         array=np.array([0.0]))
     stop = fits.Column(name='STOP', format='1D', unit='s',
-                       array=np.array([parameters["exposure_time"]]))
+                       array=np.array([event_params["exposure_time"]]))
 
     tbhdu_gti = fits.BinTableHDU.from_columns([start,stop])
     tbhdu_gti.name = "STDGTI"
     tbhdu_gti.header["TSTART"] = 0.0
-    tbhdu_gti.header["TSTOP"] = parameters["exposure_time"]
+    tbhdu_gti.header["TSTOP"] = event_params["exposure_time"]
     tbhdu_gti.header["HDUCLASS"] = "OGIP"
     tbhdu_gti.header["HDUCLAS1"] = "GTI"
     tbhdu_gti.header["HDUCLAS2"] = "STANDARD"
