@@ -806,7 +806,8 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
 
 
 def simple_event_list(input_events, out_file, exp_time, instrument,
-                      overwrite=False, prng=None):
+                      overwrite=False, use_gal_coords=False, prng=None):
+    from astropy.coordinates import SkyCoord
     from astropy.time import Time, TimeDelta
     from astropy.io import fits
     from pathlib import PurePath
@@ -886,10 +887,20 @@ def simple_event_list(input_events, out_file, exp_time, instrument,
     dt = TimeDelta(event_params["exposure_time"], format='sec')
     t_end = t_begin + dt
 
-    col_ra = fits.Column(name='RA', format='E', unit='deg',
-                         array=all_events["ra"])
-    col_dec = fits.Column(name='DEC', format='E', unit='deg',
-                          array=all_events["dec"])
+    if use_gal_coords:
+        names = ["GLON", "GLAT"]
+        c = SkyCoord(all_events["ra"], all_events["dec"], unit='deg')
+        lon = c.galactic.l
+        lat = c.galactic.b
+    else:
+        names = ["RA", "DEC"]
+        lon = all_events["ra"]
+        lat = all_events["dec"]
+
+    col_ra = fits.Column(name=names[0], format='E', unit='deg',
+                         array=lon)
+    col_dec = fits.Column(name=names[1], format='E', unit='deg',
+                          array=lat)
     col_e = fits.Column(name='ENERGY', format='E', unit='eV',
                         array=all_events["energy"]*1000.)
 
