@@ -71,7 +71,7 @@ class IGMGenerator:
         if self.nvar_elem > 0:
             var_spec = np.zeros((self.nvar_elem,self.n_T*self.n_D,ne))
             for i in range(self.nvar_elem):
-                for j, vfile in enumerate(self.var_tables):
+                for j, vfile in enumerate(self.var_tables[i]):
                     mylog.debug(f"Opening {vfile}.")
                     with fits.open(vfile) as f:
                         var_spec[i,:,:] += f["SPECTRA"].data["INTPSPEC"][:, eidxs]*norm_fac[j]

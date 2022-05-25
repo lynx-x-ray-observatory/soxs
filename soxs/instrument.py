@@ -893,7 +893,7 @@ def simple_event_list(input_events, out_file, exp_time, instrument,
     col_e = fits.Column(name='ENERGY', format='E', unit='eV',
                         array=all_events["energy"]*1000.)
 
-    chantype = parameters["channel_type"].upper()
+    chantype = event_params["channel_type"].upper()
     if chantype == "PHA":
         cunit = "adu"
     elif chantype == "PI":
@@ -910,8 +910,8 @@ def simple_event_list(input_events, out_file, exp_time, instrument,
     tbhdu = fits.BinTableHDU.from_columns(coldefs)
     tbhdu.name = "EVENTS"
 
-    tbhdu.header["TLMIN4"] = parameters["chan_lim"][0]
-    tbhdu.header["TLMAX4"] = parameters["chan_lim"][1]
+    tbhdu.header["TLMIN4"] = event_params["chan_lim"][0]
+    tbhdu.header["TLMAX4"] = event_params["chan_lim"][1]
     tbhdu.header["EXPOSURE"] = event_params["exposure_time"]
     tbhdu.header["TSTART"] = 0.0
     tbhdu.header["TSTOP"] = event_params["exposure_time"]
@@ -924,13 +924,13 @@ def simple_event_list(input_events, out_file, exp_time, instrument,
     tbhdu.header["DATE"] = t_begin.tt.isot
     tbhdu.header["DATE-OBS"] = t_begin.tt.isot
     tbhdu.header["DATE-END"] = t_end.tt.isot
-    tbhdu.header["RESPFILE"] = PurePath(parameters["rmf"]).parts[-1]
-    tbhdu.header["PHA_BINS"] = parameters["nchan"]
-    tbhdu.header["ANCRFILE"] = PurePath(parameters["arf"]).parts[-1]
-    tbhdu.header["CHANTYPE"] = parameters["channel_type"]
-    tbhdu.header["MISSION"] = parameters["mission"]
-    tbhdu.header["TELESCOP"] = parameters["telescope"]
-    tbhdu.header["INSTRUME"] = parameters["instrument"]
+    tbhdu.header["RESPFILE"] = PurePath(event_params["rmf"]).parts[-1]
+    tbhdu.header["PHA_BINS"] = event_params["nchan"]
+    tbhdu.header["ANCRFILE"] = PurePath(event_params["arf"]).parts[-1]
+    tbhdu.header["CHANTYPE"] = event_params["channel_type"]
+    tbhdu.header["MISSION"] = event_params["mission"]
+    tbhdu.header["TELESCOP"] = event_params["telescope"]
+    tbhdu.header["INSTRUME"] = event_params["instrument"]
 
     start = fits.Column(name='START', format='1D', unit='s',
                         array=np.array([0.0]))
