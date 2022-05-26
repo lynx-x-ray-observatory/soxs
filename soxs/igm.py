@@ -5,7 +5,7 @@ import numpy as np
 
 
 class IGMGenerator:
-    def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=1.0,
+    def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=0.5,
                  use_var_elem=False):
         self.binscale = "log"
         self.resonant_scattering = resonant_scattering
