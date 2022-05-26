@@ -726,22 +726,37 @@ Writing a Spectrum to Disk
 
 :class:`~soxs.spectra.Spectrum` objects can be written to disk in three formats:
 an ASCII text file in the ECSV format, a FITS file, or an HDF5 file. To write a 
-spectrum to an ASCII file, use the :meth:`~soxs.spectra.Spectrum.write_ascii_file` 
+spectrum to an ASCII ECSV file, use the :meth:`~soxs.spectra.Spectrum.write_ascii_file` 
 method:
 
 .. code-block:: python
 
     agen = soxs.ApecGenerator(0.1, 10.0, 10000)
     spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
-    spec1.write_ascii_file("my_spec.dat", overwrite=True)
+    spec1.write_ascii_file("my_spec.ecsv", overwrite=True)
 
-To write a spectrum to an HDF5 file, use :meth:`~soxs.spectra.Spectrum.write_h5_file`:
+To write a spectrum to an HDF5 file, use :meth:`~soxs.spectra.Spectrum.write_hdf5_file`:
 
 .. code-block:: python
 
     agen = soxs.ApecGenerator(0.1, 10.0, 10000)
     spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
-    spec1.write_h5_file("my_spec.h5", overwrite=True)
+    spec1.write_hdf5_file("my_spec.h5", overwrite=True)
+
+To write a spectrum to a FITS file, use :meth:`~soxs.spectra.Spectrum.write_fits_file`:
+
+.. code-block:: python
+
+    agen = soxs.ApecGenerator(0.1, 10.0, 10000)
+    spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
+    spec1.write_fits_file("my_spec.fits", overwrite=True)
+
+In each case, the minimum and maximum energies for each bin in the table, the
+flux in each bin (as well as its units), and the bin scaling (linear or log)
+is written to the file. If writing a :class:`~soxs.spectrum.ConvolvedSpectrum`
+object, the name of the ARF which was used to do the convolution is also stored.
+
+.. _read-spectra: 
 
 Reading a Spectrum from Disk
 ----------------------------
@@ -753,4 +768,4 @@ in again in, using :meth:`~soxs.spectra.Spectrum.from_file`:
 .. code-block:: python
 
     from soxs import Spectrum
-    my_spec = Spectrum.from_file("my_spec.escv")
+    my_spec = Spectrum.from_file("my_spec.ecsv")

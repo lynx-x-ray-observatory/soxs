@@ -6,8 +6,13 @@ ChangeLog
 Version 3.5.0
 -------------
 
-* The option to create `~soxs.spectra.Spectrum` objects with log-spaced energy binning has
+* The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced energy binning has
   been added. See :ref:`spectrum-binning` for details.
+* Reading and writing of :class:`~soxs.spectra.Spectrum` objects has been refactored, so that
+  the tables use the min and max of each energy bin instead of the middle energy of the bin. This
+  allows for log-spaced energy binning (mentioned above) to be supported. Also, :class:`~soxs.spectra.Spectrum`
+  objects can now be written to FITS table files as well as ASCII and HDF5. See :ref:`read-spectra`
+  and :ref:`write-spectra` for details.
 * An option to create a mosaicked event file in addition to an image file has been
   added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
   for more details.
