@@ -7,36 +7,35 @@ SOXS provides a way to create common types of spectra that can then be
 used in your scripts to create mock observations via the 
 :class:`~soxs.spectra.Spectrum` object.
 
+.. _spectrum-binning:
+
+Spectrum Binning
+----------------
+
+The energy binning of spectral tables can be either linear or log--that is,
+either the difference between the minimum and maximum energies of each bin is
+constant across the spectrum (linear) or that the difference between the logarithm
+of the minimum and maximum energies of each bin is constant across the spectrum
+(log).
+
+For most of the spectrum creation methods outlined below, there will be the following
+keyword arguments to control the binning of spectral tables:
+
+* ``emin``: The minimum energy of the spectral table in keV.
+* ``emax``: The maximum energy of the spectral table in keV.
+* ``nbins``: The number of bins in the spectrum.
+* ``binscale``: An optional argument which takes either ``"linear"`` or ``"log"``.
+  The default is always ``"linear"``.
+
+You cannot convert the binning of spectra, or combine two spectra which have different
+binnings.
+
 Creating Spectrum Objects
 -------------------------
 
 A :class:`~soxs.spectra.Spectrum` object is simply defined by a table 
 of energies and photon fluxes. There are several ways to create a 
 :class:`~soxs.spectra.Spectrum`, depending on your use case. 
-
-Reading a Spectrum from a File
-++++++++++++++++++++++++++++++
-
-If you have a spectrum tabulated in an ASCII text or HDF5 file, this can 
-be read in using the :meth:`~soxs.spectra.Spectrum.from_file` method. 
-
-* If the file is ASCII, it must be comprised of two columns, the first 
-  being the energies of the bins in keV and the second being the photon flux 
-  in units of :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. 
-  The binning must be linear and the bins must be equally spaced. 
-
-* If the file is HDF5, it must have one array dataset, named ``"spectrum"``, 
-  which is the spectrum in units of 
-  :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`, and two 
-  scalar datasets, ``"emin"`` and ``"emax"``, which are the minimum and 
-  maximum energies in keV.
-
-For example:
-
-.. code-block:: python
-
-    from soxs import Spectrum
-    my_spec = Spectrum.from_file("my_spec.dat")
 
 Creating a Constant Spectrum
 ++++++++++++++++++++++++++++
@@ -45,7 +44,7 @@ A simple constant spectrum can be created using the
 :meth:`~soxs.spectra.Spectrum.from_constant` method. This takes as input the 
 value of the flux ``const_flux``, which is in units of 
 :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. The parameters
-``emin``, ``emax``, and ``nbins`` are used to control the binning. 
+``emin``, ``emax``, ``nbins``, and ``binscale`` are used to control the binning.
 
 .. code-block:: python
 
@@ -53,7 +52,7 @@ value of the flux ``const_flux``, which is in units of
     emin = 0.1
     emax = 10.0
     nbins = 20000
-    spec = Spectrum.from_constant(const_flux, emin, emax, nbins)
+    spec = Spectrum.from_constant(const_flux, emin, emax, nbins, binscale="linear")
 
 Creating a Power-Law Spectrum
 +++++++++++++++++++++++++++++
@@ -69,8 +68,8 @@ this is equivalent to:
 
     F_E = K\left[\frac{E(1+z)}{{\rm 1~keV}}\right]^{-\alpha}
     
-where :math:`\alpha` is the ``photon_index`` (note the sign convention). The 
-parameters ``emin``, ``emax``, and ``nbins`` are used to control the binning.
+where :math:`\alpha` is the ``photon_index`` (note the sign convention). The parameters
+``emin``, ``emax``, ``nbins``, and ``binscale`` are used to control the binning.
 
 You can set up a power-law spectrum like this:
 
@@ -82,7 +81,7 @@ You can set up a power-law spectrum like this:
     emin = 0.1
     emax = 10.0
     nbins = 20000
-    spec = Spectrum.from_powerlaw(alpha, zobs, norm, emin, emax, nbins) 
+    spec = Spectrum.from_powerlaw(alpha, zobs, norm, emin, emax, nbins, binscale="log")
 
 .. _thermal-spectra:
 
@@ -102,6 +101,9 @@ new :class:`~soxs.spectra.Spectrum` objects. You start by initializing an
     emax = 50.0
     nbins = 10000
     agen = ApecGenerator(emin, emax, nbins, apec_vers="2.0.2", broadening=True)
+
+The parameters ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to
+control the binning.
 
 The ``broadening`` parameter sets whether or not spectral lines will be 
 thermally and velocity broadened. The ``apec_vers`` parameter sets the version 
@@ -161,7 +163,7 @@ to specify which elements should be allowed to vary freely:
 .. code-block:: python
 
     var_elem = ["O", "Ca"] # allow oxygen and calcium to vary freely 
-    agen = ApecGenerator(0.05, 50.0, 10000, var_elem=var_elem)
+    agen = ApecGenerator(0.05, 50.0, 10000, var_elem=var_elem, binscale="log")
     
 Whatever elements are not specified here are assumed to be set as normal, whether
 they are H, He, trace elements, or metals covered by the ``abund`` parameter. 
@@ -303,8 +305,8 @@ is by passing in a model string and a list of parameters to the
     spec = Spectrum.from_xspec_model(model_string, params, emin, emax, nbins)
     
 Note that the parameters must be in the same order that they would be if you 
-were entering them in XSPEC. The ``emin``, ``emax``, and ``nbins`` arguments
-are used to control the energy binning.
+were entering them in XSPEC. The parameters ``emin``, ``emax``, ``nbins``,
+and ``binscale`` are used to control the binning.
 
 The second way involves passing an XSPEC script file to the 
 :meth:`~soxs.spectra.Spectrum.from_xspec_script` method which defines an XSPEC
@@ -338,7 +340,11 @@ create a :class:`~soxs.spectra.Spectrum` like this:
     emin = 0.1
     emax = 5.0
     nbins = 20000
-    spec = Spectrum.from_xspec_script("two_apec.xcm", emin, emax, nbins) 
+    spec = Spectrum.from_xspec_script("two_apec.xcm", emin, emax, nbins,
+                                      binscale="log")
+
+The parameters ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to
+control the binning.
 
 .. note::
 

@@ -6,6 +6,8 @@ ChangeLog
 Version 3.5.0
 -------------
 
+* The option to create `~soxs.spectra.Spectrum` objects with log-spaced energy binning has
+  been added. See :ref:`spectrum-binning` for details.
 * An option to create a mosaicked event file in addition to an image file has been
   added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
   for more details.
