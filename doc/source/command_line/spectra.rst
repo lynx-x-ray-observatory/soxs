@@ -17,7 +17,7 @@ using the AtomDB tables.
 .. code-block:: text
 
     usage: make_thermal_spectrum [-h] [--velocity VELOCITY]
-                                 [--apec_vers APEC_VERS]
+                                 [--apec_vers APEC_VERS] [--binscale BINSCALE]
                                  [--absorb_model ABSORB_MODEL] [--nh NH]
                                  [--overwrite] [--nolines]
                                  [--abund_table ABUND_TABLE]
@@ -47,10 +47,11 @@ using the AtomDB tables.
                             The version of the AtomDB tables to use. Default is
                             to use the version currently included with this
                             version of SOXS.
+      --binscale BINSCALE   The scale of the energy binning: "linear" or "log".
+                            Default: "linear"
       --absorb_model ABSORB_MODEL
                             Model for applying foreground Galactic absorption.
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
-                            Default: 0.02
       --overwrite           Overwrite an existing file with the same name.
       --nolines             Make a spectrum without lines.
       --abund_table ABUND_TABLE
@@ -117,6 +118,12 @@ The same spectrum, but using Asplund abundances instead of Anders & Grevesse.
 
     [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --abund_table=aspl --overwrite
 
+The same spectrum, but with log-spaced binning.
+
+.. code-block:: bash
+
+    [~]$ make_thermal_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite
+
 The same spectrum, but using abundances drawn from an ASCII table file instead of Anders & Grevesse.
 
 .. code-block:: bash
@@ -135,7 +142,8 @@ form:
 
 .. code-block:: text
 
-    usage: make_powerlaw_spectrum [-h] [--absorb_model ABSORB_MODEL] [--nh NH]
+    usage: make_powerlaw_spectrum [-h] [--binscale BINSCALE]
+                                  [--absorb_model ABSORB_MODEL] [--nh NH]
                                   [--overwrite]
                                   photon_index redshift norm specfile emin emax
                                   nbins
@@ -154,10 +162,11 @@ form:
     
     optional arguments:
       -h, --help            show this help message and exit
+      --binscale BINSCALE   The scale of the energy binning: "linear" or "log".
+                            Default: "linear"
       --absorb_model ABSORB_MODEL
                             Model for applying foreground Galactic absorption.
       --nh NH               The hydrogen column in units of 10**22 atoms/cm**2.
-                            Default: 0.02
       --overwrite           Overwrite an existing file with the same name.
 
 Examples
@@ -176,3 +185,8 @@ with :math:`N_H = 0.04~10^{22}~\rm{atoms~cm^{-2}}`.
 
     [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat 0.1 10.0 10000 --absorb_model="tbabs" --nh 0.04 --overwrite
 
+The same spectrum, but with log-spaced binning.
+
+.. code-block:: bash
+
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite

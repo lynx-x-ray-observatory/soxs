@@ -181,9 +181,10 @@ class SimputCatalog:
                     row = np.where(data["name"])[0][0]
                 emid = emid[row, :]
                 flux = flux[row, :]
+            # This assumes linear binning for now!!!
             de = np.diff(emid)[0]
             ebins = np.append(emid - 0.5 * de, emid[-1] + 0.5 * de)
-            spec = Spectrum(ebins, flux)
+            spec = Spectrum(ebins, flux, binscale="linear")
             if self.images[i].upper() != "NULL":
                 src_file, extname, extver, _ = \
                     _parse_catalog_entry(self.images[i])
