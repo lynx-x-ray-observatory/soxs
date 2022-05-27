@@ -4,35 +4,51 @@ from soxs.utils import parse_value, get_data_file, mylog
 import numpy as np
 
 
+metal_tab_names = {
+    "O": "ox",
+    "Ne": "ne",
+    "Mg": "mg",
+    "Si": "si",
+    "S": "su",
+    "Fe": "fe"
+}
+
+
 class IGMGenerator:
     def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=0.5,
                  use_var_elem=False):
+        if var_elem_option is None:
+            metal_option = "me"
+            self.metal_tab_names = []
+            self.var_elem = []
+        elif var_elem_option == 1:
+            metal_option = "mx"
+            self.var_elem = ["O", "Ne", "Fe"]
+        elif var_elem_option == 2:
+            metal_option = "mxx"
+            self.var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
+        else:
+            raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
+        self.var_elem_option = var_elem_option
         self.binscale = "log"
         self.resonant_scattering = resonant_scattering
         self.cosmic_table = get_data_file("igm_v2ph_nome.fits")
-        self.metal_tab_names = ["ox", "ne", "mg", "si", "su", "fe"] 
         if resonant_scattering:
-            if use_var_elem:
-                self.metal_tables = (get_data_file("igm_v2ph_mxx.fits"), 
-                                     get_data_file("igm_v2sc_mxx.fits"))
-                self.var_tables = [(get_data_file(f"igm_v2ph_{el}.fits"),
-                                    get_data_file(f"igm_v2sc_{el}.fits"))
-                                    for el in self.metal_tab_names]
-            else:
-                self.metal_tables = (get_data_file("igm_v2ph_me.fits"), 
-                                     get_data_file("igm_v2sc_me.fits"))
+            self.metal_tables = (get_data_file(f"igm_v2ph_{metal_option}.fits"),
+                                 get_data_file(f"igm_v2sc_{metal_option}.fits"))
+            if var_elem_option:
+                self.var_tables = [(get_data_file(f"igm_v2ph_{metal_tab_names[el]}.fits"),
+                                    get_data_file(f"igm_v2sc_{metal_tab_names[el]}.fits"))
+                                    for el in self.var_elem]
         else:
-            if use_var_elem:
-                self.metal_tables = (get_data_file("igm_v2ph_mxx.fits"),)
-                self.var_tables = [(get_data_file(f"igm_v2ph_{el}.fits"),)
-                                   for el in self.metal_tab_names]
-            else:
-                self.metal_tables = (get_data_file("igm_v2ph_me.fits"),)
+            self.metal_tables = (get_data_file(f"igm_v2ph_{metal_option}.fits"),)
+            if var_elem_option:
+                self.var_tables = [(get_data_file(f"igm_v2ph_{metal_tab_names[el]}.fits"),)
+                                   for el in self.var_elem]
         self.cxb_factor = cxb_factor
-        self.var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"] if use_var_elem else []
         self.nvar_elem = len(self.var_elem)
-        self.emin = emin
-        self.emax = emax
+        self.emin = parse_value(emin, "keV")
+        self.emax = parse_value(emax, "keV")
         with fits.open(self.cosmic_table) as f:
             self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
             self.Dvals = f["PARAMETERS"].data["VALUE"][0][:self.n_D]
@@ -104,8 +120,9 @@ class IGMGenerator:
         if elem_abund is None:
             elem_abund = {}
         if set(elem_abund.keys()) != set(self.var_elem):
-            raise RuntimeError("The supplied set of abundances is not the "
-                               "same as that was originally set!\n"
+            raise RuntimeError("The supplied set of abundances does not match "
+                               "what is available for 'var_elem_option = "
+                               f"{self.var_elem_option}!"
                                "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
                                                                       set(self.var_elem)))
         kT = parse_value(kT, "keV")
