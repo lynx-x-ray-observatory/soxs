@@ -154,7 +154,7 @@ class IGMGenerator:
         if set(elem_abund.keys()) != set(self.var_elem):
             raise RuntimeError("The supplied set of abundances does not match "
                                "what is available for 'var_elem_option = "
-                               f"{self.var_elem_option}!"
+                               f"{self.var_elem_option}!\n"
                                "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
                                                                       set(self.var_elem)))
         kT = parse_value(kT, "keV")
@@ -191,9 +191,9 @@ class IGMGenerator:
         if vspec is not None:
             for elem, eabund in elem_abund.items():
                 j = self.var_elem.index(elem)
-                spec += dx1*vspec[j,idx1,:]
-                spec += dx2*vspec[j,idx2,:]
-                spec += dx3*vspec[j,idx3,:]
-                spec += dx4*vspec[j,idx4,:]
+                spec += eabund*dx1*vspec[j,idx1,:]
+                spec += eabund*dx2*vspec[j,idx2,:]
+                spec += eabund*dx3*vspec[j,idx3,:]
+                spec += eabund*dx4*vspec[j,idx4,:]
         spec = 1.0e14*norm*spec[0,:]/de
         return Spectrum(ebins, spec, binscale=self.binscale)
