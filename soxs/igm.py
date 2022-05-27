@@ -16,7 +16,39 @@ metal_tab_names = {
 
 class IGMGenerator:
     def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=0.5,
-                 use_var_elem=False):
+                 var_elem_option=None):
+        """
+        Initialize an emission model for a thermal plasma including 
+        photoionization and resonant scattering from the CXB based on 
+        Khabibullin & Churazov 2019
+        (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov 
+        et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
+
+        Assumes the abundance tables from Feldman 1992.
+
+        Table data and README files can be found at
+        https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v2x/.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy for the spectral model.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy for the spectral model.
+        resonant_scattering : boolean, optional
+            Whether or not to include the effects of resonant scattering
+            from CXB photons. Default: False
+        cxb_factor : float, optional
+            The fraction of the CXB photons that are resonant scattered to enhance
+            the lines. Default: 0.5
+        var_elem_option: integer, optional
+            An integer to choose between options for variable elements, which are:
+            1: specify abundances of O, Ne, and Fe separately from other metals
+            2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
+               metals
+            Default: None, which means no metal abundances can be specified
+            separately.
+        """
         if var_elem_option is None:
             metal_option = "me"
             self.metal_tab_names = []
@@ -96,7 +128,7 @@ class IGMGenerator:
 
     def get_spectrum(self, kT, nH, abund, redshift, norm, elem_abund=None):
         """
-        Get an emission spectrum from the IGM model. 
+        Get an emission spectrum from the IGM model.
 
         Parameters
         ----------
@@ -114,7 +146,7 @@ class IGMGenerator:
         elem_abund : dict of element name, float pairs, optional
             A dictionary of elemental abundances in solar
             units to vary freely of the abund parameter, e.g.
-            {"O": 0.4, "N": 0.3, "He": 0.9}. Default: None
+            {"O": 0.4, "Ne": 0.3, "Fe": 0.9}. Default: None
         """
         from soxs.spectra import Spectrum
         if elem_abund is None:

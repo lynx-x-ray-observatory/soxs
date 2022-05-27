@@ -57,7 +57,7 @@ class ApecGenerator:
         Cosmochimica Acta 53, 197)
         "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
         P. (2009, ARAA, 47, 481)
-        "feld" : from Feldman U. (Physica Scripta, 46, 202)
+        "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
         "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
