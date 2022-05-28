@@ -6,19 +6,26 @@ ChangeLog
 Version 3.5.0
 -------------
 
-* The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced energy binning has
-  been added. See :ref:`spectrum-binning` for details.
-* Reading and writing of :class:`~soxs.spectra.Spectrum` objects has been refactored, so that
-  the tables use the min and max of each energy bin instead of the middle energy of the bin. This
-  allows for log-spaced energy binning (mentioned above) to be supported. Also, :class:`~soxs.spectra.Spectrum`
-  objects can now be written to FITS table files as well as ASCII and HDF5. See :ref:`read-spectra`
-  and :ref:`write-spectra` for details.
+This update to SOXS contains a number of new features. 
+
+* The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced 
+  energy binning has been added. See :ref:`spectrum-binning` for details.
+* It is no longer necessary to source the HEADAS environment before creating a 
+  :class:`~soxs.spectra.Spectrum` object using either the 
+  :meth:`~soxs.spectra.Spectrum.from_xspec_script` or
+  :meth:`~soxs.spectra.Spectrum.from_xspec_model`. See :ref:`xspec` for more details.
+* Reading and writing of :class:`~soxs.spectra.Spectrum` objects has been refactored, 
+  so that the tables use the min and max of each energy bin instead of the middle 
+  energy of the bin. This allows for log-spaced energy binning (mentioned above) to 
+  be supported. Also, :class:`~soxs.spectra.Spectrum` objects can now be written to 
+  FITS table files as well as ASCII and HDF5. See :ref:`read-spectra` and 
+  :ref:`write-spectra` for details.
 * An option to create a mosaicked event file in addition to an image file has been
   added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
   for more details.
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
-  has been added to the options for abundance tables for the :class:`~soxs.apec.ApecGenerator`
-  class.
+  has been added to the options for abundance tables for the 
+  :class:`~soxs.apec.ApecGenerator` class.
 
 Version 3.4.0
 -------------

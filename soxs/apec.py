@@ -26,6 +26,9 @@ class ApecGenerator:
         The maximum energy for the spectral model.
     nbins : integer
         The number of bins in the spectral model.
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log". 
+        Default: "linear"
     var_elem : list of strings, optional
         The names of elements to allow to vary freely
         from the single abundance parameter. These can be strings like

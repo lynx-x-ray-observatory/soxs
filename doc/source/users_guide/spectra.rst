@@ -287,6 +287,8 @@ S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, and Zn. An example:
 
     agen = ApecGenerator(0.05, 50.0, 10000, abund_table=my_abund)
 
+.. _xspec:
+
 Generating a Spectrum from XSPEC
 ++++++++++++++++++++++++++++++++
 
@@ -348,9 +350,11 @@ control the binning.
 
 .. note::
 
-    Generating spectra from XSPEC requires that the ``HEADAS`` environment is 
-    sourced before running the Python script, as it would be if you were using 
-    XSPEC to fit spectra. 
+    Generating spectra from XSPEC requires that the ``HEADAS`` environment variable
+    is defined within your shell before running the Python script, as it would be 
+    if you were using XSPEC to fit spectra. For example, for the ``zsh`` shell there
+    should be a line like ``export HEADAS=${HOME}/heasoft-6.29/x86_64-apple-darwin21.1.0/``
+    in your ``.zshrc`` file. 
 
 Math with ``Spectrum`` Objects
 ------------------------------

@@ -177,6 +177,9 @@ class Spectrum:
             The maximum energy of the spectrum in keV. 
         nbins : integer
             The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         with open(infile, "r") as f:
             xspec_in = f.readlines()
@@ -203,6 +206,9 @@ class Spectrum:
             The maximum energy of the spectrum in keV
         nbins : integer
             The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         xspec_in = []
         model_str = "%s &" % model_string
@@ -271,6 +277,9 @@ class Spectrum:
             The maximum energy of the spectrum in keV. 
         nbins : integer
             The number of bins in the spectrum. 
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         emin = parse_value(emin, 'keV')
         emax = parse_value(emax, 'keV')
@@ -339,6 +348,9 @@ class Spectrum:
             The maximum energy of the spectrum in keV. 
         nbins : integer
             The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
