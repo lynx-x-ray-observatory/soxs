@@ -13,9 +13,8 @@ import h5py
 from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.modeling.functional_models import \
     Gaussian1D
-from soxs.apec import ApecGenerator
-from astropy.io import ascii
 from astropy.table import QTable
+from pathlib import Path
 
 
 class Energies(u.Quantity):
@@ -217,30 +216,37 @@ class Spectrum:
     def _from_xspec(cls, xspec_in, emin, emax, nbins, binscale="linear"):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
-        tmpdir = tempfile.mkdtemp()
-        curdir = os.getcwd()
-        os.chdir(tmpdir)
-        if binscale == "linear":
-            binscale = "lin"
-        xspec_in.append(f"dummyrsp {emin} {emax} {nbins} {binscale}\n")
-        xspec_in += ["set fp [open spec_therm.xspec w+]\n",
+        tmpdir = Path(tempfile.mkdtemp())
+        curdir = Path.cwd()
+        xspec_in.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
+        xspec_in += [f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
                      "tclout energies\n", "puts $fp $xspec_tclout\n",
                      "tclout modval\n", "puts $fp $xspec_tclout\n",
                      "close $fp\n", "quit\n"]
-        with open("xspec.in", "w") as f_xin:
+        with open(tmpdir / "xspec.in", "w") as f_xin:
             f_xin.writelines(xspec_in)
-        logfile = os.path.join(curdir, "xspec.log")
+        logfile = curdir / "xspec.log"
+        if os.environ['SHELL'] in ['tcsh', 'csh']:
+            init_suffix = 'csh'
+        else:
+            init_suffix = 'sh'
+        sh_file = [
+            f"#!{os.environ['SHELL']}\n",
+            f". {os.environ['HEADAS']}/headas-init.{init_suffix}\n",
+            f"xspec - {str(tmpdir)}/xspec.in\n"
+        ]
+        with open(tmpdir / "xspec.sh", "w") as f_xs:
+            f_xs.writelines(sh_file)
         with open(logfile, "ab") as xsout:
-            subprocess.call(["xspec", "-", "xspec.in"],
+            subprocess.call([os.environ['SHELL'], f"{str(tmpdir)}/xspec.sh"],
                             stdout=xsout, stderr=xsout)
-        with open("spec_therm.xspec", "r") as f_s:
+        with open(tmpdir / "spec_therm.xspec", "r") as f_s:
             lines = f_s.readlines()
         ebins = np.array(lines[0].split()).astype("float64")
         de = np.diff(ebins)
         flux = np.array(lines[1].split()).astype("float64")/de
-        os.chdir(curdir)
-        shutil.rmtree(tmpdir)
-        return cls(ebins, flux)
+        shutil.rmtree(str(tmpdir))
+        return cls(ebins, flux, binscale=binscale)
 
     @classmethod
     def from_powerlaw(cls, photon_index, redshift, norm, emin, emax,
@@ -446,7 +452,7 @@ class Spectrum:
             Whether or not to overwrite an existing 
             file with the same name. Default: False
         """
-        if os.path.exists(specfile) and not overwrite:
+        if Path(specfile).exists() and not overwrite:
             raise IOError("File %s exists and overwrite=False!" % specfile)
         with h5py.File(specfile, "w") as f:
             f.create_dataset("emin", data=self.ebins[0].value)
