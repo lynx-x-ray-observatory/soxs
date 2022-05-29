@@ -195,5 +195,5 @@ class IGMGenerator:
                 spec += eabund*dx2*vspec[j,idx2,:]
                 spec += eabund*dx3*vspec[j,idx3,:]
                 spec += eabund*dx4*vspec[j,idx4,:]
-        spec = 1.0e14*norm*spec[0,:]/de
+        spec = norm*spec[0,:]/de/nH
         return Spectrum(ebins, spec, binscale=self.binscale)
