@@ -14,6 +14,7 @@ import appdirs
 soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
                      "abund_table": "angr",
                      "apec_vers": "3.0.9",
+                     "spex_vers": "3.06.01",
                      "bkgnd_nH": 0.018,
                      "bkgnd_absorb_model": "wabs",
                      "frgnd_spec_model": "default"}

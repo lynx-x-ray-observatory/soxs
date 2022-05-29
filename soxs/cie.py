@@ -10,79 +10,16 @@ from soxs.constants import erg_per_keV, hc, \
     m_u, elem_names, abund_tables
 
 
-class ApecGenerator:
-    r"""
-    Initialize a thermal gas emission model from the 
-    AtomDB APEC tables available at http://www.atomdb.org. 
-    This code borrows heavily from Python routines used to 
-    read the APEC tables developed by Adam Foster at the
-    CfA (afoster@cfa.harvard.edu).
-
-    Parameters
-    ----------
-    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The minimum energy for the spectral model.
-    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The maximum energy for the spectral model.
-    nbins : integer
-        The number of bins in the spectral model.
-    binscale : string, optional
-        The scale of the energy binning: "linear" or "log". 
-        Default: "linear"
-    var_elem : list of strings, optional
-        The names of elements to allow to vary freely
-        from the single abundance parameter. These can be strings like
-        ["O", "N", "He"], or if nei=True they must be elements with
-        ionization states, e.g. ["O^1", "O^2", "N^4"]. Default:
-        None
-    apec_root : string, optional
-        The directory root where the APEC model files 
-        are stored. If not provided, the default is to 
-        grab them from the tables stored with SOXS.
-    apec_vers : string, optional
-        The version identifier string for the APEC files. Default is
-        set in the SOXS configuration file, the default for which is
-        "3.0.9".
-    broadening : boolean, optional
-        Whether or not the spectral lines should be 
-        thermally and velocity broadened. Default: True
-    nolines : boolean, optional
-        Turn off lines entirely for generating spectra.
-        Default: False
-    abund_table : string or array_like, optional
-        The abundance table to be used for solar abundances. 
-        Either a string corresponding to a built-in table or an array
-        of 30 floats corresponding to the abundances of each element
-        relative to the abundance of H. Default is set in the SOXS
-        configuration file, the default for which is "angr".
-        Built-in options are:
-        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
-        Cosmochimica Acta 53, 197)
-        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
-        P. (2009, ARAA, 47, 481)
-        "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
-        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
-        except for elements not listed which are given zero abundance)
-        "lodd" : from Lodders, K (2003, ApJ 591, 1220)
-    nei : boolean, optional
-        If True, use the non-equilibrium ionization tables. These are
-        not supplied with SOXS but must be downloaded separately, in
-        which case the *apec_root* parameter must also be set to their
-        location. Default: False
-
-    Examples
-    --------
-    >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
-    ...                            broadening=True)
-    """
+class CIEGenerator:
+    _model = ""
     def __init__(self, emin, emax, nbins, binscale='linear', 
-                 var_elem=None, apec_root=None,
-                 apec_vers=None, broadening=True, nolines=False,
+                 var_elem=None, model_root=None,
+                 model_vers=None, broadening=True, nolines=False,
                  abund_table=None, nei=False):
         self.binscale = binscale
-        if apec_vers is None:
-            apec_vers = soxs_cfg.get("soxs", "apec_vers")
-        mylog.debug(f"Using APEC version {apec_vers}.")
+        if model_vers is None:
+            model_vers = soxs_cfg.get("soxs", f"{self._model.lower()}_vers")
+        mylog.debug(f"Using {self._model} version {model_vers}.")
         if nei and var_elem is None:
             raise RuntimeError("For NEI spectra, you must specify which elements "
                                "you want to vary using the 'var_elem' argument!")
@@ -104,16 +41,16 @@ class ApecGenerator:
         else:
             neistr = ""
             ftype = "coco"
-        cocofile = f"apec_v{apec_vers}{neistr}_{ftype}.fits"
-        linefile = f"apec_v{apec_vers}{neistr}_line.fits"
-        if apec_root is None:
+        cocofile = f"{self._model.lower()}_v{model_vers}{neistr}_{ftype}.fits"
+        linefile = f"{self._model.lower()}_v{model_vers}{neistr}_line.fits"
+        if model_root is None:
             self.cocofile = get_data_file(cocofile)
             self.linefile = get_data_file(linefile)
         else:
-            self.cocofile = os.path.join(apec_root, cocofile)
-            self.linefile = os.path.join(apec_root, linefile)
+            self.cocofile = os.path.join(model_root, cocofile)
+            self.linefile = os.path.join(model_root, linefile)
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
-            raise IOError(f"Cannot find the APEC files!\n {self.cocofile}\n, "
+            raise IOError(f"Cannot find the {self._model} files!\n {self.cocofile}\n, "
                           f"{self.linefile}")
         mylog.debug(f"Using {cocofile} for generating spectral lines.")
         mylog.debug(f"Using {linefile} for generating the continuum.")
@@ -368,3 +305,96 @@ class ApecGenerator:
             spec += eabund*(vspec[j,0,:]*(1.-dT) + vspec[j,1,:]*dT)
         spec = 1.0e14*norm*spec/self.de
         return Spectrum(self.ebins, spec, binscale=self.binscale)
+
+
+class ApecGenerator(CIEGenerator):
+    _model = "APEC"
+    r"""
+    Initialize a thermal gas emission model from the 
+    AtomDB APEC tables available at http://www.atomdb.org. 
+    This code borrows heavily from Python routines used to 
+    read the APEC tables developed by Adam Foster at the
+    CfA (afoster@cfa.harvard.edu).
+
+    Parameters
+    ----------
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The minimum energy for the spectral model.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The maximum energy for the spectral model.
+    nbins : integer
+        The number of bins in the spectral model.
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log". 
+        Default: "linear"
+    var_elem : list of strings, optional
+        The names of elements to allow to vary freely
+        from the single abundance parameter. These can be strings like
+        ["O", "N", "He"], or if nei=True they must be elements with
+        ionization states, e.g. ["O^1", "O^2", "N^4"]. Default:
+        None
+    apec_root : string, optional
+        The directory root where the APEC model files 
+        are stored. If not provided, the default is to 
+        grab them from the tables stored with SOXS.
+    apec_vers : string, optional
+        The version identifier string for the APEC files. Default is
+        set in the SOXS configuration file, the default for which is
+        "3.0.9".
+    broadening : boolean, optional
+        Whether or not the spectral lines should be 
+        thermally and velocity broadened. Default: True
+    nolines : boolean, optional
+        Turn off lines entirely for generating spectra.
+        Default: False
+    abund_table : string or array_like, optional
+        The abundance table to be used for solar abundances. 
+        Either a string corresponding to a built-in table or an array
+        of 30 floats corresponding to the abundances of each element
+        relative to the abundance of H. Default is set in the SOXS
+        configuration file, the default for which is "angr".
+        Built-in options are:
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+        Cosmochimica Acta 53, 197)
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+        P. (2009, ARAA, 47, 481)
+        "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+        except for elements not listed which are given zero abundance)
+        "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+    nei : boolean, optional
+        If True, use the non-equilibrium ionization tables. These are
+        not supplied with SOXS but must be downloaded separately, in
+        which case the *apec_root* parameter must also be set to their
+        location. Default: False
+
+    Examples
+    --------
+    >>> apec_model = ApecGenerator(0.05, 50.0, 1000, apec_vers="3.0.3",
+    ...                            broaden ing=True)
+    """
+    def __init__(self, emin, emax, nbins, binscale='linear',
+                 var_elem=None, apec_root=None,
+                 apec_vers=None, broadening=True, nolines=False,
+                 abund_table=None, nei=False):
+        super().__init__(emin, emax, nbins, binscale=binscale, 
+                         var_elem=var_elem, model_root=apec_root,
+                         model_vers=apec_vers, broadening=broadening,
+                         nolines=nolines, abund_table=abund_table,
+                         nei=nei)
+
+
+class SpexGenerator(CIEGenerator):
+    _model = "SPEX"
+    def __init__(self, emin, emax, nbins, binscale='linear',
+                 var_elem=None, spex_vers=None, spex_root=None,
+                 broadening=True, nolines=False,
+                 abund_table=None):
+        super().__init__(emin, emax, nbins, binscale=binscale,
+                         var_elem=var_elem, model_root=spex_root,
+                         model_vers=spex_vers, broadening=broadening,
+                         nolines=nolines, abund_table=abund_table,
+                         nei=False)
+
+    def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
+        raise NotImplementedError

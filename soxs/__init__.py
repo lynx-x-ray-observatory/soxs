@@ -63,8 +63,9 @@ from soxs.spectra import \
     CountRateSpectrum, \
     ConvolvedSpectrum
 
-from soxs.apec import \
-    ApecGenerator
+from soxs.cie import \
+    ApecGenerator, \
+    SpexGenerator
 
 from soxs.igm import \
     IGMGenerator
