@@ -3,7 +3,7 @@
 import os
 import numpy as np
 import argparse
-from soxs import ApecGenerator
+from soxs import CIEGenerator
 
 parser = argparse.ArgumentParser(description='Create a thermal spectrum and write it to a file. ' +
                                  'The abundances of individual elements can be set by supplying '
@@ -20,8 +20,8 @@ parser.add_argument("emax", help='The maximum energy in keV.')
 parser.add_argument("nbins", type=int, help='The number of bins in the spectrum.')
 parser.add_argument("--velocity", default=0.0,
                     help='The velocity broadening parameter, in units of km/s. Default: 0.0')
-parser.add_argument("--apec_vers", type=str,
-                    help='The version of the AtomDB tables to use. Default is'
+parser.add_argument("--model_vers", type=str,
+                    help='The version of the CIE tables to use. Default is'
                          'to use the version currently included with this'
                          'version of SOXS.')
 parser.add_argument("--binscale", type=str, 
@@ -42,6 +42,9 @@ parser.add_argument("--abund_table", type=str, default="angr",
                          "corresponding to the abundances of each element relative "
                          "to the abundance of H. Default is set in the SOXS "
                          "configuration file, the default for which is 'angr'.")
+parser.add_argument("--model", type=str, default="apec",
+                    help="The CIE model to use when generating the spectrum, either "
+                         "apec or spex. Default: apec")
 feature_parser = parser.add_mutually_exclusive_group(required=False)
 feature_parser.add_argument("--broadening", dest='broadening', action='store_true',
                             help='Turn thermal and velocity broadening on. On by default.')
@@ -66,10 +69,10 @@ if os.path.exists(args.abund_table):
     abund_table = np.loadtxt(args.abund_table)
 else:
     abund_table = args.abund_table
-agen = ApecGenerator(args.emin, args.emax, args.nbins, apec_vers=args.apec_vers, 
-                     broadening=args.broadening, nolines=args.nolines, 
-                     var_elem=var_elem, abund_table=abund_table)
-spec = agen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
+cgen = CIEGenerator(args.model, args.emin, args.emax, args.nbins, 
+                    model_vers=args.model_vers, broadening=args.broadening, 
+                    nolines=args.nolines, var_elem=var_elem, abund_table=abund_table)
+spec = cgen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
                          velocity=args.velocity, elem_abund=elem_abund)
 
 if args.absorb_model is not None:
