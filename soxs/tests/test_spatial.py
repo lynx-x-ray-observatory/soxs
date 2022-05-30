@@ -5,7 +5,7 @@ import numpy as np
 import os
 import shutil
 import tempfile
-import astropy.io.fits as pyfits
+from astropy.io import fits
 from astropy.units import Quantity
 from soxs.constants import sigma_to_fwhm
 from soxs.events import write_radial_profile, make_exposure_map
@@ -56,10 +56,9 @@ def test_point_source():
     psf_scale = inst["psf"][1]
     dtheta = inst["fov"]*60.0/inst["num_pixels"]
 
-    f = pyfits.open("pt_src_evt.fits")
-    x = f["EVENTS"].data["X"]
-    y = f["EVENTS"].data["Y"]
-    f.close()
+    with fits.open("pt_src_evt.fits") as f:
+        x = f["EVENTS"].data["X"]
+        y = f["EVENTS"].data["Y"]
 
     scalex = np.std(x)*sigma_to_fwhm*dtheta
     scaley = np.std(y)*sigma_to_fwhm*dtheta

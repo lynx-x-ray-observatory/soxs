@@ -3,8 +3,8 @@ from soxs.constants import one_arcsec
 from soxs.utils import parse_prng, parse_value, \
     get_rot_mat
 import astropy.units as u
-import astropy.wcs as pywcs
-import astropy.io.fits as pyfits
+from astropy import wcs
+from astropy.io import fits
 
 
 def construct_wcs(ra0, dec0, dtheta=None, nx=None):
@@ -14,7 +14,7 @@ def construct_wcs(ra0, dec0, dtheta=None, nx=None):
         crpix = [0.0]*2
     else:
         crpix = [0.5*(nx+1)]*2
-    w = pywcs.WCS(naxis=2)
+    w = wcs.WCS(naxis=2)
     w.wcs.crval = [ra0, dec0]
     w.wcs.crpix = crpix
     w.wcs.cdelt = [-dtheta, dtheta]
@@ -80,7 +80,7 @@ class SpatialModel:
         img /= img.sum()
         dtheta = width/60.0/nx
         w = construct_wcs(0.0, 0.0, dtheta=dtheta, nx=nx)
-        imhdu = pyfits.ImageHDU(data=img.T, header=w.to_header())
+        imhdu = fits.ImageHDU(data=img.T, header=w.to_header())
         imhdu.name = "IMAGE"
         return imhdu
 

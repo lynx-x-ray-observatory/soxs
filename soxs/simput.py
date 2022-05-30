@@ -1,4 +1,4 @@
-import astropy.io.fits as pyfits
+from astropy.io import fits
 import numpy as np
 from soxs.utils import parse_prng, parse_value, \
     ensure_numpy_array, mylog, process_fits_string
@@ -130,7 +130,7 @@ class SimputCatalog:
             The name of the SIMPUT catalog file to read the
             catalog and photon lists from.
         """
-        f_simput = pyfits.open(filename)
+        f_simput = fits.open(filename)
         fluxes = f_simput["src_cat"].data["flux"]
         src_names = f_simput["src_cat"].data["src_name"]
         e_min = f_simput["src_cat"].data["e_min"]
@@ -163,7 +163,7 @@ class SimputCatalog:
         else:
             fn_src = src_file
         ext = extname if extver is None else (extname, extver)
-        data = pyfits.getdata(fn_src, ext)
+        data = fits.getdata(fn_src, ext)
         if extname == "phlist":
             ra = Quantity(data["ra"], "deg")
             dec = Quantity(data["dec"], "deg")
@@ -195,9 +195,9 @@ class SimputCatalog:
                 else:
                     fn_img = src_file
                 ext = extname if extver is None else (extname, extver)
-                imdata, imheader = pyfits.getdata(
+                imdata, imheader = fits.getdata(
                     fn_img, ext, header=True)
-                imhdu = pyfits.ImageHDU(data=imdata,
+                imhdu = fits.ImageHDU(data=imdata,
                                         header=imheader)
             else:
                 imhdu = None
@@ -213,22 +213,22 @@ class SimputCatalog:
         Write the SIMPUT catalog to disk.
         """
         src_id = np.arange(self.num_sources)
-        col1 = pyfits.Column(name='SRC_ID', format='J', array=src_id)
-        col2 = pyfits.Column(name='RA', format='D', array=self.ra)
-        col3 = pyfits.Column(name='DEC', format='D', array=self.dec)
-        col4 = pyfits.Column(name='E_MIN', format='D', array=self.emin)
-        col5 = pyfits.Column(name='E_MAX', format='D', array=self.emax)
-        col6 = pyfits.Column(name='FLUX', format='D', array=self.fluxes)
-        col7 = pyfits.Column(name='SPECTRUM', format='80A', array=self.spectra)
-        col8 = pyfits.Column(name='IMAGE', format='80A', array=self.images)
-        col9 = pyfits.Column(name='TIMING', format='80A', array=self.timing)
-        col10 = pyfits.Column(name='SRC_NAME', format='80A',
+        col1 = fits.Column(name='SRC_ID', format='J', array=src_id)
+        col2 = fits.Column(name='RA', format='D', array=self.ra)
+        col3 = fits.Column(name='DEC', format='D', array=self.dec)
+        col4 = fits.Column(name='E_MIN', format='D', array=self.emin)
+        col5 = fits.Column(name='E_MAX', format='D', array=self.emax)
+        col6 = fits.Column(name='FLUX', format='D', array=self.fluxes)
+        col7 = fits.Column(name='SPECTRUM', format='80A', array=self.spectra)
+        col8 = fits.Column(name='IMAGE', format='80A', array=self.images)
+        col9 = fits.Column(name='TIMING', format='80A', array=self.timing)
+        col10 = fits.Column(name='SRC_NAME', format='80A',
                               array=self.src_names)
 
-        coldefs = pyfits.ColDefs([col1, col2, col3, col4, col5,
+        coldefs = fits.ColDefs([col1, col2, col3, col4, col5,
                                   col6, col7, col8, col9, col10])
 
-        wrhdu = pyfits.BinTableHDU.from_columns(coldefs)
+        wrhdu = fits.BinTableHDU.from_columns(coldefs)
         wrhdu.name = "SRC_CAT"
 
         wrhdu.header["HDUCLASS"] = "HEASARC"
@@ -244,12 +244,12 @@ class SimputCatalog:
         wrhdu.header["TUNIT6"] = "erg/s/cm**2"
 
         if os.path.exists(self.filename) and not overwrite:
-            with pyfits.open(self.filename, mode='update') as f:
+            with fits.open(self.filename, mode='update') as f:
                 f["SRC_CAT"] = wrhdu
                 f.flush()
         else:
-            f = [pyfits.PrimaryHDU(), wrhdu]
-            pyfits.HDUList(f).writeto(self.filename, overwrite=True)
+            f = [fits.PrimaryHDU(), wrhdu]
+            fits.HDUList(f).writeto(self.filename, overwrite=True)
 
     def append(self, source, src_filename=None, overwrite=False):
         """
@@ -318,7 +318,7 @@ class SimputCatalog:
 def _determine_extver(fn, extname):
     extver = 1
     if os.path.exists(fn):
-        with pyfits.open(fn) as f:
+        with fits.open(fn) as f:
             for hdu in f:
                 if hdu.name == extname:
                     extver = hdu.header["EXTVER"]+1
@@ -345,7 +345,7 @@ class SimputSource:
     def _write_source(self, filename, extver, img_extver=None, overwrite=False):
         coldefs, header = self._get_source_hdu()
 
-        tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
+        tbhdu = fits.BinTableHDU.from_columns(coldefs)
         tbhdu.name = self.src_type.upper()
 
         if self.src_type == "phlist":
@@ -363,7 +363,7 @@ class SimputSource:
 
         if os.path.exists(filename) and not overwrite:
             mylog.info(f"Appending this source to {filename}.")
-            with pyfits.open(filename, mode='append') as f:
+            with fits.open(filename, mode='append') as f:
                 f.append(tbhdu)
                 if self.imhdu is not None:
                     f.append(self.imhdu)
@@ -373,10 +373,10 @@ class SimputSource:
                 mylog.warning(f"Overwriting {filename} with this source.")
             else:
                 mylog.info(f"Writing source to {filename}.")
-            f = [pyfits.PrimaryHDU(), tbhdu]
+            f = [fits.PrimaryHDU(), tbhdu]
             if self.imhdu is not None:
                 f.append(self.imhdu)
-            pyfits.HDUList(f).writeto(filename, overwrite=overwrite)
+            fits.HDUList(f).writeto(filename, overwrite=overwrite)
 
         if self.imhdu is not None:
             self.imhdu.header["EXTVER"] = 1
@@ -393,13 +393,13 @@ class SimputSpectrum(SimputSource):
         self.spec = spec
 
     def _get_source_hdu(self):
-        col1 = pyfits.Column(name='ENERGY', format='E',
+        col1 = fits.Column(name='ENERGY', format='E',
                              array=self.spec.emid.value)
-        col2 = pyfits.Column(name='FLUXDENSITY', format='D',
+        col2 = fits.Column(name='FLUXDENSITY', format='D',
                              array=self.spec.flux.value)
         cols = [col1, col2]
 
-        coldefs = pyfits.ColDefs(cols)
+        coldefs = fits.ColDefs(cols)
 
         header = {"REFRA": self.ra,
                   "REFDEC": self.dec,
@@ -518,15 +518,15 @@ class SimputPhotonList(SimputSource):
         return cls(ra, dec, e, e.flux.value, name=name)
 
     def _get_source_hdu(self):
-        col1 = pyfits.Column(name='ENERGY', format='E',
+        col1 = fits.Column(name='ENERGY', format='E',
                              array=np.asarray(self["energy"]))
-        col2 = pyfits.Column(name='RA', format='D',
+        col2 = fits.Column(name='RA', format='D',
                              array=np.asarray(self["ra"]))
-        col3 = pyfits.Column(name='DEC', format='D',
+        col3 = fits.Column(name='DEC', format='D',
                              array=np.asarray(self["dec"]))
         cols = [col1, col2, col3]
 
-        coldefs = pyfits.ColDefs(cols)
+        coldefs = fits.ColDefs(cols)
 
         header = {"REFRA": 0.0,
                   "REFDEC": 0.0,

@@ -1,5 +1,5 @@
 import numpy as np
-import astropy.wcs as pywcs
+from astropy import wcs
 import os
 from collections import defaultdict
 from regions import PixCoord
@@ -168,7 +168,7 @@ def generate_events(source, exp_time, instrument, sky_center,
 
     # Set up WCS
 
-    w = pywcs.WCS(naxis=2)
+    w = wcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
     w.wcs.crpix = event_params["pix_center"]
     w.wcs.cdelt = [-plate_scale, plate_scale]

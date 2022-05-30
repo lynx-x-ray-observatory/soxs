@@ -229,10 +229,10 @@ def create_region(rtype, args, dx, dy):
 
 def process_fits_string(fitsstr):
     import re
-    import astropy.io.fits as pyfits
+    from astropy.io import fits
     fn = fitsstr.split("[")[0]
     brackets = re.findall(r"[^[]*\[([^]]*)\]", fitsstr)
-    with pyfits.open(fn) as f:
+    with fits.open(fn) as f:
         if len(brackets) == 0:
             imgs = np.array([hdu.is_image for hdu in f])
             if imgs.sum() > 1:

@@ -14,7 +14,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.modeling.functional_models import \
     Gaussian1D
 from astropy.table import QTable
-from pathlib import Path
+from pathlib import Path, PurePath
 
 
 class Energies(u.Quantity):
@@ -76,7 +76,7 @@ class Spectrum:
         if bscale != self.binscale:
             raise RuntimeError(f"The specified binscale={binscale} does not"
                                "seem to match the energy bins!!")
-        
+
     def _check_binning_units(self, other):
         if self.nbins != other.nbins or \
                 not np.isclose(self.ebins.value, other.ebins.value).all():
@@ -448,9 +448,34 @@ class Spectrum:
         t.write(specfile, overwrite=overwrite, format="ascii.ecsv")
 
     def write_file(self, specfile, overwrite=False):
-        issue_deprecation_warning("'Spectrum.write_file' is deprecated and has been "
-                                  "superseded by 'Spectrum.write_ascii_file'")
-        self.write_ascii_file(specfile, overwrite=overwrite)
+        """
+        Write a :class:`~soxs.Spectrum` object to disk, in
+        any of three formats, which will be determined by
+        the chosen suffix:
+        ASCII ECSV: .dat, .txt. or .ecsv
+        HDF5: .hdf5 or .h5
+        FITS: .fits
+
+        Parameters
+        ----------
+        specfile : string
+            The name of the file to write to.
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing
+            file with the same name. Default: False
+        """
+        suffix = PurePath(specfile).suffix.lower()
+        if suffix in [".dat", ".txt", ".ecsv"]:
+            mylog.info(f"Writing ASCII ECSV file {specfile}.")
+            self.write_ascii_file(specfile, overwrite=overwrite)
+        elif suffix in [".hdf5", ".h5"]:
+            mylog.info(f"Writing HDF5 file {specfile}.")
+            self.write_hdf5_file(specfile, overwrite=overwrite)
+        elif suffix == ".fits":
+            mylog.info(f"Writing FITS file {specfile}.")
+            self.write_fits_file(specfile, overwrite=overwrite)
+        else:
+            raise NotImplementedError(f"Unknown file suffix {suffix}!")
 
     def write_hdf5_file(self, specfile, overwrite=False):
         """

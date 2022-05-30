@@ -5,7 +5,7 @@ from soxs.utils import parse_prng, \
     parse_value, mylog, create_region, \
     get_data_file, get_rot_mat, soxs_cfg
 import numpy as np
-import astropy.io.fits as pyfits
+from astropy.io import fits
 from regions import PixCoord
 
 """
@@ -66,7 +66,7 @@ def read_instr_spectrum(filename, ext_area):
         The path to the file containing the spectrum.
     """
     fn = get_data_file(filename)
-    with pyfits.open(fn) as f:
+    with fits.open(fn) as f:
         hdu = f["SPECTRUM"]
         if "COUNTS" in hdu.data.names:
             count_rate = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]

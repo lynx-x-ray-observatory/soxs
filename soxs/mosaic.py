@@ -4,7 +4,6 @@ from soxs.utils import mylog
 import numpy as np
 from astropy.io import fits, ascii
 from astropy.table import Table
-from pathlib import Path, PurePath
 
 
 def make_mosaic_events(pointing_list, input_source, out_prefix, exp_time, 
