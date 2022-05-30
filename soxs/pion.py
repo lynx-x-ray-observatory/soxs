@@ -64,18 +64,18 @@ class IGMGenerator:
         self.var_elem_option = var_elem_option
         self.binscale = "log"
         self.resonant_scattering = resonant_scattering
-        self.cosmic_table = get_data_file("igm_v2ph_nome.fits")
+        self.cosmic_table = get_data_file("igm_v2ph2_nome.fits")
         if resonant_scattering:
-            self.metal_tables = (get_data_file(f"igm_v2ph_{metal_option}.fits"),
+            self.metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),
                                  get_data_file(f"igm_v2sc_{metal_option}.fits"))
             if var_elem_option:
-                self.var_tables = [(get_data_file(f"igm_v2ph_{metal_tab_names[el]}.fits"),
+                self.var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),
                                     get_data_file(f"igm_v2sc_{metal_tab_names[el]}.fits"))
                                     for el in self.var_elem]
         else:
-            self.metal_tables = (get_data_file(f"igm_v2ph_{metal_option}.fits"),)
+            self.metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),)
             if var_elem_option:
-                self.var_tables = [(get_data_file(f"igm_v2ph_{metal_tab_names[el]}.fits"),)
+                self.var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),)
                                    for el in self.var_elem]
         self.cxb_factor = cxb_factor
         self.nvar_elem = len(self.var_elem)

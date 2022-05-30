@@ -67,7 +67,7 @@ from soxs.cie import \
     ApecGenerator, \
     SpexGenerator
 
-from soxs.igm import \
+from soxs.pion import \
     IGMGenerator
 
 from soxs.utils import \
