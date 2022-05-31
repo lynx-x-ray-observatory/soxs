@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Conda environment creation and activation
-      - uses: s-weigand/setup-conda@v1.1.1
+        uses: s-weigand/setup-conda@v1.1.1
         with:
           update-conda: true
           conda-channels: conda-forge, default, jzuhone
