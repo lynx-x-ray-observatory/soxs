@@ -1,3 +1,6 @@
+from setuptools_scm import get_version
+__version__ = get_version(root='..', relative_to=__file__)
+
 from soxs.background import \
     BackgroundSpectrum, \
     ConvolvedBackgroundSpectrum, \
@@ -73,5 +76,3 @@ from soxs.pion import \
 from soxs.utils import \
     set_soxs_config, \
     set_mission_config
-
-__version__ = "3.4.0"

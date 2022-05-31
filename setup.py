@@ -13,16 +13,12 @@ cython_extensions = [
               include_dirs=[np.get_include()])
 ]
 
-VERSION = "3.4.0"
-
 setup(name='soxs',
       packages=find_packages(),
-      version=VERSION,
       description='Simulated Observations of X-ray Sources',
       author='John ZuHone',
       author_email='john.zuhone@cfa.harvard.edu',
       url='https://github.com/lynx-x-ray-observatory/soxs/',
-      setup_requires=["numpy", "cython>=0.24"],
       install_requires=["numpy", "astropy>=3.0", "tqdm", "pooch",
                         "h5py", "scipy", "pyyaml", "regions", "appdirs"],
       include_package_data=True,
