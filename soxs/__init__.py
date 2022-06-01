@@ -72,9 +72,10 @@ from soxs.spectra import \
     CountRateSpectrum, \
     ConvolvedSpectrum
 
-from soxs.cie import \
+from soxs.thermal_spectra import \
     ApecGenerator, \
-    SpexGenerator
+    SpexGenerator, \
+    IGMGenerator
 
 from soxs.pion import \
     IGMGenerator

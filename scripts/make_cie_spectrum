@@ -3,7 +3,7 @@
 import os
 import numpy as np
 import argparse
-from soxs.cie import CIEGenerator
+from soxs.thermal_spectra import CIEGenerator
 
 parser = argparse.ArgumentParser(description='Create a thermal spectrum and write it to a file. ' +
                                  'The abundances of individual elements can be set by supplying '

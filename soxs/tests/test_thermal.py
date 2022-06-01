@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 from soxs.response import RedistributionMatrixFile
-from soxs.cie import ApecGenerator
+from soxs.thermal_spectra import ApecGenerator
 from soxs.spatial import PointSourceModel
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.instrument_registry import \
