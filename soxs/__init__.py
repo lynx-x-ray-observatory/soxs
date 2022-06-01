@@ -77,9 +77,6 @@ from soxs.thermal_spectra import \
     SpexGenerator, \
     IGMGenerator
 
-from soxs.pion import \
-    IGMGenerator
-
 from soxs.utils import \
     set_soxs_config, \
     set_mission_config
