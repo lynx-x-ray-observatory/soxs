@@ -9,11 +9,12 @@ on:
 
 jobs:
   conda_deployment_with_new_tag:
-    name: Conda deployment of package with Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    name: Conda deployment of package with Python ${{ matrix.python-version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9"]
+        os: [ubuntu-18.04, macos-10.15]
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -33,10 +34,6 @@ jobs:
         with:
           meta_yaml_dir: conda
           python-version: ${{ matrix.python-version }} # Values previously defined in `matrix`
-          platform_linux-64: true
-          platform_osx-64: true
-          platform_win-64: false
-          platform_osx-arm64: true
           user: jzuhone
           label: auto
           token: ${{ secrets.ANACONDA_TOKEN }} # Replace with the right name of your secret
