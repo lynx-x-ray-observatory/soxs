@@ -6,7 +6,8 @@ ChangeLog
 Version 3.5.0
 -------------
 
-This update to SOXS contains a number of new features. 
+This update to SOXS contains a large number of new features, mostly related to 
+the generation of spectra. 
 
 * The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced 
   energy binning has been added. See :ref:`spectrum-binning` for details.
@@ -23,9 +24,10 @@ This update to SOXS contains a number of new features.
 * An option to create a mosaicked event file in addition to an image file has been
   added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
   for more details.
+* The accuracy of the TBabs absorption model has been improved. 
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
   has been added to the options for abundance tables for the 
-  :class:`~soxs.apec.ApecGenerator` class.
+  :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
 
 Version 3.4.0
 -------------
