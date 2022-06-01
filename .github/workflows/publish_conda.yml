@@ -5,7 +5,7 @@ on:
   release:
     types: ['released', 'prereleased']
 
-# workflow_dispatch:        # Un comment line if you also want to trigger action manually
+  workflow_dispatch:        # Un comment line if you also want to trigger action manually
 
 jobs:
   conda_deployment_with_new_tag:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-10.15]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.8", "3.9", "3.10"]
     steps:
       - uses: actions/checkout@v2
