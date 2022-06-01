@@ -5,12 +5,12 @@ import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
     parse_prng, parse_value, line_width_equiv, \
-    issue_deprecation_warning
+    issue_deprecation_warning, get_data_file
 from soxs.constants import erg_per_keV, hc, \
     sigma_to_fwhm, sqrt2pi
 import astropy.units as u
 import h5py
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import interp1d
 from astropy.modeling.functional_models import \
     Gaussian1D
 from astropy.table import QTable
@@ -732,25 +732,24 @@ def get_wabs_absorb(e, nH):
 
 _tbabs_emid = None
 _tbabs_sigma = None
-_tbabs_spline = None
+_tbabs_func = None
 
 
 def tbabs_cross_section(E):
     global _tbabs_emid
     global _tbabs_sigma
-    global _tbabs_spline
-    if _tbabs_spline is None:
-        filename = os.path.join(soxs_files_path, "tbabs_table.h5")
-        f = h5py.File(filename, "r")
-        _tbabs_sigma = f["cross_section"][:]
-        nbins = _tbabs_sigma.size
-        ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
-        f.close()
+    global _tbabs_func
+    if _tbabs_func is None:
+        with h5py.File(get_data_file("tbabs_table.h5"), "r") as f:
+            _tbabs_sigma = f["cross_section"][:]
+            nbins = _tbabs_sigma.size
+            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
+            print(ebins[0], ebins[-1])
         _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
-        _tbabs_spline = InterpolatedUnivariateSpline(_tbabs_emid,
-                                                     _tbabs_sigma, k=5, 
-                                                     ext=1)
-    return _tbabs_spline(E)
+        _tbabs_func = interp1d(_tbabs_emid, _tbabs_sigma, bounds_error=False,
+                               fill_value=(_tbabs_sigma[0], _tbabs_sigma[-1]),
+                               assume_sorted=True, copy=False)
+    return _tbabs_func(E)
 
 
 def get_tbabs_absorb(e, nH):
