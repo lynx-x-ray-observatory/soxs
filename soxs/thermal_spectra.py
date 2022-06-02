@@ -452,83 +452,16 @@ class SpexGenerator(CIEGenerator):
         raise NotImplementedError
 
 
-metal_tab_names = {
-    "O": "ox",
-    "Ne": "ne",
-    "Mg": "mg",
-    "Si": "si",
-    "S": "su",
-    "Fe": "fe"
-}
-
-
-class IGMGenerator:
-    def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=0.5,
-                 var_elem_option=None):
-        """
-        Initialize an emission model for a thermal plasma including 
-        photoionization and resonant scattering from the CXB based on 
-        Khabibullin & Churazov 2019
-        (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov 
-        et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
-
-        Assumes the abundance tables from Feldman 1992.
-
-        Table data and README files can be found at
-        https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v2x/.
-
-        Parameters
-        ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy for the spectral model.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy for the spectral model.
-        resonant_scattering : boolean, optional
-            Whether or not to include the effects of resonant scattering
-            from CXB photons. Default: False
-        cxb_factor : float, optional
-            The fraction of the CXB photons that are resonant scattered to enhance
-            the lines. Default: 0.5
-        var_elem_option: integer, optional
-            An integer to choose between options for variable elements, which are:
-            1: specify abundances of O, Ne, and Fe separately from other metals
-            2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
-               metals
-            Default: None, which means no metal abundances can be specified
-            separately.
-        """
-        if var_elem_option is None:
-            metal_option = "me"
-            self.metal_tab_names = []
-            self.var_elem = []
-        elif var_elem_option == 1:
-            metal_option = "mx"
-            self.var_elem = ["O", "Ne", "Fe"]
-        elif var_elem_option == 2:
-            metal_option = "mxx"
-            self.var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
-        else:
-            raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
-        self.var_elem_option = var_elem_option
-        self.binscale = "log"
-        self.resonant_scattering = resonant_scattering
-        self.cosmic_table = get_data_file("igm_v2ph2_nome.fits")
-        if resonant_scattering:
-            self.metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),
-                                 get_data_file(f"igm_v2sc_{metal_option}.fits"))
-            if var_elem_option:
-                self.var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),
-                                    get_data_file(f"igm_v2sc_{metal_tab_names[el]}.fits"))
-                                   for el in self.var_elem]
-        else:
-            self.metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),)
-            if var_elem_option:
-                self.var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),)
-                                   for el in self.var_elem]
-        self.cxb_factor = cxb_factor
-        self.nvar_elem = len(self.var_elem)
+class Atable2DGenerator:
+    def __init__(self, emin, emax, cosmic_table, metal_tables, 
+                 var_tables, var_elem, binscale):
         self.emin = parse_value(emin, "keV")
         self.emax = parse_value(emax, "keV")
+        self.cosmic_table = cosmic_table
+        self.metal_tables = metal_tables
+        self.var_tables = var_tables
+        self.var_elem = var_elem
+        self.nvar_elem = len(self.var_elem)
         with fits.open(self.cosmic_table) as f:
             self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
             self.Dvals = f["PARAMETERS"].data["VALUE"][0][:self.n_D]
@@ -536,6 +469,7 @@ class IGMGenerator:
             self.Tvals = f["PARAMETERS"].data["VALUE"][1][:self.n_T]
         self.dDvals = np.diff(self.Dvals)
         self.dTvals = np.diff(self.Tvals)
+        self.binscale = binscale
 
     def _get_energies(self, redshift):
         scale_factor = 1.0/(1.0+redshift)
@@ -551,18 +485,17 @@ class IGMGenerator:
         return eidxs, ne, ebins, emid, de
 
     def _get_table(self, ne, eidxs, redshift):
-        norm_fac = 5.50964e-5*np.array([1.0, self.cxb_factor])
         scale_factor = 1.0/(1.0+redshift)
         metal_spec = np.zeros((self.n_T*self.n_D, ne))
         var_spec = None
         mylog.debug(f"Opening {self.cosmic_table}.")
         with fits.open(self.cosmic_table) as f:
-            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs]*norm_fac[0]
+            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs]*self.norm_fac[0]
         cosmic_spec *= scale_factor
         for j, mfile in enumerate(self.metal_tables):
             mylog.debug(f"Opening {mfile}.")
             with fits.open(mfile) as f:
-                metal_spec += f["SPECTRA"].data["INTPSPEC"][:,eidxs]*norm_fac[j]
+                metal_spec += f["SPECTRA"].data["INTPSPEC"][:,eidxs]*self.norm_fac[j]
         metal_spec *= scale_factor
         if self.nvar_elem > 0:
             var_spec = np.zeros((self.nvar_elem,self.n_T*self.n_D,ne))
@@ -570,13 +503,13 @@ class IGMGenerator:
                 for j, vfile in enumerate(self.var_tables[i]):
                     mylog.debug(f"Opening {vfile}.")
                     with fits.open(vfile) as f:
-                        var_spec[i,:,:] += f["SPECTRA"].data["INTPSPEC"][:, eidxs]*norm_fac[j]
+                        var_spec[i,:,:] += f["SPECTRA"].data["INTPSPEC"][:, eidxs]*self.norm_fac[j]
             var_spec *= scale_factor
         return cosmic_spec, metal_spec, var_spec
 
     def get_spectrum(self, kT, nH, abund, redshift, norm, elem_abund=None):
         """
-        Get an emission spectrum from the IGM model.
+        Get an emission spectrum.
 
         Parameters
         ----------
@@ -645,3 +578,93 @@ class IGMGenerator:
                 spec += eabund*dx4*vspec[j,idx4,:]
         spec = norm*spec[0,:]/de/nH
         return Spectrum(ebins, spec, binscale=self.binscale)
+
+
+class CloudyGenerator(Atable2DGenerator):
+    def __init__(self, emin, emax):
+        cosmic_table = get_data_file("cloudy_17.03_nome.fits")
+        metal_tables = (get_data_file("cloudy_17.03_me.fits"),)
+        var_tables = tuple()
+        super().__init__(emin, emax, cosmic_table, metal_tables, var_tables,
+                         [], "log")
+        self.norm_fac = np.array([1.0])/1.21
+
+    def get_spectrum(self, kT, nH, abund, redshift, norm):
+        return super().get_spectrum(kT, nH, abund, redshift, norm)
+
+
+metal_tab_names = {
+    "O": "ox",
+    "Ne": "ne",
+    "Mg": "mg",
+    "Si": "si",
+    "S": "su",
+    "Fe": "fe"
+}
+
+
+class IGMGenerator(Atable2DGenerator):
+    def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=0.5,
+                 var_elem_option=None):
+        """
+        Initialize an emission model for a thermal plasma including 
+        photoionization and resonant scattering from the CXB based on 
+        Khabibullin & Churazov 2019
+        (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov 
+        et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
+
+        Assumes the abundance tables from Feldman 1992.
+
+        Table data and README files can be found at
+        https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v2x/.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy for the spectral model.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy for the spectral model.
+        resonant_scattering : boolean, optional
+            Whether or not to include the effects of resonant scattering
+            from CXB photons. Default: False
+        cxb_factor : float, optional
+            The fraction of the CXB photons that are resonant scattered to enhance
+            the lines. Default: 0.5
+        var_elem_option: integer, optional
+            An integer to choose between options for variable elements, which are:
+            1: specify abundances of O, Ne, and Fe separately from other metals
+            2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
+               metals
+            Default: None, which means no metal abundances can be specified
+            separately.
+        """
+        if var_elem_option is None:
+            metal_option = "me"
+            var_elem = []
+        elif var_elem_option == 1:
+            metal_option = "mx"
+            var_elem = ["O", "Ne", "Fe"]
+        elif var_elem_option == 2:
+            metal_option = "mxx"
+            var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
+        else:
+            raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
+        self.var_elem_option = var_elem_option
+        self.resonant_scattering = resonant_scattering
+        cosmic_table = get_data_file("igm_v2ph2_nome.fits")
+        if resonant_scattering:
+            metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),
+                            get_data_file(f"igm_v2sc_{metal_option}.fits"))
+            if var_elem_option:
+                var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),
+                               get_data_file(f"igm_v2sc_{metal_tab_names[el]}.fits"))
+                              for el in var_elem]
+        else:
+            metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),)
+            if var_elem_option:
+                var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),)
+                              for el in var_elem]
+        self.cxb_factor = cxb_factor
+        super().__init__(emin, emax, cosmic_table, metal_tables, var_tables, 
+                         var_elem, "log")
+        self.norm_fac = 5.50964e-5*np.array([1.0, self.cxb_factor])
