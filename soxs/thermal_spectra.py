@@ -458,6 +458,7 @@ class SpexGenerator(CIEGenerator):
 
 
 class AtableGenerator:
+    _temp_units = "K"
     def __init__(self, emin, emax, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
         self.emin = parse_value(emin, "keV")
@@ -519,7 +520,7 @@ class Atable1DGenerator(AtableGenerator):
             self.n_T = f["PARAMETERS"].data["NUMBVALS"][0]
             self.Tvals = f["PARAMETERS"].data["VALUE"][0]
         self.dTvals = np.diff(self.Tvals)
-        self.norm_fac = np.ones(len(metal_tables))
+        self.norm_fac = np.ones(max(1, len(metal_tables)))
 
     def get_spectrum(self, kT, abund, redshift, norm, elem_abund=None):
         """
@@ -617,7 +618,9 @@ class Atable2DGenerator(AtableGenerator):
                                                                       set(self.var_elem)))
         kT = parse_value(kT, "keV")
         nH = parse_value(nH, "cm**-3")
-        lkT = np.atleast_1d(np.log10(kT*K_per_keV))
+        if self._temp_units == "K":
+            kT *= K_per_keV
+        lkT = np.atleast_1d(np.log10(kT))
         lnH = np.atleast_1d(np.log10(nH))
         tidx = np.searchsorted(self.Tvals, lkT)-1
         didx = np.searchsorted(self.Dvals, lnH)-1
@@ -657,6 +660,51 @@ class Atable2DGenerator(AtableGenerator):
         if self._scale_nH:
             spec /= nH
         return Spectrum(ebins, spec, binscale=self.binscale)
+
+
+mekal_elem_options = ["He", "C", "N", "O", "Ne", "Na", "Mg",
+                      "Al", "Si", "S", "Ar", "Ca", "Fe", "Ni"]
+
+
+class MekalGenerator(Atable1DGenerator):
+    self._temp_units = "keV"
+    def __init__(self, emin, emax, var_elem=None, abund_table="angr"):
+        mekal_table = get_data_file("mekal.mod")
+        metal_tables = tuple()
+        var_tables = tuple()
+        if var_elem is None:
+            var_elem = []
+        super().__init__(emin, emax, mekal_table, metal_tables, var_tables,
+                         var_elem, "log")
+        if abund_table is None:
+            abund_table = soxs_cfg.get("soxs", "abund_table")
+        if not isinstance(abund_table, str):
+            if len(abund_table) != 30:
+                raise RuntimeError("User-supplied abundance tables "
+                                   "must be 30 elements long!")
+            self.atable = np.concatenate([[0.0], np.array(abund_table)])
+        else:
+            self.atable = abund_tables[abund_table].copy()
+        self._atable = self.atable.copy()
+        self._atable[1:] /= abund_tables["angr"][1:]
+
+    def _get_table(self, ne, eidxs, redshift):
+        scale_factor = 1.0/(1.0+redshift)
+        metal_spec = np.zeros((self.n_T, ne))
+        var_spec = np.zeros((self.nvar_elem, self.n_T, ne)) if self.nvar_elem > 0 else None
+        mylog.debug(f"Opening {self.cosmic_table}.")
+        with fits.open(self.cosmic_table) as f:
+            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs]
+            cosmic_spec *= scale_factor
+            for i in range(1, 15):
+                hdu = f["SPECTRA"].data[f"ADDSP00{i:02d}"]
+                if mekal_elem_options[i] in self.var_elem:
+                    var_spec[i,:,:] = self._atable[i]*hdu.data[:,eidxs]
+                else:
+                    metal_spec[:,:] += self._atable[i]*hdu.data[:,eidxs]
+            metal_spec *= scale_factor
+            var_spec *= scale_factor
+        return cosmic_spec, metal_spec, var_spec
 
 
 class CloudyCIEGenerator(Atable1DGenerator):
