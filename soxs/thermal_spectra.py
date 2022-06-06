@@ -452,8 +452,8 @@ class SpexGenerator(CIEGenerator):
         raise NotImplementedError
 
 
-class Atable2DGenerator:
-    def __init__(self, emin, emax, cosmic_table, metal_tables, 
+class AtableGenerator:
+    def __init__(self, emin, emax, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
         self.emin = parse_value(emin, "keV")
         self.emax = parse_value(emax, "keV")
@@ -462,14 +462,9 @@ class Atable2DGenerator:
         self.var_tables = var_tables
         self.var_elem = var_elem
         self.nvar_elem = len(self.var_elem)
-        with fits.open(self.cosmic_table) as f:
-            self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
-            self.Dvals = f["PARAMETERS"].data["VALUE"][0][:self.n_D]
-            self.n_T = f["PARAMETERS"].data["NUMBVALS"][1]
-            self.Tvals = f["PARAMETERS"].data["VALUE"][1][:self.n_T]
-        self.dDvals = np.diff(self.Dvals)
-        self.dTvals = np.diff(self.Tvals)
         self.binscale = binscale
+        self.n_D = 1
+        self.n_T = 1
 
     def _get_energies(self, redshift):
         scale_factor = 1.0/(1.0+redshift)
@@ -506,6 +501,81 @@ class Atable2DGenerator:
                         var_spec[i,:,:] += f["SPECTRA"].data["INTPSPEC"][:, eidxs]*self.norm_fac[j]
             var_spec *= scale_factor
         return cosmic_spec, metal_spec, var_spec
+
+
+class Atable1DGenerator(AtableGenerator):
+    def __init__(self, emin, emax, cosmic_table, metal_tables,
+                 var_tables, var_elem, binscale):
+        super().__init__(emin, emax, cosmic_table, metal_tables,
+                         var_tables, var_elem, binscale)
+        with fits.open(self.cosmic_table) as f:
+            self.n_T = f["PARAMETERS"].data["NUMBVALS"][0]
+            self.Tvals = f["PARAMETERS"].data["VALUE"][0]
+        self.dTvals = np.diff(self.Tvals)
+        self.norm_fac = np.ones(len(metal_tables))
+
+    def get_spectrum(self, kT, abund, redshift, norm, elem_abund=None):
+        """
+        Get an emission spectrum.
+
+        Parameters
+        ----------
+        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The temperature in keV.
+        abund : float
+            The metal abundance in solar units. 
+        redshift : float
+            The redshift.
+        norm : float
+            The normalization of the model, in the standard
+            Xspec units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
+        elem_abund : dict of element name, float pairs, optional
+            A dictionary of elemental abundances in solar
+            units to vary freely of the abund parameter, e.g.
+            {"O": 0.4, "Ne": 0.3, "Fe": 0.9}. Default: None
+        """
+        from soxs.spectra import Spectrum
+        if elem_abund is None:
+            elem_abund = {}
+        if set(elem_abund.keys()) != set(self.var_elem):
+            raise RuntimeError("The supplied set of abundances does not match "
+                               "what is available for 'var_elem_option = "
+                               f"{self.var_elem_option}!\n"
+                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
+                                                                      set(self.var_elem)))
+        kT = parse_value(kT, "keV")
+        lkT = np.atleast_1d(np.log10(kT*K_per_keV))
+        tidx = np.searchsorted(self.Tvals, lkT)-1
+        eidxs, ne, ebins, emid, de = self._get_energies(redshift)
+        if tidx >= self.Tvals.size-1 or tidx < 0:
+            return Spectrum(ebins, np.zeros(ne), binscale=self.binscale)
+        cspec, mspec, vspec = self._get_table(ne, eidxs, redshift)
+        dT = (lkT - self.Tvals[tidx]) / self.dTvals[tidx]
+        cosmic_spec = cspec[tidx,:]*(1.-dT)+cspec[tidx+1,:]*dT
+        metal_spec = mspec[tidx,:]*(1.-dT)+mspec[tidx+1,:]*dT
+        spec = cosmic_spec + abund*metal_spec
+        if vspec is not None:
+            for elem, eabund in elem_abund.items():
+                j = self.var_elem_names.index(elem)
+                spec += eabund*(vspec[j,tidx,:]*(1.-dT)+vspec[j,idx+1,:]*dT)
+        spec = norm*spec[0,:]/de
+        return Spectrum(ebins, spec, binscale=self.binscale)
+
+
+class Atable2DGenerator(AtableGenerator):
+    _scale_nH = False
+    def __init__(self, emin, emax, cosmic_table, metal_tables, 
+                 var_tables, var_elem, binscale):
+        super().__init__(emin, emax, cosmic_table, metal_tables,
+                         var_tables, var_elem, binscale)
+        with fits.open(self.cosmic_table) as f:
+            self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
+            self.Dvals = f["PARAMETERS"].data["VALUE"][0][:self.n_D]
+            self.n_T = f["PARAMETERS"].data["NUMBVALS"][1]
+            self.Tvals = f["PARAMETERS"].data["VALUE"][1][:self.n_T]
+        self.dDvals = np.diff(self.Dvals)
+        self.dTvals = np.diff(self.Tvals)
+        self.norm_fac = np.ones(len(metal_tables))
 
     def get_spectrum(self, kT, nH, abund, redshift, norm, elem_abund=None):
         """
@@ -546,9 +616,9 @@ class Atable2DGenerator:
         didx = np.searchsorted(self.Dvals, lnH)-1
         eidxs, ne, ebins, emid, de = self._get_energies(redshift)
         if tidx >= self.Tvals.size-1 or tidx < 0:
-            return Spectrum(self.ebins, np.zeros(ne), binscale=self.binscale)
+            return Spectrum(ebins, np.zeros(ne), binscale=self.binscale)
         if didx >= self.Dvals.size-1 or didx < 0:
-            return Spectrum(self.ebins, np.zeros(ne), binscale=self.binscale)
+            return Spectrum(ebins, np.zeros(ne), binscale=self.binscale)
         cspec, mspec, vspec = self._get_table(ne, eidxs, redshift)
         dT = (lkT - self.Tvals[tidx]) / self.dTvals[tidx]
         dn = (lnH - self.Dvals[didx]) / self.dDvals[didx]
@@ -576,21 +646,23 @@ class Atable2DGenerator:
                 spec += eabund*dx2*vspec[j,idx2,:]
                 spec += eabund*dx3*vspec[j,idx3,:]
                 spec += eabund*dx4*vspec[j,idx4,:]
-        spec = norm*spec[0,:]/de/nH
+        spec = norm*spec[0,:]/de
+        if self._scale_nH:
+            spec /= nH
         return Spectrum(ebins, spec, binscale=self.binscale)
 
 
-class CloudyGenerator(Atable2DGenerator):
+class CloudyCIEGenerator(Atable1DGenerator):
     def __init__(self, emin, emax):
         cosmic_table = get_data_file("cloudy_17.03_nome.fits")
         metal_tables = (get_data_file("cloudy_17.03_me.fits"),)
         var_tables = tuple()
         super().__init__(emin, emax, cosmic_table, metal_tables, var_tables,
                          [], "log")
-        self.norm_fac = np.array([1.0])/1.21
+        self.norm_fac = 5.50964e-5*np.array([1.0])
 
-    def get_spectrum(self, kT, nH, abund, redshift, norm):
-        return super().get_spectrum(kT, nH, abund, redshift, norm)
+    def get_spectrum(self, kT, abund, redshift, norm):
+        return super().get_spectrum(kT, abund, redshift, norm)
 
 
 metal_tab_names = {
@@ -604,6 +676,7 @@ metal_tab_names = {
 
 
 class IGMGenerator(Atable2DGenerator):
+    _scale_nH = True
     def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=0.5,
                  var_elem_option=None):
         """
@@ -641,6 +714,7 @@ class IGMGenerator(Atable2DGenerator):
         if var_elem_option is None:
             metal_option = "me"
             var_elem = []
+            var_tables = tuple()
         elif var_elem_option == 1:
             metal_option = "mx"
             var_elem = ["O", "Ne", "Fe"]
