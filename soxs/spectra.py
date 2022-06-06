@@ -31,7 +31,7 @@ def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
         mylog.info("Creating %d energies from this spectrum." % n_ph)
     randvec = prng.uniform(size=n_ph)
     randvec.sort()
-    if binscale == "linear":
+    if binscale in ["linear", "custom"]:
         bin_edges = spec.ebins.value
     elif binscale == "log":
         bin_edges = np.log10(spec.ebins.value)

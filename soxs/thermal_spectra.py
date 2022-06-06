@@ -671,7 +671,7 @@ class MekalGenerator(Atable1DGenerator):
         if var_elem is None:
             var_elem = []
         super().__init__(emin, emax, mekal_table, metal_tables, var_tables,
-                         var_elem, "linear")
+                         var_elem, "custom")
         # Hack to convert to what we usually expect
         self.Tvals = np.log10(self.Tvals*K_per_keV)
         self.dTvals = np.diff(self.Tvals)
