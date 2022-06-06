@@ -659,7 +659,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
         var_tables = tuple()
         super().__init__(emin, emax, cosmic_table, metal_tables, var_tables,
                          [], "log")
-        self.norm_fac = 5.50964e-5*np.array([1.0])
+        self.norm_fac = 2.0*5.50964e-5*np.array([1.0])
 
     def get_spectrum(self, kT, abund, redshift, norm):
         return super().get_spectrum(kT, abund, redshift, norm)
