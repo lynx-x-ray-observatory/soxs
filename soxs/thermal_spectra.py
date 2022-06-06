@@ -382,10 +382,14 @@ class ApecGenerator(CIEGenerator):
 
 class SpexGenerator(CIEGenerator):
     r"""
-    Create thermal APEC tables available at http://www.atomdb.org. 
+    Create thermal spectral using the SPEX CIE model 
+    (https://spex-xray.github.io/spex-help/models/cie.html) 
     The same underlying machinery as the APEC model is used, as the
     SPEX model has been converted to the APEC table format using the
     code at https://github.com/jeremysanders/spex_to_xspec.
+    
+    Note that the default abundance table is Anders & Grevasse (1989),
+    which can be changed using the abund_table keyword argument. 
 
     Parameters
     ----------
@@ -449,7 +453,8 @@ class SpexGenerator(CIEGenerator):
                          nei=False)
 
     def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
-        raise NotImplementedError
+        raise RuntimeError("SPEX NEI spectra are not supported in this "
+                           "version of SOXS!")
 
 
 class AtableGenerator:
@@ -516,7 +521,7 @@ class Atable1DGenerator(AtableGenerator):
 
     def get_spectrum(self, kT, abund, redshift, norm, elem_abund=None):
         """
-        Get an emission spectrum.
+        Get a thermal emission spectrum from a 1-D XSPEC atable-based model.
 
         Parameters
         ----------
@@ -579,7 +584,7 @@ class Atable2DGenerator(AtableGenerator):
 
     def get_spectrum(self, kT, nH, abund, redshift, norm, elem_abund=None):
         """
-        Get an emission spectrum.
+        Get a thermal emission spectrum from a 2-D XSPEC atable-based model.
 
         Parameters
         ----------
@@ -653,6 +658,44 @@ class Atable2DGenerator(AtableGenerator):
 
 
 class CloudyCIEGenerator(Atable1DGenerator):
+    """
+    Initialize an emission model for a thermal plasma assumsing CIE
+    generated from Cloudy v17.03. The sequence of Cloudy commands used
+    to generate the XSPEC atable is as follows:
+
+    #########
+    title c17.03_cie_tgrid
+    #
+    #database stout level MAX
+    #database chianti level MAX
+    no molecules
+    no grain physics
+    set phfit 1996
+    abundances "./feld.abn"
+    ###
+    metals 0.0
+    hden 0
+    #
+    coronal equil 5 vary
+    grid range 4.0 to 9.0 in 0.025 dex steps sequential
+    stop column density 1.5032e+18 linear
+    save xspec atable reflected spectrum "c17.03_cie_tgrid_n1z1.fits" range 0.05 50.
+    #########
+
+    This sequence of commands is repeated for solar and low abundances so that the
+    abundance parameter can be taken into account via a linear combination of two 
+    tables. 
+
+    Assumes the abundance tables from Feldman 1992. Currently, variable 
+    abundances for individual metals are not supported. 
+
+    Parameters
+    ----------
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The minimum energy for the spectral model.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The maximum energy for the spectral model.
+    """
     def __init__(self, emin, emax):
         cosmic_table = get_data_file("cloudy_17.03_nome.fits")
         metal_tables = (get_data_file("cloudy_17.03_me.fits"),)
