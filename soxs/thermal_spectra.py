@@ -690,6 +690,9 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
     Assumes the abundance tables from Feldman 1992. Currently, variable 
     abundances for individual metals are not supported. 
+    
+    Energy bins are log-spaced between ~0.05 and ~50.0 keV, with dex spacing of 
+    ~ 0.00145.
 
     Parameters
     ----------
@@ -699,8 +702,8 @@ class CloudyCIEGenerator(Atable1DGenerator):
         The maximum energy for the spectral model.
     """
     def __init__(self, emin, emax):
-        cosmic_table = get_data_file("cloudy_17.03_nome.fits")
-        metal_tables = (get_data_file("cloudy_17.03_me.fits"),)
+        cosmic_table = get_data_file("c17.03_cie_nome.fits")
+        metal_tables = (get_data_file("c17.03_cie_me.fits"),)
         var_tables = tuple()
         super().__init__(emin, emax, cosmic_table, metal_tables, var_tables,
                          [], "log")
@@ -732,6 +735,9 @@ class IGMGenerator(Atable2DGenerator):
         et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
 
         Assumes the abundance tables from Feldman 1992.
+
+        Energy bins are log-spaced between ~0.05 and ~50.0 keV, with dex spacing of 
+        ~ 0.00145.
 
         Table data and README files can be found at
         https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v2x/.
