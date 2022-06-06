@@ -672,6 +672,7 @@ class MekalGenerator(Atable1DGenerator):
             var_elem = []
         super().__init__(emin, emax, mekal_table, metal_tables, var_tables,
                          var_elem, "linear")
+        # Hack to convert to what we usually expect
         self.Tvals = np.log10(self.Tvals*K_per_keV)
         self.dTvals = np.diff(self.Tvals)
         if abund_table is None:
@@ -699,8 +700,12 @@ class MekalGenerator(Atable1DGenerator):
                 data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs]
                 if mekal_elem_options[i] in self.var_elem:
                     var_spec[i,...] = data
-                else:
+                elif j != 2: 
+                    # a metal (not helium)
                     metal_spec += data
+                else:
+                    # this is helium
+                    cosmic_spec += data
             metal_spec *= scale_factor
             if var_spec is not None:
                 var_spec *= scale_factor
