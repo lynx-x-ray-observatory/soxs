@@ -470,12 +470,14 @@ class AtableGenerator:
         self.binscale = binscale
         self.n_D = 1
         self.n_T = 1
+        with fits.open(self.cosmic_table) as f:
+            self.elo = f["ENERGIES"].data["ENERG_LO"]
+            self.ehi = f["ENERGIES"].data["ENERG_HI"]
 
     def _get_energies(self, redshift):
         scale_factor = 1.0/(1.0+redshift)
-        with fits.open(self.cosmic_table) as f:
-            elo = f["ENERGIES"].data["ENERG_LO"]*scale_factor
-            ehi = f["ENERGIES"].data["ENERG_HI"]*scale_factor
+        elo = self.elo*scale_factor
+        ehi = self.ehi*scale_factor
         eidxs = elo > self.emin
         eidxs &= ehi < self.emax
         ne = eidxs.sum()
