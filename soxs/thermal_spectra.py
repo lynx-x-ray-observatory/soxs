@@ -458,7 +458,6 @@ class SpexGenerator(CIEGenerator):
 
 
 class AtableGenerator:
-    _temp_units = "K"
     def __init__(self, emin, emax, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
         self.emin = parse_value(emin, "keV")
@@ -618,9 +617,7 @@ class Atable2DGenerator(AtableGenerator):
                                                                       set(self.var_elem)))
         kT = parse_value(kT, "keV")
         nH = parse_value(nH, "cm**-3")
-        if self._temp_units == "K":
-            kT *= K_per_keV
-        lkT = np.atleast_1d(np.log10(kT))
+        lkT = np.atleast_1d(np.log10(kT*K_per_keV))
         lnH = np.atleast_1d(np.log10(nH))
         tidx = np.searchsorted(self.Tvals, lkT)-1
         didx = np.searchsorted(self.Dvals, lnH)-1
@@ -667,7 +664,6 @@ mekal_elem_options = ["He", "C", "N", "O", "Ne", "Na", "Mg",
 
 
 class MekalGenerator(Atable1DGenerator):
-    self._temp_units = "keV"
     def __init__(self, emin, emax, var_elem=None, abund_table="angr"):
         mekal_table = get_data_file("mekal.mod")
         metal_tables = tuple()
@@ -675,7 +671,9 @@ class MekalGenerator(Atable1DGenerator):
         if var_elem is None:
             var_elem = []
         super().__init__(emin, emax, mekal_table, metal_tables, var_tables,
-                         var_elem, "log")
+                         var_elem, "linear")
+        self.Tvals = np.log10(self.Tvals*K_per_keV)
+        self.dTvals = np.diff(self.Tvals)
         if abund_table is None:
             abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, str):
@@ -696,14 +694,16 @@ class MekalGenerator(Atable1DGenerator):
         with fits.open(self.cosmic_table) as f:
             cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs]
             cosmic_spec *= scale_factor
-            for i in range(1, 15):
-                hdu = f["SPECTRA"].data[f"ADDSP00{i:02d}"]
+            for i in range(14):
+                j = elem_names.index(mekal_elem_options[i])
+                data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs]
                 if mekal_elem_options[i] in self.var_elem:
-                    var_spec[i,:,:] = self._atable[i]*hdu.data[:,eidxs]
+                    var_spec[i,...] = data
                 else:
-                    metal_spec[:,:] += self._atable[i]*hdu.data[:,eidxs]
+                    metal_spec += data
             metal_spec *= scale_factor
-            var_spec *= scale_factor
+            if var_spec is not None:
+                var_spec *= scale_factor
         return cosmic_spec, metal_spec, var_spec
 
 

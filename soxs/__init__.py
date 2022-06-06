@@ -76,7 +76,8 @@ from soxs.thermal_spectra import \
     ApecGenerator, \
     SpexGenerator, \
     IGMGenerator, \
-    CloudyCIEGenerator
+    CloudyCIEGenerator, \
+    MekalGenerator
 
 from soxs.utils import \
     set_soxs_config, \
