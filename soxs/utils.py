@@ -66,12 +66,6 @@ mylog = soxsLogger
 
 mylog.setLevel('INFO')
 
-if soxs_cfg.has_option("soxs", "response_path"):
-    mylog.warning("The 'response_path' option in the SOXS configuration "
-                  "is deprecated and has been replaced with 'soxs_data_dir'. "
-                  "Please update your configuration accordingly.")
-    soxs_cfg.set("soxs", "soxs_data_dir", soxs_cfg.get("soxs", "response_path"))
-
 if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
     soxs_data_dir = appdirs.user_cache_dir("soxs")
     mylog.warning(f"Setting 'soxs_data_dir' to {soxs_data_dir} for this session. "
