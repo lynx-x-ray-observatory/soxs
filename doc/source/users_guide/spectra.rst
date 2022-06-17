@@ -486,6 +486,8 @@ optional ``redshift`` argument (default 0.0):
     n_H = 0.02
     spec.apply_foreground_absorption(n_H, model="tbabs", redshift=0.05)
 
+The current version for the ``"tbabs"`` model is 2.3.2. 
+
 .. _emiss_lines:
 
 Adding Emission Lines to a Spectrum

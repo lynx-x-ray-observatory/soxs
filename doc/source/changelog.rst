@@ -25,6 +25,10 @@ the generation of spectra.
   added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
   for more details.
 * The accuracy of the TBabs absorption model has been improved. 
+* The default absorption model for the galactic foreground has been changed to TBabs.
+* The galactic foregroud model now includes thermal broadening of emission lines, and 
+  it is also now possible to optionally add velocity broadening. See :ref:`foreground`
+  for more details.
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
   has been added to the options for abundance tables for the 
   :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.

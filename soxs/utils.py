@@ -16,8 +16,9 @@ soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
                      "apec_vers": "3.0.9",
                      "spex_vers": "3.06.01",
                      "bkgnd_nH": 0.018,
-                     "bkgnd_absorb_model": "wabs",
-                     "frgnd_spec_model": "default"}
+                     "bkgnd_absorb_model": "tbabs",
+                     "frgnd_spec_model": "default",
+                     "frgnd_velocity": 0.0}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                             os.path.join(os.path.expanduser('~'),
@@ -320,7 +321,9 @@ def set_mission_config(mission):
     *mission*. Currently only takes "lem".
     """
     if mission == "lem":
-        spec_model = "halosat"
+        frgnd_spec_model = "halosat"
+        frgnd_velocity = 100.0
+        set_soxs_config("frgnd_spec_model", frgnd_spec_model)
+        set_soxs_config("frgnd_velocity", frgnd_velocity)
     else:
         raise RuntimeError(f"Mission '{mission}' is not implemented!")
-    set_soxs_config("frgnd_spec_model", spec_model)

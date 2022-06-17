@@ -8,7 +8,7 @@ On most systems, this is placed in the ``XDG_CONFIG_HOME`` environment
 variable, which is ``$HOME/.config`` for most systems. The SOXS configuration 
 file is therefore ``XDG_CONFIG_HOME/soxs/soxs.cfg``.
 
-In versions of SOXS post v3.1.0, these are the options available for 
+In versions of SOXS post v4.0.0, these are the options available for 
 customization in the configuration file:
 
 .. code-block:: text
@@ -18,8 +18,9 @@ customization in the configuration file:
     abund_table = angr # The abundance table to use for APEC thermal spectra
     apec_vers = 3.0.9 # The default version of APEC to use
     bkgnd_nH = 0.018 # neutral hydrogen column for backgrounds, units of 1e22 cm**-2
-    bkgnd_absorb_model = wabs # absorption model, currently either wabs or tbabs
+    bkgnd_absorb_model = tbabs # absorption model, currently either wabs or tbabs
     frgnd_spec_model = default # foreground spectrum model, currently either default or halosat
+    frgnd_velocity = 0.0 # velocity broadening parameter for the hot halo components of the foreground model
 
 If ``soxs_data_dir`` is not set in the configuration file, or is
 set to an invalid directory, a default directory will be chosen:
