@@ -3,7 +3,7 @@
 ChangeLog
 =========
 
-Version 3.5.0
+Version 4.0.0
 -------------
 
 This update to SOXS contains a large number of new features, mostly related to 
@@ -26,6 +26,9 @@ the generation of spectra.
   for more details.
 * The accuracy of the TBabs absorption model has been improved. 
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
+  has been added to the options for abundance tables for the 
+  :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
+* The default abundance table from `Cloudy <https://gitlab.nublado.org/cloudy/cloudy/-/wikis/home>`_ v17.03
   has been added to the options for abundance tables for the 
   :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
 
