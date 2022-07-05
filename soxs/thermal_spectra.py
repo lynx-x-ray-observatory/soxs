@@ -2,7 +2,7 @@ import numpy as np
 from astropy.io import fits
 import os
 from soxs.utils import parse_value, mylog, soxs_cfg, \
-    DummyPbar, get_data_file
+    DummyPbar, get_data_file, regrid_spectrum
 from tqdm.auto import tqdm
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.constants import erg_per_keV, hc, \
@@ -458,7 +458,7 @@ class SpexGenerator(CIEGenerator):
 
 
 class AtableGenerator:
-    def __init__(self, emin, emax, cosmic_table, metal_tables,
+    def __init__(self, emin, emax, nbins, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
         self.emin = parse_value(emin, "keV")
         self.emax = parse_value(emax, "keV")
@@ -468,23 +468,30 @@ class AtableGenerator:
         self.var_elem = var_elem
         self.nvar_elem = len(self.var_elem)
         self.binscale = binscale
+        self.nbins = nbins
+        if binscale == "linear":
+            self.ebins = np.linspace(self.emin, self.emax, nbins+1)
+        elif binscale == "log":
+            self.ebins = np.logspace(np.log10(self.emin), np.log10(self.emax), nbins+1)
+        self.de = np.diff(self.ebins)
+        self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         self.n_D = 1
         self.n_T = 1
         with fits.open(self.cosmic_table) as f:
-            self.elo = f["ENERGIES"].data["ENERG_LO"]
-            self.ehi = f["ENERGIES"].data["ENERG_HI"]
+            self.elo = f["ENERGIES"].data["ENERG_LO"].astype("float64")
+            self.ehi = f["ENERGIES"].data["ENERG_HI"].astype("float64")
 
     def _get_energies(self, redshift):
         scale_factor = 1.0/(1.0+redshift)
         elo = self.elo*scale_factor
         ehi = self.ehi*scale_factor
-        eidxs = elo > self.emin
-        eidxs &= ehi < self.emax
-        ne = eidxs.sum()
-        ebins = np.append(elo[eidxs], ehi[eidxs][-1])
+        idx_min = max(np.searchsorted(elo, self.emin)-1, 0)
+        idx_max = min(np.searchsorted(ehi, self.emax), self.ehi.size-1)
+        ebins = np.append(elo[idx_min:idx_max+1], ehi[idx_max])
+        ne = ebins.size-1
         emid = 0.5*(ebins[1:]+ebins[:-1])
         de = np.diff(ebins)
-        return eidxs, ne, ebins, emid, de
+        return (idx_min, idx_max+1), ne, ebins, emid, de
 
     def _get_table(self, ne, eidxs, redshift):
         scale_factor = 1.0/(1.0+redshift)
@@ -492,12 +499,12 @@ class AtableGenerator:
         var_spec = None
         mylog.debug(f"Opening {self.cosmic_table}.")
         with fits.open(self.cosmic_table) as f:
-            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs]*self.norm_fac[0]
+            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]].astype("float64")*self.norm_fac[0]
         cosmic_spec *= scale_factor
         for j, mfile in enumerate(self.metal_tables):
             mylog.debug(f"Opening {mfile}.")
             with fits.open(mfile) as f:
-                metal_spec += f["SPECTRA"].data["INTPSPEC"][:,eidxs]*self.norm_fac[j]
+                metal_spec += f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]].astype("float64")*self.norm_fac[j]
         metal_spec *= scale_factor
         if self.nvar_elem > 0:
             var_spec = np.zeros((self.nvar_elem,self.n_T*self.n_D,ne))
@@ -505,15 +512,15 @@ class AtableGenerator:
                 for j, vfile in enumerate(self.var_tables[i]):
                     mylog.debug(f"Opening {vfile}.")
                     with fits.open(vfile) as f:
-                        var_spec[i,:,:] += f["SPECTRA"].data["INTPSPEC"][:, eidxs]*self.norm_fac[j]
+                        var_spec[i,:,:] += f["SPECTRA"].data["INTPSPEC"][:, eidxs[0]:eidxs[1]].astype("float64")*self.norm_fac[j]
             var_spec *= scale_factor
         return cosmic_spec, metal_spec, var_spec
 
 
 class Atable1DGenerator(AtableGenerator):
-    def __init__(self, emin, emax, cosmic_table, metal_tables,
+    def __init__(self, emin, emax, nbins, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
-        super().__init__(emin, emax, cosmic_table, metal_tables,
+        super().__init__(emin, emax, nbins, cosmic_table, metal_tables,
                          var_tables, var_elem, binscale)
         with fits.open(self.cosmic_table) as f:
             self.n_T = f["PARAMETERS"].data["NUMBVALS"][0]
@@ -555,7 +562,7 @@ class Atable1DGenerator(AtableGenerator):
         tidx = np.searchsorted(self.Tvals, lkT)-1
         eidxs, ne, ebins, emid, de = self._get_energies(redshift)
         if tidx >= self.Tvals.size-1 or tidx < 0:
-            return Spectrum(ebins, np.zeros(ne), binscale=self.binscale)
+            return Spectrum(self.ebins, np.zeros(self.nbins), binscale=self.binscale)
         cspec, mspec, vspec = self._get_table(ne, eidxs, redshift)
         dT = (lkT - self.Tvals[tidx]) / self.dTvals[tidx]
         cosmic_spec = cspec[tidx,:]*(1.-dT)+cspec[tidx+1,:]*dT
@@ -565,15 +572,16 @@ class Atable1DGenerator(AtableGenerator):
             for elem, eabund in elem_abund.items():
                 j = self.var_elem_names.index(elem)
                 spec += eabund*(vspec[j,tidx,:]*(1.-dT)+vspec[j,idx+1,:]*dT)
-        spec = norm*spec[0,:]/de
-        return Spectrum(ebins, spec, binscale=self.binscale)
+        print(self.ebins.dtype, ebins.dtype, spec[0,:].dtype)
+        spec = norm*regrid_spectrum(self.ebins, ebins, spec[0,:])/self.de
+        return Spectrum(self.ebins, spec, binscale=self.binscale)
 
 
 class Atable2DGenerator(AtableGenerator):
     _scale_nH = False
-    def __init__(self, emin, emax, cosmic_table, metal_tables, 
+    def __init__(self, emin, emax, nbins, cosmic_table, metal_tables, 
                  var_tables, var_elem, binscale):
-        super().__init__(emin, emax, cosmic_table, metal_tables,
+        super().__init__(emin, emax, nbins, cosmic_table, metal_tables,
                          var_tables, var_elem, binscale)
         with fits.open(self.cosmic_table) as f:
             self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
@@ -621,11 +629,11 @@ class Atable2DGenerator(AtableGenerator):
         lnH = np.atleast_1d(np.log10(nH))
         tidx = np.searchsorted(self.Tvals, lkT)-1
         didx = np.searchsorted(self.Dvals, lnH)-1
-        eidxs, ne, ebins, emid, de = self._get_energies(redshift)
         if tidx >= self.Tvals.size-1 or tidx < 0:
-            return Spectrum(ebins, np.zeros(ne), binscale=self.binscale)
+            return Spectrum(self.ebins, np.zeros(self.nbins), binscale=self.binscale)
         if didx >= self.Dvals.size-1 or didx < 0:
-            return Spectrum(ebins, np.zeros(ne), binscale=self.binscale)
+            return Spectrum(self.ebins, np.zeros(self.nbins), binscale=self.binscale)
+        eidxs, ne, ebins, emid, de = self._get_energies(redshift)
         cspec, mspec, vspec = self._get_table(ne, eidxs, redshift)
         dT = (lkT - self.Tvals[tidx]) / self.dTvals[tidx]
         dn = (lnH - self.Dvals[didx]) / self.dDvals[didx]
@@ -653,10 +661,10 @@ class Atable2DGenerator(AtableGenerator):
                 spec += eabund*dx2*vspec[j,idx2,:]
                 spec += eabund*dx3*vspec[j,idx3,:]
                 spec += eabund*dx4*vspec[j,idx4,:]
-        spec = norm*spec[0,:]/de
+        spec = norm*regrid_spectrum(self.ebins, ebins, spec[0, :])/self.de
         if self._scale_nH:
             spec /= nH
-        return Spectrum(ebins, spec, binscale=self.binscale)
+        return Spectrum(self.ebins, spec, binscale=self.binscale)
 
 
 mekal_elem_options = ["He", "C", "N", "O", "Ne", "Na", "Mg",
@@ -664,14 +672,15 @@ mekal_elem_options = ["He", "C", "N", "O", "Ne", "Na", "Mg",
 
 
 class MekalGenerator(Atable1DGenerator):
-    def __init__(self, emin, emax, var_elem=None, abund_table="angr"):
+    def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None, 
+                 abund_table="angr"):
         mekal_table = get_data_file("mekal.mod")
         metal_tables = tuple()
         var_tables = tuple()
         if var_elem is None:
             var_elem = []
-        super().__init__(emin, emax, mekal_table, metal_tables, var_tables,
-                         var_elem, "custom")
+        super().__init__(emin, emax, nbins, mekal_table, metal_tables, var_tables,
+                         var_elem, binscale)
         # Hack to convert to what we usually expect
         self.Tvals = np.log10(self.Tvals*K_per_keV)
         self.dTvals = np.diff(self.Tvals)
@@ -693,15 +702,15 @@ class MekalGenerator(Atable1DGenerator):
         var_spec = np.zeros((self.nvar_elem, self.n_T, ne)) if self.nvar_elem > 0 else None
         mylog.debug(f"Opening {self.cosmic_table}.")
         with fits.open(self.cosmic_table) as f:
-            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs]
+            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]]
             cosmic_spec *= scale_factor
             for i in range(14):
                 j = elem_names.index(mekal_elem_options[i])
-                data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs]
+                data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs[0]:eidxs[1]]
                 if mekal_elem_options[i] in self.var_elem:
                     var_spec[i,...] = data
                 elif j != 2: 
-                    # a metal (not helium)
+                    # this is a metal (not helium)
                     metal_spec += data
                 else:
                     # this is helium
@@ -744,9 +753,6 @@ class CloudyCIEGenerator(Atable1DGenerator):
     Assumes the abundance tables from Feldman 1992. Currently, variable 
     abundances for individual metals are not supported. 
     
-    Energy bins are log-spaced between ~0.05 and ~50.0 keV, with dex spacing of 
-    ~ 0.00145.
-
     Parameters
     ----------
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -754,12 +760,12 @@ class CloudyCIEGenerator(Atable1DGenerator):
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The maximum energy for the spectral model.
     """
-    def __init__(self, emin, emax):
+    def __init__(self, emin, emax, nbins, binscale="linear"):
         cosmic_table = get_data_file("c17.03_cie_nome.fits")
         metal_tables = (get_data_file("c17.03_cie_me.fits"),)
         var_tables = tuple()
-        super().__init__(emin, emax, cosmic_table, metal_tables, var_tables,
-                         [], "log")
+        super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables,
+                         [], binscale)
         self.norm_fac = 2.0*5.50964e-5*np.array([1.0])
 
     def get_spectrum(self, kT, abund, redshift, norm):
@@ -778,8 +784,8 @@ metal_tab_names = {
 
 class IGMGenerator(Atable2DGenerator):
     _scale_nH = True
-    def __init__(self, emin, emax, resonant_scattering=False, cxb_factor=0.5,
-                 var_elem_option=None):
+    def __init__(self, emin, emax, nbins, binscale="linear", resonant_scattering=False, 
+                 cxb_factor=0.5, var_elem_option=None):
         """
         Initialize an emission model for a thermal plasma including 
         photoionization and resonant scattering from the CXB based on 
@@ -789,8 +795,8 @@ class IGMGenerator(Atable2DGenerator):
 
         Assumes the abundance tables from Feldman 1992.
 
-        Energy bins are log-spaced between ~0.05 and ~50.0 keV, with dex spacing of 
-        ~ 0.00145.
+        Energy bins in the table are log-spaced between ~0.05 and ~50.0 keV, 
+        with dex spacing of ~ 0.00145.
 
         Table data and README files can be found at
         https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v2x/.
@@ -843,6 +849,6 @@ class IGMGenerator(Atable2DGenerator):
                 var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),)
                               for el in var_elem]
         self.cxb_factor = cxb_factor
-        super().__init__(emin, emax, cosmic_table, metal_tables, var_tables, 
-                         var_elem, "log")
+        super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables, 
+                         var_elem, binscale)
         self.norm_fac = 5.50964e-5*np.array([1.0, self.cxb_factor])

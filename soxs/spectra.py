@@ -5,7 +5,8 @@ import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
     parse_prng, parse_value, line_width_equiv, \
-    issue_deprecation_warning, get_data_file
+    issue_deprecation_warning, get_data_file, \
+    regrid_spectrum
 from soxs.constants import erg_per_keV, hc, \
     sigma_to_fwhm, sqrt2pi
 import astropy.units as u
@@ -113,6 +114,18 @@ class Spectrum:
         if isinstance(e, u.Quantity):
             e = e.to("keV").value
         return u.Quantity(self.func(e), self._units)
+
+    def regrid_spectrum(self, emin, emax, nbins, binscale="linear"):
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
+        if binscale == "linear":
+            ebins = np.linspace(emin, emax, nbins+1)
+        elif binscale == "log":
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins+1)
+        de = np.diff(ebins)
+        spec_new = regrid_spectrum(ebins, self.ebins.value, 
+                                   self.flux.value*self.de.value)/de
+        return type(self)(ebins, spec_new, binscale=binscale)
 
     def restrict_within_band(self, emin=None, emax=None):
         if emin is not None:
@@ -372,7 +385,7 @@ class Spectrum:
             The maximum energy of the band in keV.
         """
         ebins, flux = self._new_spec_from_band(emin, emax)
-        return Spectrum(ebins, flux, binscale=self.binscale)
+        return type(self)(ebins, flux, binscale=self.binscale)
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
         """

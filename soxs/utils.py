@@ -8,6 +8,8 @@ import warnings
 from configparser import ConfigParser
 import regions
 import appdirs
+from scipy.interpolate import interp1d
+
 
 # Configuration
 
@@ -321,3 +323,10 @@ def set_mission_config(mission):
         set_soxs_config("frgnd_velocity", frgnd_velocity)
     else:
         raise RuntimeError(f"Mission '{mission}' is not implemented!")
+
+
+def regrid_spectrum(ebins_new, ebins, spec):
+    cspec = np.insert(np.cumsum(spec, axis=-1), 0, 0.0, axis=-1)
+    f = interp1d(ebins, cspec, axis=-1, fill_value=0.0,
+                 assume_sorted=True, copy=False)
+    return np.diff(f(ebins_new), axis=-1)
