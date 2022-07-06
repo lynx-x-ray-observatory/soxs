@@ -572,7 +572,6 @@ class Atable1DGenerator(AtableGenerator):
             for elem, eabund in elem_abund.items():
                 j = self.var_elem_names.index(elem)
                 spec += eabund*(vspec[j,tidx,:]*(1.-dT)+vspec[j,idx+1,:]*dT)
-        print(self.ebins.dtype, ebins.dtype, spec[0,:].dtype)
         spec = norm*regrid_spectrum(self.ebins, ebins, spec[0,:])/self.de
         return Spectrum(self.ebins, spec, binscale=self.binscale)
 
