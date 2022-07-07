@@ -318,8 +318,10 @@ def set_mission_config(mission):
     """
     if mission == "lem":
         frgnd_spec_model = "halosat"
+        bkgnd_absorb_model = "tbabs"
         frgnd_velocity = 100.0
         set_soxs_config("frgnd_spec_model", frgnd_spec_model)
+        set_soxs_config("bkgnd_absorb_model", bkgnd_absorb_model)
         set_soxs_config("frgnd_velocity", frgnd_velocity)
     else:
         raise RuntimeError(f"Mission '{mission}' is not implemented!")

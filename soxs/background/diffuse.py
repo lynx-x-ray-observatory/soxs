@@ -22,7 +22,7 @@ XSPEC model used to create the "default" foreground spectrum
           7.3e-07
 
 XSPEC model used to create the "lem" foreground spectrum
-  model  apec + tbabs*(apec+apec)
+  model  apec + tbabs*(bapec+bapec)
             0.099
                 1
                 0
@@ -31,10 +31,12 @@ XSPEC model used to create the "lem" foreground spectrum
             0.225
                 1
                 0
+              100
           7.3e-07
               0.7
                 1
                 0
+              100
          8.76e-08 
 """
 
