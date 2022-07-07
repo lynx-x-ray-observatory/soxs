@@ -9,8 +9,14 @@ Version 4.0.0
 This update to SOXS contains a large number of new features, mostly related to 
 the generation of spectra. 
 
+* New options have been added for the simulation of thermal spectra, including
+  SPEX, MeKaL, a CIE model based on Cloudy, and a model for emission from the 
+  IGM including photoionization and resonant scattering off of the CXB based on
+  Cloudy and provided by Ildar Khabibullin. See :ref:`thermal-spectra` for details.
 * The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced 
   energy binning has been added. See :ref:`spectrum-binning` for details.
+* The option to create a new spectrum from an old one by rebinning has been added
+  to the :class:`~soxs.spectra.Spectrum` class. See :ref:`spectrum-binning` for details.
 * It is no longer necessary to source the HEADAS environment before creating a 
   :class:`~soxs.spectra.Spectrum` object using either the 
   :meth:`~soxs.spectra.Spectrum.from_xspec_script` or
@@ -29,6 +35,7 @@ the generation of spectra.
 * The galactic foregroud model now includes thermal broadening of emission lines, and 
   it is also now possible to optionally add velocity broadening. See :ref:`foreground`
   for more details.
+* Instrumental background models have been added to the LEM instrument models. 
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
   has been added to the options for abundance tables for the 
   :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.

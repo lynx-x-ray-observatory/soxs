@@ -116,6 +116,22 @@ class Spectrum:
         return u.Quantity(self.func(e), self._units)
 
     def regrid_spectrum(self, emin, emax, nbins, binscale="linear"):
+        """
+        Regrid an existing spectrum to a new energy binning and 
+        return a new spectrum. 
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy in the band, in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy in the band, in keV.
+        nbins : integer
+            The number of bins in the spectrum. 
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log".
+            Default: "linear"
+        """
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         if binscale == "linear":
