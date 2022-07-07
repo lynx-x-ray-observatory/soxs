@@ -116,6 +116,8 @@
     "igm_v2sc_su.fits": "b93994ce7e174fb1f76062ddf4e67e632765db166c7185935864f2492479d70b",
     "tbabs_table.h5": "415b62a28581f588fe0fd7f2e2d08768e15bc3244202322f3a2827f0e8fbbca9",
     "c17.03_cie_nome.fits": "f47837c0ba4ed28b81e46bc1cfc984669248da6705b48ef20f774aa2dc38e6b8",
-    "c17.03_cie_me.fits": "ad7385639b25ed04c36b152fa2ea93be1f46f58b46324fd6aebbf531759c10bf" 
+    "c17.03_cie_me.fits": "ad7385639b25ed04c36b152fa2ea93be1f46f58b46324fd6aebbf531759c10bf",
+    "lem_2eV_110422_fov_bkg.pi": "b0a8996d8c70b8b4af397bbbb95cf81b8ddf80e00ee395ee6887cb23c10b0f21",
+    "lem_09eV_110422_fov_bkg.pi": "b728c2b6c5ed9ffcd08c13e7b80bfe3585b4a6cc1adaebf909156ae6e3ad20ad",
     "mekal.mod": "54319dd22465bf519f8103c898756dd4de1e100877025ce04d2e225bc73d8972"
 }

@@ -342,7 +342,10 @@ instrument_registry["star-x"] = {"name": "star-x",
 instrument_registry["lem_2eV"] = {"name": "lem_2eV",
                                   "arf": "lem_110422.arf",
                                   "rmf": "lem_2ev_110422.rmf",
-                                  "bkgnd": None,
+                                  "bkgnd": [
+                                      "lem_2eV_110422_fov_bkg.pi",
+                                      1024.0
+                                  ],
                                   "num_pixels": 128,
                                   "fov": 32.0,
                                   "aimpt_coords": [0.0, 0.0],
@@ -357,7 +360,10 @@ instrument_registry["lem_2eV"] = {"name": "lem_2eV",
 instrument_registry["lem_0.9eV"] = {"name": "lem_0.9eV",
                                     "arf": "lem_110422.arf",
                                     "rmf": "lem_09ev_110422.rmf",
-                                    "bkgnd": None,
+                                    "bkgnd": [
+                                        "lem_09eV_110422_fov_bkg.pi",
+                                        1024.0
+                                    ],
                                     "num_pixels": 128,
                                     "fov": 32.0,
                                     "aimpt_coords": [0.0, 0.0],
