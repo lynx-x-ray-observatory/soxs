@@ -308,7 +308,7 @@ def set_soxs_config(option, value):
     value : number or string
         The value to set the option to.
     """
-    soxs_cfg.set("soxs", option, value=value)
+    soxs_cfg.set("soxs", option, value=str(value))
 
 
 def set_mission_config(mission):
