@@ -35,6 +35,7 @@ the generation of spectra.
 * The galactic foregroud model now includes thermal broadening of emission lines, and 
   it is also now possible to optionally add velocity broadening. See :ref:`foreground`
   for more details.
+* The LEM ARF has been updated.
 * Instrumental background models have been added to the LEM instrument models. 
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
   has been added to the options for abundance tables for the 
