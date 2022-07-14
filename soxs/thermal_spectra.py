@@ -328,7 +328,7 @@ class ApecGenerator(CIEGenerator):
         Default: "linear"
     var_elem : list of strings, optional
         The names of elements to allow to vary freely
-        from the single abundance parameter. These can be strings like
+        from the single abundance parameter. These must be strings like
         ["O", "N", "He"], or if nei=True they must be elements with
         ionization states, e.g. ["O^1", "O^2", "N^4"]. Default:
         None
@@ -403,11 +403,9 @@ class SpexGenerator(CIEGenerator):
         The scale of the energy binning: "linear" or "log". 
         Default: "linear"
     var_elem : list of strings, optional
-        The names of elements to allow to vary freely
-        from the single abundance parameter. These can be strings like
-        ["O", "N", "He"], or if nei=True they must be elements with
-        ionization states, e.g. ["O^1", "O^2", "N^4"]. Default:
-        None
+        The names of elements to allow to vary freely from the single 
+        abundance parameter. These must be strings like ["O", "N", "He"]. 
+        Default: None
     spex_root : string, optional
         The directory root where the SPEX model files 
         are stored. If not provided, the default is to 
@@ -671,6 +669,39 @@ mekal_elem_options = ["He", "C", "N", "O", "Ne", "Na", "Mg",
 
 
 class MekalGenerator(Atable1DGenerator):
+    """
+    
+    Parameters
+    ----------
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The minimum energy for the spectral model.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The maximum energy for the spectral model.
+    nbins : integer
+        The number of bins in the spectral model.
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log". 
+        Default: "linear"
+    var_elem : list of strings, optional
+        The names of elements to allow to vary freely from the single 
+        abundance parameter. These must be strings like ["O", "N", "He"]. 
+        Default: None
+    abund_table : string or array_like, optional
+        The abundance table to be used for solar abundances. 
+        Either a string corresponding to a built-in table or an array
+        of 30 floats corresponding to the abundances of each element
+        relative to the abundance of H. Default is set in the SOXS
+        configuration file, the default for which is "angr".
+        Built-in options are:
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+        Cosmochimica Acta 53, 197)
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+        P. (2009, ARAA, 47, 481)
+        "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+        except for elements not listed which are given zero abundance)
+        "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+    """
     def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None, 
                  abund_table="angr"):
         mekal_table = get_data_file("mekal.mod")
@@ -758,6 +789,11 @@ class CloudyCIEGenerator(Atable1DGenerator):
         The minimum energy for the spectral model.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The maximum energy for the spectral model.
+    nbins : integer
+        The number of bins in the spectral model.
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log". 
+        Default: "linear"
     """
     def __init__(self, emin, emax, nbins, binscale="linear"):
         cosmic_table = get_data_file("c17.03_cie_nome.fits")
