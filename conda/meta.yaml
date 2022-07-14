@@ -18,7 +18,6 @@ requirements:
     - numpy
     - h5py
     - astropy
-    - yt>=4.0.1
     - scipy
     - tqdm
     - setuptools_scm[toml]>=6.2
