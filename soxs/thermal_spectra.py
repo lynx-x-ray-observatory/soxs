@@ -387,7 +387,7 @@ class SpexGenerator(CIEGenerator):
     The same underlying machinery as the APEC model is used, as the
     SPEX model has been converted to the APEC table format using the
     code at https://github.com/jeremysanders/spex_to_xspec.
-    
+
     Note that the default abundance table is Anders & Grevasse (1989),
     which can be changed using the abund_table keyword argument. 
 
@@ -525,6 +525,7 @@ class Atable1DGenerator(AtableGenerator):
             self.Tvals = f["PARAMETERS"].data["VALUE"][0]
         self.dTvals = np.diff(self.Tvals)
         self.norm_fac = np.ones(max(1, len(metal_tables)))
+        self.var_elem_names = self.var_elem.copy()
 
     def get_spectrum(self, kT, abund, redshift, norm, elem_abund=None):
         """
@@ -549,12 +550,11 @@ class Atable1DGenerator(AtableGenerator):
         from soxs.spectra import Spectrum
         if elem_abund is None:
             elem_abund = {}
-        if set(elem_abund.keys()) != set(self.var_elem):
-            raise RuntimeError("The supplied set of abundances does not match "
-                               "what is available for 'var_elem_option = "
-                               f"{self.var_elem_option}!\n"
+        if set(elem_abund.keys()) != set(self.var_elem_names):
+            raise RuntimeError("The supplied set of abundances is not the "
+                               "same as that was originally set!\n"
                                "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
-                                                                      set(self.var_elem)))
+                                                                      set(self.var_elem_names)))
         kT = parse_value(kT, "keV")
         lkT = np.atleast_1d(np.log10(kT*K_per_keV))
         tidx = np.searchsorted(self.Tvals, lkT)-1
@@ -569,7 +569,7 @@ class Atable1DGenerator(AtableGenerator):
         if vspec is not None:
             for elem, eabund in elem_abund.items():
                 j = self.var_elem_names.index(elem)
-                spec += eabund*(vspec[j,tidx,:]*(1.-dT)+vspec[j,idx+1,:]*dT)
+                spec += eabund*(vspec[j,tidx,:]*(1.-dT)+vspec[j,tidx+1,:]*dT)
         spec = norm*regrid_spectrum(self.ebins, ebins, spec[0,:])/self.de
         return Spectrum(self.ebins, spec, binscale=self.binscale)
 
@@ -670,7 +670,13 @@ mekal_elem_options = ["He", "C", "N", "O", "Ne", "Na", "Mg",
 
 class MekalGenerator(Atable1DGenerator):
     """
-    
+    Initialize an emission model for a thermal plasma assuming CIE
+    generated from the MeKaL model. Relevant references are:
+
+    https://ui.adsabs.harvard.edu/abs/1985A%26AS...62..197M
+    https://ui.adsabs.harvard.edu/abs/1986A%26AS...65..511M
+    https://ui.adsabs.harvard.edu/abs/1995ApJ...438L.115L
+
     Parameters
     ----------
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -734,11 +740,13 @@ class MekalGenerator(Atable1DGenerator):
         with fits.open(self.cosmic_table) as f:
             cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]]
             cosmic_spec *= scale_factor
+            k = 0
             for i in range(14):
                 j = elem_names.index(mekal_elem_options[i])
                 data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs[0]:eidxs[1]]
                 if mekal_elem_options[i] in self.var_elem:
-                    var_spec[i,...] = data
+                    var_spec[k,...] = data
+                    k += 1
                 elif j != 2: 
                     # this is a metal (not helium)
                     metal_spec += data
@@ -782,7 +790,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
     Assumes the abundance tables from Feldman 1992. Currently, variable 
     abundances for individual metals are not supported. 
-    
+
     Parameters
     ----------
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -802,9 +810,6 @@ class CloudyCIEGenerator(Atable1DGenerator):
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables,
                          [], binscale)
         self.norm_fac = 2.0*5.50964e-5*np.array([1.0])
-
-    def get_spectrum(self, kT, abund, redshift, norm):
-        return super().get_spectrum(kT, abund, redshift, norm)
 
 
 metal_tab_names = {

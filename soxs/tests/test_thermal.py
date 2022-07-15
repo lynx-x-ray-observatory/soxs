@@ -1,8 +1,11 @@
 import os
+import numpy as np
 import shutil
 import tempfile
 from soxs.response import RedistributionMatrixFile
-from soxs.thermal_spectra import ApecGenerator
+from soxs.thermal_spectra import ApecGenerator, \
+    SpexGenerator, MekalGenerator, CloudyCIEGenerator, \
+    IGMGenerator
 from soxs.spatial import PointSourceModel
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.instrument_registry import \
@@ -11,7 +14,7 @@ from soxs.instrument import instrument_simulator, \
     simulate_spectrum
 from soxs.events import write_spectrum
 from numpy.random import RandomState
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_almost_equal
 from soxs.tests.utils import spectrum_answer_testing, \
     file_answer_testing
 
@@ -211,3 +214,59 @@ def test_thermal_nei(answer_store, answer_dir):
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
+
+
+def test_spex(answer_store, answer_dir):
+    spex0 = SpexGenerator(0.01, 10.0, 20000, broadening=True)
+    spex_var0 = SpexGenerator(0.01, 10.0, 20000, var_elem=["O", "Fe"],
+                              broadening=True)
+    specx = spex0.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
+    specx.apply_foreground_absorption(nH_sim)
+
+    specx_var = spex_var0.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
+                                      elem_abund={"O": O_sim, "Fe": Fe_sim})
+    specx_var.apply_foreground_absorption(nH_sim)
+
+    assert_allclose(specx.ebins, specx_var.ebins)
+    assert_allclose(specx.flux, specx_var.flux)
+
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    spectrum_answer_testing(specx, "spex_spectrum.h5", answer_store,
+                            answer_dir)
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
+
+
+def test_mekal(answer_store, answer_dir):
+    mgen = MekalGenerator(0.01, 10.0, 20000)
+    mgen_var = MekalGenerator(0.01, 10.0, 20000, var_elem=["O", "Fe"])
+    specm = mgen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
+
+    specm_var = mgen_var.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
+                                      elem_abund={"O": O_sim, "Fe": Fe_sim})
+
+    assert_allclose(specm.ebins, specm_var.ebins)
+    assert_allclose(specm.flux, specm_var.flux)
+
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    spectrum_answer_testing(specm, "mekal_spectrum.h5", answer_store,
+                            answer_dir)
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
+
+
+def test_linlog():
+    agen0_lin = ApecGenerator(0.01, 10.0, 20000, binscale="linear")
+    spec_lin = agen0_lin.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
+    agen0_log = ApecGenerator(0.01, 10.0, 20000, binscale="log")
+    spec_log = agen0_log.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
+    assert_almost_equal(spec_lin.total_flux.value, spec_log.total_flux.value)
+    assert_almost_equal(spec_lin.total_energy_flux.value, spec_log.total_energy_flux.value)
