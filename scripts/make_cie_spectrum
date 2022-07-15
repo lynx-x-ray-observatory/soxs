@@ -3,9 +3,10 @@
 import os
 import numpy as np
 import argparse
-from soxs.thermal_spectra import CIEGenerator
+from soxs.thermal_spectra import CIEGenerator, MekalGenerator, \
+    CloudyCIEGenerator
 
-parser = argparse.ArgumentParser(description='Create a thermal spectrum and write it to a file. ' +
+parser = argparse.ArgumentParser(description='Create a thermal CIE spectrum and write it to a file. ' +
                                  'The abundances of individual elements can be set by supplying '
                                  'optional arguments in the form of --O=0.5, --Mg=0.6, etc.')
 parser.add_argument("kT", help='The temperature in keV.')
@@ -19,22 +20,24 @@ parser.add_argument("emin", help='The minimum energy in keV.')
 parser.add_argument("emax", help='The maximum energy in keV.')
 parser.add_argument("nbins", type=int, help='The number of bins in the spectrum.')
 parser.add_argument("--velocity", default=0.0,
-                    help='The velocity broadening parameter, in units of km/s. Default: 0.0')
+                    help="The velocity broadening parameter, in units of km/s. "
+                         "Default: 0.0  Only available for 'apec' and 'spex' models.")
 parser.add_argument("--model_vers", type=str,
-                    help='The version of the CIE tables to use. Default is'
-                         'to use the version currently included with this'
+                    help='The version of the CIE tables to use. Default is '
+                         'to use the version currently included with this '
                          'version of SOXS.')
-parser.add_argument("--binscale", type=str, 
+parser.add_argument("--binscale", type=str, default='linear',
                     help='The scale of the energy binning: '
                          '"linear" or "log". Default: "linear"')
 parser.add_argument("--absorb_model", type=str,
                     help='Model for applying foreground Galactic absorption.')
-parser.add_argument("--nh", 
+parser.add_argument("--nH_abs", 
                     help='The hydrogen column in units of 10**22 atoms/cm**2.')
 parser.add_argument("--overwrite", action='store_true', 
                     help='Overwrite an existing file with the same name.')
 parser.add_argument("--nolines", action='store_true',
-                    help="Make a spectrum without lines.")
+                    help="Make a spectrum without lines. Only available for 'apec' and "
+                         "'spex' models.")
 parser.add_argument("--abund_table", type=str, default="angr",
                     help="The abundance table to be used for solar abundances. "
                          "Either a string corresponding to a built-in table or "
@@ -44,12 +47,14 @@ parser.add_argument("--abund_table", type=str, default="angr",
                          "configuration file, the default for which is 'angr'.")
 parser.add_argument("--model", type=str, default="apec",
                     help="The CIE model to use when generating the spectrum, either "
-                         "apec or spex. Default: apec")
+                         "'apec', 'spex', 'mekal', or 'cloudy'. Default: 'apec'")
 feature_parser = parser.add_mutually_exclusive_group(required=False)
 feature_parser.add_argument("--broadening", dest='broadening', action='store_true',
-                            help='Turn thermal and velocity broadening on. On by default.')
+                            help="Turn thermal and velocity broadening on. On by default. "
+                                 "Only available for 'apec' and 'spex' models.")
 feature_parser.add_argument("--no_broadening", dest='broadening', action='store_false',
-                            help='Turn thermal and velocity broadening off. On by default.')
+                            help="Turn thermal and velocity broadening off. On by default. "
+                                 "Only available for 'apec' and 'spex' models.")
 parser.set_defaults(broadening=True)
 
 args, unknown = parser.parse_known_args()
@@ -69,16 +74,25 @@ if os.path.exists(args.abund_table):
     abund_table = np.loadtxt(args.abund_table)
 else:
     abund_table = args.abund_table
-cgen = CIEGenerator(args.model, args.emin, args.emax, args.nbins, 
-                    model_vers=args.model_vers, broadening=args.broadening, 
-                    nolines=args.nolines, var_elem=var_elem, abund_table=abund_table)
-spec = cgen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
-                         velocity=args.velocity, elem_abund=elem_abund)
+
+if args.model in ['apec', 'spex']:
+    cgen = CIEGenerator(args.model, args.emin, args.emax, args.nbins, binscale=args.binscale,
+                        model_vers=args.model_vers, broadening=args.broadening, 
+                        nolines=args.nolines, var_elem=var_elem, abund_table=abund_table)
+    spec = cgen.get_spectrum(args.kT, args.abund, args.redshift, args.norm, 
+                             velocity=args.velocity, elem_abund=elem_abund)
+elif args.model == 'mekal':
+    mgen = MekalGenerator(args.emin, args.emax, args.nbins, binscale=args.binscale,
+                          var_elem=var_elem, abund_table=abund_table)
+    spec = mgen.get_spectrum(args.kT, args.abund, args.redshift, args.norm,
+                             elem_abund=elem_abund)
+elif args.model == "cloudy":
+    cgen = CloudyCIEGenerator(args.emin, args.emax, binscale=args.binscale)
 
 if args.absorb_model is not None:
-    if args.nh is None:
-        raise RuntimeError("Must specify a value for --nh if including"
+    if args.nH_abs is None:
+        raise RuntimeError("Must specify a value for --nH_abs if including"
                            "foreground absorption!")
-    spec.apply_foreground_absorption(args.nh, model=args.absorb_model)
+    spec.apply_foreground_absorption(args.nH_abs, model=args.absorb_model)
 
 spec.write_file(args.specfile, overwrite=args.overwrite)

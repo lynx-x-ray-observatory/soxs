@@ -43,7 +43,14 @@ the generation of spectra.
 * The default abundance table from `Cloudy <https://gitlab.nublado.org/cloudy/cloudy/-/wikis/home>`_ v17.03
   has been added to the options for abundance tables for the 
   :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
-
+* The command-line script ``make_thermal_spectrum`` has been changed to ``make_cie_spectrum`` and
+  has many more options for computing CIE spectra. See :ref:`cmd-make-cie-spectrum` for details.
+* The command-line script ``make_igm_spectrum`` has been added for making thermal spectra with 
+  photoionization and resonant scattering. See :ref:`cmd-make-igm-spectrum` for details.
+* In the command-line scripts ``make_cie_spectrum``, ``make_igm_spectrum``, and 
+  ``make_powerlaw_spectrum``, the parameter for foreground Galactic absorption ``nh`` has been
+  renamed to ``nH_abs``. 
+  
 Version 3.4.0
 -------------
 
