@@ -341,8 +341,8 @@ class Spectrum:
                 t = QTable.read(filename, format='fits')
             except OSError:
                 t = QTable.read(filename, format='ascii.ecsv')
-            ebins = np.append(t["elo"].data, t["ehi"].data[-1])
-            flux = t["flux"].data
+            ebins = np.append(t["elo"].value, t["ehi"].value[-1])
+            flux = t["flux"].value
             binscale = t.meta.get("binscale", "linear")
             if "arf" in t.meta:
                 arf = t.meta["arf"]
