@@ -753,7 +753,7 @@ class MekalGenerator(Atable1DGenerator):
 
 class CloudyCIEGenerator(Atable1DGenerator):
     """
-    Initialize an emission model for a thermal plasma assumsing CIE
+    Initialize an emission model for a thermal plasma assuming CIE
     generated from Cloudy v17.03. The sequence of Cloudy commands used
     to generate the XSPEC atable is as follows:
 
@@ -842,6 +842,11 @@ class IGMGenerator(Atable2DGenerator):
             The minimum energy for the spectral model.
         emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The maximum energy for the spectral model.
+        nbins : integer
+            The number of bins in the spectral model.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         resonant_scattering : boolean, optional
             Whether or not to include the effects of resonant scattering
             from CXB photons. Default: False
