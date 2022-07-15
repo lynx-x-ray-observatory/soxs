@@ -257,7 +257,7 @@ def test_mekal(answer_store, answer_dir):
     os.chdir(tmpdir)
 
     spectrum_answer_testing(specm, "mekal_spectrum.h5", answer_store,
-                            answer_dir)
+                            answer_dir, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
