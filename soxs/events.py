@@ -173,7 +173,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         The interpolation order to use when making the exposure map. 
         Default: 1
     """
-    from scipy.ndimage.interpolation import rotate
+    from scipy.ndimage import rotate
     from soxs.instrument import perform_dither
     from soxs.response import AuxiliaryResponseFile
     if isinstance(energy, np.ndarray) and weights is None:
