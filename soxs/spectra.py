@@ -337,7 +337,10 @@ class Spectrum:
         except OSError:
             # If that fails, try reading the file as ASCII or FITS
             # using AstroPy QTable
-            t = QTable.read(filename)
+            try:
+                t = QTable.read(filename, format='fits')
+            except OSError:
+                t = QTable.read(filename, format='ascii.ecsv')
             ebins = np.append(t["elo"].data, t["ehi"].data[-1])
             flux = t["flux"].data
             binscale = t.meta.get("binscale", "linear")

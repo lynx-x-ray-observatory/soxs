@@ -8,7 +8,7 @@ import numpy as np
 def spectrum_answer_testing(spec, filename, answer_store, answer_dir):
     testfile = os.path.join(answer_dir, filename)
     if answer_store:
-        spec.write_h5_file(testfile, overwrite=True)
+        spec.write_hdf5_file(testfile, overwrite=True)
     else:
         answer_spec = type(spec).from_file(testfile)
         assert_allclose(answer_spec.emid.value,
