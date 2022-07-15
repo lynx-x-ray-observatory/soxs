@@ -738,12 +738,12 @@ class MekalGenerator(Atable1DGenerator):
         var_spec = np.zeros((self.nvar_elem, self.n_T, ne)) if self.nvar_elem > 0 else None
         mylog.debug(f"Opening {self.cosmic_table}.")
         with fits.open(self.cosmic_table) as f:
-            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]]
+            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]].astype("float64")
             cosmic_spec *= scale_factor
             k = 0
             for i in range(14):
                 j = elem_names.index(mekal_elem_options[i])
-                data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs[0]:eidxs[1]]
+                data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs[0]:eidxs[1]].astype("float64")
                 if mekal_elem_options[i] in self.var_elem:
                     var_spec[k,...] = data
                     k += 1
