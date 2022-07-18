@@ -46,6 +46,10 @@ norm_sim = 1.0e-3
 redshift = 0.05
 O_sim = 0.4
 Fe_sim = 0.4
+Ne_sim = 0.4
+Si_sim = 0.4
+S_sim = 0.4
+Mg_sim = 0.4
 
 nei_sim = {"O^6": 0.4, "O^3": 0.5, "N^4": 0.7, "Ca^5": 0.9}
 
@@ -224,7 +228,7 @@ def test_spex(answer_store, answer_dir):
     specx.apply_foreground_absorption(nH_sim)
 
     specx_var = spex_var0.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
-                                      elem_abund={"O": O_sim, "Fe": Fe_sim})
+                                       elem_abund={"O": O_sim, "Fe": Fe_sim})
     specx_var.apply_foreground_absorption(nH_sim)
 
     assert_allclose(specx.ebins, specx_var.ebins)
@@ -270,3 +274,42 @@ def test_linlog():
     spec_log = agen0_log.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
     assert_almost_equal(spec_lin.total_flux.value, spec_log.total_flux.value)
     assert_almost_equal(spec_lin.total_energy_flux.value, spec_log.total_energy_flux.value)
+
+
+def test_cloudy_cie(answer_store, answer_dir):
+    cgen = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log")
+    cspec = cgen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
+
+    cgen_var1 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
+                                   var_elem_option=1)
+    cspec_var1 = cgen_var1.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
+                                        elem_abund={"O": O_sim, 
+                                                    "Ne": Ne_sim,
+                                                    "Fe": Fe_sim})
+
+    cgen_var2 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
+                                   var_elem_option=2)
+    cspec_var2 = cgen_var2.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
+                                        elem_abund={"O": O_sim,
+                                                    "Ne": Ne_sim,
+                                                    "Fe": Fe_sim,
+                                                    "S": S_sim,
+                                                    "Si": Si_sim, 
+                                                    "Mg": Mg_sim})
+
+    assert_allclose(cspec.ebins, cspec_var1.ebins)
+    assert_allclose(cspec.flux, cspec_var1.flux)
+
+    assert_allclose(cspec.ebins, cspec_var2.ebins)
+    assert_allclose(cspec.flux, cspec_var2.flux)
+
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    spectrum_answer_testing(cspec, "cloudy_spectrum.h5", answer_store,
+                            answer_dir)
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
+

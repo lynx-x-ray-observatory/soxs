@@ -551,10 +551,18 @@ class Atable1DGenerator(AtableGenerator):
         if elem_abund is None:
             elem_abund = {}
         if set(elem_abund.keys()) != set(self.var_elem_names):
-            raise RuntimeError("The supplied set of abundances is not the "
-                               "same as that was originally set!\n"
-                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
-                                                                      set(self.var_elem_names)))
+            if hasattr(self, "var_elem_option"):
+                msg = "The supplied set of abundances does not match " \
+                      "what is available for 'var_elem_option = " \
+                      f"{self.var_elem_option}!\n" \
+                      f"Free elements: {set(elem_abund.keys())}\n" \
+                      f"Abundances: {set(elem_abund.keys())}"
+            else:
+                msg = "The supplied set of abundances is not the same as " \
+                      "that which was originally set!\nFree elements: " \
+                      f"{set(elem_abund.keys())}\n" \
+                      f"Abundances: {set(self.var_elem_names)}"
+            raise RuntimeError(msg)
         kT = parse_value(kT, "keV")
         lkT = np.atleast_1d(np.log10(kT*K_per_keV))
         tidx = np.searchsorted(self.Tvals, lkT)-1
@@ -576,7 +584,7 @@ class Atable1DGenerator(AtableGenerator):
 
 class Atable2DGenerator(AtableGenerator):
     _scale_nH = False
-    def __init__(self, emin, emax, nbins, cosmic_table, metal_tables, 
+    def __init__(self, emin, emax, nbins, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables,
                          var_tables, var_elem, binscale)
@@ -759,6 +767,16 @@ class MekalGenerator(Atable1DGenerator):
         return cosmic_spec, metal_spec, var_spec
 
 
+metal_tab_names = {
+    "O": "ox",
+    "Ne": "ne",
+    "Mg": "mg",
+    "Si": "si",
+    "S": "su",
+    "Fe": "fe"
+}
+
+
 class CloudyCIEGenerator(Atable1DGenerator):
     """
     Initialize an emission model for a thermal plasma assuming CIE
@@ -769,7 +787,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
     title c17.03_cie_tgrid
     #
     #database stout level MAX
-    #database chianti level MAX
+    database chianti level MAX
     no molecules
     no grain physics
     set phfit 1996
@@ -786,10 +804,10 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
     This sequence of commands is repeated for solar and low abundances so that the
     abundance parameter can be taken into account via a linear combination of two 
-    tables. 
+    tables. For the individual abundances, they are obtained by setting "element neon off"
+    in the run and doing the appropriate arithmetic. 
 
-    Assumes the abundance tables from Feldman 1992. Currently, variable 
-    abundances for individual metals are not supported. 
+    Assumes the abundance tables from Feldman 1992.
 
     Parameters
     ----------
@@ -802,24 +820,35 @@ class CloudyCIEGenerator(Atable1DGenerator):
     binscale : string, optional
         The scale of the energy binning: "linear" or "log". 
         Default: "linear"
+    var_elem_option: integer, optional
+        An integer to choose between options for variable elements, which are:
+        1: specify abundances of O, Ne, and Fe separately from other metals
+        2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
+           metals
+        Default: None, which means no metal abundances can be specified
+        separately.
     """
-    def __init__(self, emin, emax, nbins, binscale="linear"):
-        cosmic_table = get_data_file("c17.03_cie_nome.fits")
-        metal_tables = (get_data_file("c17.03_cie_me.fits"),)
+    def __init__(self, emin, emax, nbins, binscale="linear", var_elem_option=None):
+        if var_elem_option is None:
+            metal_option = "me"
+            var_elem = []
+        elif var_elem_option == 1:
+            metal_option = "mx"
+            var_elem = ["O", "Ne", "Fe"]
+        elif var_elem_option == 2:
+            metal_option = "mxx"
+            var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
+        else:
+            raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
         var_tables = tuple()
+        cosmic_table = get_data_file("c17.03_cie_nome.fits")
+        metal_tables = (get_data_file(f"c17.03_cie_{metal_option}.fits"),)
+        if var_elem_option:
+            var_tables = [(get_data_file(f"c17.03_cie_{metal_tab_names[el]}.fits"),)
+                          for el in var_elem]
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables,
-                         [], binscale)
-        self.norm_fac = 2.0*5.50964e-5*np.array([1.0])
-
-
-metal_tab_names = {
-    "O": "ox",
-    "Ne": "ne",
-    "Mg": "mg",
-    "Si": "si",
-    "S": "su",
-    "Fe": "fe"
-}
+                         var_elem, binscale)
+        self.norm_fac = 5.50964e-5*np.array([1.0])
 
 
 class IGMGenerator(Atable2DGenerator):
