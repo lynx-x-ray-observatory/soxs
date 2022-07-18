@@ -331,7 +331,7 @@ class Spectrum:
                     ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
                 elif binscale == "log":
                     ebins = np.logspace(np.log10(f["emin"][()]), 
-                                        np.log10(f["emin"][()]), nbins+1)
+                                        np.log10(f["emax"][()]), nbins+1)
                 if "arf" in f.attrs:
                     arf = f.attrs["arf"]
         except OSError:
