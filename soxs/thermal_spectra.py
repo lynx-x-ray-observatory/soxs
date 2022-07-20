@@ -849,6 +849,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables,
                          var_elem, binscale)
         self.norm_fac = 5.50964e-5*np.array([1.0])
+        self.atable = abund_tables["feld"].copy()
 
 
 class IGMGenerator(Atable2DGenerator):
@@ -926,3 +927,4 @@ class IGMGenerator(Atable2DGenerator):
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables, 
                          var_elem, binscale)
         self.norm_fac = 5.50964e-5*np.array([1.0, self.cxb_factor])
+        self.atable = abund_tables["feld"].copy()
