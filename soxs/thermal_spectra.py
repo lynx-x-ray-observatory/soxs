@@ -755,7 +755,7 @@ class MekalGenerator(Atable1DGenerator):
                 if mekal_elem_options[i] in self.var_elem:
                     var_spec[k,...] = data
                     k += 1
-                elif j != 2: 
+                elif j != 2:
                     # this is a metal (not helium)
                     metal_spec += data
                 else:
@@ -854,7 +854,8 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
 class IGMGenerator(Atable2DGenerator):
     _scale_nH = True
-    def __init__(self, emin, emax, nbins, binscale="linear", resonant_scattering=False, 
+
+    def __init__(self, emin, emax, nbins, binscale="linear", resonant_scattering=False,
                  cxb_factor=0.5, var_elem_option=None):
         """
         Initialize an emission model for a thermal plasma including 
@@ -865,7 +866,7 @@ class IGMGenerator(Atable2DGenerator):
 
         Assumes the abundance tables from Feldman 1992.
 
-        Energy bins in the table are log-spaced between ~0.05 and ~50.0 keV, 
+        Energy bins in the table are log-spaced between ~0.05 and ~50.0 keV,
         with dex spacing of ~ 0.00145.
 
         Table data and README files can be found at
@@ -899,7 +900,6 @@ class IGMGenerator(Atable2DGenerator):
         if var_elem_option is None:
             metal_option = "me"
             var_elem = []
-            var_tables = tuple()
         elif var_elem_option == 1:
             metal_option = "mx"
             var_elem = ["O", "Ne", "Fe"]
@@ -910,21 +910,22 @@ class IGMGenerator(Atable2DGenerator):
             raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
         self.var_elem_option = var_elem_option
         self.resonant_scattering = resonant_scattering
-        cosmic_table = get_data_file("igm_v2ph2_nome.fits")
+        cosmic_table = get_data_file("igm_v3ph2_nome.fits")
+        var_tables = tuple()
         if resonant_scattering:
-            metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),
-                            get_data_file(f"igm_v2sc_{metal_option}.fits"))
+            metal_tables = (get_data_file(f"igm_v3ph2_{metal_option}.fits"),
+                            get_data_file(f"igm_v3sc_{metal_option}.fits"))
             if var_elem_option:
-                var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),
-                               get_data_file(f"igm_v2sc_{metal_tab_names[el]}.fits"))
+                var_tables = [(get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),
+                               get_data_file(f"igm_v3sc_{metal_tab_names[el]}.fits"))
                               for el in var_elem]
         else:
-            metal_tables = (get_data_file(f"igm_v2ph2_{metal_option}.fits"),)
+            metal_tables = (get_data_file(f"igm_v3ph2_{metal_option}.fits"),)
             if var_elem_option:
-                var_tables = [(get_data_file(f"igm_v2ph2_{metal_tab_names[el]}.fits"),)
+                var_tables = [(get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),)
                               for el in var_elem]
         self.cxb_factor = cxb_factor
-        super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables, 
+        super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables,
                          var_elem, binscale)
         self.norm_fac = 5.50964e-5*np.array([1.0, self.cxb_factor])
         self.atable = abund_tables["feld"].copy()

@@ -278,17 +278,16 @@ def test_linlog():
 
 def test_cloudy_cie(answer_store, answer_dir):
     cgen = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log")
-    cspec = cgen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
-
     cgen_var1 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
                                    var_elem_option=1)
+    cgen_var2 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
+                                   var_elem_option=2)
+
+    cspec = cgen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
     cspec_var1 = cgen_var1.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
                                         elem_abund={"O": O_sim, 
                                                     "Ne": Ne_sim,
                                                     "Fe": Fe_sim})
-
-    cgen_var2 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
-                                   var_elem_option=2)
     cspec_var2 = cgen_var2.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
                                         elem_abund={"O": O_sim,
                                                     "Ne": Ne_sim,
@@ -313,3 +312,68 @@ def test_cloudy_cie(answer_store, answer_dir):
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
+
+def test_igm(answer_store, answer_dir):
+    nH_igm = 1.0e-3
+    kT_igm = 0.7
+
+    igen = IGMGenerator(0.2, 5.0, 1000, binscale="log")
+    igen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=1)
+    igen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=2)
+
+    ispec = igen.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim)
+    ispec_var1 = igen_var1.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
+                                        elem_abund={"O": O_sim,
+                                                    "Ne": Ne_sim,
+                                                    "Fe": Fe_sim})
+    ispec_var2 = igen_var2.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
+                                        elem_abund={"O": O_sim,
+                                                    "Ne": Ne_sim,
+                                                    "Fe": Fe_sim,
+                                                    "S": S_sim,
+                                                    "Si": Si_sim,
+                                                    "Mg": Mg_sim})
+
+    assert_allclose(ispec.ebins, ispec_var1.ebins)
+    assert_allclose(ispec.flux, ispec_var1.flux)
+
+    assert_allclose(ispec.ebins, ispec_var2.ebins)
+    assert_allclose(ispec.flux, ispec_var2.flux)
+
+    sigen = IGMGenerator(0.2, 5.0, 1000, binscale="log", resonant_scattering=True)
+    sigen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=1,
+                              resonant_scattering=True)
+    sigen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=2,
+                              resonant_scattering=True)
+
+    sispec = sigen.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim)
+    sispec_var1 = sigen_var1.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
+                                          elem_abund={"O": O_sim,
+                                                      "Ne": Ne_sim,
+                                                      "Fe": Fe_sim})
+    sispec_var2 = sigen_var2.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
+                                          elem_abund={"O": O_sim,
+                                                      "Ne": Ne_sim,
+                                                      "Fe": Fe_sim,
+                                                      "S": S_sim,
+                                                      "Si": Si_sim,
+                                                      "Mg": Mg_sim})
+
+    assert_allclose(sispec.ebins, sispec_var1.ebins)
+    assert_allclose(sispec.flux, sispec_var1.flux)
+
+    assert_allclose(sispec.ebins, sispec_var2.ebins)
+    assert_allclose(sispec.flux, sispec_var2.flux)
+
+    tmpdir = tempfile.mkdtemp()
+    curdir = os.getcwd()
+    os.chdir(tmpdir)
+
+    spectrum_answer_testing(ispec, "igm_spectrum.h5", answer_store,
+                            answer_dir)
+
+    spectrum_answer_testing(sispec, "igm_scatt_spectrum.h5", answer_store,
+                            answer_dir)
+
+    os.chdir(curdir)
+    shutil.rmtree(tmpdir)
