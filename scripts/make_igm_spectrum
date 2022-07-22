@@ -52,7 +52,7 @@ if len(unknown) > 0:
         key, value = uarg[2:].split("=")
         elem_abund[key] = float(value)
 
-igen = IGMGenerator(args.model, args.emin, args.emax, args.nbins, binscale=args.binscale,
+igen = IGMGenerator(args.emin, args.emax, args.nbins, binscale=args.binscale,
                     resonant_scattering=args.resonant_scattering, cxb_factor=args.cxb_factor,
                     var_elem_option=args.var_elem_option)
 spec = igen.get_spectrum(args.kT, args.nH, args.abund, args.redshift, args.norm, 
