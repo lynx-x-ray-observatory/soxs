@@ -33,8 +33,10 @@ parser.add_argument("--var_elem_option", type=int,
                     help="An integer to choose between options for variable elements, "
                          "which are: 1: specify abundances of O, Ne, and Fe separately "
                          "from other metals, 2: specify abundances of O, Ne, Mg, Si, S, "
-                         "and Fe separately from other metals. Default: None, which "
-                         "means no metal abundances can be specified separately.")
+                         "and Fe separately from other metals. 3: specify abundances of "
+                         "C, N, O, Ne, Mg, Si, S, Ca, and Fe separately from other metals. "
+                         "Default: None, which means no metal abundances can be specified "
+                         "separately.")
 parser.add_argument("--absorb_model", type=str,
                     help='Model for applying foreground Galactic absorption.')
 parser.add_argument("--nH_abs", 

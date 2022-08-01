@@ -50,8 +50,9 @@ parser.add_argument("--var_elem_option", type=int,
                          "options for variable elements, which are: 1: specify abundances "
                          "of O, Ne, and Fe separately from other metals, 2: specify "
                          "abundances of O, Ne, Mg, Si, S, and Fe separately from other "
-                         "metals. Default: None, which means no metal abundances can be "
-                         "specified separately.")
+                         "metals. 3: specify abundances of C, N, O, Ne, Mg, Si, S, Ca, "
+                         "and Fe separately from other metals. Default: None, which means "
+                         "no metal abundances can be specified separately.")
 parser.add_argument("--model", type=str, default="apec",
                     help="The CIE model to use when generating the spectrum, either "
                          "'apec', 'spex', 'mekal', or 'cloudy'. Default: 'apec'")

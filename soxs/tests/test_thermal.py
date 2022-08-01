@@ -50,6 +50,9 @@ Ne_sim = 0.4
 Si_sim = 0.4
 S_sim = 0.4
 Mg_sim = 0.4
+C_sim = 0.4
+N_sim = 0.4
+Ca_sim = 0.4
 
 nei_sim = {"O^6": 0.4, "O^3": 0.5, "N^4": 0.7, "Ca^5": 0.9}
 
@@ -282,6 +285,8 @@ def test_cloudy_cie(answer_store, answer_dir):
                                    var_elem_option=1)
     cgen_var2 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
                                    var_elem_option=2)
+    cgen_var3 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
+                                   var_elem_option=3)
 
     cspec = cgen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
     cspec_var1 = cgen_var1.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
@@ -295,12 +300,25 @@ def test_cloudy_cie(answer_store, answer_dir):
                                                     "S": S_sim,
                                                     "Si": Si_sim, 
                                                     "Mg": Mg_sim})
+    cspec_var3 = cgen_var3.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
+                                        elem_abund={"C": C_sim,
+                                                    "N": N_sim,
+                                                    "O": O_sim,
+                                                    "Ne": Ne_sim,
+                                                    "Fe": Fe_sim,
+                                                    "S": S_sim,
+                                                    "Si": Si_sim,
+                                                    "Ca": Ca_sim,
+                                                    "Mg": Mg_sim})
 
     assert_allclose(cspec.ebins, cspec_var1.ebins)
     assert_allclose(cspec.flux, cspec_var1.flux)
 
     assert_allclose(cspec.ebins, cspec_var2.ebins)
     assert_allclose(cspec.flux, cspec_var2.flux)
+
+    assert_allclose(cspec.ebins, cspec_var3.ebins)
+    assert_allclose(cspec.flux, cspec_var3.flux)
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
@@ -320,6 +338,7 @@ def test_igm(answer_store, answer_dir):
     igen = IGMGenerator(0.2, 5.0, 1000, binscale="log")
     igen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=1)
     igen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=2)
+    igen_var3 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=3)
 
     ispec = igen.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim)
     ispec_var1 = igen_var1.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
@@ -333,17 +352,32 @@ def test_igm(answer_store, answer_dir):
                                                     "S": S_sim,
                                                     "Si": Si_sim,
                                                     "Mg": Mg_sim})
+    ispec_var3 = igen_var3.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
+                                        elem_abund={"C": C_sim,
+                                                    "N": N_sim,
+                                                    "O": O_sim,
+                                                    "Ne": Ne_sim,
+                                                    "Fe": Fe_sim,
+                                                    "S": S_sim,
+                                                    "Si": Si_sim,
+                                                    "Ca": Ca_sim,
+                                                    "Mg": Mg_sim})
 
     assert_allclose(ispec.ebins, ispec_var1.ebins)
-    assert_allclose(ispec.flux, ispec_var1.flux)
+    assert_allclose(ispec.flux, ispec_var1.flux, rtol=1.0e-5)
 
     assert_allclose(ispec.ebins, ispec_var2.ebins)
-    assert_allclose(ispec.flux, ispec_var2.flux)
+    assert_allclose(ispec.flux, ispec_var2.flux, rtol=1.0e-5)
+
+    assert_allclose(ispec.ebins, ispec_var3.ebins)
+    assert_allclose(ispec.flux, ispec_var3.flux, rtol=1.0e-5)
 
     sigen = IGMGenerator(0.2, 5.0, 1000, binscale="log", resonant_scattering=True)
     sigen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=1,
                               resonant_scattering=True)
     sigen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=2,
+                              resonant_scattering=True)
+    sigen_var3 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=3,
                               resonant_scattering=True)
 
     sispec = sigen.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim)
@@ -358,12 +392,25 @@ def test_igm(answer_store, answer_dir):
                                                       "S": S_sim,
                                                       "Si": Si_sim,
                                                       "Mg": Mg_sim})
+    sispec_var3 = sigen_var3.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
+                                          elem_abund={"C": C_sim,
+                                                      "N": N_sim,
+                                                      "O": O_sim,
+                                                      "Ne": Ne_sim,
+                                                      "Fe": Fe_sim,
+                                                      "S": S_sim,
+                                                      "Si": Si_sim,
+                                                      "Ca": Ca_sim,
+                                                      "Mg": Mg_sim})
 
     assert_allclose(sispec.ebins, sispec_var1.ebins)
-    assert_allclose(sispec.flux, sispec_var1.flux)
+    assert_allclose(sispec.flux, sispec_var1.flux, rtol=1.0e-5)
 
     assert_allclose(sispec.ebins, sispec_var2.ebins)
-    assert_allclose(sispec.flux, sispec_var2.flux)
+    assert_allclose(sispec.flux, sispec_var2.flux, rtol=1.0e-5)
+
+    assert_allclose(sispec.ebins, sispec_var3.ebins)
+    assert_allclose(sispec.flux, sispec_var3.flux, rtol=1.0e-5)
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()

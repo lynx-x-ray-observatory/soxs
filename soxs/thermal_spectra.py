@@ -768,11 +768,14 @@ class MekalGenerator(Atable1DGenerator):
 
 
 metal_tab_names = {
+    "C": "c",
+    "N": "n",
     "O": "ox",
     "Ne": "ne",
     "Mg": "mg",
     "Si": "si",
     "S": "su",
+    "Ca": "ca",
     "Fe": "fe"
 }
 
@@ -804,8 +807,8 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
     This sequence of commands is repeated for solar and low abundances so that the
     abundance parameter can be taken into account via a linear combination of two 
-    tables. For the individual abundances, they are obtained by setting "element neon off"
-    in the run and doing the appropriate arithmetic. 
+    tables. For the individual abundances, they are obtained by setting e.g. "element 
+    neon off" in the run and doing the appropriate arithmetic. 
 
     Assumes the abundance tables from Feldman 1992.
 
@@ -825,6 +828,8 @@ class CloudyCIEGenerator(Atable1DGenerator):
         1: specify abundances of O, Ne, and Fe separately from other metals
         2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
            metals
+        3: specify abundances of C, N, O, Ne, Mg, Si, S, Ca, and Fe separately 
+           from other metals
         Default: None, which means no metal abundances can be specified
         separately.
     """
@@ -838,6 +843,9 @@ class CloudyCIEGenerator(Atable1DGenerator):
         elif var_elem_option == 2:
             metal_option = "mxx"
             var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
+        elif var_elem_option == 3:
+            metal_option = "mxxx"
+            var_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
         else:
             raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
         var_tables = tuple()
@@ -894,6 +902,8 @@ class IGMGenerator(Atable2DGenerator):
             1: specify abundances of O, Ne, and Fe separately from other metals
             2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
                metals
+            3: specify abundances of C, N, O, Ne, Mg, Si, S, Ca, and Fe separately 
+               from other metals
             Default: None, which means no metal abundances can be specified
             separately.
         """
@@ -906,6 +916,9 @@ class IGMGenerator(Atable2DGenerator):
         elif var_elem_option == 2:
             metal_option = "mxx"
             var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
+        elif var_elem_option == 3:
+            metal_option = "mxxx"
+            var_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
         else:
             raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
         self.var_elem_option = var_elem_option
