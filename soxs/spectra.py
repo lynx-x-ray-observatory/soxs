@@ -575,6 +575,10 @@ class Spectrum:
         if model == "wabs":
             sigma = wabs_cross_section(e)
         elif model == "tbabs":
+            if not isinstance(abund_table, str):
+                raise ValueError("Must supply a string corresponding to one of "
+                                 "the abundance tables provided in SOXS for "
+                                 "the TBabs model!")
             sigma = tbabs_cross_section(e, abund_table=abund_table)
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()

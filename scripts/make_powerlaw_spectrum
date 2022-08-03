@@ -21,6 +21,12 @@ parser.add_argument("--absorb_model", type=str,
                     help='Model for applying foreground Galactic absorption.')
 parser.add_argument("--nH_abs",
                     help='The hydrogen column in units of 10**22 atoms/cm**2.')
+parser.add_argument("--abund_table", type=str, default="angr",
+                    help="The abundance table to be used if the absorption model is "
+                         "TBabs. Takes a string corresponding to a built-in table. "
+                         "Default is set in the SOXS configuration file, the default "
+                         "for which is 'angr'.")
+
 parser.add_argument("--overwrite", action='store_true', 
                     help='Overwrite an existing file with the same name.')
 
@@ -33,6 +39,7 @@ if args.absorb_model is not None:
     if args.nH_abs is None:
         raise RuntimeError("Must specify a value for --nH_abs if including"
                            "foreground absorption!")
-    spec.apply_foreground_absorption(args.nH_abs, model=args.absorb_model)
+    spec.apply_foreground_absorption(args.nH_abs, model=args.absorb_model,
+                                     abund_table=args.abund_table)
 
 spec.write_file(args.specfile, overwrite=args.overwrite)

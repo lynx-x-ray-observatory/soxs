@@ -253,7 +253,7 @@ form:
 
     usage: make_powerlaw_spectrum [-h] [--binscale BINSCALE]
                                   [--absorb_model ABSORB_MODEL] [--nH_abs NH_ABS]
-                                  [--overwrite]
+                                  [--abund_table ABUND_TABLE] [--overwrite]
                                   photon_index redshift norm specfile emin emax nbins
     
     Create a power-law spectrum and write it to a file.
@@ -275,6 +275,11 @@ form:
       --absorb_model ABSORB_MODEL
                             Model for applying foreground Galactic absorption.
       --nH_abs NH_ABS       The hydrogen column in units of 10**22 atoms/cm**2.
+      --abund_table ABUND_TABLE
+                            The abundance table to be used if the absorption model is 
+                            TBabs. Takes a string corresponding to a built-in table.
+                            Default is set in the SOXS configuration file, the default 
+                            for which is 'angr'.
       --overwrite           Overwrite an existing file with the same name.
 
 Examples
@@ -298,3 +303,9 @@ The same spectrum, but with log-spaced binning.
 .. code-block:: bash
 
     [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite
+
+The same spectrum, but switching the abundance table used for the "tbabs" model.
+
+.. code-block:: bash
+
+    [~]$ make_powerlaw_spectrum 1.1 0.05 1.0e-4 my_powerlaw_spectrum.dat 0.1 10.0 10000 --absorb_model="tbabs" --nH_abs 0.04 --abund_table="feld" --overwrite

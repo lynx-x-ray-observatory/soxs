@@ -106,6 +106,11 @@ if args.absorb_model is not None:
     if args.nH_abs is None:
         raise RuntimeError("Must specify a value for --nH_abs if including"
                            "foreground absorption!")
-    spec.apply_foreground_absorption(args.nH_abs, model=args.absorb_model)
+    if args.model == "cloudy":
+        atable = "feld"
+    else:
+        atable = abund_table
+    spec.apply_foreground_absorption(args.nH_abs, model=args.absorb_model,
+                                     abund_table=atable)
 
 spec.write_file(args.specfile, overwrite=args.overwrite)
