@@ -568,7 +568,7 @@ class Spectrum:
             "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
             except for elements not listed which are given zero abundance)
             "lodd" : from Lodders, K (2003, ApJ 591, 1220)
-
+            "cl17.03" : the default abundance table in Cloudy 17.03
         """
         nH = parse_value(nH, "1.0e22*cm**-2")
         e = self.emid.value*(1.0+redshift)
