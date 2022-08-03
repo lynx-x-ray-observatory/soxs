@@ -538,7 +538,8 @@ class Spectrum:
         t = self._write_fits_or_ascii()
         t.write(specfile, overwrite=overwrite, format="fits")
 
-    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0):
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0,
+                                    abund_table="angr"):
         """
         Given a hydrogen column density, apply
         galactic foreground absorption to the spectrum.
@@ -554,13 +555,27 @@ class Spectrum:
             McCray, R. 2000, ApJ, 542, 914). Default: "wabs".
         redshift : float, optional
             The redshift of the absorbing material. Default: 0.0
+        abund_table : string 
+            The abundance table to be used for abundances in the 
+            absorption model. Default is set in the SOXS
+            configuration file, the default for which is "angr".
+            Built-in options are:
+            "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+            Cosmochimica Acta 53, 197)
+            "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+            P. (2009, ARAA, 47, 481)
+            "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
+            "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+            except for elements not listed which are given zero abundance)
+            "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+
         """
         nH = parse_value(nH, "1.0e22*cm**-2")
         e = self.emid.value*(1.0+redshift)
         if model == "wabs":
             sigma = wabs_cross_section(e)
         elif model == "tbabs":
-            sigma = tbabs_cross_section(e)
+            sigma = tbabs_cross_section(e, abund_table=abund_table)
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()
 
@@ -754,13 +769,13 @@ _tbabs_sigma = None
 _tbabs_func = None
 
 
-def tbabs_cross_section(E):
+def tbabs_cross_section(E, abund_table="angr"):
     global _tbabs_emid
     global _tbabs_sigma
     global _tbabs_func
     if _tbabs_func is None:
         with h5py.File(get_data_file("tbabs_table.h5"), "r") as f:
-            _tbabs_sigma = f["cross_section"][:]
+            _tbabs_sigma = f["cross_section"][abund_table][:]
             nbins = _tbabs_sigma.size
             ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
             print(ebins[0], ebins[-1])
@@ -771,8 +786,8 @@ def tbabs_cross_section(E):
     return _tbabs_func(E)
 
 
-def get_tbabs_absorb(e, nH):
-    sigma = tbabs_cross_section(e)
+def get_tbabs_absorb(e, nH, abund_table="angr"):
+    sigma = tbabs_cross_section(e, abund_table=abund_table)
     return np.exp(-nH*1.0e22*sigma)
 
 

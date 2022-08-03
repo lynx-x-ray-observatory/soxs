@@ -3,10 +3,31 @@
 Generating Thermal Spectra
 ==========================
 
-Thermal spectra are generated in SOXS using the 
-`AtomDB tables <http://www.atomdb.org>`_, and require special handling. The 
-:class:`~soxs.apec.ApecGenerator` class is a factory class which generates 
-new :class:`~soxs.spectra.Spectrum` objects. You start by initializing an 
+SOXS provides a number of models for generating thermal spectra. These models are 
+encapsulated in the notion of "generators", which are objects designed to set up
+the general characteristics of spectra for a given model, and then allow one to 
+create spectra with particular parameters. These spectra are for hot plasmas in
+collisional ionization equilibrium (CIE), non-equilibrium ionization (NEI), or 
+a combination of collisional and photoionization processes. The various thermal 
+spectrum generators available in SOXS are:
+
+* :class:`~soxs.thermal_spectra.ApecGenerator`: APEC CIE and NEI spectra
+* :class:`~soxs.thermal_spectra.SpexGenerator`: SPEX CIE spectra
+* :class:`~soxs.thermal_spectra.MekalGenerator`: MeKaL CIE spectra
+* :class:`~soxs.thermal_spectra.CloudyCIEGenerator`: Cloudy CIE spectra
+* :class:`~soxs.thermal_spectra.IGMGenerator`: Cloudy-based collisional+photoionization 
+  spectra with optional resonant scattering from the CXB
+
+Each of these are essentially "factory" classes which generate new 
+:class:`~soxs.spectra.Spectrum` objects.
+
+.. _apec-spectra:
+
+APEC Spectra
+------------
+
+APEC CIE and NEI thermal spectra are generated in SOXS using the 
+`AtomDB tables <http://www.atomdb.org>`_, using the 
 :class:`~soxs.apec.ApecGenerator` object:
 
 .. code-block:: python
@@ -15,7 +36,9 @@ new :class:`~soxs.spectra.Spectrum` objects. You start by initializing an
     emin = 0.05
     emax = 50.0
     nbins = 10000
-    agen = ApecGenerator(emin, emax, nbins, apec_vers="2.0.2", broadening=True)
+    binscale = "linear" 
+    agen = ApecGenerator(emin, emax, nbins, binscale=binscale, 
+                         apec_vers="2.0.2", broadening=True)
 
 The parameters ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to
 control the binning.
@@ -51,7 +74,10 @@ method. The parameters are:
   :math`n_p` are the electron and proton number densities, :math:`z` is the 
   redshift, and :math:`D_A` is the angular diameter distance to the source. All
   units are in cgs. 
-* ``velocity``:
+* ``velocity``: The (optional) velocity broadening parameter, in units of km/s. 
+  If not zero, this broadens spectral lines using a Gaussian model assuming the 
+  ``velocity`` parameter is the velocity dispersion :math:`\sigma_v`. If not set, 
+  there is no velocity broadening. 
 
 .. code-block:: python
     
@@ -67,7 +93,7 @@ method. The parameters are:
 .. _var-abund:
 
 Variable Abundances
-~~~~~~~~~~~~~~~~~~~
++++++++++++++++++++
 
 By default, :class:`~soxs.apec.ApecGenerator` assumes all abundances besides
 H, He, and the trace elements are set to the value provided by the ``abund``
@@ -103,8 +129,8 @@ metals.
 
 .. _nei:
 
-Non-Equilibrium Ionization Spectra
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Non-Equilibrium Ionization Spectra with APEC
+++++++++++++++++++++++++++++++++++++++++++++
 
 A variation on specifying variable abundances in SOXS allows one to construct
 non-equilibrium ionization (NEI) spectra. In this case, all ions one desires to
@@ -147,10 +173,10 @@ Once this has been created, we use a special method for NEI spectra,
 .. _nolines:
 
 APEC Spectra Without Lines
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++++++++
 
 There is also an option to generate continuum spectra only from the AtomDB
-tables. This is done by setting ``nolines=True`` in the constructor for
+or SPEX tables. This is done by setting ``nolines=True`` in the constructor for
 :class:`~soxs.apec.ApecGenerator`:
 
 .. code-block:: python
@@ -160,7 +186,7 @@ tables. This is done by setting ``nolines=True`` in the constructor for
 .. _solar-abund-tables:
 
 Changing Abundance Tables
-~~~~~~~~~~~~~~~~~~~~~~~~~
++++++++++++++++++++++++++
 
 The abundance parameters discussed so far assume abundance of a particular 
 element or a number of elements relative to the Solar value. Underlying this
@@ -177,6 +203,7 @@ with SOXS are:
 * ``"wilm"``: `Wilms et al. 2000 <http://adsabs.harvard.edu/abs/2000ApJ...542..914W>`_
 * ``"lodd"``: `Lodders 2003 <http://adsabs.harvard.edu/abs/2003ApJ...591.1220L>`_
 * ``"feld"``: `Feldman 1992 <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
+* ``"cl17.03"``: The abundances used by default in Cloudy 17.03.
 
 The easiest way to ensure that you always use a particular abundance table is to
 set it in the :ref:`config`. However, the Solar abundance table can be changed 
@@ -201,3 +228,26 @@ S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, and Zn. An example:
                          3.16E-05, 9.77E-08, 1.66E-06, 1.55E-08, 3.63E-08])
 
     agen = ApecGenerator(0.05, 50.0, 10000, abund_table=my_abund)
+
+.. warning::
+
+    Although it is possible to specify a custom table of abundances from a 
+    file for the simulation of thermal spectra, this is not possible for the 
+    TBabs abundance model used in SOXS--one must instead use one of the
+    included options mentioned above. See :ref:`galactic_abs`.
+
+.. _spex-spectra:
+
+SPEX Spectra
+------------
+
+Thermal CIE spectra 
+.. _mekal-spectra:
+
+MeKaL Spectra
+-------------
+
+.. _cloudy-spectra
+
+Cloudy Spectra
+--------------

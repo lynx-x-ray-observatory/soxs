@@ -254,6 +254,8 @@ units of the new flux must be :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}`,
 and in the latter case the units must be 
 :math:`{\rm erg}~{\rm cm}^{-2}~{\rm s}^{-1}`.
 
+.. _galactic_abs:
+
 Applying Galactic Foreground Absorption to a Spectrum
 -----------------------------------------------------
 
@@ -281,6 +283,19 @@ optional ``redshift`` argument (default 0.0):
                                   10.0, 10000)
     n_H = 0.02
     spec.apply_foreground_absorption(n_H, model="tbabs", redshift=0.05)
+
+Finally, the abundance table for the ``"tbabs"`` absorption model can be
+specified (the default is ``"angr"``):
+
+.. code-block:: python
+
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 
+                                  10.0, 10000)
+    n_H = 0.02
+    spec.apply_foreground_absorption(n_H, model="tbabs", redshift=0.05, 
+                                     abund_table="wilm")
+
+See :ref:`solar-abund-tables` for options for different abundance tables.
 
 The current version for the ``"tbabs"`` model is 2.3.2. 
 

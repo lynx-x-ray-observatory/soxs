@@ -361,6 +361,7 @@ class ApecGenerator(CIEGenerator):
         "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+        "cl17.03" : the abundance table used in Cloudy v17.03.
     nei : boolean, optional
         If True, use the non-equilibrium ionization tables.
 
@@ -435,6 +436,7 @@ class SpexGenerator(CIEGenerator):
         "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+        "cl17.03" : the abundance table used in Cloudy v17.03.
 
     Examples
     --------
@@ -715,6 +717,7 @@ class MekalGenerator(Atable1DGenerator):
         "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+        "cl17.03" : the abundance table used in Cloudy v17.03.
     """
     def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None, 
                  abund_table="angr"):

@@ -30,8 +30,10 @@ the generation of spectra.
 * An option to create a mosaicked event file in addition to an image file has been
   added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
   for more details.
-* The accuracy of the TBabs absorption model has been improved. 
 * The default absorption model for the galactic foreground has been changed to TBabs.
+* The accuracy of the TBabs absorption model has been improved.
+* It is now possible to specify different abundance tables in the construction of the
+  TBabs absorption model.
 * The galactic foregroud model now includes thermal broadening of emission lines, and 
   it is also now possible to optionally add velocity broadening. See :ref:`foreground`
   for more details.
