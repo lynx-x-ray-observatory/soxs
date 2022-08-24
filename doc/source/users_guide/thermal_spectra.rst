@@ -28,7 +28,7 @@ APEC Spectra
 
 APEC CIE and NEI thermal spectra are generated in SOXS using the 
 `AtomDB tables <http://www.atomdb.org>`_, using the 
-:class:`~soxs.apec.ApecGenerator` object:
+:class:`~soxs.thermal_spectra.ApecGenerator` object:
 
 .. code-block:: python
 
@@ -60,9 +60,10 @@ If you set the ``apec_vers`` parameter but not the ``apec_root`` parameter, the
 AtomDB table files will be looked for in (1) the current working directory and
 (2) the location specified by ``soxs_data_dir`` in the :ref:`config`.
 
-Once you have an :class:`~soxs.apec.ApecGenerator` object, you can use it to
-generate thermal spectra using the :meth:`~soxs.apec.ApecGenerator.get_spectrum`
-method. The parameters are:
+Once you have an :class:`~soxs.thermal_spectra.ApecGenerator` object, you can 
+use it to generate thermal spectra using the 
+:meth:`~soxs.thermal_spectra.ApecGenerator.get_spectrum` method. The parameters 
+are:
 
 * ``kT``: The temperature of the plasma, with default units of keV
 * ``abund``: The metal abundance, in solar units. Includes C, N, O, Ne, Mg, Al, 
@@ -95,10 +96,10 @@ method. The parameters are:
 Variable Abundances
 +++++++++++++++++++
 
-By default, :class:`~soxs.apec.ApecGenerator` assumes all abundances besides
+By default, :class:`~soxs.thermal_spectra.ApecGenerator` assumes all abundances besides
 H, He, and the trace elements are set to the value provided by the ``abund``
 parameter. However, more fine-grained control is possible. 
-:class:`~soxs.apec.ApecGenerator` accepts a ``var_elem`` optional argument
+:class:`~soxs.thermal_spectra.ApecGenerator` accepts a ``var_elem`` optional argument
 to specify which elements should be allowed to vary freely:
 
 .. code-block:: python
@@ -108,8 +109,8 @@ to specify which elements should be allowed to vary freely:
     
 Whatever elements are not specified here are assumed to be set as normal, whether
 they are H, He, trace elements, or metals covered by the ``abund`` parameter. 
-Now, spectra which are created from this :class:`~soxs.apec.ApecGenerator`
-object using the :meth:`~soxs.apec.ApecGenerator.get_spectrum` method should 
+Now, spectra which are created from this :class:`~soxs.thermal_spectra.ApecGenerator`
+object using the :meth:`~soxs.thermal_spectra.ApecGenerator.get_spectrum` method should 
 set values for the abundances of these elements in solar units. This is done by 
 supplying the ``elem_abund`` dict like so:
 
@@ -138,8 +139,8 @@ contribute to the spectrum must be put in by hand, with the exception of H and
 He, which may be specified, but if they are not they are assumed to be fully
 ionized at their Solar abundances.
 
-To create an :class:`~soxs.apec.ApecGenerator` object which produces NEI
-spectra, one must specify not only the elements one wants but also their 
+To create an :class:`~soxs.thermal_spectra.ApecGenerator` object which produces 
+NEI spectra, one must specify not only the elements one wants but also their 
 ionization states. The notation is to represent an ion by the element first, 
 followed by the ``^`` symbol, followed by its ionization state. So for oxygen,
 :math:`O^{+1}` would correspond to ``"O^1"``, and so on. The keyword argument 
@@ -152,7 +153,7 @@ nitrogen ions is shown below:
     agen = ApecGenerator(0.05, 10.0, 10000, var_elem=var_elem, nei=True)
 
 Once this has been created, we use a special method for NEI spectra, 
-:meth:`~soxs.apec.ApecGenerator.get_nei_spectrum`
+:meth:`~soxs.thermal_spectra.ApecGenerator.get_nei_spectrum`
 
 .. code-block:: python
 
@@ -166,9 +167,10 @@ Once this has been created, we use a special method for NEI spectra,
 .. warning::
 
     SOXS does not make any assumptions about the correctness of the relative ion
-    abundances which you input into :meth:`~soxs.apec.ApecGenerator.get_nei_spectrum`.
-    It assumes you have run a NEI code to determine the correct abundances, and
-    only computes the spectrum.
+    abundances which you input into 
+    :meth:`~soxs.thermal_spectra.ApecGenerator.get_nei_spectrum`. It assumes you 
+    have run a NEI code to determine the correct abundances, and only computes 
+    the spectrum.
 
 .. _nolines:
 
@@ -177,11 +179,56 @@ APEC Spectra Without Lines
 
 There is also an option to generate continuum spectra only from the AtomDB
 or SPEX tables. This is done by setting ``nolines=True`` in the constructor for
-:class:`~soxs.apec.ApecGenerator`:
+:class:`~soxs.thermal_spectra.ApecGenerator`:
 
 .. code-block:: python
 
     agen = ApecGenerator(0.05, 50.0, 10000, nolines=True)
+
+.. _spex-spectra:
+
+SPEX Spectra
+------------
+
+Thermal CIE spectra using the thermal emission model provided in 
+`SPEX <https://www.sron.nl/astrophysics-spex>`_ can be generated using the
+:class:`~soxs.thermal_spectra.SpexGenerator` class. This class takes the
+same arguments as :class:`~soxs.thermal_spectra.ApecGenerator`, with the 
+exception that the version and file location arguments are named ``spex_vers``
+and ``spex_root``, respectively. Otherwise, generators and their spectra
+can be created in the same way:
+
+.. code-block:: python
+
+    from soxs import SpexGenerator
+ 
+    var_elem = ["O", "Ca"] # allow oxygen and calcium to vary freely 
+    sgen = SpexGenerator(0.05, 50.0, 10000, var_elem=var_elem, binscale="log")
+    
+    kT = 6.0
+    abund = 0.3 # for all other metals
+    redshift = 0.05
+    norm = 1.0e-3 
+    O_abund = 0.5
+    Ca_abund = 0.4
+    spec = sgen.get_spectrum(kT, abund, redshift, norm,
+                             elem_abund={"O": O_abund, "Ca": Ca_abund})
+
+
+If you set the ``spex_vers`` parameter but not the ``spex_root`` parameter, the
+AtomDB table files will be looked for in (1) the current working directory and
+(2) the location specified by ``soxs_data_dir`` in the :ref:`config`. The current 
+default version of the SPEX thermal model in SOXS is 3.06.01.
+
+.. warning::
+
+    Generating NEI spectra is not currently possible for the SPEX thermal
+    model.
+
+.. _mekal-spectra:
+
+MeKaL Spectra
+-------------
 
 .. _solar-abund-tables:
 
@@ -192,8 +239,10 @@ The abundance parameters discussed so far assume abundance of a particular
 element or a number of elements relative to the Solar value. Underlying this
 are the values of the Solar abundances themselves. It is possible to change the
 Solar abundance table in SOXS via the optional ``abund_table`` argument to 
-:class:`~soxs.apec.ApecGenerator`. By default, SOXS uses the abundance table
-set in the :ref:`config`, which by default are the
+:class:`~soxs.thermal_spectra.ApecGenerator`, 
+:class:`~soxs.thermal_spectra.SpexGenerator`,
+or :class:`~soxs.thermal_spectra.MekalGenerator`. By default, SOXS uses the 
+abundance table set in the :ref:`config`, which by default are the
 `Anders & Grevesse 1989 <http://adsabs.harvard.edu/abs/1989GeCoA..53..197A>`_ 
 abundances. This corresponds to a setting of ``"angr"`` for this parameter, but it 
 is possible to use other tables of solar abundances. The other tables included 
@@ -236,18 +285,12 @@ S, Cl, Ar, K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, and Zn. An example:
     TBabs abundance model used in SOXS--one must instead use one of the
     included options mentioned above. See :ref:`galactic_abs`.
 
-.. _spex-spectra:
+.. _cloudy-spectra:
 
-SPEX Spectra
-------------
+Cloudy CIE Spectra
+------------------
 
-Thermal CIE spectra 
-.. _mekal-spectra:
+.. _igm-spectra:
 
-MeKaL Spectra
--------------
-
-.. _cloudy-spectra
-
-Cloudy Spectra
---------------
+IGM Spectra
+-----------

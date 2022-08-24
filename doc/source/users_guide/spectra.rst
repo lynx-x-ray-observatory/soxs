@@ -27,9 +27,6 @@ keyword arguments to control the binning of spectral tables:
 * ``binscale``: An optional argument which takes either ``"linear"`` or ``"log"``.
   The default is always ``"linear"``.
 
-You cannot convert the binning of spectra, or combine two spectra which have different
-binnings.
-
 Creating Spectrum Objects
 -------------------------
 
