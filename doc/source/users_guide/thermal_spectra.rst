@@ -14,7 +14,7 @@ spectrum generators available in SOXS are:
 * :class:`~soxs.thermal_spectra.ApecGenerator`: APEC CIE and NEI spectra
 * :class:`~soxs.thermal_spectra.SpexGenerator`: SPEX CIE spectra
 * :class:`~soxs.thermal_spectra.MekalGenerator`: MeKaL CIE spectra
-* :class:`~soxs.thermal_spectra.CloudyCIEGenerator`: Cloudy CIE spectra
+* :class:`~soxs.thermal_spectra.CloudyCIEGenerator`: Cloudy-based CIE spectra
 * :class:`~soxs.thermal_spectra.IGMGenerator`: Cloudy-based collisional+photoionization 
   spectra with optional resonant scattering from the CXB
 
@@ -294,3 +294,4 @@ Cloudy CIE Spectra
 
 IGM Spectra
 -----------
+

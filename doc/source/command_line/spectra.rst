@@ -151,7 +151,6 @@ see :ref:`igm-spectra`.
 
     usage: make_igm_spectrum [-h] [--binscale BINSCALE] [--resonant_scattering]
                              [--cxb_factor CXB_FACTOR]
-                             [--var_elem_option VAR_ELEM_OPTION]
                              [--absorb_model ABSORB_MODEL] [--nH_abs NH_ABS]
                              [--overwrite]
                              kT nH abund redshift norm specfile emin emax nbins
@@ -182,12 +181,6 @@ see :ref:`igm-spectra`.
       --cxb_factor CXB_FACTOR
                             The fraction of the CXB photons that are resonant scattered
                             to enhance the lines. Default: 0.5
-      --var_elem_option VAR_ELEM_OPTION
-                            An integer to choose between options for variable elements,
-                            which are: 1: specify abundances of O, Ne, and Fe separately
-                            from other metals, 2: specify abundances of O, Ne, Mg, Si, S,
-                            and Fe separately from other metals. Default: None, which
-                            means no metal abundances can be specified separately.
       --absorb_model ABSORB_MODEL
                             Model for applying foreground Galactic absorption.
       --nH_abs NH_ABS       The hydrogen column in units of 10**22 atoms/cm**2.
@@ -215,12 +208,6 @@ The same spectrum, but with log-spaced binning.
     
     [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite
 
-The same spectrum, but with log-spaced binning.
-
-.. code-block:: bash
-    
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite
-
 The same spectrum, but with resonant scattering.
 
 .. code-block:: bash
@@ -233,11 +220,11 @@ The same spectrum, but with resonant scattering and only 0.3 of the CXB scattere
 
     [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --cxb_factor=0.3 --resonant_scattering --overwrite
 
-The same spectrum, but with abundances of O, Ne, and Fe specified (needs ``var_elem_option=1``).
+The same spectrum, but with abundances of O, Ne, and Fe specified.
 
 .. code-block:: bash
 
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --O=0.7 --Ne=0.6 --Fe=0.8 --var_elem_option=1 --overwrite
+    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --O=0.7 --Ne=0.6 --Fe=0.8 --overwrite
 
 ``make_powerlaw_spectrum``
 --------------------------
