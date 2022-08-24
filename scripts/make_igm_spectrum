@@ -29,14 +29,6 @@ parser.add_argument("--resonant_scattering", action='store_true',
 parser.add_argument("--cxb_factor", type=float, default=0.5,
                     help="The fraction of the CXB photons that are resonant scattered "
                          "to enhance the lines. Default: 0.5")
-parser.add_argument("--var_elem_option", type=int, 
-                    help="An integer to choose between options for variable elements, "
-                         "which are: 1: specify abundances of O, Ne, and Fe separately "
-                         "from other metals, 2: specify abundances of O, Ne, Mg, Si, S, "
-                         "and Fe separately from other metals. 3: specify abundances of "
-                         "C, N, O, Ne, Mg, Si, S, Ca, and Fe separately from other metals. "
-                         "Default: None, which means no metal abundances can be specified "
-                         "separately.")
 parser.add_argument("--absorb_model", type=str,
                     help='Model for applying foreground Galactic absorption.')
 parser.add_argument("--nH_abs", 
@@ -47,16 +39,19 @@ parser.add_argument("--overwrite", action='store_true',
 args, unknown = parser.parse_known_args()
 
 elem_abund = None
+var_elem = None
 
 if len(unknown) > 0:
+    var_elem = []
     elem_abund = {}
     for uarg in unknown:
         key, value = uarg[2:].split("=")
+        var_elem.append(key)
         elem_abund[key] = float(value)
 
 igen = IGMGenerator(args.emin, args.emax, args.nbins, binscale=args.binscale,
                     resonant_scattering=args.resonant_scattering, cxb_factor=args.cxb_factor,
-                    var_elem_option=args.var_elem_option)
+                    var_elem=var_elem)
 spec = igen.get_spectrum(args.kT, args.nH, args.abund, args.redshift, args.norm, 
                          elem_abund=elem_abund)
 

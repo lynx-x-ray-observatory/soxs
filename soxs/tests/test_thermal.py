@@ -282,11 +282,11 @@ def test_linlog():
 def test_cloudy_cie(answer_store, answer_dir):
     cgen = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log")
     cgen_var1 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
-                                   var_elem_option=1)
+                                   var_elem=["O", "Ne", "Fe"])
     cgen_var2 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
-                                   var_elem_option=2)
+                                   var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"])
     cgen_var3 = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log",
-                                   var_elem_option=3)
+                                   var_elem=["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"])
 
     cspec = cgen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
     cspec_var1 = cgen_var1.get_spectrum(kT_sim, abund_sim, redshift, norm_sim,
@@ -336,9 +336,12 @@ def test_igm(answer_store, answer_dir):
     kT_igm = 0.7
 
     igen = IGMGenerator(0.2, 5.0, 1000, binscale="log")
-    igen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=1)
-    igen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=2)
-    igen_var3 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=3)
+    igen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log",
+                             var_elem=["O", "Ne", "Fe"])
+    igen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log",
+                             var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"])
+    igen_var3 = IGMGenerator(0.2, 5.0, 1000, binscale="log",
+                             var_elem=["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"])
 
     ispec = igen.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim)
     ispec_var1 = igen_var1.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim,
@@ -373,11 +376,14 @@ def test_igm(answer_store, answer_dir):
     assert_allclose(ispec.flux, ispec_var3.flux, rtol=1.0e-5)
 
     sigen = IGMGenerator(0.2, 5.0, 1000, binscale="log", resonant_scattering=True)
-    sigen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=1,
+    sigen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log",
+                              var_elem=["O", "Ne", "Fe"],
                               resonant_scattering=True)
-    sigen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=2,
+    sigen_var2 = IGMGenerator(0.2, 5.0, 1000, binscale="log",
+                              var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"],
                               resonant_scattering=True)
-    sigen_var3 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem_option=3,
+    sigen_var3 = IGMGenerator(0.2, 5.0, 1000, binscale="log",
+                              var_elem=["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"],
                               resonant_scattering=True)
 
     sispec = sigen.get_spectrum(kT_igm, nH_igm, abund_sim, redshift, norm_sim)
@@ -417,10 +423,10 @@ def test_igm(answer_store, answer_dir):
     os.chdir(tmpdir)
 
     spectrum_answer_testing(ispec, "igm_spectrum.h5", answer_store,
-                            answer_dir)
+                            answer_dir, rtol=1.0e-5)
 
     spectrum_answer_testing(sispec, "igm_scatt_spectrum.h5", answer_store,
-                            answer_dir)
+                            answer_dir, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

@@ -457,7 +457,21 @@ class SpexGenerator(CIEGenerator):
                            "version of SOXS!")
 
 
+metal_tab_names = {
+    "C": "c",
+    "N": "n",
+    "O": "ox",
+    "Ne": "ne",
+    "Mg": "mg",
+    "Si": "si",
+    "S": "su",
+    "Ca": "ca",
+    "Fe": "fe"
+}
+
+
 class AtableGenerator:
+    _available_elem = []
     def __init__(self, emin, emax, nbins, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
         self.emin = parse_value(emin, "keV")
@@ -465,6 +479,14 @@ class AtableGenerator:
         self.cosmic_table = cosmic_table
         self.metal_tables = metal_tables
         self.var_tables = var_tables
+        if var_elem is None:
+            var_elem = []
+        else:
+            sorted(var_elem, key=lambda symbol: elem_names.index(symbol))
+        extra_elem = set(var_elem).difference(set(self._available_elem))
+        if extra_elem:
+            raise ValueError(f"The elements {extra_elem} are not available for "
+                             f"variation in the {type(self).__name__} model!")
         self.var_elem = var_elem
         self.nvar_elem = len(self.var_elem)
         self.binscale = binscale
@@ -496,23 +518,27 @@ class AtableGenerator:
     def _get_table(self, ne, eidxs, redshift):
         scale_factor = 1.0/(1.0+redshift)
         metal_spec = np.zeros((self.n_T*self.n_D, ne))
-        var_spec = None
         mylog.debug(f"Opening {self.cosmic_table}.")
         with fits.open(self.cosmic_table) as f:
             cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]].astype("float64")*self.norm_fac[0]
-        cosmic_spec *= scale_factor
         for j, mfile in enumerate(self.metal_tables):
             mylog.debug(f"Opening {mfile}.")
             with fits.open(mfile) as f:
                 metal_spec += f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]].astype("float64")*self.norm_fac[j]
+        var_spec = np.zeros((self.nvar_elem, self.n_T*self.n_D, ne)) if self.nvar_elem > 0 else None
+        for i, el in enumerate(self._available_elem):
+            for j, vfile in enumerate(self.var_tables[i]):
+                mylog.debug(f"Opening {vfile}.")
+                with fits.open(vfile) as f:
+                    data = f["SPECTRA"].data["INTPSPEC"][:, eidxs[0]:eidxs[1]].astype("float64")*self.norm_fac[j]
+                if el in self.var_elem:
+                    k = self.var_elem.index(el)
+                    var_spec[k,:,:] += data
+                else:
+                    metal_spec += data
+        cosmic_spec *= scale_factor
         metal_spec *= scale_factor
-        if self.nvar_elem > 0:
-            var_spec = np.zeros((self.nvar_elem,self.n_T*self.n_D,ne))
-            for i in range(self.nvar_elem):
-                for j, vfile in enumerate(self.var_tables[i]):
-                    mylog.debug(f"Opening {vfile}.")
-                    with fits.open(vfile) as f:
-                        var_spec[i,:,:] += f["SPECTRA"].data["INTPSPEC"][:, eidxs[0]:eidxs[1]].astype("float64")*self.norm_fac[j]
+        if var_spec is not None:
             var_spec *= scale_factor
         return cosmic_spec, metal_spec, var_spec
 
@@ -553,17 +579,10 @@ class Atable1DGenerator(AtableGenerator):
         if elem_abund is None:
             elem_abund = {}
         if set(elem_abund.keys()) != set(self.var_elem_names):
-            if hasattr(self, "var_elem_option"):
-                msg = "The supplied set of abundances does not match " \
-                      "what is available for 'var_elem_option = " \
-                      f"{self.var_elem_option}!\n" \
-                      f"Free elements: {set(elem_abund.keys())}\n" \
-                      f"Abundances: {set(elem_abund.keys())}"
-            else:
-                msg = "The supplied set of abundances is not the same as " \
-                      "that which was originally set!\nFree elements: " \
-                      f"{set(elem_abund.keys())}\n" \
-                      f"Abundances: {set(self.var_elem_names)}"
+            msg = "The supplied set of abundances is not the same as " \
+                  "that which was originally set!\nFree elements: " \
+                  f"{set(elem_abund.keys())}\n" \
+                  f"Abundances: {set(self.var_elem_names)}"
             raise RuntimeError(msg)
         kT = parse_value(kT, "keV")
         lkT = np.atleast_1d(np.log10(kT*K_per_keV))
@@ -674,11 +693,9 @@ class Atable2DGenerator(AtableGenerator):
         return Spectrum(self.ebins, spec, binscale=self.binscale)
 
 
-mekal_elem_options = ["He", "C", "N", "O", "Ne", "Na", "Mg",
-                      "Al", "Si", "S", "Ar", "Ca", "Fe", "Ni"]
-
-
 class MekalGenerator(Atable1DGenerator):
+    _available_elem = ["He", "C", "N", "O", "Ne", "Na", "Mg",
+                      "Al", "Si", "S", "Ar", "Ca", "Fe", "Ni"]
     """
     Initialize an emission model for a thermal plasma assuming CIE
     generated from the MeKaL model. Relevant references are:
@@ -700,8 +717,10 @@ class MekalGenerator(Atable1DGenerator):
         Default: "linear"
     var_elem : list of strings, optional
         The names of elements to allow to vary freely from the single 
-        abundance parameter. These must be strings like ["O", "N", "He"]. 
-        Default: None
+        abundance parameter. These must be strings like ["O", "N", "He"].
+        Variable abundances available for the MeKaL model are
+        ["He", "C", "N", "O", "Ne", "Na", "Mg", "Al", "Si", "S", "Ar", 
+        "Ca", "Fe", "Ni"]. Default: None
     abund_table : string or array_like, optional
         The abundance table to be used for solar abundances. 
         Either a string corresponding to a built-in table or an array
@@ -753,9 +772,9 @@ class MekalGenerator(Atable1DGenerator):
             cosmic_spec *= scale_factor
             k = 0
             for i in range(14):
-                j = elem_names.index(mekal_elem_options[i])
+                j = elem_names.index(self._available_elem[i])
                 data = self._atable[j]*f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][:,eidxs[0]:eidxs[1]].astype("float64")
-                if mekal_elem_options[i] in self.var_elem:
+                if self._available_elem[i] in self.var_elem:
                     var_spec[k,...] = data
                     k += 1
                 elif j != 2:
@@ -770,20 +789,8 @@ class MekalGenerator(Atable1DGenerator):
         return cosmic_spec, metal_spec, var_spec
 
 
-metal_tab_names = {
-    "C": "c",
-    "N": "n",
-    "O": "ox",
-    "Ne": "ne",
-    "Mg": "mg",
-    "Si": "si",
-    "S": "su",
-    "Ca": "ca",
-    "Fe": "fe"
-}
-
-
 class CloudyCIEGenerator(Atable1DGenerator):
+    _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
     """
     Initialize an emission model for a thermal plasma assuming CIE
     generated from Cloudy v17.03. The sequence of Cloudy commands used
@@ -824,39 +831,20 @@ class CloudyCIEGenerator(Atable1DGenerator):
     nbins : integer
         The number of bins in the spectral model.
     binscale : string, optional
-        The scale of the energy binning: "linear" or "log". 
+        The scale of the energy binning: "linear" or "log".
         Default: "linear"
-    var_elem_option: integer, optional
-        An integer to choose between options for variable elements, which are:
-        1: specify abundances of O, Ne, and Fe separately from other metals
-        2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
-           metals
-        3: specify abundances of C, N, O, Ne, Mg, Si, S, Ca, and Fe separately 
-           from other metals
-        Default: None, which means no metal abundances can be specified
-        separately.
+    var_elem : list of strings, optional
+        The names of elements to allow to vary freely from the single
+        abundance parameter. These must be strings like ["C", "N", "O"].
+        Variable abundances available for the Cloudy CIE model are
+        ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"].
+        Default: None
     """
-    def __init__(self, emin, emax, nbins, binscale="linear", var_elem_option=None):
-        if var_elem_option is None:
-            metal_option = "me"
-            var_elem = []
-        elif var_elem_option == 1:
-            metal_option = "mx"
-            var_elem = ["O", "Ne", "Fe"]
-        elif var_elem_option == 2:
-            metal_option = "mxx"
-            var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
-        elif var_elem_option == 3:
-            metal_option = "mxxx"
-            var_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
-        else:
-            raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
-        var_tables = tuple()
+    def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None):
         cosmic_table = get_data_file("c17.03_cie_nome.fits")
-        metal_tables = (get_data_file(f"c17.03_cie_{metal_option}.fits"),)
-        if var_elem_option:
-            var_tables = [(get_data_file(f"c17.03_cie_{metal_tab_names[el]}.fits"),)
-                          for el in var_elem]
+        metal_tables = (get_data_file(f"c17.03_cie_mxxx.fits"),)
+        var_tables = [(get_data_file(f"c17.03_cie_{metal_tab_names[el]}.fits"),)
+                      for el in self._available_elem]
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables,
                          var_elem, binscale)
         self.norm_fac = 5.50964e-5*np.array([1.0])
@@ -865,81 +853,59 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
 class IGMGenerator(Atable2DGenerator):
     _scale_nH = True
+    _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
+    """
+    Initialize an emission model for a thermal plasma including 
+    photoionization and resonant scattering from the CXB based on 
+    Khabibullin & Churazov 2019
+    (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov 
+    et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
 
+    Assumes the abundance tables from Feldman 1992.
+
+    Energy bins in the table are log-spaced between ~0.05 and ~50.0 keV,
+    with dex spacing of ~ 0.00145.
+
+    Table data and README files can be found at
+    https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v2x/.
+
+    Parameters
+    ----------
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The minimum energy for the spectral model.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The maximum energy for the spectral model.
+    nbins : integer
+        The number of bins in the spectral model.
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log". 
+        Default: "linear"
+    resonant_scattering : boolean, optional
+        Whether or not to include the effects of resonant scattering
+        from CXB photons. Default: False
+    cxb_factor : float, optional
+        The fraction of the CXB photons that are resonant scattered to enhance
+        the lines. Default: 0.5
+    var_elem : list of strings, optional
+        The names of elements to allow to vary freely from the single
+        abundance parameter. These must be strings like ["C", "N", "O"].
+        Variable abundances available for the IGM model are ["C", "N", "O", 
+        "Ne", "Fe", "S", "Si", "Ca", "Mg"]. Default: None
+    """
     def __init__(self, emin, emax, nbins, binscale="linear", resonant_scattering=False,
-                 cxb_factor=0.5, var_elem_option=None):
-        """
-        Initialize an emission model for a thermal plasma including 
-        photoionization and resonant scattering from the CXB based on 
-        Khabibullin & Churazov 2019
-        (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov 
-        et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
-
-        Assumes the abundance tables from Feldman 1992.
-
-        Energy bins in the table are log-spaced between ~0.05 and ~50.0 keV,
-        with dex spacing of ~ 0.00145.
-
-        Table data and README files can be found at
-        https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v2x/.
-
-        Parameters
-        ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy for the spectral model.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy for the spectral model.
-        nbins : integer
-            The number of bins in the spectral model.
-        binscale : string, optional
-            The scale of the energy binning: "linear" or "log". 
-            Default: "linear"
-        resonant_scattering : boolean, optional
-            Whether or not to include the effects of resonant scattering
-            from CXB photons. Default: False
-        cxb_factor : float, optional
-            The fraction of the CXB photons that are resonant scattered to enhance
-            the lines. Default: 0.5
-        var_elem_option: integer, optional
-            An integer to choose between options for variable elements, which are:
-            1: specify abundances of O, Ne, and Fe separately from other metals
-            2: specify abundances of O, Ne, Mg, Si, S, and Fe separately from other
-               metals
-            3: specify abundances of C, N, O, Ne, Mg, Si, S, Ca, and Fe separately 
-               from other metals
-            Default: None, which means no metal abundances can be specified
-            separately.
-        """
-        if var_elem_option is None:
-            metal_option = "me"
-            var_elem = []
-        elif var_elem_option == 1:
-            metal_option = "mx"
-            var_elem = ["O", "Ne", "Fe"]
-        elif var_elem_option == 2:
-            metal_option = "mxx"
-            var_elem = ["O", "Ne", "Mg", "Si", "S", "Fe"]
-        elif var_elem_option == 3:
-            metal_option = "mxxx"
-            var_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
-        else:
-            raise RuntimeError(f"Unsupported 'var_elem_option' = {var_elem_option}!")
-        self.var_elem_option = var_elem_option
+                 cxb_factor=0.5, var_elem=None):
         self.resonant_scattering = resonant_scattering
         cosmic_table = get_data_file("igm_v3ph2_nome.fits")
-        var_tables = tuple()
         if resonant_scattering:
-            metal_tables = (get_data_file(f"igm_v3ph2_{metal_option}.fits"),
-                            get_data_file(f"igm_v3sc_{metal_option}.fits"))
-            if var_elem_option:
-                var_tables = [(get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),
-                               get_data_file(f"igm_v3sc_{metal_tab_names[el]}.fits"))
-                              for el in var_elem]
+            metal_tables = (get_data_file(f"igm_v3ph2_mxxx.fits"),
+                            get_data_file(f"igm_v3sc_mxxx.fits"))
+            var_tables = [(get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),
+                           get_data_file(f"igm_v3sc_{metal_tab_names[el]}.fits"))
+                          for el in self._available_elem]
         else:
-            metal_tables = (get_data_file(f"igm_v3ph2_{metal_option}.fits"),)
-            if var_elem_option:
-                var_tables = [(get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),)
-                              for el in var_elem]
+            metal_tables = (get_data_file(f"igm_v3ph2_mxxx.fits"),)
+            var_tables = [(get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),)
+                          for el in self._available_elem]
         self.cxb_factor = cxb_factor
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables, var_tables,
                          var_elem, binscale)
