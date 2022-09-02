@@ -10,9 +10,11 @@ This update to SOXS contains a large number of new features, mostly related to
 the generation of spectra. 
 
 * New options have been added for the simulation of thermal spectra, including
-  SPEX, MeKaL, a CIE model based on Cloudy, and a model for emission from the 
-  IGM including photoionization and resonant scattering off of the CXB based on
-  Cloudy and provided by Ildar Khabibullin. See :ref:`thermal-spectra` for details.
+  from `SPEX <https://www.sron.nl/astrophysics-spex>`_, MeKaL, a CIE model based
+  on `Cloudy <https://gitlab.nublado.org/cloudy/cloudy/-/wikis/home>`_,
+  and a model for emission from the IGM including photoionization and resonant
+  scattering off of the CXB based on Cloudy and provided by Ildar Khabibullin.
+  See :ref:`thermal-spectra` for details.
 * The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced 
   energy binning has been added. See :ref:`spectrum-binning` for details.
 * The option to create a new spectrum from an old one by rebinning has been added
@@ -42,9 +44,9 @@ the generation of spectra.
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
   has been added to the options for abundance tables for the 
   :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
-* The default abundance table from `Cloudy <https://gitlab.nublado.org/cloudy/cloudy/-/wikis/home>`_ v17.03
-  has been added to the options for abundance tables for the 
-  :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
+* The default abundance table from Cloudy v17.03 has been added to the options for abundance
+  tables for the :class:`~soxs.thermal_spectra.ApecGenerator` and
+  :class:`~soxs.thermal_spectra.SpexGenerator`.
 * The command-line script ``make_thermal_spectrum`` has been changed to ``make_cie_spectrum`` and
   has many more options for computing CIE spectra. See :ref:`cmd-make-cie-spectrum` for details.
 * The command-line script ``make_igm_spectrum`` has been added for making thermal spectra with 

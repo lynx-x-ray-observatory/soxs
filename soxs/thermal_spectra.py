@@ -695,7 +695,7 @@ class Atable2DGenerator(AtableGenerator):
 
 class MekalGenerator(Atable1DGenerator):
     _available_elem = ["He", "C", "N", "O", "Ne", "Na", "Mg",
-                      "Al", "Si", "S", "Ar", "Ca", "Fe", "Ni"]
+                       "Al", "Si", "S", "Ar", "Ca", "Fe", "Ni"]
     """
     Initialize an emission model for a thermal plasma assuming CIE
     generated from the MeKaL model. Relevant references are:
