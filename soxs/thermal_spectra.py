@@ -604,7 +604,8 @@ class Atable1DGenerator(AtableGenerator):
 
 
 class Atable2DGenerator(AtableGenerator):
-    _scale_nH = False
+    _scale_nH = True
+
     def __init__(self, emin, emax, nbins, cosmic_table, metal_tables,
                  var_tables, var_elem, binscale):
         super().__init__(emin, emax, nbins, cosmic_table, metal_tables,
@@ -644,11 +645,11 @@ class Atable2DGenerator(AtableGenerator):
         if elem_abund is None:
             elem_abund = {}
         if set(elem_abund.keys()) != set(self.var_elem):
-            raise RuntimeError("The supplied set of abundances does not match "
-                               "what is available for 'var_elem_option = "
-                               f"{self.var_elem_option}!\n"
-                               "Free elements: %s\nAbundances: %s" % (set(elem_abund.keys()),
-                                                                      set(self.var_elem)))
+            msg = "The supplied set of abundances is not the same as " \
+                  "that which was originally set!\nFree elements: " \
+                  f"{set(elem_abund.keys())}\n" \
+                  f"Abundances: {set(self.var_elem)}"
+            raise RuntimeError(msg)
         kT = parse_value(kT, "keV")
         nH = parse_value(nH, "cm**-3")
         lkT = np.atleast_1d(np.log10(kT*K_per_keV))
@@ -769,7 +770,6 @@ class MekalGenerator(Atable1DGenerator):
         mylog.debug(f"Opening {self.cosmic_table}.")
         with fits.open(self.cosmic_table) as f:
             cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:,eidxs[0]:eidxs[1]].astype("float64")
-            cosmic_spec *= scale_factor
             k = 0
             for i in range(14):
                 j = elem_names.index(self._available_elem[i])
@@ -783,9 +783,10 @@ class MekalGenerator(Atable1DGenerator):
                 else:
                     # this is helium
                     cosmic_spec += data
-            metal_spec *= scale_factor
-            if var_spec is not None:
-                var_spec *= scale_factor
+        cosmic_spec *= scale_factor
+        metal_spec *= scale_factor
+        if var_spec is not None:
+            var_spec *= scale_factor
         return cosmic_spec, metal_spec, var_spec
 
 
@@ -852,7 +853,6 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
 
 class IGMGenerator(Atable2DGenerator):
-    _scale_nH = True
     _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
     """
     Initialize an emission model for a thermal plasma including 
