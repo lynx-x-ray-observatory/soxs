@@ -312,7 +312,11 @@ elements should be allowed to vary freely:
     
 Whatever elements are not specified here are assumed to be set as normal,
 whether they are H, He, trace elements, or metals covered by the ``abund``
-parameter. Now, spectra which are created from this generator object using its
+parameter. For the APEC, SPEX, and MeKaL models, any of the elements listed 
+above can be specified as variable. For the Cloudy CIE and IGM models, only
+the elements C, N, O, Ne, Fe, S, Si, Ca, and Mg can be variable.
+
+Now, spectra which are created from this generator object using its
 ``get_spectrum`` method should set values for the abundances of these elements
 in solar units. This is done by supplying the ``elem_abund`` dict like so:
 
@@ -408,9 +412,14 @@ The abundance tables included with SOXS are:
 * ``"cl17.03"``: The abundances used by default in Cloudy 17.03.
 
 The easiest way to ensure that you always use a particular abundance table
-is to set it in the :ref:`config`, like so:
+is to set the ``abund_table`` element in the :ref:`config`, like so:
 
-However, the Solar abundance table can be changed on-the-fly for the APEC,
+.. code-block:: parsed-literal
+    [soxs]
+    soxs_data_dir = /Users/jzuhone/Data/soxs
+    abund_table = lodd
+
+However, the Solar abundance table can also be changed on-the-fly for the APEC,
 SPEX, or MeKaL models like this:
 
 .. code-block:: python
@@ -433,6 +442,11 @@ Co, Ni, Cu, and Zn. An example:
                          3.16E-05, 9.77E-08, 1.66E-06, 1.55E-08, 3.63E-08])
 
     agen = ApecGenerator(0.05, 50.0, 10000, abund_table=my_abund)
+
+.. warning::
+
+    It is currently not possible to change the abundance table for either the 
+    Cloudy CIE or IGM models.
 
 .. warning::
 

@@ -836,7 +836,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
         Default: "linear"
     var_elem : list of strings, optional
         The names of elements to allow to vary freely from the single
-        abundance parameter. These must be strings like ["C", "N", "O"].
+        abundance parameter. These must be strings, like ["C", "N", "O"].
         Variable abundances available for the Cloudy CIE model are
         ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"].
         Default: None
