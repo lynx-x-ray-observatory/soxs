@@ -200,7 +200,9 @@ Because this model includes photoionization and (optionally) resonant
 scattering of the CXB, it is density-dependent. It is intended to be used
 primarily for simulations of spectra from low-density, sub-keV temperature
 plasmas such as the warm-hot intergalactic medium (WHIM), or the low-density
-parts of the circumgalactic medium (CGM).
+parts of the circumgalactic medium (CGM). For resonant scattering, it is assumed 
+that a fraction of CXB photons are scattering off of heavy ions, enhancing line
+emission. 
 
 IGM spectra using the Cloudy model can be generated using the
 :class:`~soxs.thermal_spectra.IGMGenerator` object, in a manner
@@ -312,9 +314,13 @@ elements should be allowed to vary freely:
     
 Whatever elements are not specified here are assumed to be set as normal,
 whether they are H, He, trace elements, or metals covered by the ``abund``
-parameter. For the APEC, SPEX, and MeKaL models, any of the elements listed 
-above can be specified as variable. For the Cloudy CIE and IGM models, only
-the elements C, N, O, Ne, Fe, S, Si, Ca, and Mg can be variable.
+parameter. 
+
+.. note::
+    
+    For the APEC, SPEX, and MeKaL models, any of the elements listed above
+    can be specified as variable. For the Cloudy CIE and IGM models, only
+    the elements C, N, O, Ne, Fe, S, Si, Ca, and Mg can be variable.
 
 Now, spectra which are created from this generator object using its
 ``get_spectrum`` method should set values for the abundances of these elements
@@ -446,7 +452,7 @@ Co, Ni, Cu, and Zn. An example:
 .. warning::
 
     It is currently not possible to change the abundance table for either the 
-    Cloudy CIE or IGM models.
+    Cloudy CIE or IGM models, as they always use ``"feld"``.
 
 .. warning::
 
