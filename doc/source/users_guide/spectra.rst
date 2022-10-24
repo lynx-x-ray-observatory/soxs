@@ -444,7 +444,7 @@ Count Rate Spectra
 
 The :class:`~soxs.spectra.CountRateSpectrum` class is basically the same thing as a
 the :class:`~soxs.spectra.Spectrum` class, except that it is in units of 
-:math:`\rm{counts}~\rm{s}^{-1}~\rm{s}^{-keV}`. This sort of spectrum makes the most
+:math:`\rm{counts}~\rm{s}^{-1}~\rm{keV}^{-1}`. This sort of spectrum makes the most
 sense in the rest frame of a source. This object is usually not generated on its own,
 but is the result of some other kind of operation (such as 
 `making source spectra in pyXSIM <https://hea-www.cfa.harvard.edu/~jzuhone/pyxsim/spectra.html>`_).
