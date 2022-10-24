@@ -437,6 +437,29 @@ called by the end-user but will be used "under the hood" in the generation of
 a :class:`~soxs.simput.PhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
 See :ref:`simput` for more information.
 
+.. _count-rate-spectra:
+
+Count Rate Spectra
+------------------
+
+The :class:`~soxs.spectra.CountRateSpectrum` class is basically the same thing as a
+the :class:`~soxs.spectra.Spectrum` class, except that it is in units of 
+:math:`\rm{counts}~\rm{s}^{-1}~\rm{s}^{-keV}`. This sort of spectrum makes the most
+sense in the rest frame of a source. This object is usually not generated on its own,
+but is the result of some other kind of operation (such as 
+`making source spectra in pyXSIM <https://hea-www.cfa.harvard.edu/~jzuhone/pyxsim/spectra.html>`_).
+
+One important note about :class:`~soxs.spectra.CountRateSpectrum` objects is that you 
+can also call :meth:`~soxs.spectra.CountRateSpectrum.generate_energies` on them, except
+that unlike :class:`~soxs.spectra.Spectrum` objects it is not necessary to specify an area, 
+but only an exposure time, to generate energies:
+
+.. code-block:: python
+
+    # here "spec" is a CountRateSpectrum object
+    t_exp = (100., "ks") # exposure time
+    energies = spec.generate_energies(t_exp)
+
 .. _convolved-spectra:
 
 "Convolved" Spectra

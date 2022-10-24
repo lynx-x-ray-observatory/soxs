@@ -833,6 +833,10 @@ class CountRateSpectrum(Spectrum):
     def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
 
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0,
+                                    abund_table="angr"):
+        raise NotImplementedError
+
 
 class ConvolvedSpectrum(CountRateSpectrum):
 
