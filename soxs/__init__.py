@@ -1,3 +1,12 @@
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("soxs")
+except PackageNotFoundError:
+    # package is not installed
+    pass
+
+
 from soxs.background import \
     BackgroundSpectrum, \
     ConvolvedBackgroundSpectrum, \
@@ -19,7 +28,8 @@ from soxs.events import \
 from soxs.instrument import \
     instrument_simulator, \
     make_background_file, \
-    simulate_spectrum
+    simulate_spectrum, \
+    simple_event_list
 
 from soxs.instrument_registry import \
     add_instrument_to_registry, \
@@ -62,11 +72,13 @@ from soxs.spectra import \
     CountRateSpectrum, \
     ConvolvedSpectrum
 
-from soxs.apec import \
-    ApecGenerator
+from soxs.thermal_spectra import \
+    ApecGenerator, \
+    SpexGenerator, \
+    IGMGenerator, \
+    CloudyCIEGenerator, \
+    MekalGenerator
 
 from soxs.utils import \
     set_soxs_config, \
     set_mission_config
-
-__version__ = "3.4.0"

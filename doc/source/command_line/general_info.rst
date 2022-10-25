@@ -56,7 +56,7 @@ Parameters Used in Many Scripts
 * ``fov``: Field of view, default units of arcminutes
 * ``emin``: Minimum energy, default units of keV
 * ``emax``: Minimum energy, default units of keV
-* ``nH``: Foreground galactic absorption column, default units
+* ``nH_abs``: Foreground galactic absorption column, default units
   of :math:`10^{22} \rm{atoms/cm^2}`
 
 Parameters Used in :ref:`cmd-spatial`
@@ -66,11 +66,17 @@ Parameters Used in :ref:`cmd-spatial`
 * ``dec0``: Central right ascension, default units of degrees
 * ``theta``: Rotation angle, default units of degrees
 
-Parameters Used in :ref:`cmd-make-thermal-spectrum`
-+++++++++++++++++++++++++++++++++++++++++++++++++++
+Parameters Used in :ref:`cmd-make-cie-spectrum`
++++++++++++++++++++++++++++++++++++++++++++++++
 
 * ``kT``: Temperature, default units of keV
 * ``velocity``: Velocity broadening parameter, default units of km/s
+
+Parameters Used in :ref:`cmd-make-igm-spectrum`
++++++++++++++++++++++++++++++++++++++++++++++++
+
+* ``kT``: Temperature, default units of keV
+* ``nH``: Hydrogen number density, default units of :math:`\rm{cm}^{-3}`
 
 Parameters Used in :ref:`cmd-make-annulus-source`
 +++++++++++++++++++++++++++++++++++++++++++++++++

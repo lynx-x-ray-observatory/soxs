@@ -22,9 +22,10 @@ The ``"default"`` Foreground Model
 ++++++++++++++++++++++++++++++++++
 
 The ``"default"`` galactic foreground component is modeled as a sum of two 
-thermal models, one absorbed, ``apec+wabs*apec``, with parameters:
+thermal models with thermal broadening of emission lines, one absorbed, 
+``bapec+tbabs*bapec``, with parameters:
 
-``wabs*apec`` **Model 1, Hot Halo**
+``wabs*bapec`` **Model 1, Hot Halo**
 
 * ``nH``: :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
 * ``kT``: :math:`\rm{0.225~keV}`
@@ -32,7 +33,7 @@ thermal models, one absorbed, ``apec+wabs*apec``, with parameters:
 * ``redshift``: :math:`0.0`
 * ``norm``: :math:`\rm{7.3 \times 10^{-7}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
  
-``apec`` **Model 2, Local Hot Bubble**
+``bapec`` **Model 2, Local Hot Bubble**
 
 * ``kT``: :math:`\rm{0.099~keV}`
 * ``abund``: :math:`\rm{1.0~Z_\odot}`
@@ -45,10 +46,10 @@ The ``"halosat"`` Foreground Model
 ++++++++++++++++++++++++++++++++++
 
 The ``"halosat"`` foreground model is the same as the ``"default"``, except that it 
-includes an additional absorbed thermal model for the Hot Halo, based on HaloSat 
-observations:
+includes an additional absorbed thermal model (with ``tbabs``) for the Hot Halo, 
+based on HaloSat observations:
 
-``wabs*apec`` **Model 3, Hot Halo**
+``tbabs*bapec`` **Model 3, Hot Halo**
 
 * ``nH``: :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
 * ``kT``: :math:`\rm{0.7~keV}`
@@ -57,9 +58,10 @@ observations:
 * ``norm``: :math:`\rm{8.76 \times 10^{-8}~10^{-14}\frac{\int{n_en_HdV}}{4{\pi}D_A^2(1+z)^2}}`
 
 In either case, the background is diffuse and uniformly fills the entire field of 
-view of the instrument you choose to simulate. To change the absorption model, 
-neutral hydrogen column density, or the APEC version for the background, use the 
-:ref:`config`.
+view of the instrument you choose to simulate. The absorption model, neutral hydrogen 
+column density, or the APEC version for the background can be changed. One can also 
+add velocity broadening to the emission lines for the hot halo components. For more
+information, see :ref:`config`. 
 
 .. note::
 

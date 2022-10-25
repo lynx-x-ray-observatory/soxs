@@ -1,7 +1,7 @@
 from soxs.spatial import PointSourceModel
 from soxs.spectra import Spectrum
 from soxs.simput import SimputPhotonList, SimputCatalog
-import astropy.io.fits as pyfits
+from astropy.io import fits
 import tempfile 
 import os
 import shutil
@@ -39,11 +39,10 @@ def test_append():
     assert os.path.exists("pt_src2_phlist.fits")
     assert os.path.exists("pt_src_simput.fits")
 
-    f = pyfits.open("pt_src_simput.fits")
-    cat = f["SRC_CAT"].data["SPECTRUM"]
-    assert cat[0] == "./pt_src1_phlist.fits[PHLIST,1]"
-    assert cat[1] == "./pt_src2_phlist.fits[PHLIST,1]"
-    f.close()
+    with fits.open("pt_src_simput.fits") as f:
+        cat = f["SRC_CAT"].data["SPECTRUM"]
+        assert cat[0] == "./pt_src1_phlist.fits[PHLIST,1]"
+        assert cat[1] == "./pt_src2_phlist.fits[PHLIST,1]"
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

@@ -14,19 +14,32 @@ parser.add_argument("specfile", type=str, help="The filename to write the spectr
 parser.add_argument("emin", help='The minimum energy in keV.')
 parser.add_argument("emax", help='The maximum energy in keV.')
 parser.add_argument("nbins", type=int, help='The number of bins in the spectrum.')
+parser.add_argument("--binscale", type=str, default='linear',
+                    help='The scale of the energy binning: '
+                         '"linear" or "log". Default: "linear"')
 parser.add_argument("--absorb_model", type=str,
                     help='Model for applying foreground Galactic absorption.')
-parser.add_argument("--nh", default=0.02, 
-                    help='The hydrogen column in units of 10**22 atoms/cm**2. Default: 0.02')
+parser.add_argument("--nH_abs",
+                    help='The hydrogen column in units of 10**22 atoms/cm**2.')
+parser.add_argument("--abund_table", type=str, default="angr",
+                    help="The abundance table to be used if the absorption model is "
+                         "TBabs. Takes a string corresponding to a built-in table. "
+                         "Default is set in the SOXS configuration file, the default "
+                         "for which is 'angr'.")
+
 parser.add_argument("--overwrite", action='store_true', 
                     help='Overwrite an existing file with the same name.')
 
 args = parser.parse_args()
 
 spec = Spectrum.from_powerlaw(args.photon_index, args.redshift, args.norm,
-                              args.emin, args.emax, args.nbins)
+                              args.emin, args.emax, args.nbins, binscale=args.binscale)
 
 if args.absorb_model is not None:
-    spec.apply_foreground_absorption(args.nh, model=args.absorb_model)
+    if args.nH_abs is None:
+        raise RuntimeError("Must specify a value for --nH_abs if including"
+                           "foreground absorption!")
+    spec.apply_foreground_absorption(args.nH_abs, model=args.absorb_model,
+                                     abund_table=args.abund_table)
 
 spec.write_file(args.specfile, overwrite=args.overwrite)

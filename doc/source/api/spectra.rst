@@ -9,9 +9,3 @@ Spectrum API
 
 .. autoclass:: soxs.spectra.ConvolvedSpectrum
     :members: deconvolve, generate_energies, rescale_flux, new_spec_from_band
-
-APEC API
-========
-
-.. autoclass:: soxs.apec.ApecGenerator
-    :members:

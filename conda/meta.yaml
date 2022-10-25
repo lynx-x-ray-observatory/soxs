@@ -1,0 +1,27 @@
+package:
+  name: soxs
+  version: "{{ environ['GIT_DESCRIBE_TAG'] }}"
+
+source:
+  path: ../
+    
+requirements:
+  build:
+    - python
+    - numpy
+    - setuptools
+    - cython
+    - setuptools>=45
+    - setuptools_scm[toml]>=6.2
+  run:
+    - python
+    - numpy
+    - h5py
+    - astropy
+    - scipy
+    - tqdm
+    - setuptools_scm[toml]>=6.2
+
+about:
+  home: http://hea-www.cfa.harvard.edu/soxs
+  license: BSD

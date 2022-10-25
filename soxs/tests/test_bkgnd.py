@@ -7,7 +7,7 @@ from soxs.utils import soxs_files_path, set_soxs_config
 from soxs.tests.utils import spectrum_answer_testing
 from numpy.random import RandomState
 from numpy.testing import assert_allclose
-import astropy.io.fits as pyfits
+from astropy.io import fits
 import tempfile
 import os
 import shutil
@@ -57,7 +57,7 @@ def test_simulate_bkgnd_spectrum():
                       overwrite=True, bkgnd_area=(fov, "arcsec**2"))
     ch_min = hdxi_rmf.eb_to_ch(0.5)-hdxi_rmf.cmin
     ch_max = hdxi_rmf.eb_to_ch(2.0)-hdxi_rmf.cmin
-    with pyfits.open("test_bkgnd.pha") as f:
+    with fits.open("test_bkgnd.pha") as f:
         ncts = f["SPECTRUM"].data["COUNTS"][ch_min:ch_max].sum()
     S = ncts/exp_time/fov
     dS = np.sqrt(ncts)/exp_time/fov
@@ -95,14 +95,10 @@ def test_add_background():
                          [ra1, dec1], bkgnd_file="bkg_evt.fits",
                          prng=prng2, overwrite=True)
 
-    f1 = pyfits.open("evt1.fits")
-    f2 = pyfits.open("evt2.fits")
-
-    for key in ["X", "Y", "ENERGY", "PHA"]:
-        assert_allclose(f1["EVENTS"].data[key], f2["EVENTS"].data[key], rtol=1.0e-6)
-
-    f1.close()
-    f2.close()
+    with fits.open("evt1.fits") as f1, fits.open("evt2.fits") as f2:
+        for key in ["X", "Y", "ENERGY", "PHA"]:
+            assert_allclose(f1["EVENTS"].data[key],
+                            f2["EVENTS"].data[key], rtol=1.0e-6)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

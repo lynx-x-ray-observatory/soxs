@@ -1,4 +1,2 @@
 include soxs/files/*
-include versioneer.py
-include soxs/_version.py
 include soxs/file_hash_registry.json

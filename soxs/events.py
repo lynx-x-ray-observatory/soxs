@@ -40,10 +40,10 @@ def write_event_file(events, parameters, filename, overwrite=False):
     elif chantype == "PI":
         cunit = "Chan"
     col_ch = fits.Column(name=chantype, format='1J', unit=cunit, 
-                           array=events[chantype])
+                         array=events[chantype])
 
     col_t = fits.Column(name="TIME", format='1D', unit='s', 
-                          array=events['time'])
+                        array=events['time'])
 
     cols = [col_e, col_x, col_y, col_ch, col_t, col_dx, col_dy, col_id]
 
@@ -173,7 +173,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         The interpolation order to use when making the exposure map. 
         Default: 1
     """
-    from scipy.ndimage.interpolation import rotate
+    from scipy.ndimage import rotate
     from soxs.instrument import perform_dither
     from soxs.response import AuxiliaryResponseFile
     if isinstance(energy, np.ndarray) and weights is None:

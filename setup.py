@@ -10,20 +10,16 @@ cython_extensions = [
     Extension("soxs.lib.broaden_lines",
               ["soxs/lib/broaden_lines.pyx"],
               language="c", libraries=["m"],
-              include_dirs=[np.get_include()])
+              include_dirs=[np.get_include()]),
 ]
-
-VERSION = "3.4.0"
 
 setup(name='soxs',
       packages=find_packages(),
-      version=VERSION,
       description='Simulated Observations of X-ray Sources',
       author='John ZuHone',
       author_email='john.zuhone@cfa.harvard.edu',
       url='https://github.com/lynx-x-ray-observatory/soxs/',
-      setup_requires=["numpy", "cython>=0.24"],
-      install_requires=["numpy", "astropy>=3.0", "tqdm", "pooch",
+      install_requires=["numpy", "astropy>=3.0", "tqdm", "pooch", "setuptools_scm",
                         "h5py", "scipy", "pyyaml", "regions", "appdirs"],
       include_package_data=True,
       scripts=scripts,

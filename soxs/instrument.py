@@ -1,5 +1,5 @@
 import numpy as np
-import astropy.wcs as pywcs
+from astropy import wcs
 import os
 from collections import defaultdict
 from regions import PixCoord
@@ -26,6 +26,26 @@ def perform_dither(t, dither_dict):
         x_offset = np.zeros(t.size)
         y_offset = np.zeros(t.size)
     return x_offset, y_offset
+
+
+def make_source_list(source):
+    if source is None:
+        source_list = []
+        parameters = {}
+    elif isinstance(source, dict):
+        parameters = {}
+        for key in ["flux", "emin", "emax", "src_names"]:
+            parameters[key] = source[key]
+        source_list = []
+        for i in range(len(parameters["flux"])):
+            phlist = SimputPhotonList(source["ra"][i], source["dec"][i],
+                                      source["energy"][i], parameters['flux'][i],
+                                      parameters['src_names'][i])
+            source_list.append(phlist)
+    elif isinstance(source, str):
+        # Assume this is a SIMPUT catalog
+        source_list, parameters = read_simput_catalog(source)
+    return source_list, parameters
 
 
 def generate_events(source, exp_time, instrument, sky_center, 
@@ -89,21 +109,7 @@ def generate_events(source, exp_time, instrument, sky_center,
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
-    if source is None:
-        source_list = []
-    elif isinstance(source, dict):
-        parameters = {}
-        for key in ["flux", "emin", "emax", "src_names"]:
-            parameters[key] = source[key]
-        source_list = []
-        for i in range(len(parameters["flux"])):
-            phlist = SimputPhotonList(source["ra"][i], source["dec"][i],
-                                      source["energy"][i], parameters['flux'][i],
-                                      parameters['src_names'][i])
-            source_list.append(phlist)
-    elif isinstance(source, str):
-        # Assume this is a SIMPUT catalog
-        source_list, parameters = read_simput_catalog(source)
+    source_list, parameters = make_source_list(source)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -162,7 +168,7 @@ def generate_events(source, exp_time, instrument, sky_center,
 
     # Set up WCS
 
-    w = pywcs.WCS(naxis=2)
+    w = wcs.WCS(naxis=2)
     w.wcs.crval = event_params["sky_center"]
     w.wcs.crpix = event_params["pix_center"]
     w.wcs.cdelt = [-plate_scale, plate_scale]
@@ -190,7 +196,7 @@ def generate_events(source, exp_time, instrument, sky_center,
         refband = [parameters["emin"][i], parameters["emax"][i]]
         if src.src_type == "phlist":
             events = arf.detect_events_phlist(src.events.copy(), exp_time,
-                                              parameters["flux"][i], 
+                                              parameters["flux"][i],
                                               refband, prng=prng)
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
@@ -254,14 +260,16 @@ def generate_events(source, exp_time, instrument, sky_center,
                 events["chip_id"][inside] = i
             keep = events["chip_id"] > -1
 
-            mylog.info(f"{n_evt-keep.sum()} events were rejected because "
-                       f"they do not fall on any CCD.")
+            mylog.debug(f"{n_evt-keep.sum()} events were rejected because "
+                        f"they do not fall on any CCD.")
             n_evt = keep.sum()
 
             if n_evt == 0:
                 mylog.warning("No events are within the field "
                               "of view for this source!!!")
             else:
+
+                mylog.info(f"{n_evt} events were detected from the source.")
 
                 # Keep only those events which fall on a chip
 
@@ -795,3 +803,164 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
 
     _write_spectrum(bins, out_spec, exp_time, rmf.header["CHANTYPE"], 
                     event_params, out_file, overwrite=overwrite)
+
+
+def simple_event_list(input_events, out_file, exp_time, instrument,
+                      overwrite=False, use_gal_coords=False, prng=None):
+    from astropy.coordinates import SkyCoord
+    from astropy.time import Time, TimeDelta
+    from astropy.io import fits
+    from pathlib import PurePath
+
+    if not out_file.endswith(".fits"):
+        out_file += ".fits"
+    mylog.info(f"Making simple observation of source in {out_file}.")
+    exp_time = parse_value(exp_time, "s")
+    prng = parse_prng(prng)
+    source_list, parameters = make_source_list(input_events)
+
+    try:
+        instrument_spec = instrument_registry[instrument]
+    except KeyError:
+        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
+    if not instrument_spec["imaging"]:
+        raise RuntimeError(f"Instrument '{instrument_spec['name']}' is not "
+                           f"designed for imaging observations!")
+
+    arf_file = get_data_file(instrument_spec["arf"])
+    rmf_file = get_data_file(instrument_spec["rmf"])
+    arf = AuxiliaryResponseFile(arf_file)
+    rmf = RedistributionMatrixFile(rmf_file)
+
+    event_params = {"exposure_time": exp_time,
+                    "arf": arf.filename,
+                    "rmf": rmf.filename,
+                    "channel_type": rmf.chan_type.upper(),
+                    "telescope": rmf.header["TELESCOP"],
+                    "instrument": instrument_spec['name'],
+                    "mission": rmf.header.get("MISSION", ""),
+                    "nchan": rmf.n_ch,
+                    "chan_lim": [rmf.cmin, rmf.cmax]}
+
+    all_events = defaultdict(list)
+
+    for i, src in enumerate(source_list):
+
+        mylog.info(f"Detecting events from source {parameters['src_names'][i]}")
+
+        mylog.info(f"Applying energy-dependent effective area from "
+                   f"{os.path.split(arf.filename)[-1]}.")
+        refband = [parameters["emin"][i], parameters["emax"][i]]
+        if src.src_type == "phlist":
+            events = arf.detect_events_phlist(src.events.copy(), exp_time,
+                                              parameters["flux"][i],
+                                              refband, prng=prng)
+        elif src.src_type.endswith("spectrum"):
+            events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
+
+        n_evt = events["energy"].size
+
+        if n_evt == 0:
+            mylog.warning("No events were observed for this source!!!")
+        else:
+            # Add times to events
+            events['time'] = prng.uniform(size=n_evt, low=0.0, high=exp_time)
+
+        if n_evt > 0:
+            for key in events:
+                all_events[key] = np.concatenate([all_events[key], events[key]])
+
+    if len(all_events["energy"]) == 0:
+        mylog.warning("No events from any of the sources in "
+                      "the catalog were detected!")
+        for key in ["ra", "dec", "time", event_params["channel_type"]]:
+            all_events[key] = np.array([])
+    else:
+        # Step 4: Scatter energies with RMF
+        mylog.info(f"Scattering energies with "
+                   f"RMF {os.path.split(rmf.filename)[-1]}.")
+        all_events = rmf.scatter_energies(all_events, prng=prng)
+
+    mylog.info(f"Writing events to file {out_file}.")
+
+    t_begin = Time.now()
+    dt = TimeDelta(event_params["exposure_time"], format='sec')
+    t_end = t_begin + dt
+
+    if use_gal_coords:
+        names = ["GLON", "GLAT"]
+        c = SkyCoord(all_events["ra"], all_events["dec"], unit='deg')
+        lon = c.galactic.l
+        lat = c.galactic.b
+    else:
+        names = ["RA", "DEC"]
+        lon = all_events["ra"]
+        lat = all_events["dec"]
+
+    col_ra = fits.Column(name=names[0], format='E', unit='deg',
+                         array=lon)
+    col_dec = fits.Column(name=names[1], format='E', unit='deg',
+                          array=lat)
+    col_e = fits.Column(name='ENERGY', format='E', unit='eV',
+                        array=all_events["energy"]*1000.)
+
+    chantype = event_params["channel_type"].upper()
+    if chantype == "PHA":
+        cunit = "adu"
+    elif chantype == "PI":
+        cunit = "Chan"
+    col_ch = fits.Column(name=chantype, format='1J', unit=cunit,
+                         array=all_events[chantype])
+
+    col_t = fits.Column(name="TIME", format='1D', unit='s',
+                        array=all_events['time'])
+
+    cols = [col_e, col_ra, col_dec, col_ch, col_t]
+
+    coldefs = fits.ColDefs(cols)
+    tbhdu = fits.BinTableHDU.from_columns(coldefs)
+    tbhdu.name = "EVENTS"
+
+    tbhdu.header["TLMIN4"] = event_params["chan_lim"][0]
+    tbhdu.header["TLMAX4"] = event_params["chan_lim"][1]
+    tbhdu.header["EXPOSURE"] = event_params["exposure_time"]
+    tbhdu.header["TSTART"] = 0.0
+    tbhdu.header["TSTOP"] = event_params["exposure_time"]
+    tbhdu.header["HDUVERS"] = "1.1.0"
+    tbhdu.header["RADECSYS"] = "FK5"
+    tbhdu.header["EQUINOX"] = 2000.0
+    tbhdu.header["HDUCLASS"] = "OGIP"
+    tbhdu.header["HDUCLAS1"] = "EVENTS"
+    tbhdu.header["HDUCLAS2"] = "ACCEPTED"
+    tbhdu.header["DATE"] = t_begin.tt.isot
+    tbhdu.header["DATE-OBS"] = t_begin.tt.isot
+    tbhdu.header["DATE-END"] = t_end.tt.isot
+    tbhdu.header["RESPFILE"] = PurePath(event_params["rmf"]).parts[-1]
+    tbhdu.header["PHA_BINS"] = event_params["nchan"]
+    tbhdu.header["ANCRFILE"] = PurePath(event_params["arf"]).parts[-1]
+    tbhdu.header["CHANTYPE"] = event_params["channel_type"]
+    tbhdu.header["MISSION"] = event_params["mission"]
+    tbhdu.header["TELESCOP"] = event_params["telescope"]
+    tbhdu.header["INSTRUME"] = event_params["instrument"]
+
+    start = fits.Column(name='START', format='1D', unit='s',
+                        array=np.array([0.0]))
+    stop = fits.Column(name='STOP', format='1D', unit='s',
+                       array=np.array([event_params["exposure_time"]]))
+
+    tbhdu_gti = fits.BinTableHDU.from_columns([start,stop])
+    tbhdu_gti.name = "STDGTI"
+    tbhdu_gti.header["TSTART"] = 0.0
+    tbhdu_gti.header["TSTOP"] = event_params["exposure_time"]
+    tbhdu_gti.header["HDUCLASS"] = "OGIP"
+    tbhdu_gti.header["HDUCLAS1"] = "GTI"
+    tbhdu_gti.header["HDUCLAS2"] = "STANDARD"
+    tbhdu_gti.header["RADECSYS"] = "FK5"
+    tbhdu_gti.header["EQUINOX"] = 2000.0
+    tbhdu_gti.header["DATE"] = t_begin.tt.isot
+    tbhdu_gti.header["DATE-OBS"] = t_begin.tt.isot
+    tbhdu_gti.header["DATE-END"] = t_end.tt.isot
+
+    hdulist = [fits.PrimaryHDU(), tbhdu, tbhdu_gti]
+
+    fits.HDUList(hdulist).writeto(out_file, overwrite=overwrite)

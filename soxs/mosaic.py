@@ -1,5 +1,5 @@
 from soxs.instrument import instrument_simulator
-from soxs.events import write_image, make_exposure_map
+from soxs.events import write_image, make_exposure_map, wcs_from_event_file
 from soxs.utils import mylog
 import numpy as np
 from astropy.io import fits, ascii
@@ -89,7 +89,103 @@ def make_mosaic_events(pointing_list, input_source, out_prefix, exp_time,
     return outfile
 
 
-def make_mosaic_image(evtfile_list, image_file, emin=None, emax=None,
+def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
+    x = []
+    y = []
+    e = []
+    ch = []
+    t = []
+    chantype = ""
+    for eventfile in eventfiles:
+        with fits.open(eventfile, memmap=True) as f:
+            hdu = f["EVENTS"]
+            wcs_in = wcs_from_event_file(f)
+            ra, dec = wcs_in.wcs_pix2world(hdu.data["X"], hdu.data["Y"], 1)
+            xx, yy = wcs_out.wcs_world2pix(ra, dec, 1)
+            x.append(xx)
+            y.append(yy)
+            e.append(hdu.data["ENERGY"])
+            ch.append(hdu.data[hdu.header["CHANTYPE"]])
+            t.append(hdu.data["TIME"])
+            chantype = hdu.header["CHANTYPE"]
+
+    x = np.concatenate(x)
+    y = np.concatenate(y)
+    e = np.concatenate(e)
+    ch = np.concatenate(ch)
+    t = np.concatenate(t)
+
+    if chantype == "PHA":
+        cunit = "adu"
+    elif chantype == "PI":
+        cunit = "Chan"
+
+    col_x = fits.Column(name='X', format='D', unit='pixel', array=x)
+    col_y = fits.Column(name='Y', format='D', unit='pixel', array=y)
+    col_e = fits.Column(name='ENERGY', format='E', unit='eV', array=e)
+    col_ch = fits.Column(name=chantype, format='1J', unit=cunit, array=ch)
+    col_t = fits.Column(name='TIME', format='1D', unit='s', array=t)
+
+    coldefs = fits.ColDefs([col_e, col_x, col_y, col_ch, col_t])
+    tbhdu = fits.BinTableHDU.from_columns(coldefs)
+    tbhdu.name = "EVENTS"
+
+    tbhdu.header["HDUVERS"] = "1.1.0"
+    tbhdu.header["RADECSYS"] = "FK5"
+    tbhdu.header["EQUINOX"] = 2000.0
+    tbhdu.header["HDUCLASS"] = "OGIP"
+    tbhdu.header["HDUCLAS1"] = "EVENTS"
+    tbhdu.header["HDUCLAS2"] = "ACCEPTED"
+    tbhdu.header["MTYPE1"] = "sky"
+    tbhdu.header["MFORM1"] = "x,y"
+    tbhdu.header["MTYPE2"] = "EQPOS"
+    tbhdu.header["MFORM2"] = "RA,DEC"
+    tbhdu.header["TCTYP2"] = "RA---TAN"
+    tbhdu.header["TCTYP3"] = "DEC--TAN"
+    tbhdu.header["TCRVL2"] = wcs_out.wcs.crval[0]
+    tbhdu.header["TCRVL3"] = wcs_out.wcs.crval[1]
+    tbhdu.header["TCDLT2"] = wcs_out.wcs.cdelt[0]
+    tbhdu.header["TCDLT3"] = wcs_out.wcs.cdelt[1]
+    tbhdu.header["TCRPX2"] = wcs_out.wcs.crpix[0]
+    tbhdu.header["TCRPX3"] = wcs_out.wcs.crpix[1]
+    tbhdu.header["TCUNI2"] = "deg"
+    tbhdu.header["TCUNI3"] = "deg"
+    tbhdu.header["TLMIN2"] = 0.5
+    tbhdu.header["TLMIN3"] = 0.5
+    tbhdu.header["TLMAX2"] = shape_out[0]+0.5
+    tbhdu.header["TLMAX3"] = shape_out[1]+0.5
+    tbhdu.header["CHANTYPE"] = chantype
+
+    with fits.open(eventfiles[0], memmap=True) as f:
+        for key in ["TELESCOP", "INSTRUME", "ANCRFILE", "RESPFILE",
+                    "EXPOSURE", "DATE", "DATE-OBS", "DATE-END", "MISSION",
+                    "TSTART", "TSTOP", "TLMIN4", "TLMAX4", "PHA_BINS"]:
+            tbhdu.header[key] = f["EVENTS"].header[key]
+
+    start = fits.Column(name='START', format='1D', unit='s',
+                          array=np.array([0.0]))
+    stop = fits.Column(name='STOP', format='1D', unit='s',
+                         array=np.array([tbhdu.header["EXPOSURE"]]))
+
+    tbhdu_gti = fits.BinTableHDU.from_columns([start,stop])
+    tbhdu_gti.name = "STDGTI"
+    tbhdu_gti.header["TSTART"] = 0.0
+    tbhdu_gti.header["TSTOP"] = tbhdu.header["EXPOSURE"]
+    tbhdu_gti.header["HDUCLASS"] = "OGIP"
+    tbhdu_gti.header["HDUCLAS1"] = "GTI"
+    tbhdu_gti.header["HDUCLAS2"] = "STANDARD"
+    tbhdu_gti.header["RADECSYS"] = "FK5"
+    tbhdu_gti.header["EQUINOX"] = 2000.0
+    tbhdu_gti.header["DATE"] = tbhdu.header["DATE"]
+    tbhdu_gti.header["DATE-OBS"] = tbhdu.header["DATE-OBS"]
+    tbhdu_gti.header["DATE-END"] = tbhdu.header["DATE-END"]
+
+    hdulist = [fits.PrimaryHDU(), tbhdu, tbhdu_gti]
+
+    fits.HDUList(hdulist).writeto(outfile, overwrite=overwrite)
+
+
+def make_mosaic_image(evtfile_list, image_file, evt_file=None, emin=None, emax=None,
                       reblock=1, use_expmap=False, expmap_energy=None, 
                       expmap_weights=None, normalize=True, nhistx=16,
                       nhisty=16, overwrite=False):
@@ -105,8 +201,11 @@ def make_mosaic_image(evtfile_list, image_file, emin=None, emax=None,
         locations on the sky.
     image_file : filename
         The name of the FITS image file to be written. This name will
-        also be used for the exposure map and flux files if they are
+        also be used for the exposure map, event, and flux files if they are
         written.
+    evt_file : filename, optional
+        The name of the mosaicked FITS event file to be written, if desired. Default
+        is None, which writes no file.
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The minimum energy of the photons to put in the image, in keV.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
@@ -141,22 +240,25 @@ def make_mosaic_image(evtfile_list, image_file, emin=None, emax=None,
 
     files = []
     for row in t:
-        evt_file = row["evtfile"]
-        img_file = evt_file.replace("evt", "img")
+        evtfile = row["evtfile"]
+        img_file = evtfile.replace("evt", "img")
         if use_expmap:
-            emap_file = evt_file.replace("evt", "expmap")
-            make_exposure_map(evt_file, emap_file, energy=expmap_energy,
+            emap_file = evtfile.replace("evt", "expmap")
+            make_exposure_map(evtfile, emap_file, energy=expmap_energy,
                               weights=expmap_weights, normalize=normalize,
                               overwrite=overwrite, reblock=reblock, 
                               nhistx=nhistx, nhisty=nhisty)
         else:
             emap_file = None
-        write_image(evt_file, img_file, emin=emin, emax=emax,
+        write_image(evtfile, img_file, emin=emin, emax=emax,
                     overwrite=overwrite, reblock=reblock)
         files.append([img_file, emap_file])
 
     img_hdus = [fits.open(fns[0], memmap=True)[0] for fns in files]
     wcs_out, shape_out = find_optimal_celestial_wcs(img_hdus)
+    if evt_file is not None:
+        _combine_events(t["evtfile"], wcs_out, (shape_out[1], shape_out[0]), evt_file,
+                        overwrite=overwrite)
     img, footprint = reproject_and_coadd(img_hdus, wcs_out, shape_out=shape_out,
                                          reproject_function=reproject_interp,
                                          combine_function='sum')

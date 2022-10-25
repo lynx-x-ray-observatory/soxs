@@ -48,12 +48,27 @@ def test_read_write():
 
     spec1 = Spectrum.from_powerlaw(1.0, 0.05, 1.0e-4, 0.1, 10.0, 10000)
     spec1.write_file("test_spec.dat", overwrite=True)
-    spec2 = Spectrum.from_file("test_spec.dat")
+    spec1.write_file("test_spec.h5", overwrite=True)
+    spec1.write_file("test_spec.fits", overwrite=True)
 
+    spec2 = Spectrum.from_file("test_spec.dat")
+    spec3 = Spectrum.from_file("test_spec.h5")
+    spec4 = Spectrum.from_file("test_spec.fits")
+ 
     assert_allclose(spec1.flux, spec2.flux)
     assert_allclose(spec1.emid, spec2.emid)
     assert_allclose(spec1.ebins, spec2.ebins)
     assert_allclose(spec1.cumspec, spec2.cumspec)
+
+    assert_allclose(spec1.flux, spec3.flux)
+    assert_allclose(spec1.emid, spec3.emid)
+    assert_allclose(spec1.ebins, spec3.ebins)
+    assert_allclose(spec1.cumspec, spec3.cumspec)
+
+    assert_allclose(spec1.flux, spec4.flux)
+    assert_allclose(spec1.emid, spec4.emid)
+    assert_allclose(spec1.ebins, spec4.ebins)
+    assert_allclose(spec1.cumspec, spec4.cumspec)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

@@ -1,8 +1,8 @@
 import numpy as np
 
-import astropy.io.fits as pyfits
+from astropy.io import fits
 import astropy.units as u
-import astropy.wcs as pywcs
+from astropy import wcs
 
 from tqdm.auto import tqdm
 
@@ -27,7 +27,7 @@ class AuxiliaryResponseFile:
     """
     def __init__(self, filename):
         self.filename = get_data_file(filename)
-        f = pyfits.open(self.filename)
+        f = fits.open(self.filename)
         self.elo = f["SPECRESP"].data.field("ENERG_LO")
         self.ehi = f["SPECRESP"].data.field("ENERG_HI")
         self.emid = 0.5*(self.elo+self.ehi)
@@ -78,14 +78,14 @@ class AuxiliaryResponseFile:
         energy = cspec.generate_energies(exp_time, quiet=True, prng=prng).value
         if getattr(src, "imhdu", None):
             x, y = image_pos(src.imhdu.data, energy.size, prng)
-            w = pywcs.WCS(header=src.imhdu.header)
+            w = wcs.WCS(header=src.imhdu.header)
             w.wcs.crval = [src.ra, src.dec]
             ra, dec = w.wcs_pix2world(x, y, 1)
         else:
             pones = np.ones_like(energy)
             ra = src.ra*pones
             dec = src.dec*pones
-        mylog.info(f"{energy.size} events detected.")
+        mylog.debug(f"{energy.size} events detected from this spectrum.")
         return {"energy": energy, "ra": ra, "dec": dec}
 
     def detect_events_phlist(self, events, exp_time, flux, refband, prng=None):
@@ -128,7 +128,7 @@ class AuxiliaryResponseFile:
         w = earea / self.max_area
         randvec = prng.uniform(size=energy.size)
         eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("int64")
-        mylog.info(f"{n_ph} events detected.")
+        mylog.debug(f"{n_ph} events detected out of {energy.size}.")
         for key in events:
             events[key] = np.asarray(events[key][eidxs])
         return events
@@ -225,7 +225,7 @@ class RedistributionMatrixFile:
     """
     def __init__(self, filename):
         self.filename = get_data_file(filename)
-        self.handle = pyfits.open(self.filename, memmap=True)
+        self.handle = fits.open(self.filename, memmap=True)
         if "MATRIX" in self.handle:
             self.mat_key = "MATRIX"
         elif "SPECRESP MATRIX" in self.handle:
@@ -381,7 +381,7 @@ class RedistributionMatrixFile:
             spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
-        if not isinstance(self.data["MATRIX"], pyfits.column._VLF) and \
+        if not isinstance(self.data["MATRIX"], fits.column._VLF) and \
                 np.all(self.data["N_GRP"] == 1):
             # We can do things a bit faster if there is only one group each
             f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"]))

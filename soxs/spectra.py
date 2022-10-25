@@ -4,15 +4,18 @@ import tempfile
 import shutil
 import os
 from soxs.utils import soxs_files_path, mylog, \
-    parse_prng, parse_value, line_width_equiv
+    parse_prng, parse_value, line_width_equiv, \
+    issue_deprecation_warning, get_data_file, \
+    regrid_spectrum
 from soxs.constants import erg_per_keV, hc, \
     sigma_to_fwhm, sqrt2pi
 import astropy.units as u
 import h5py
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import interp1d
 from astropy.modeling.functional_models import \
     Gaussian1D
-from soxs.apec import ApecGenerator
+from astropy.table import QTable
+from pathlib import Path, PurePath
 
 
 class Energies(u.Quantity):
@@ -22,14 +25,20 @@ class Energies(u.Quantity):
         return ret
 
 
-def _generate_energies(spec, t_exp, rate, prng, quiet=False):
+def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
     cumspec = spec.cumspec
     n_ph = prng.poisson(t_exp*rate)
     if not quiet:
         mylog.info("Creating %d energies from this spectrum." % n_ph)
     randvec = prng.uniform(size=n_ph)
     randvec.sort()
-    e = np.interp(randvec, cumspec, spec.ebins.value)
+    if binscale in ["linear", "custom"]:
+        bin_edges = spec.ebins.value
+    elif binscale == "log":
+        bin_edges = np.log10(spec.ebins.value)
+    e = np.interp(randvec, cumspec, bin_edges)
+    if binscale == "log":
+        e = 10**e
     if not quiet:
         mylog.info("Finished creating energies.")
     return e
@@ -38,12 +47,13 @@ def _generate_energies(spec, t_exp, rate, prng, quiet=False):
 class Spectrum:
     _units = "photon/(cm**2*s*keV)"
 
-    def __init__(self, ebins, flux):
+    def __init__(self, ebins, flux, binscale='linear'):
         self.ebins = u.Quantity(ebins, "keV")
         self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
         self.flux = u.Quantity(flux, self._units)
         self.nbins = len(self.emid)
         self.de = np.diff(self.ebins)
+        self.binscale = binscale
         self._compute_total_flux()
 
     def _compute_total_flux(self):
@@ -66,7 +76,8 @@ class Spectrum:
 
     def __add__(self, other):
         self._check_binning_units(other)
-        return type(self)(self.ebins, self.flux+other.flux)
+        return type(self)(self.ebins, self.flux+other.flux, 
+                          binscale=self.binscale)
 
     def __iadd__(self, other):
         self._check_binning_units(other)
@@ -75,13 +86,15 @@ class Spectrum:
 
     def __sub__(self, other):
         self._check_binning_units(other)
-        return type(self)(self.ebins, self.flux-other.flux)
+        return type(self)(self.ebins, self.flux-other.flux, 
+                          binscale=self.binscale)
 
     def __mul__(self, other):
         if hasattr(other, "eff_area"):
             return ConvolvedSpectrum.convolve(self, other)
         else:
-            return type(self)(self.ebins, other*self.flux)
+            return type(self)(self.ebins, other*self.flux, 
+                              binscale=self.binscale)
 
     __rmul__ = __mul__
 
@@ -101,6 +114,34 @@ class Spectrum:
         if isinstance(e, u.Quantity):
             e = e.to("keV").value
         return u.Quantity(self.func(e), self._units)
+
+    def regrid_spectrum(self, emin, emax, nbins, binscale="linear"):
+        """
+        Regrid an existing spectrum to a new energy binning and 
+        return a new spectrum. 
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy in the band, in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy in the band, in keV.
+        nbins : integer
+            The number of bins in the spectrum. 
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log".
+            Default: "linear"
+        """
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
+        if binscale == "linear":
+            ebins = np.linspace(emin, emax, nbins+1)
+        elif binscale == "log":
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins+1)
+        de = np.diff(ebins)
+        spec_new = regrid_spectrum(ebins, self.ebins.value, 
+                                   self.flux.value*self.de.value)/de
+        return type(self)(ebins, spec_new, binscale=binscale)
 
     def restrict_within_band(self, emin=None, emax=None):
         if emin is not None:
@@ -137,7 +178,7 @@ class Spectrum:
         return pflux, eflux
 
     @classmethod
-    def from_xspec_script(cls, infile, emin, emax, nbins):
+    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear"):
         """
         Create a model spectrum using a script file as 
         input to XSPEC.
@@ -152,13 +193,17 @@ class Spectrum:
             The maximum energy of the spectrum in keV. 
         nbins : integer
             The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         with open(infile, "r") as f:
             xspec_in = f.readlines()
-        return cls._from_xspec(xspec_in, emin, emax, nbins)
+        return cls._from_xspec(xspec_in, emin, emax, nbins, binscale=binscale)
 
     @classmethod
-    def from_xspec_model(cls, model_string, params, emin, emax, nbins):
+    def from_xspec_model(cls, model_string, params, emin, emax, nbins,
+                         binscale="linear"):
         """
         Create a model spectrum using a model string and parameters
         as input to XSPEC.
@@ -177,6 +222,9 @@ class Spectrum:
             The maximum energy of the spectrum in keV
         nbins : integer
             The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         xspec_in = []
         model_str = "%s &" % model_string
@@ -184,40 +232,50 @@ class Spectrum:
             model_str += " %g &" % param
         model_str += " /*"
         xspec_in.append("model %s\n" % model_str)
-        return cls._from_xspec(xspec_in, emin, emax, nbins)
+        return cls._from_xspec(xspec_in, emin, emax, nbins, binscale=binscale)
 
     @classmethod
-    def _from_xspec(cls, xspec_in, emin, emax, nbins):
+    def _from_xspec(cls, xspec_in, emin, emax, nbins, binscale="linear"):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
-        tmpdir = tempfile.mkdtemp()
-        curdir = os.getcwd()
-        os.chdir(tmpdir)
-        xspec_in.append("dummyrsp %g %g %d lin\n" % (emin, emax, nbins))
-        xspec_in += ["set fp [open spec_therm.xspec w+]\n",
+        tmpdir = Path(tempfile.mkdtemp())
+        curdir = Path.cwd()
+        xspec_in.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
+        xspec_in += [f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
                      "tclout energies\n", "puts $fp $xspec_tclout\n",
                      "tclout modval\n", "puts $fp $xspec_tclout\n",
                      "close $fp\n", "quit\n"]
-        with open("xspec.in", "w") as f_xin:
+        with open(tmpdir / "xspec.in", "w") as f_xin:
             f_xin.writelines(xspec_in)
-        logfile = os.path.join(curdir, "xspec.log")
+        logfile = curdir / "xspec.log"
+        if os.environ['SHELL'] in ['tcsh', 'csh']:
+            init_suffix = 'csh'
+        else:
+            init_suffix = 'sh'
+        sh_file = [
+            f"#!{os.environ['SHELL']}\n",
+            f". {os.environ['HEADAS']}/headas-init.{init_suffix}\n",
+            f"xspec - {str(tmpdir)}/xspec.in\n"
+        ]
+        with open(tmpdir / "xspec.sh", "w") as f_xs:
+            f_xs.writelines(sh_file)
         with open(logfile, "ab") as xsout:
-            subprocess.call(["xspec", "-", "xspec.in"],
+            subprocess.call([os.environ['SHELL'], f"{str(tmpdir)}/xspec.sh"],
                             stdout=xsout, stderr=xsout)
-        with open("spec_therm.xspec", "r") as f_s:
+        with open(tmpdir / "spec_therm.xspec", "r") as f_s:
             lines = f_s.readlines()
         ebins = np.array(lines[0].split()).astype("float64")
         de = np.diff(ebins)
         flux = np.array(lines[1].split()).astype("float64")/de
-        os.chdir(curdir)
-        shutil.rmtree(tmpdir)
-        return cls(ebins, flux)
+        shutil.rmtree(str(tmpdir))
+        return cls(ebins, flux, binscale=binscale)
 
     @classmethod
     def from_powerlaw(cls, photon_index, redshift, norm, emin, emax,
-                      nbins):
+                      nbins, binscale="linear"):
         """
-        Create a spectrum from a power-law model.
+        Create a spectrum from a power-law model. Form of the model
+        is F(E) = norm*(e/1 keV)**-photon_index.
 
         Parameters
         ----------
@@ -235,30 +293,27 @@ class Spectrum:
             The maximum energy of the spectrum in keV. 
         nbins : integer
             The number of bins in the spectrum. 
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         emin = parse_value(emin, 'keV')
         emax = parse_value(emax, 'keV')
-        ebins = np.linspace(emin, emax, nbins+1)
+        if binscale == "linear":
+            ebins = np.linspace(emin, emax, nbins+1)
+        elif binscale == "log":
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins+1)
         emid = 0.5*(ebins[1:]+ebins[:-1])
         flux = norm*(emid*(1.0+redshift))**(-photon_index)
-        return cls(ebins, flux)
+        return cls(ebins, flux, binscale=binscale)
 
     @classmethod
     def from_file(cls, filename):
         """
-        Read a spectrum from an ASCII or HDF5 file.
-
-        If ASCII: accepts a file with two columns,
-        the first being the center energy of the bin in 
-        keV and the second being the spectrum in the
-        appropriate units, assuming a linear binning 
-        with constant bin widths.
-
-        If HDF5: accepts a file with one array dataset, 
-        named "spectrum", which is the spectrum in the 
-        appropriate units, and two scalar datasets, 
-        "emin" and "emax", which are the minimum and 
-        maximum energies in keV.
+        Read a spectrum from an ASCII ECSV, FITS, or HDF5 file, in
+        the forms written by :meth:`~soxs.Spectrum.write_ascii_file`
+        :meth:`~soxs.Spectrum.write_fits_file`, and 
+        :meth:`~soxs.Spectrum.write_h5_file`.
 
         Parameters
         ----------
@@ -266,27 +321,40 @@ class Spectrum:
             The path to the file containing the spectrum.
         """
         arf = None
-        if filename.endswith(".h5"):
+        try:
+            # First try reading the file as HDF5
             with h5py.File(filename, "r") as f:
                 flux = f["spectrum"][()]
                 nbins = flux.size
-                ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
+                binscale = f.attrs.get("binscale", "linear")
+                if binscale == "linear":
+                    ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
+                elif binscale == "log":
+                    ebins = np.logspace(np.log10(f["emin"][()]), 
+                                        np.log10(f["emax"][()]), nbins+1)
                 if "arf" in f.attrs:
                     arf = f.attrs["arf"]
-        else:
-            emid, flux = np.loadtxt(filename, unpack=True)
-            de = np.diff(emid)[0]
-            ebins = np.append(emid-0.5*de, emid[-1]+0.5*de)
+        except OSError:
+            # If that fails, try reading the file as ASCII or FITS
+            # using AstroPy QTable
+            try:
+                t = QTable.read(filename, format='fits')
+            except OSError:
+                t = QTable.read(filename, format='ascii.ecsv')
+            ebins = np.append(t["elo"].value, t["ehi"].value[-1])
+            flux = t["flux"].value
+            binscale = t.meta.get("binscale", "linear")
+            if "arf" in t.meta:
+                arf = t.meta["arf"]
         if arf is not None:
-            return cls(ebins, flux, arf)
+            return cls(ebins, flux, arf, binscale=binscale)
         else:
-            return cls(ebins, flux)
+            return cls(ebins, flux, binscale=binscale)
 
     @classmethod
-    def from_constant(cls, const_flux, emin, emax, nbins):
+    def from_constant(cls, const_flux, emin, emax, nbins, binscale="linear"):
         """
-        Create a spectrum from a constant model using 
-        XSPEC.
+        Create a spectrum from a constant model.
 
         Parameters
         ----------
@@ -299,12 +367,18 @@ class Spectrum:
             The maximum energy of the spectrum in keV. 
         nbins : integer
             The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log". 
+            Default: "linear"
         """
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, 'keV')
-        ebins = np.linspace(emin, emax, nbins+1)
+        if binscale == "linear":
+            ebins = np.linspace(emin, emax, nbins+1)
+        elif binscale == "log":
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins+1)
         flux = const_flux*np.ones(nbins)
-        return cls(ebins, flux)
+        return cls(ebins, flux, binscale=binscale)
 
     def _new_spec_from_band(self, emin, emax):
         emin = parse_value(emin, "keV")
@@ -330,7 +404,7 @@ class Spectrum:
             The maximum energy of the band in keV.
         """
         ebins, flux = self._new_spec_from_band(emin, emax)
-        return Spectrum(ebins, flux)
+        return type(self)(ebins, flux, binscale=self.binscale)
 
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
         """
@@ -368,9 +442,18 @@ class Spectrum:
         self.flux *= new_flux/f.value
         self._compute_total_flux()
 
-    def write_file(self, specfile, overwrite=False):
+    def _write_fits_or_ascii(self):
+        meta = {"binscale": self.binscale}
+        if hasattr(self, "arf"):
+            meta["arf"] = self.arf.filename
+        t = QTable([self.ebins[:-1], self.ebins[1:], self.flux],
+                   names=["elo", "ehi", "flux"], meta=meta)
+        return t
+
+    def write_ascii_file(self, specfile, overwrite=False):
         """
-        Write the spectrum to a file.
+        Write the spectrum to an ASCII file in the ECSV format
+        (https://docs.astropy.org/en/stable/io/ascii/ecsv.html).
 
         Parameters
         ----------
@@ -380,13 +463,40 @@ class Spectrum:
             Whether or not to overwrite an existing 
             file with the same name. Default: False
         """
-        if os.path.exists(specfile) and not overwrite:
-            raise IOError(f"File {specfile} exists and overwrite=False!")
-        header = f"Energy\tFlux\nkeV\t{self._units}"
-        np.savetxt(specfile, np.transpose([self.emid, self.flux]), 
-                   delimiter="\t", header=header)
+        t = self._write_fits_or_ascii()
+        t.write(specfile, overwrite=overwrite, format="ascii.ecsv")
 
-    def write_h5_file(self, specfile, overwrite=False):
+    def write_file(self, specfile, overwrite=False):
+        """
+        Write a :class:`~soxs.Spectrum` object to disk, in
+        any of three formats, which will be determined by
+        the chosen suffix:
+        ASCII ECSV: .dat, .txt. or .ecsv
+        HDF5: .hdf5 or .h5
+        FITS: .fits
+
+        Parameters
+        ----------
+        specfile : string
+            The name of the file to write to.
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing
+            file with the same name. Default: False
+        """
+        suffix = PurePath(specfile).suffix.lower()
+        if suffix in [".dat", ".txt", ".ecsv"]:
+            mylog.info(f"Writing ASCII ECSV file {specfile}.")
+            self.write_ascii_file(specfile, overwrite=overwrite)
+        elif suffix in [".hdf5", ".h5"]:
+            mylog.info(f"Writing HDF5 file {specfile}.")
+            self.write_hdf5_file(specfile, overwrite=overwrite)
+        elif suffix == ".fits":
+            mylog.info(f"Writing FITS file {specfile}.")
+            self.write_fits_file(specfile, overwrite=overwrite)
+        else:
+            raise NotImplementedError(f"Unknown file suffix {suffix}!")
+
+    def write_hdf5_file(self, specfile, overwrite=False):
         """
         Write the spectrum to an HDF5 file.
 
@@ -398,16 +508,38 @@ class Spectrum:
             Whether or not to overwrite an existing 
             file with the same name. Default: False
         """
-        if os.path.exists(specfile) and not overwrite:
+        if Path(specfile).exists() and not overwrite:
             raise IOError("File %s exists and overwrite=False!" % specfile)
         with h5py.File(specfile, "w") as f:
             f.create_dataset("emin", data=self.ebins[0].value)
             f.create_dataset("emax", data=self.ebins[-1].value)
             f.create_dataset("spectrum", data=self.flux.value)
+            f.attrs["binscale"] = self.binscale
             if hasattr(self, "arf"):
                 f.attrs["arf"] = self.arf.filename
 
-    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0):
+    def write_h5_file(self, specfile, overwrite=False):
+        issue_deprecation_warning("'Spectrum.write_h5_file' is deprecated and has been "
+                                  "superseded by 'Spectrum.write_hdf5_file'")
+        self.write_hdf5_file(specfile, overwrite=overwrite)
+
+    def write_fits_file(self, specfile, overwrite=False):
+        """
+        Write the spectrum to a FITS file.
+
+        Parameters
+        ----------
+        specfile : string
+            The filename to write the file to.
+        overwrite : boolean, optional
+            Whether or not to overwrite an existing 
+            file with the same name. Default: False
+        """
+        t = self._write_fits_or_ascii()
+        t.write(specfile, overwrite=overwrite, format="fits")
+
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0,
+                                    abund_table="angr"):
         """
         Given a hydrogen column density, apply
         galactic foreground absorption to the spectrum.
@@ -423,13 +555,31 @@ class Spectrum:
             McCray, R. 2000, ApJ, 542, 914). Default: "wabs".
         redshift : float, optional
             The redshift of the absorbing material. Default: 0.0
+        abund_table : string 
+            The abundance table to be used for abundances in the 
+            absorption model. Default is set in the SOXS
+            configuration file, the default for which is "angr".
+            Built-in options are:
+            "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+            Cosmochimica Acta 53, 197)
+            "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+            P. (2009, ARAA, 47, 481)
+            "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
+            "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+            except for elements not listed which are given zero abundance)
+            "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+            "cl17.03" : the default abundance table in Cloudy 17.03
         """
         nH = parse_value(nH, "1.0e22*cm**-2")
         e = self.emid.value*(1.0+redshift)
         if model == "wabs":
             sigma = wabs_cross_section(e)
         elif model == "tbabs":
-            sigma = tbabs_cross_section(e)
+            if not isinstance(abund_table, str):
+                raise ValueError("Must supply a string corresponding to one of "
+                                 "the abundance tables provided in SOXS for "
+                                 "the TBabs model!")
+            sigma = tbabs_cross_section(e, abund_table=abund_table)
         self.flux *= np.exp(-nH*1.0e22*sigma)
         self._compute_total_flux()
 
@@ -527,7 +677,7 @@ class Spectrum:
         area = parse_value(area, "cm**2")
         prng = parse_prng(prng)
         rate = area*self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
+        energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         flux = np.sum(energy)*erg_per_keV/t_exp/area
         energies = Energies(energy, flux)
         return energies
@@ -620,29 +770,28 @@ def get_wabs_absorb(e, nH):
 
 _tbabs_emid = None
 _tbabs_sigma = None
-_tbabs_spline = None
+_tbabs_func = None
 
 
-def tbabs_cross_section(E):
+def tbabs_cross_section(E, abund_table="angr"):
     global _tbabs_emid
     global _tbabs_sigma
-    global _tbabs_spline
-    if _tbabs_spline is None:
-        filename = os.path.join(soxs_files_path, "tbabs_table.h5")
-        f = h5py.File(filename, "r")
-        _tbabs_sigma = f["cross_section"][:]
-        nbins = _tbabs_sigma.size
-        ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
-        f.close()
+    global _tbabs_func
+    if _tbabs_func is None:
+        with h5py.File(get_data_file("tbabs_table.h5"), "r") as f:
+            _tbabs_sigma = f["cross_section"][abund_table][:]
+            nbins = _tbabs_sigma.size
+            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
+            print(ebins[0], ebins[-1])
         _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
-        _tbabs_spline = InterpolatedUnivariateSpline(_tbabs_emid,
-                                                     _tbabs_sigma, k=5, 
-                                                     ext=1)
-    return _tbabs_spline(E)
+        _tbabs_func = interp1d(_tbabs_emid, _tbabs_sigma, bounds_error=False,
+                               fill_value=(_tbabs_sigma[0], _tbabs_sigma[-1]),
+                               assume_sorted=True, copy=False)
+    return _tbabs_func(E)
 
 
-def get_tbabs_absorb(e, nH):
-    sigma = tbabs_cross_section(e)
+def get_tbabs_absorb(e, nH, abund_table="angr"):
+    sigma = tbabs_cross_section(e, abund_table=abund_table)
     return np.exp(-nH*1.0e22*sigma)
 
 
@@ -671,7 +820,7 @@ class CountRateSpectrum(Spectrum):
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
         rate = self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
+        energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         energies = u.Quantity(energy, "keV")
         return energies
 
@@ -684,13 +833,17 @@ class CountRateSpectrum(Spectrum):
     def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
 
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0,
+                                    abund_table="angr"):
+        raise NotImplementedError
+
 
 class ConvolvedSpectrum(CountRateSpectrum):
 
-    def __init__(self, ebins, flux, arf):
+    def __init__(self, ebins, flux, arf, binscale='linear'):
         from numbers import Number
         from soxs.response import AuxiliaryResponseFile, FlatResponse
-        super(ConvolvedSpectrum, self).__init__(ebins, flux)
+        super(ConvolvedSpectrum, self).__init__(ebins, flux, binscale=binscale)
         if isinstance(arf, Number):
             arf = FlatResponse(ebins[0], ebins[-1], arf, ebins.size-1)
         elif isinstance(arf, str):
@@ -699,11 +852,13 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     def __add__(self, other):
         self._check_binning_units(other)
-        return ConvolvedSpectrum(self.ebins, self.flux+other.flux, self.arf)
+        return ConvolvedSpectrum(self.ebins, self.flux+other.flux, self.arf, 
+                                 binscale=self.binscale)
 
     def __sub__(self, other):
         self._check_binning_units(other)
-        return ConvolvedSpectrum(self.ebins, self.flux-other.flux, self.arf)
+        return ConvolvedSpectrum(self.ebins, self.flux-other.flux, self.arf,
+                                 binscale=self.binscale)
 
     @classmethod
     def convolve(cls, spectrum, arf):
@@ -723,7 +878,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
             arf = AuxiliaryResponseFile(arf)
         earea = arf.interpolate_area(spectrum.emid.value)
         rate = spectrum.flux * earea
-        return cls(spectrum.ebins, rate, arf)
+        return cls(spectrum.ebins, rate, arf, binscale=spectrum.binscale)
 
     def new_spec_from_band(self, emin, emax):
         """
@@ -739,7 +894,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
             The maximum energy of the band in keV.
         """
         ebins, flux = self._new_spec_from_band(emin, emax)
-        return ConvolvedSpectrum(ebins, flux, self.arf)
+        return ConvolvedSpectrum(ebins, flux, self.arf, binscale=self.binscale)
 
     def deconvolve(self):
         """
@@ -749,7 +904,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         earea = self.arf.interpolate_area(self.emid)
         flux = self.flux / earea
         flux = np.nan_to_num(flux.value)
-        return Spectrum(self.ebins.value, flux)
+        return Spectrum(self.ebins.value, flux, binscale=self.binscale)
 
     def generate_energies(self, t_exp, prng=None, quiet=False):
         """
@@ -773,7 +928,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
         rate = self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng, quiet=quiet)
+        energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
         energies = Energies(energy, flux)

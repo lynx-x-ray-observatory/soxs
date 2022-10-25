@@ -8,15 +8,19 @@ import warnings
 from configparser import ConfigParser
 import regions
 import appdirs
+from scipy.interpolate import interp1d
+
 
 # Configuration
 
 soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
                      "abund_table": "angr",
                      "apec_vers": "3.0.9",
+                     "spex_vers": "3.06.01",
                      "bkgnd_nH": 0.018,
-                     "bkgnd_absorb_model": "wabs",
-                     "frgnd_spec_model": "default"}
+                     "bkgnd_absorb_model": "tbabs",
+                     "frgnd_spec_model": "default",
+                     "frgnd_velocity": 0.0}
 
 CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
                             os.path.join(os.path.expanduser('~'),
@@ -63,12 +67,6 @@ soxsLogger.propagate = False
 mylog = soxsLogger
 
 mylog.setLevel('INFO')
-
-if soxs_cfg.has_option("soxs", "response_path"):
-    mylog.warning("The 'response_path' option in the SOXS configuration "
-                  "is deprecated and has been replaced with 'soxs_data_dir'. "
-                  "Please update your configuration accordingly.")
-    soxs_cfg.set("soxs", "soxs_data_dir", soxs_cfg.get("soxs", "response_path"))
 
 if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
     soxs_data_dir = appdirs.user_cache_dir("soxs")
@@ -228,10 +226,10 @@ def create_region(rtype, args, dx, dy):
 
 def process_fits_string(fitsstr):
     import re
-    import astropy.io.fits as pyfits
+    from astropy.io import fits
     fn = fitsstr.split("[")[0]
     brackets = re.findall(r"[^[]*\[([^]]*)\]", fitsstr)
-    with pyfits.open(fn) as f:
+    with fits.open(fn) as f:
         if len(brackets) == 0:
             imgs = np.array([hdu.is_image for hdu in f])
             if imgs.sum() > 1:
@@ -310,7 +308,7 @@ def set_soxs_config(option, value):
     value : number or string
         The value to set the option to.
     """
-    soxs_cfg.set("soxs", option, value=value)
+    soxs_cfg.set("soxs", option, value=str(value))
 
 
 def set_mission_config(mission):
@@ -319,7 +317,18 @@ def set_mission_config(mission):
     *mission*. Currently only takes "lem".
     """
     if mission == "lem":
-        spec_model = "halosat"
+        frgnd_spec_model = "halosat"
+        bkgnd_absorb_model = "tbabs"
+        frgnd_velocity = 100.0 # km/s
+        set_soxs_config("frgnd_spec_model", frgnd_spec_model)
+        set_soxs_config("bkgnd_absorb_model", bkgnd_absorb_model)
+        set_soxs_config("frgnd_velocity", frgnd_velocity)
     else:
         raise RuntimeError(f"Mission '{mission}' is not implemented!")
-    set_soxs_config("frgnd_spec_model", spec_model)
+
+
+def regrid_spectrum(ebins_new, ebins, spec):
+    cspec = np.insert(np.cumsum(spec, axis=-1), 0, 0.0, axis=-1)
+    f = interp1d(ebins, cspec, axis=-1, fill_value=0.0,
+                 assume_sorted=True, copy=False)
+    return np.diff(f(ebins_new), axis=-1)

@@ -1,6 +1,6 @@
 import numpy as np
 import os
-import astropy.io.fits as pyfits
+from astropy.io import fits
 from soxs.utils import mylog, get_rot_mat
 
 key_map = {"telescope": "TELESCOP",
@@ -12,7 +12,7 @@ key_map = {"telescope": "TELESCOP",
 
 def add_background_from_file(events, event_params, bkg_file):
     from soxs.instrument import perform_dither
-    f = pyfits.open(bkg_file)
+    f = fits.open(bkg_file)
 
     hdu = f["EVENTS"]
 

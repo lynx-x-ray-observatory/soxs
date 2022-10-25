@@ -1,5 +1,5 @@
 import numpy as np
-import astropy.io.fits as pyfits
+from astropy.io import fits
 from astropy.units import Quantity
 
 from soxs.constants import sigma_to_fwhm
@@ -59,7 +59,7 @@ class ImagePSF(PSF):
         plate_scale_arcmin = inst['fov']/inst['num_pixels']
         plate_scale_deg = plate_scale_arcmin/60.0
         plate_scale_mm = inst['focal_length']*1e3*np.deg2rad(plate_scale_deg)
-        self.imhdu = pyfits.open(get_data_file(img_file))[hdu]
+        self.imhdu = fits.open(get_data_file(img_file))[hdu]
         self.imctr = np.array([self.imhdu.header["CRPIX1"],
                                self.imhdu.header["CRPIX2"]])
         unit = self.imhdu.header.get("CUNIT1", "mm")
@@ -96,7 +96,7 @@ class MultiImagePSF(PSF):
         img_c = []
         img_s = []
         img_u = []
-        with pyfits.open(self.img_file, lazy_load_hdus=True) as f:
+        with fits.open(self.img_file, lazy_load_hdus=True) as f:
             for i, hdu in enumerate(f):
                 if not hdu.is_image or hdu.header["NAXIS"] != 2:
                     continue
@@ -127,7 +127,7 @@ class MultiImagePSF(PSF):
         idx_score = np.argmin(score, axis=0)
         n_in = x.size
         n_out = 0
-        with pyfits.open(self.img_file) as f:
+        with fits.open(self.img_file) as f:
             for j in range(self.num_images):
                 # This returns image coordinates from the PSF
                 # image

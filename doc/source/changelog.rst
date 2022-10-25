@@ -3,6 +3,58 @@
 ChangeLog
 =========
 
+Version 4.0.0
+-------------
+
+This update to SOXS contains a large number of new features, mostly related to 
+the generation of spectra. 
+
+* New options have been added for the simulation of thermal spectra, including
+  from `SPEX <https://www.sron.nl/astrophysics-spex>`_, MeKaL, a CIE model based
+  on `Cloudy <https://gitlab.nublado.org/cloudy/cloudy/-/wikis/home>`_,
+  and a model for emission from the IGM including photoionization and resonant
+  scattering off of the CXB based on Cloudy and provided by Ildar Khabibullin.
+  See :ref:`thermal-spectra` for details.
+* The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced 
+  energy binning has been added. See :ref:`spectrum-binning` for details.
+* The option to create a new spectrum from an old one by rebinning has been added
+  to the :class:`~soxs.spectra.Spectrum` class. See :ref:`spectrum-binning` for details.
+* It is no longer necessary to source the HEADAS environment before creating a 
+  :class:`~soxs.spectra.Spectrum` object using either the 
+  :meth:`~soxs.spectra.Spectrum.from_xspec_script` or
+  :meth:`~soxs.spectra.Spectrum.from_xspec_model`. See :ref:`xspec` for more details.
+* Reading and writing of :class:`~soxs.spectra.Spectrum` objects has been refactored, 
+  so that the tables use the min and max of each energy bin instead of the middle 
+  energy of the bin. This allows for log-spaced energy binning (mentioned above) to 
+  be supported. Also, :class:`~soxs.spectra.Spectrum` objects can now be written to 
+  FITS table files as well as ASCII and HDF5. See :ref:`read-spectra` and 
+  :ref:`write-spectra` for details.
+* An option to create a mosaicked event file in addition to an image file has been
+  added to the :func:`~soxs.mosaic.make_mosaic_image` function. See :ref:`mosaic`
+  for more details.
+* The default absorption model for the galactic foreground has been changed to TBabs.
+* The accuracy of the TBabs absorption model has been improved.
+* It is now possible to specify different abundance tables in the construction of the
+  TBabs absorption model.
+* The galactic foregroud model now includes thermal broadening of emission lines, and 
+  it is also now possible to optionally add velocity broadening. See :ref:`foreground`
+  for more details.
+* The LEM ARF has been updated.
+* Instrumental background models have been added to the LEM instrument models. 
+* The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
+  has been added to the options for abundance tables for the 
+  :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
+* The default abundance table from Cloudy v17.03 has been added to the options for abundance
+  tables for the :class:`~soxs.thermal_spectra.ApecGenerator` and
+  :class:`~soxs.thermal_spectra.SpexGenerator`.
+* The command-line script ``make_thermal_spectrum`` has been changed to ``make_cie_spectrum`` and
+  has many more options for computing CIE spectra. See :ref:`cmd-make-cie-spectrum` for details.
+* The command-line script ``make_igm_spectrum`` has been added for making thermal spectra with 
+  photoionization and resonant scattering. See :ref:`cmd-make-igm-spectrum` for details.
+* In the command-line scripts ``make_cie_spectrum``, ``make_igm_spectrum``, and 
+  ``make_powerlaw_spectrum``, the parameter for foreground Galactic absorption ``nh`` has been
+  renamed to ``nH_abs``. 
+  
 Version 3.4.0
 -------------
 

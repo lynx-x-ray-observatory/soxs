@@ -14,7 +14,7 @@ defaults:
         shell: bash
     
 env:
-    ANSWER_VER: 7
+    ANSWER_VER: 8
     
 jobs:
     build:
@@ -38,7 +38,7 @@ jobs:
               with:
                   submodules: recursive
                   fetch-depth: 0
-            - uses: s-weigand/setup-conda@v1
+            - uses: s-weigand/setup-conda@v1.1.1
               with:
                   update-conda: true
                   conda-channels: conda-forge

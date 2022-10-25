@@ -1,11 +1,11 @@
 from soxs.instrument import perform_dither
 from soxs.spectra import ConvolvedSpectrum
-from soxs.apec import ApecGenerator
+from soxs.thermal_spectra import ApecGenerator
 from soxs.utils import parse_prng, \
     parse_value, mylog, create_region, \
     get_data_file, get_rot_mat, soxs_cfg
 import numpy as np
-import astropy.io.fits as pyfits
+from astropy.io import fits
 from regions import PixCoord
 
 """
@@ -22,7 +22,7 @@ XSPEC model used to create the "default" foreground spectrum
           7.3e-07
 
 XSPEC model used to create the "lem" foreground spectrum
-  model  apec + wabs*(apec+apec)
+  model  apec + tbabs*(bapec+bapec)
             0.099
                 1
                 0
@@ -31,10 +31,12 @@ XSPEC model used to create the "lem" foreground spectrum
             0.225
                 1
                 0
+              100
           7.3e-07
               0.7
                 1
                 0
+              100
          8.76e-08 
 """
 
@@ -43,11 +45,12 @@ def make_frgnd_spectrum(arf, rmf):
     bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
     absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
     frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
+    frgnd_velocity = float(soxs_cfg.get("soxs", "frgnd_velocity"))
     agen = ApecGenerator(rmf.ebins[0], rmf.ebins[-1], rmf.n_e,
-                         broadening=False)
-    spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7)
+                         broadening=True)
+    spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7, velocity=frgnd_velocity)
     if frgnd_spec_model == "halosat":
-        spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8)
+        spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8, velocity=frgnd_velocity)
     spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
     spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
     spec.restrict_within_band(emin=0.1)
@@ -66,7 +69,7 @@ def read_instr_spectrum(filename, ext_area):
         The path to the file containing the spectrum.
     """
     fn = get_data_file(filename)
-    with pyfits.open(fn) as f:
+    with fits.open(fn) as f:
         hdu = f["SPECTRUM"]
         if "COUNTS" in hdu.data.names:
             count_rate = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]

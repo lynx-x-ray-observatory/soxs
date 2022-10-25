@@ -340,9 +340,12 @@ instrument_registry["star-x"] = {"name": "star-x",
 ## LEM
 
 instrument_registry["lem_2eV"] = {"name": "lem_2eV",
-                                  "arf": "lem_110422.arf",
+                                  "arf": "lem_300522.arf",
                                   "rmf": "lem_2ev_110422.rmf",
-                                  "bkgnd": None,
+                                  "bkgnd": [
+                                      "lem_2eV_110422_fov_bkg.pi",
+                                      1024.0
+                                  ],
                                   "num_pixels": 128,
                                   "fov": 32.0,
                                   "aimpt_coords": [0.0, 0.0],
@@ -355,9 +358,12 @@ instrument_registry["lem_2eV"] = {"name": "lem_2eV",
 
 
 instrument_registry["lem_0.9eV"] = {"name": "lem_0.9eV",
-                                    "arf": "lem_110422.arf",
+                                    "arf": "lem_300522.arf",
                                     "rmf": "lem_09ev_110422.rmf",
-                                    "bkgnd": None,
+                                    "bkgnd": [
+                                        "lem_09eV_110422_fov_bkg.pi",
+                                        1024.0
+                                    ],
                                     "num_pixels": 128,
                                     "fov": 32.0,
                                     "aimpt_coords": [0.0, 0.0],
@@ -369,6 +375,10 @@ instrument_registry["lem_0.9eV"] = {"name": "lem_0.9eV",
                                     "grating": False}
 
 
+instrument_registry["lem_2eV_0422"] = instrument_registry["lem_2eV"].copy()
+instrument_registry["lem_2eV_0422"]["arf"] = "lem_110422.arf"
+instrument_registry["lem_0.9eV_0422"] = instrument_registry["lem_0.9eV"].copy()
+instrument_registry["lem_0.9eV_0422"]["arf"] = "lem_110422.arf"
 instrument_registry["lem_2eV_0322"] = instrument_registry["lem_2eV"].copy()
 instrument_registry["lem_2eV_0322"]["arf"] = "lem_030322a.arf"
 instrument_registry["lem_2eV_0322"]["rmf"] = "lem_2ev_030322.rmf"
