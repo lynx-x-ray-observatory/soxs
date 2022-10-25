@@ -16,7 +16,7 @@ jobs:
         os: [macOS-latest, ubuntu-latest]
         python-version: ["3.8", "3.9", "3.10"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Conda environment creation and activation
@@ -39,6 +39,6 @@ jobs:
           platform_linux-64: true
           platform_linux-aarch64: true
           platform_osx-64: true
-          platform_osx-arm64: true	
+          platform_osx-arm64: false
           label: auto
           token: ${{ secrets.ANACONDA_TOKEN }} # Replace with the right name of your secret
