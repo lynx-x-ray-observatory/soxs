@@ -82,6 +82,9 @@ class SpatialModel:
         w = construct_wcs(0.0, 0.0, dtheta=dtheta, nx=nx)
         imhdu = fits.ImageHDU(data=img.T, header=w.to_header())
         imhdu.name = "IMAGE"
+        imhdu.header["HDUCLASS"] = "HEASARC/SIMPUT"
+        imhdu.header["HDUCLAS1"] = "IMAGE"
+        imhdu.header["HDUVERS"] = "1.1.0"
         return imhdu
 
     def generate_coords(self, num_events, prng=None):

@@ -393,18 +393,19 @@ class SimputSpectrum(SimputSource):
         self.spec = spec
 
     def _get_source_hdu(self):
-        col1 = fits.Column(name='ENERGY', format='E',
-                             array=self.spec.emid.value)
-        col2 = fits.Column(name='FLUXDENSITY', format='D',
-                             array=self.spec.flux.value)
+        col1 = fits.Column(name='ENERGY', unit="keV",
+                           format="E",
+                           array=self.spec.emid.value)
+        col2 = fits.Column(name='FLUXDENSITY',
+                           unit="photons/s/cm**2/keV",
+                           format="E",
+                           array=self.spec.flux.value)
         cols = [col1, col2]
 
         coldefs = fits.ColDefs(cols)
 
         header = {"REFRA": self.ra,
-                  "REFDEC": self.dec,
-                  "TUNIT1": "keV",
-                  "TUNIT2": "photon/(cm**2*s*keV)"}
+                  "REFDEC": self.dec}
 
         return coldefs, header
 
