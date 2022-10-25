@@ -37,7 +37,7 @@ jobs:
           python-version: ${{ matrix.python-version }} # Values previously defined in `matrix`
           user: jzuhone
           platform_linux-64: true
-          platform_linux-aarch64: true
+          platform_linux-aarch64: false
           platform_osx-64: true
           platform_osx-arm64: false
           label: auto
