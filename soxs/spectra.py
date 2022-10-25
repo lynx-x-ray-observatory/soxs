@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 import shutil
 import os
-from soxs.utils import soxs_files_path, mylog, \
+from soxs.utils import mylog, \
     parse_prng, parse_value, line_width_equiv, \
     issue_deprecation_warning, get_data_file, \
     regrid_spectrum
@@ -782,7 +782,6 @@ def tbabs_cross_section(E, abund_table="angr"):
             _tbabs_sigma = f["cross_section"][abund_table][:]
             nbins = _tbabs_sigma.size
             ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
-            print(ebins[0], ebins[-1])
         _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
         _tbabs_func = interp1d(_tbabs_emid, _tbabs_sigma, bounds_error=False,
                                fill_value=(_tbabs_sigma[0], _tbabs_sigma[-1]),
