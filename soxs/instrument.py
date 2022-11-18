@@ -496,7 +496,7 @@ def make_background_file(out_file, exp_time, instrument, sky_center,
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with the same name.
+        Whether to overwrite an existing file with the same name.
         Default: False
     foreground : boolean, optional
         Whether or not to include the Galactic foreground. Default: True
@@ -591,16 +591,16 @@ def instrument_simulator(input_events, out_file, exp_time, instrument,
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with the same name.
+        Whether to overwrite an existing file with the same name.
         Default: False
     instr_bkgnd : boolean, optional
-        Whether or not to include the instrumental/particle background. 
+        Whether to include the instrumental/particle background. 
         Default: True
     foreground : boolean, optional
-        Whether or not to include the local foreground. 
+        Whether to include the local foreground. 
         Default: True
     ptsrc_bkgnd : boolean, optional
-        Whether or not to include the point-source background. 
+        Whether to include the point-source background. 
         Default: True
     bkgnd_file : string, optional
         If set, backgrounds will be loaded from this file and not generated
@@ -697,20 +697,20 @@ def simulate_spectrum(spec, instrument, exp_time, out_file,
     out_file : string
         The file to write the spectrum to.
     instr_bkgnd : boolean, optional
-        Whether or not to include the instrumental/particle background. 
+        Whether to include the instrumental/particle background. 
         Default: False
     foreground : boolean, optional
-        Whether or not to include the local foreground.
+        Whether to include the local foreground.
         Default: False
     ptsrc_bkgnd : boolean, optional
-        Whether or not to include the unresolved point-source background. 
+        Whether to include the unresolved point-source background. 
         Default: False
     bkgnd_area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The area on the sky for the background components, in square arcminutes.
         Default: None, necessary to specify if any of the background components
         are turned on. 
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file. Default: False
+        Whether to overwrite an existing file. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only 
         be specified if you have a reason to generate the same 

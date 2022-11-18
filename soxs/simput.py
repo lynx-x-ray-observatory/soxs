@@ -102,7 +102,7 @@ class SimputCatalog:
             to. By default, the source will be written to the same
             file as the SIMPUT catalog.
         overwrite : boolean, optional
-            Whether or not to overwrite an existing file with
+            Whether to overwrite an existing file with
             the same name. If src_filename=None and the source is
             to the written to the SIMPUT catalog file, then this
             argument is ignored. If src_filename is another value,
@@ -264,7 +264,7 @@ class SimputCatalog:
             to. By default, the source will be written to the same
             file as the SIMPUT catalog.
         overwrite : boolean, optional
-            Whether or not to overwrite an existing file with
+            Whether to overwrite an existing file with
             the same name. If src_filename=None and the source is
             to be written to the SIMPUT catalog file, then this
             argument is ignored. If src_filename is another value,

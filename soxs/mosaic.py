@@ -12,7 +12,7 @@ def make_mosaic_events(pointing_list, input_source, out_prefix, exp_time,
                        no_dither=False, dither_params=None, subpixel_res=False, 
                        aimpt_shift=None, prng=None):
     """
-    Observe a source from many different pointings. 
+    Observe a source from many different pointings.
 
     Parameters
     ----------
@@ -30,16 +30,16 @@ def make_mosaic_events(pointing_list, input_source, out_prefix, exp_time,
         The name of the instrument to use, which picks an instrument
         specification from the instrument registry.
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with the same name.
+        Whether to overwrite an existing file with the same name.
         Default: False
     instr_bkgnd : boolean, optional
-        Whether or not to include the instrumental/particle background. 
+        Whether to include the instrumental/particle background. 
         Default: True
     foreground : boolean, optional
-        Whether or not to include the local foreground. 
+        Whether to include the local foreground. 
         Default: True
     ptsrc_bkgnd : boolean, optional
-        Whether or not to include the point-source background. 
+        Whether to include the point-source background. 
         Default: True
     bkgnd_file : string, optional
         If set, backgrounds will be loaded from this file and not generated
@@ -225,7 +225,7 @@ def make_mosaic_image(evtfile_list, image_file, evt_file=None, emin=None, emax=N
         *energy* parameter. Used to create a more accurate exposure
         map weighted by a range of energies. Default: None
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with the same name.
+        Whether to overwrite an existing file with the same name.
         Default: False
     """
     try:
