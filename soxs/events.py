@@ -159,7 +159,7 @@ def make_exposure_map(event_file, expmap_file, energy, weights=None,
         If True, the exposure map will be divided by the exposure time
         so that the map's units are cm**2. Default: True
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file. Default: False
+        Whether to overwrite an existing file. Default: False
     reblock : integer, optional
         Supply an integer power of 2 here to make an exposure map
         with a different binning. Default: 1
@@ -377,7 +377,7 @@ def _write_spectrum(bins, spec, exp_time, spectype, parameters,
 def filter_events(evtfile, newfile, region=None, emin=None,
                   emax=None, format='ds9', overwrite=False):
     r"""
-    
+
     Parameters
     ----------
     evtfile : string 
@@ -387,16 +387,16 @@ def filter_events(evtfile, newfile, region=None, emin=None,
     region : string or Region, optional
         The region to be used for the filtering. Default: None
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The minimum energy of the events to be binned in keV. 
+        The minimum energy of the events to be binned in keV.
         Default is the lowest energy available.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The maximum energy of the events to be binned in keV. 
+        The maximum energy of the events to be binned in keV.
         Default is the highest energy available.
     format : string, optional
-        The file format specifier for the region. "ds9", 
-        "crtf", "fits", etc. Default: "ds9"    
+        The file format specifier for the region. "ds9",
+        "crtf", "fits", etc. Default: "ds9"
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with the 
+        Whether to overwrite an existing file with the
         same name. Default: False
     """
     from regions import Region, Regions, SkyRegion, PixelRegion, PixCoord
@@ -435,18 +435,18 @@ def filter_events(evtfile, newfile, region=None, emin=None,
 
 def write_spectrum(evtfile, specfile, overwrite=False):
     r"""
-    Bin event energies into a spectrum and write it to 
-    a FITS binary table. Does not do any grouping of 
-    channels, and will automatically determine PI or PHA. 
+    Bin event energies into a spectrum and write it to
+    a FITS binary table. Does not do any grouping of
+    channels, and will automatically determine PI or PHA.
 
     Parameters
     ----------
     evtfile : string
-        The name of the event file to read the events from. 
+        The name of the event file to read the events from.
     specfile : string
         The name of the spectrum file to be written.
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with 
+        Whether to overwrite an existing file with
         the same name. Default: False
     """
     from soxs.response import RedistributionMatrixFile
@@ -520,7 +520,7 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
         The maximum energy of the events to be binned in keV. 
         Default is the highest energy available.
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with the 
+        Whether to overwrite an existing file with the 
         same name. Default: False
     expmap_file : string, optional
         Supply an exposure map file to determine fluxes. 
@@ -639,7 +639,7 @@ def write_image(evt_file, out_file, coord_type='sky', emin=None, emax=None,
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The maximum energy of the photons to put in the image, in keV.
     overwrite : boolean, optional
-        Whether or not to overwrite an existing file with 
+        Whether to overwrite an existing file with 
         the same name. Default: False
     expmap_file : string, optional
         Supply an exposure map file to divide this image by
