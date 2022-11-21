@@ -3,13 +3,20 @@ from setuptools import setup, find_packages
 from setuptools.extension import Extension
 import numpy as np
 import glob
+import os
+
+
+if os.name == "nt":
+    std_libs = []
+else:
+    std_libs = ["m"]
 
 scripts = glob.glob("scripts/*")
 
 cython_extensions = [
     Extension("soxs.lib.broaden_lines",
               ["soxs/lib/broaden_lines.pyx"],
-              language="c", libraries=["m"],
+              language="c", libraries=std_libs,
               include_dirs=[np.get_include()]),
 ]
 
