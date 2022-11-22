@@ -1,5 +1,5 @@
 from soxs.instrument import instrument_simulator
-from soxs.events import write_image, make_exposure_map, wcs_from_event_file
+from soxs.events import write_image, make_exposure_map, wcs_from_header
 from soxs.utils import mylog
 import numpy as np
 from astropy.io import fits, ascii
@@ -99,7 +99,7 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     for eventfile in eventfiles:
         with fits.open(eventfile, memmap=True) as f:
             hdu = f["EVENTS"]
-            wcs_in = wcs_from_event_file(f)
+            wcs_in = wcs_from_header(hdu.header)
             ra, dec = wcs_in.wcs_pix2world(hdu.data["X"], hdu.data["Y"], 1)
             xx, yy = wcs_out.wcs_world2pix(ra, dec, 1)
             x.append(xx)

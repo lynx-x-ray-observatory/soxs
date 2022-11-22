@@ -8,8 +8,7 @@ from tqdm.auto import tqdm
 from pathlib import Path, PurePath
 
 
-def wcs_from_event_file(f):
-    h = f["EVENTS"].header
+def wcs_from_header(h):
     w = wcs.WCS(naxis=2)
     w.wcs.crval = [h["TCRVL2"], h["TCRVL3"]]
     w.wcs.crpix = [h["TCRPX2"], h["TCRPX3"]]
@@ -374,6 +373,27 @@ def _write_spectrum(bins, spec, exp_time, spectype, parameters,
     hdulist.writeto(specfile, overwrite=overwrite)
 
 
+def _region_filter(hdu, region, format='ds9'):
+    from regions import Region, Regions, SkyRegion, PixelRegion, PixCoord
+    if isinstance(region, str):
+        if Path(region).exists():
+            region = Regions.read(region, format=format)[0]
+        else:
+            region = Regions.parse(region, format=format)[0]
+    elif not isinstance(region, Region):
+        raise RuntimeError("'region' argument is not valid!")
+    pixcoords = PixCoord(hdu.data['X'], hdu.data['Y'])
+    if isinstance(region, PixelRegion):
+        evt_mask = region.contains(pixcoords)
+    elif isinstance(region, SkyRegion):
+        w = wcs_from_header(hdu.header)
+        skycoords = pixcoords.to_sky(w, origin=1)
+        evt_mask = region.contains(skycoords, w)
+    else:
+        raise NotImplementedError
+    return evt_mask
+
+
 def filter_events(evtfile, newfile, region=None, emin=None,
                   emax=None, format='ds9', overwrite=False):
     r"""
@@ -399,41 +419,23 @@ def filter_events(evtfile, newfile, region=None, emin=None,
         Whether to overwrite an existing file with the
         same name. Default: False
     """
-    from regions import Region, Regions, SkyRegion, PixelRegion, PixCoord
-    if region is not None:
-        if isinstance(region, str):
-            if Path(region).exists():
-                region = Regions.read(region, format=format)[0]
-            else:
-                region = Regions.parse(region, format=format)[0]
-        elif not isinstance(Region):
-            raise RuntimeError("'region' argument is not valid!")
-    evt_mask = True
     with fits.open(evtfile) as f:
         hdu = f["EVENTS"]
+        evt_mask = np.ones(hdu.data["ENERGY"].size, dtype='bool')
         if region is not None:
-            pixcoords = PixCoord(hdu.data['X'], hdu.data['Y'])
-            if isinstance(region, PixelRegion):
-                evt_mask &= region.contains(pixcoords)
-            elif isinstance(region, SkyRegion):
-                w = wcs_from_event_file(f)
-                skycoords = pixcoords.to_sky(w, origin=1)
-                evt_mask &= region.contains(skycoords, w)
-            else:
-                raise NotImplementedError
+            evt_mask &= _region_filter(hdu, region, format=format)
         if emin is not None:
-            emin = parse_value(emin, "keV")
-            emin *= 1000.
+            emin = parse_value(emin, "keV")*1000.0
             evt_mask &= hdu.data["ENERGY"] > emin
         if emax is not None:
-            emax = parse_value(emax, "keV")
-            emax *= 1000.
+            emax = parse_value(emax, "keV")*1000.0
             evt_mask &= hdu.data["ENERGY"] < emax
         hdu.data = hdu.data[evt_mask]
         f.writeto(newfile, overwrite=overwrite)
 
 
-def write_spectrum(evtfile, specfile, overwrite=False):
+def write_spectrum(evtfile, specfile, region=None, format='ds9',
+                   overwrite=False):
     r"""
     Bin event energies into a spectrum and write it to
     a FITS binary table. Does not do any grouping of
@@ -445,6 +447,11 @@ def write_spectrum(evtfile, specfile, overwrite=False):
         The name of the event file to read the events from.
     specfile : string
         The name of the spectrum file to be written.
+    region : string or Region, optional
+        The region to be used for the filtering. Default: None
+    format : string, optional
+        The file format specifier for the region. "ds9",
+        "crtf", "fits", etc. Default: "ds9"
     overwrite : boolean, optional
         Whether to overwrite an existing file with
         the same name. Default: False
@@ -452,14 +459,17 @@ def write_spectrum(evtfile, specfile, overwrite=False):
     from soxs.response import RedistributionMatrixFile
     parameters = {}
     if isinstance(evtfile, str):
-        f = fits.open(evtfile)
-        spectype = f["EVENTS"].header["CHANTYPE"]
-        rmf = f["EVENTS"].header["RESPFILE"]
-        p = f["EVENTS"].data[spectype]
-        exp_time = f["EVENTS"].header["EXPOSURE"]
-        for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
-            parameters[key] = f["EVENTS"].header[key]
-        f.close()
+        with fits.open(evtfile) as f:
+            hdu = f["EVENTS"]
+            evt_mask = np.ones(hdu.data["ENERGY"].size, dtype='bool')
+            if region is not None:
+                evt_mask &= _region_filter(hdu, region, format=format)
+            spectype = hdu.header["CHANTYPE"]
+            rmf = hdu.header["RESPFILE"]
+            p = hdu.data[spectype][evt_mask]
+            exp_time = hdu.header["EXPOSURE"]
+            for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
+                parameters[key] = hdu.header[key]
     else:
         rmf = evtfile["rmf"]
         spectype = evtfile["channel_type"]
@@ -546,7 +556,7 @@ def write_radial_profile(evt_file, out_file, ctr, rmin,
     x = hdu.data["X"][idxs]
     y = hdu.data["Y"][idxs]
     exp_time = hdu.header["EXPOSURE"]
-    w = wcs_from_event_file(f)
+    w = wcs_from_header(hdu.header)
     dtheta = np.abs(w.wcs.cdelt[1])*3600.0
     f.close()
 
