@@ -177,6 +177,49 @@ class Spectrum:
         eflux = (self.flux*self.emid.to("erg")*self.de)[range].sum()/(1.0*u.photon)
         return pflux, eflux
 
+    def get_lum_in_band(self, emin, emax, redshift=0.0, dist=None, cosmology=None):
+        """
+        Determine the total luminosity in the source within a band specified
+        by an energy range.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy in the band, in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy in the band, in keV.
+        redshift : float
+            The redshift to the source, assuming it is cosmological.
+        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The distance to the source, if it is not cosmological. If a unit
+            is not specified, it is assumed to be in kpc.
+        cosmology : :class:`~astropy.cosmology.Cosmology` object
+            An AstroPy cosmology object used to determine the luminosity 
+            distance if needed. If not set, the default is the Planck 2018
+            cosmology. 
+
+        Returns
+        -------
+        A tuple of values for the luminosity in the band: the first 
+        value is in terms of the photon rate, the second value is 
+        in terms of the energy rate. 
+        """
+        from astropy.cosmology import Planck18
+        if cosmology is None:
+            cosmology = Planck18
+        if redshift == 0.0 and dist is None:
+            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot "
+                             "be None for 'get_lum_in_band'!")
+        pflux, eflux = self.get_flux_in_band(emin/(1.0+redshift), emax/(1.0+redshift))
+        if dist is None:
+            D_L = cosmology.luminosity_distance(redshift).to("cm")
+        else:
+            D_L = u.Quantity(parse_value(dist, "kpc"), "kpc").to("cm")
+        dist_fac = 4.0*np.pi*D_L**2
+        elum = dist_fac*eflux
+        plum = dist_fac*pflux/(1.0+redshift)
+        return plum, elum
+
     @classmethod
     def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear"):
         """
@@ -505,7 +548,7 @@ class Spectrum:
         specfile : string
             The filename to write the file to.
         overwrite : boolean, optional
-            Whether or not to overwrite an existing 
+            Whether to overwrite an existing 
             file with the same name. Default: False
         """
         if Path(specfile).exists() and not overwrite:
@@ -532,7 +575,7 @@ class Spectrum:
         specfile : string
             The filename to write the file to.
         overwrite : boolean, optional
-            Whether or not to overwrite an existing 
+            Whether to overwrite an existing
             file with the same name. Default: False
         """
         t = self._write_fits_or_ascii()
@@ -661,12 +704,12 @@ class Spectrum:
         area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The effective area in cm**2. If one is creating 
             events for a SIMPUT file, a constant should be 
-            used and it must be large enough so that a 
+            used, and it must be large enough so that a 
             sufficiently large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only 
-            be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is None, 
+            A pseudo-random number generator. This will typically only
+            be specified if you have a reason to generate the same
+            set of random numbers, such as for a test. Default is None,
             which sets the seed based on the system time. 
         quiet : boolean, optional
             If True, log messages will not be displayed when 
@@ -700,9 +743,9 @@ class Spectrum:
             The right-most energy in keV to plot. Default is the 
             maximum value in the spectrum. 
         ymin : float, optional
-            The lower extent of the y-axis. By default it is set automatically.
+            The lower extent of the y-axis. By default, it is set automatically.
         ymax : float, optional
-            The upper extent of the y-axis. By default it is set automatically.
+            The upper extent of the y-axis. By default, it is set automatically.
         xscale : string, optional
             The scaling of the x-axis of the plot. Default: "log"
         yscale : string, optional
