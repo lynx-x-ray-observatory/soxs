@@ -393,7 +393,6 @@ class SimputSpectrum(SimputSource):
         self.fluxdensity = fluxdensity
 
     def _get_source_hdu(self):
-        print("here")
         col1 = fits.Column(name='ENERGY', unit="keV",
                            format="1PE()",
                            array=np.array([self.energy], dtype=np.object_))
@@ -440,7 +439,7 @@ class SimputSpectrum(SimputSource):
             imhdu = process_fits_string(imhdu)
         return cls(spectral_model.ebins.value.min(),
                    spectral_model.ebins.value.max(),
-                   spec.total_energy_flux.value,
+                   spectral_model.total_energy_flux.value,
                    spectral_model.emid.value,
                    spectral_model.flux.value,
                    ra, dec, name=name, imhdu=imhdu)

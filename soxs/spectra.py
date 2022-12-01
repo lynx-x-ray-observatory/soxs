@@ -196,7 +196,7 @@ class Spectrum:
         cosmology : :class:`~astropy.cosmology.Cosmology` object
             An AstroPy cosmology object used to determine the luminosity 
             distance if needed. If not set, the default is the Planck 2018
-            cosmology. 
+            cosmology.
 
         Returns
         -------
@@ -523,7 +523,7 @@ class Spectrum:
         specfile : string
             The name of the file to write to.
         overwrite : boolean, optional
-            Whether or not to overwrite an existing
+            Whether or to overwrite an existing
             file with the same name. Default: False
         """
         suffix = PurePath(specfile).suffix.lower()

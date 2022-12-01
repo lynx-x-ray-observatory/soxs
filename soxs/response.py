@@ -27,14 +27,15 @@ class AuxiliaryResponseFile:
     """
     def __init__(self, filename):
         self.filename = get_data_file(filename)
-        f = fits.open(self.filename)
-        self.elo = f["SPECRESP"].data.field("ENERG_LO")
-        self.ehi = f["SPECRESP"].data.field("ENERG_HI")
-        self.emid = 0.5*(self.elo+self.ehi)
-        self.eff_area = np.nan_to_num(
-            f["SPECRESP"].data.field("SPECRESP")).astype("float64")
-        self.max_area = self.eff_area.max()
-        f.close()
+        with fits.open(self.filename) as f:
+            self.elo = f["SPECRESP"].data.field("ENERG_LO")
+            self.ehi = f["SPECRESP"].data.field("ENERG_HI")
+            self.ebins = np.append(self.elo, self.ehi[-1])
+            self.de = np.diff(self.ebins)
+            self.emid = 0.5*(self.elo+self.ehi)
+            self.eff_area = np.nan_to_num(
+                f["SPECRESP"].data.field("SPECRESP")).astype("float64")
+            self.max_area = self.eff_area.max()
 
     @classmethod
     def from_instrument(cls, name):
@@ -71,11 +72,19 @@ class AuxiliaryResponseFile:
         return u.Quantity(earea, "cm**2")
 
     def detect_events_spec(self, src, exp_time, refband, prng=None):
-        from soxs.spectra import ConvolvedSpectrum
         prng = parse_prng(prng)
-        cspec = ConvolvedSpectrum.convolve(
-            src.spec, self).new_spec_from_band(refband[0], refband[1])
-        energy = cspec.generate_energies(exp_time, quiet=True, prng=prng).value
+        f, _ = np.histogram(src.energy, self.ebins, weights=src.fluxdensity)
+        f *= self.de
+        N = np.cumsum(f*self.eff_area)
+        idxs = np.logical_and(self.elo >= refband[0], self.ehi <= refband[1])
+        ref_flux = (self.emid*erg_per_keV*f)[idxs].sum()
+        rate = src.flux*N[-1]/ref_flux
+        n_ph = prng.poisson(lam=rate*exp_time)
+        randvec = prng.uniform(size=n_ph)
+        randvec.sort()
+        cumspec = np.insert(N, 0, 0.0)
+        cumspec /= cumspec[-1]
+        energy = np.interp(randvec, cumspec, self.ebins)
         if getattr(src, "imhdu", None):
             x, y = image_pos(src.imhdu.data, energy.size, prng)
             w = wcs.WCS(header=src.imhdu.header)
