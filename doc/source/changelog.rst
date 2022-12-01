@@ -3,6 +3,22 @@
 ChangeLog
 =========
 
+Version 4.1.0
+-------------
+
+This update to SOXS contains bug fixes and three new features.
+
+* A bug that scaled the flux of :class:`~soxs.simput.SimputSpectrum` sources
+  incorrectly has been corrected.
+* A bug that prevented :class:`~soxs.simput.SimputSpectrum` sources from being
+  used in SIXTE and MARX has been fixed.
+* It is now possible to specify a region file with creating a spectrum with 
+  :func:`~soxs.events.write_spectrum`, to select a subset of events based on 
+  spatial region. See :ref:`write-spectrum` for more details. 
+* The method :meth:`~soxs.spectrum.Spectrum.get_lum_in_band` to compute the 
+  rest-frame luminosity of a :class:`~soxs.spectrum.Spectrum` within an energy
+  band has been added. 
+
 Version 4.0.0
 -------------
 

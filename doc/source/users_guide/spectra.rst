@@ -179,8 +179,8 @@ You can also multiply a spectrum by a constant float number or divide it by one:
 
 .. _band-ops:
 
-Getting the Values and Total Flux of a Spectrum Within a Specific Energy Band
------------------------------------------------------------------------------
+Getting the Values and Total Flux or Luminosity of a Spectrum Within a Specific Energy Band
+-------------------------------------------------------------------------------------------
 
 A new :class:`~soxs.spectra.Spectrum` object can be created from a restricted
 energy band of an existing one by calling the :meth:`~soxs.spectra.Spectrum.new_spec_from_band`
@@ -193,7 +193,8 @@ method:
     subspec = spec.new_spec_from_band(emin, emax)
 
 The :meth:`~soxs.spectra.Spectrum.get_flux_in_band` method can be used
-to quickly report on the total flux within a specific energy band:
+to quickly report on the total flux within a specific energy band within
+the observer frame:
 
 .. code-block:: python
 
@@ -207,6 +208,45 @@ which returns a tuple of the photon flux and the energy flux, showing:
 
     (<Quantity 2.2215588675210208e-07 ph / (cm2 s)>, 
      <Quantity 7.8742710307246895e-16 erg / (cm2 s)>)
+
+The :meth:`~soxs.spectra.Spectrum.get_lum_in_band` method can also be used
+to quickly report on the total luminosity and count rate within a specific 
+energy band, where in this case the band in question is the rest frame of 
+the source. For this reason, either a redshift must be supplied, or for a
+local source a distance must be given. 
+
+.. code-block:: python
+
+    emin = 0.5
+    emax = 7.0
+    print(spec.get_lum_in_band(emin, emax, redshift=0.05))
+
+which returns a tuple of the photon count rate and the luminosity, showing:
+
+.. code-block:: pycon
+
+    (<Quantity 1.35081761e+48 ph / s>, <Quantity 4.78819407e+39 erg / s>)
+
+You can change the cosmology as well by supplying a :class:`~astropy.cosmology.Cosmology`
+object to ``cosmology`` (otherwise the Planck 2018 cosmology is assumed):
+
+.. code-block:: python
+
+    from astropy.cosmology import WMAP9
+    emin = 0.5
+    emax = 7.0
+    print(spec.get_lum_in_band(emin, emax, redshift=0.05, cosmology=WMAP9))
+
+See the `AstroPy cosmology documentation <https://docs.astropy.org/en/stable/cosmology/index.html>`_
+for more details. 
+
+You can supply a distance for a local source (redshift assumed zero) like this:
+
+.. code-block:: python
+
+    emin = 0.5
+    emax = 7.0
+    print(spec.get_lum_in_band(emin, emax, dist=(8.0, "kpc")))
 
 Finally, :class:`~soxs.spectra.Spectrum` objects are "callable", and if one
 supplies a single energy or array of energies, the values of the spectrum

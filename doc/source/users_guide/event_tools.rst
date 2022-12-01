@@ -256,6 +256,21 @@ This spectrum file can be read and fit with standard X-ray analysis software suc
 `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_, `ISIS <http://space.mit.edu/CXC/ISIS/>`_, 
 and `Sherpa <http://cxc.harvard.edu/sherpa/>`_. 
 
+To filter out events based on position for the spectrum, we can use a region file 
+from ds9, CIAO, etc.:
+
+.. code-block:: python
+
+    write_spectrum("my_evt.fits", "my_spec.pha", region="circle.reg",
+                   overwrite=True)
+                       
+Alternatively, you can use a region string:
+
+.. code-block:: python
+ 
+    reg = '# Region file format: DS9\nimage\ncircle(147.10,254.17,3.1) # color=green\n'
+    write_spectrum("my_evt.fits", "my_spec.pha", region=reg, overwrite=True)
+
 .. _plot-spectrum:
 
 ``plot_spectrum``
