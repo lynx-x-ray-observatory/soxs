@@ -6,7 +6,7 @@ ChangeLog
 Version 4.1.0
 -------------
 
-This update to SOXS contains bug fixes and three new features.
+This update to SOXS contains bug fixes and two new features.
 
 * A bug that scaled the flux of :class:`~soxs.simput.SimputSpectrum` sources
   incorrectly has been corrected.
