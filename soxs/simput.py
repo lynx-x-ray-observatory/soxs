@@ -201,7 +201,8 @@ class SimputCatalog:
                                         header=imheader)
             else:
                 imhdu = None
-            src = SimputSpectrum(spec, self.ra[i], self.dec[i],
+            src = SimputSpectrum(self.emin[i], self.emax[i], self.fluxes[i], 
+                                 emid, flux, self.ra[i], self.dec[i],
                                  name=self.src_names[i], imhdu=imhdu)
         else:
             raise RuntimeError
@@ -385,22 +386,25 @@ class SimputSource:
 class SimputSpectrum(SimputSource):
     src_type = "spectrum"
 
-    def __init__(self, spec, ra, dec, name=None, imhdu=None):
-        super(SimputSpectrum, self).__init__(spec.ebins.value.min(),
-                                             spec.ebins.value.max(),
-                                             spec.total_flux.value, ra,
+    def __init__(self, emin, emax, flux, energy, fluxdensity, ra, dec, name=None, imhdu=None):
+        super(SimputSpectrum, self).__init__(emin, emax, flux, ra,
                                              dec, name=name, imhdu=imhdu)
-        self.spec = spec
+        self.energy = energy
+        self.fluxdensity = fluxdensity
 
     def _get_source_hdu(self):
+        print("here")
         col1 = fits.Column(name='ENERGY', unit="keV",
-                           format="E",
-                           array=self.spec.emid.value)
+                           format="1PE()",
+                           array=np.array([self.energy], dtype=np.object_))
         col2 = fits.Column(name='FLUXDENSITY',
                            unit="photons/s/cm**2/keV",
-                           format="E",
-                           array=self.spec.flux.value)
-        cols = [col1, col2]
+                           format="1PE()",
+                           array=np.array([self.fluxdensity], dtype=np.object_))
+        col3 = fits.Column(name='NAME',
+                           format='48A',
+                           array=np.array(['']))
+        cols = [col1, col2, col3]
 
         coldefs = fits.ColDefs(cols)
 
@@ -434,7 +438,12 @@ class SimputSpectrum(SimputSource):
         """
         if isinstance(imhdu, str):
             imhdu = process_fits_string(imhdu)
-        return cls(spectral_model, ra, dec, name=name, imhdu=imhdu)
+        return cls(spectral_model.ebins.value.min(),
+                   spectral_model.ebins.value.max(),
+                   spec.total_energy_flux.value,
+                   spectral_model.emid.value,
+                   spectral_model.flux.value,
+                   ra, dec, name=name, imhdu=imhdu)
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model,
@@ -458,8 +467,10 @@ class SimputSpectrum(SimputSource):
             on a side.
         """
         imhdu = spatial_model.generate_image(width, nx)
-        return cls(spectral_model, spatial_model.ra0,
-                   spatial_model.dec0, name=name, imhdu=imhdu)
+        return cls.from_spectrum(name, spectral_model,
+                                 spatial_model.ra0,
+                                 spatial_model.dec0,
+                                 imhdu=imhdu)
 
 
 class SimputPhotonList(SimputSource):
