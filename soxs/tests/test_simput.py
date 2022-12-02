@@ -41,7 +41,7 @@ def test_append():
     assert os.path.exists("pt_src_simput.fits")
 
     with fits.open("pt_src_simput.fits") as f:
-        cat = f["SRC_CAT"].data["SPECTRUM"]
+        cat = f["SRC_CAT"].data["SPECTRUM"].copy()
         assert cat[0] == "./pt_src1_phlist.fits[PHLIST,1]"
         assert cat[1] == "./pt_src2_phlist.fits[PHLIST,1]"
 

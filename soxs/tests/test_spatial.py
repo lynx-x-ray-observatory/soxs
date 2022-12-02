@@ -66,8 +66,8 @@ def test_point_source():
     dtheta = inst["fov"] * 60.0 / inst["num_pixels"]
 
     with fits.open("pt_src_evt.fits") as f:
-        x = f["EVENTS"].data["X"]
-        y = f["EVENTS"].data["Y"]
+        x = f["EVENTS"].data["X"].copy()
+        y = f["EVENTS"].data["Y"].copy()
 
     scalex = np.std(x) * sigma_to_fwhm * dtheta
     scaley = np.std(y) * sigma_to_fwhm * dtheta
