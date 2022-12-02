@@ -1,13 +1,14 @@
 import numpy as np
-from soxs.constants import keV_per_erg, erg_per_keV
-from soxs.simput import SimputCatalog, SimputPhotonList
-from soxs.spatial import construct_wcs
-from soxs.spectra import get_wabs_absorb, get_tbabs_absorb
-from soxs.utils import mylog, parse_prng, parse_value, soxs_cfg
+from astropy.io import ascii
+from astropy.table import Table
 from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import erf
-from astropy.table import Table
-from astropy.io import ascii
+
+from soxs.constants import erg_per_keV, keV_per_erg
+from soxs.simput import SimputCatalog, SimputPhotonList
+from soxs.spatial import construct_wcs
+from soxs.spectra import get_tbabs_absorb, get_wabs_absorb
+from soxs.utils import mylog, parse_prng, parse_value, soxs_cfg
 
 # Function for computing spectral index of AGN sources
 # a fit to the data from Figure 13a of Hickox & Markevitch 2006
@@ -23,8 +24,8 @@ dd = 1.8
 
 # Here x = log10(flux)
 def get_agn_index(x):
-    y = (x-aa)/bb
-    return cc*erf(y)+dd
+    y = (x - aa) / bb
+    return cc * erf(y) + dd
 
 
 # Index for galaxies
@@ -38,18 +39,23 @@ spec_emax = 10.0  # keV, max energy of mock spectrum
 
 
 def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
-    f_g = np.log(spec_emax/spec_emin)*np.ones(ind.size)
-    f_E = np.log(fb_emax/fb_emin)*np.ones(ind.size)
+    f_g = np.log(spec_emax / spec_emin) * np.ones(ind.size)
+    f_E = np.log(fb_emax / fb_emin) * np.ones(ind.size)
     n1 = ind != 1.0
     n2 = ind != 2.0
-    f_g[n1] = (spec_emax**(1.0-ind[n1])-spec_emin**(1.0-ind[n1]))/(1.0-ind[n1])
-    f_E[n2] = (fb_emax**(2.0-ind[n2])-fb_emin**(2.0-ind[n2]))/(2.0-ind[n2])
-    fscale = f_g/f_E
+    f_g[n1] = (spec_emax ** (1.0 - ind[n1]) - spec_emin ** (1.0 - ind[n1])) / (
+        1.0 - ind[n1]
+    )
+    f_E[n2] = (fb_emax ** (2.0 - ind[n2]) - fb_emin ** (2.0 - ind[n2])) / (
+        2.0 - ind[n2]
+    )
+    fscale = f_g / f_E
     return fscale
 
 
 def generate_fluxes(fov, prng):
-    from soxs.data import cdf_fluxes, cdf_gal, cdf_agn
+    from soxs.data import cdf_agn, cdf_fluxes, cdf_gal
+
     prng = parse_prng(prng)
 
     fov = parse_value(fov, "arcmin")
@@ -63,25 +69,25 @@ def generate_fluxes(fov, prng):
     f_gal = InterpolatedUnivariateSpline(F_gal, logf)
     f_agn = InterpolatedUnivariateSpline(F_agn, logf)
 
-    fov_area = fov**2
+    fov_area = fov ** 2
 
-    n_gal = int(n_gal*fov_area/3600.0)
-    n_agn = int(n_agn*fov_area/3600.0)
+    n_gal = int(n_gal * fov_area / 3600.0)
+    n_agn = int(n_agn * fov_area / 3600.0)
     mylog.debug(f"{n_agn} AGN, {n_gal} galaxies in the FOV.")
 
     randvec1 = prng.uniform(size=n_agn)
-    agn_fluxes = 10**f_agn(randvec1)
+    agn_fluxes = 10 ** f_agn(randvec1)
 
     randvec2 = prng.uniform(size=n_gal)
-    gal_fluxes = 10**f_gal(randvec2)
+    gal_fluxes = 10 ** f_gal(randvec2)
 
     return agn_fluxes, gal_fluxes
 
 
 def generate_positions(num, fov, sky_center, prng):
-    fov *= 60.0 # convert to arcsec
-    x = prng.uniform(low=-0.5*fov, high=0.5*fov, size=num)
-    y = prng.uniform(low=-0.5*fov, high=0.5*fov, size=num)
+    fov *= 60.0  # convert to arcsec
+    x = prng.uniform(low=-0.5 * fov, high=0.5 * fov, size=num)
+    y = prng.uniform(low=-0.5 * fov, high=0.5 * fov, size=num)
     w = construct_wcs(*sky_center)
     ra0, dec0 = w.wcs_pix2world(x, y, 1)
     return ra0, dec0
@@ -111,18 +117,28 @@ def generate_sources(fov, sky_center, prng=None):
 
     fluxes = np.concatenate([agn_fluxes, gal_fluxes])
 
-    ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)),
-                          gal_index * np.ones(gal_fluxes.size)])
+    ind = np.concatenate(
+        [get_agn_index(np.log10(agn_fluxes)), gal_index * np.ones(gal_fluxes.size)]
+    )
 
     ra0, dec0 = generate_positions(fluxes.size, fov, sky_center, prng)
 
     return ra0, dec0, fluxes, ind
 
 
-def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None, 
-                          nH=None, area=40000.0, input_sources=None, 
-                          output_sources=None, dump_fluxes_band=None, 
-                          diffuse_unresolved=True, prng=None):
+def make_ptsrc_background(
+    exp_time,
+    fov,
+    sky_center,
+    absorb_model=None,
+    nH=None,
+    area=40000.0,
+    input_sources=None,
+    output_sources=None,
+    dump_fluxes_band=None,
+    diffuse_unresolved=True,
+    prng=None,
+):
     r"""
     Make a point-source background.
 
@@ -182,13 +198,14 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
 
     # If requested, output the source properties to a file
     if output_sources is not None:
-        t = Table([ra0, dec0, fluxes, ind],
-                  names=('RA', 'Dec', 'flux_0.5_2.0_keV', 'index'))
+        t = Table(
+            [ra0, dec0, fluxes, ind], names=("RA", "Dec", "flux_0.5_2.0_keV", "index")
+        )
         t["RA"].unit = "deg"
         t["Dec"].unit = "deg"
         t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
         t["index"].unit = ""
-        t.write(output_sources, format='ascii.ecsv', overwrite=True)
+        t.write(output_sources, format="ascii.ecsv", overwrite=True)
 
     # Add in the diffuse component for completely unresolved sources
     if diffuse_unresolved:
@@ -202,25 +219,25 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
         scaling between the fluxes in the 1-2 keV and 0.5-2 keV bands, assuming 
         a spectral index of 2. The whole thing finally needs to be scaled by the 
         FOV at the end.
-        """ 
-        F12 = 0.676e-12 # erg/s/cm**2/deg**2 in 1-2 keV band
-        diffuse_flux = 2.0*F12*(fov/60)**2
+        """
+        F12 = 0.676e-12  # erg/s/cm**2/deg**2 in 1-2 keV band
+        diffuse_flux = 2.0 * F12 * (fov / 60) ** 2
         fluxes = np.append(fluxes, diffuse_flux)
         ind = np.append(ind, 2.0)
 
     # Pre-calculate for optimization
-    eratio = spec_emax/spec_emin
-    oma = 1.0-ind
-    invoma = 1.0/oma
+    eratio = spec_emax / spec_emin
+    oma = 1.0 - ind
+    invoma = 1.0 / oma
     invoma[oma == 0.0] = 1.0
-    fac1 = spec_emin**oma
-    fac2 = spec_emax**oma-fac1
+    fac1 = spec_emin ** oma
+    fac2 = spec_emax ** oma - fac1
     fluxscale = get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax)
 
     # Using the energy flux, determine the photon flux by simple scaling
-    ref_ph_flux = fluxes*fluxscale*keV_per_erg
+    ref_ph_flux = fluxes * fluxscale * keV_per_erg
     # Now determine the number of photons we will generate
-    n_photons = prng.poisson(ref_ph_flux*exp_time*area)
+    n_photons = prng.poisson(ref_ph_flux * exp_time * area)
 
     all_energies = []
     all_ra = []
@@ -234,18 +251,18 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
             # Generate the energies in the source frame
             u = prng.uniform(size=nph)
             if ind[i] == 1.0:
-                energies = spec_emin*(eratio**u)
+                energies = spec_emin * (eratio ** u)
             else:
-                energies = fac1[i] + u*fac2[i]
+                energies = fac1[i] + u * fac2[i]
                 if invoma[i] == -1.0:
-                    energies = 1.0/energies
+                    energies = 1.0 / energies
                 else:
                     energies **= invoma[i]
 
             # Assign positions for this source
             if i < num_sources:
-                ra = ra0[i]*np.ones(nph)
-                dec = dec0[i]*np.ones(nph)
+                ra = ra0[i] * np.ones(nph)
+                dec = dec0[i] * np.ones(nph)
             else:
                 # this is the diffuse source--fill the whole FOV
                 ra, dec = generate_positions(nph, fov, sky_center, prng)
@@ -261,7 +278,7 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
         dfluxes = np.zeros_like(ref_ph_flux)
         for idx, e in zip(detected, all_energies):
             eidxs = (e > dump_fluxes_band[0]) & (e < dump_fluxes_band[1])
-            dfluxes[idx] = np.sum(e[eidxs])*erg_per_keV/area/exp_time
+            dfluxes[idx] = np.sum(e[eidxs]) * erg_per_keV / area / exp_time
         filename = f"dump_fluxes_{dump_fluxes_band[0]}_{dump_fluxes_band[1]}.dat"
         np.savetxt(filename, dfluxes)
 
@@ -288,20 +305,35 @@ def make_ptsrc_background(exp_time, fov, sky_center, absorb_model=None,
         all_nph = all_energies.size
         mylog.debug(f"{all_nph} photons remain after foreground galactic absorption.")
 
-    all_flux = np.sum(all_energies)*erg_per_keV/(exp_time*area)
+    all_flux = np.sum(all_energies) * erg_per_keV / (exp_time * area)
 
-    output_events = {"ra": all_ra, "dec": all_dec, 
-                     "energy": all_energies, "flux": all_flux}
+    output_events = {
+        "ra": all_ra,
+        "dec": all_dec,
+        "energy": all_energies,
+        "flux": all_flux,
+    }
 
     return output_events
 
 
-def make_point_sources_file(filename, name, exp_time, fov,
-                            sky_center, absorb_model=None, nH=None,
-                            area=40000.0, append=False,
-                            overwrite=False, src_filename=None,
-                            input_sources=None, output_sources=None,
-                            diffuse_unresolved=True, prng=None):
+def make_point_sources_file(
+    filename,
+    name,
+    exp_time,
+    fov,
+    sky_center,
+    absorb_model=None,
+    nH=None,
+    area=40000.0,
+    append=False,
+    overwrite=False,
+    src_filename=None,
+    input_sources=None,
+    output_sources=None,
+    diffuse_unresolved=True,
+    prng=None,
+):
     """
     Make a SIMPUT catalog made up of contributions from
     point sources. 
@@ -353,20 +385,28 @@ def make_point_sources_file(filename, name, exp_time, fov,
         set of random numbers, such as for a test. Default is None, 
         which sets the seed based on the system time.
     """
-    events = make_ptsrc_background(exp_time, fov, sky_center, 
-                                   absorb_model=absorb_model, nH=nH, 
-                                   area=area, input_sources=input_sources, 
-                                   output_sources=output_sources, prng=prng,
-                                   diffuse_unresolved=diffuse_unresolved)
-    phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"],
-                              events["flux"], name=name)
+    events = make_ptsrc_background(
+        exp_time,
+        fov,
+        sky_center,
+        absorb_model=absorb_model,
+        nH=nH,
+        area=area,
+        input_sources=input_sources,
+        output_sources=output_sources,
+        prng=prng,
+        diffuse_unresolved=diffuse_unresolved,
+    )
+    phlist = SimputPhotonList(
+        events["ra"], events["dec"], events["energy"], events["flux"], name=name
+    )
     if append:
         cat = SimputCatalog.from_file(filename)
         cat.append(phlist, src_filename=src_filename, overwrite=overwrite)
     else:
-        cat = SimputCatalog.from_source(filename, phlist, 
-                                        src_filename=src_filename, 
-                                        overwrite=overwrite)
+        cat = SimputCatalog.from_source(
+            filename, phlist, src_filename=src_filename, overwrite=overwrite
+        )
     return cat
 
 
@@ -391,10 +431,11 @@ def make_point_source_list(output_file, fov, sky_center, prng=None):
     """
     ra0, dec0, fluxes, ind = generate_sources(fov, sky_center, prng=prng)
 
-    t = Table([ra0, dec0, fluxes, ind],
-              names=('RA', 'Dec', 'flux_0.5_2.0_keV', 'index'))
+    t = Table(
+        [ra0, dec0, fluxes, ind], names=("RA", "Dec", "flux_0.5_2.0_keV", "index")
+    )
     t["RA"].unit = "deg"
     t["Dec"].unit = "deg"
     t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
     t["index"].unit = ""
-    t.write(output_file, format='ascii.ecsv', overwrite=True)
+    t.write(output_file, format="ascii.ecsv", overwrite=True)

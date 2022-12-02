@@ -2,8 +2,8 @@
 
 import argparse
 import os
-from soxs.instrument_registry import \
-    instrument_registry
+
+from soxs.instrument_registry import instrument_registry
 
 parser = argparse.ArgumentParser(description='Download files associated with a particular '
                                              'instrument model.')

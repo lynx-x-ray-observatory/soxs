@@ -1,12 +1,19 @@
-from soxs.instrument import perform_dither
-from soxs.spectra import ConvolvedSpectrum
-from soxs.thermal_spectra import ApecGenerator
-from soxs.utils import parse_prng, \
-    parse_value, mylog, create_region, \
-    get_data_file, get_rot_mat, soxs_cfg
 import numpy as np
 from astropy.io import fits
 from regions import PixCoord
+
+from soxs.instrument import perform_dither
+from soxs.spectra import ConvolvedSpectrum
+from soxs.thermal_spectra import ApecGenerator
+from soxs.utils import (
+    create_region,
+    get_data_file,
+    get_rot_mat,
+    mylog,
+    parse_prng,
+    parse_value,
+    soxs_cfg,
+)
 
 """
 XSPEC model used to create the "default" foreground spectrum
@@ -46,8 +53,7 @@ def make_frgnd_spectrum(arf, rmf):
     absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
     frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
     frgnd_velocity = float(soxs_cfg.get("soxs", "frgnd_velocity"))
-    agen = ApecGenerator(rmf.ebins[0], rmf.ebins[-1], rmf.n_e,
-                         broadening=True)
+    agen = ApecGenerator(rmf.ebins[0], rmf.ebins[-1], rmf.n_e, broadening=True)
     spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7, velocity=frgnd_velocity)
     if frgnd_spec_model == "halosat":
         spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8, velocity=frgnd_velocity)
@@ -72,14 +78,15 @@ def read_instr_spectrum(filename, ext_area):
     with fits.open(fn) as f:
         hdu = f["SPECTRUM"]
         if "COUNTS" in hdu.data.names:
-            count_rate = hdu.data["COUNTS"]/hdu.header["EXPOSURE"]
+            count_rate = hdu.data["COUNTS"] / hdu.header["EXPOSURE"]
         elif "COUNT_RATE" in hdu.data.names:
             count_rate = hdu.data["COUNT_RATE"]
         elif "RATE" in hdu.data.names:
             count_rate = hdu.data["RATE"]
         else:
-            raise RuntimeError("Cannot find a field for either "
-                               "counts or count rate!")
+            raise RuntimeError(
+                "Cannot find a field for either " "counts or count rate!"
+            )
         count_rate /= ext_area
     return count_rate
 
@@ -105,28 +112,32 @@ def generate_channel_spectrum(count_rate, t_exp, solid_angle, prng=None):
     t_exp = parse_value(t_exp, "s")
     solid_angle = parse_value(solid_angle, "arcmin**2")
     prng = parse_prng(prng)
-    fac = t_exp * solid_angle # Backgrounds are normalized to 1 arcmin**2
-    return prng.poisson(lam=count_rate*fac).astype('int')
+    fac = t_exp * solid_angle  # Backgrounds are normalized to 1 arcmin**2
+    return prng.poisson(lam=count_rate * fac).astype("int")
 
 
-def make_diffuse_background(foreground, instr_bkgnd, inst_spec, event_params, 
-                            arf, rmf, prng=None):
+def make_diffuse_background(
+    foreground, instr_bkgnd, inst_spec, event_params, arf, rmf, prng=None
+):
     from collections import defaultdict
 
     prng = parse_prng(prng)
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
-        fspec = rmf.convolve_spectrum(make_frgnd_spectrum(arf, rmf),
-                                      event_params["exposure_time"],
-                                      noisy=False, rate=True)
+        fspec = rmf.convolve_spectrum(
+            make_frgnd_spectrum(arf, rmf),
+            event_params["exposure_time"],
+            noisy=False,
+            rate=True,
+        )
 
     if instr_bkgnd:
         mylog.info("Adding in instrumental background.")
         bkgnd_spec = inst_spec["bkgnd"]
         if isinstance(bkgnd_spec[0], str):
             nchips = len(event_params["chips"])
-            bkgnd_spec = [bkgnd_spec]*nchips
+            bkgnd_spec = [bkgnd_spec] * nchips
 
     n_frgnd = 0
     n_instr = 0
@@ -134,24 +145,27 @@ def make_diffuse_background(foreground, instr_bkgnd, inst_spec, event_params,
     channels = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
 
     bkg_events = defaultdict(list)
-    pixel_area = (event_params["plate_scale"]*60.0)**2
+    pixel_area = (event_params["plate_scale"] * 60.0) ** 2
     for i, chip in enumerate(event_params["chips"]):
         rtype = chip[0]
         args = chip[1:]
         r, bounds = create_region(rtype, args, 0.0, 0.0)
-        sa = (bounds[1]-bounds[0])*(bounds[3]-bounds[2])*pixel_area
-        ncts = np.zeros(rmf.n_ch, dtype='int')
+        sa = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2]) * pixel_area
+        ncts = np.zeros(rmf.n_ch, dtype="int")
         if instr_bkgnd:
             ispec = read_instr_spectrum(bkgnd_spec[i][0], bkgnd_spec[i][1])
-            icts = generate_channel_spectrum(ispec, event_params["exposure_time"], sa, prng=prng)
+            icts = generate_channel_spectrum(
+                ispec, event_params["exposure_time"], sa, prng=prng
+            )
             ncts += icts
             n_instr += icts.sum()
         if foreground:
-            fcts = generate_channel_spectrum(fspec, event_params["exposure_time"], sa, prng=prng)
+            fcts = generate_channel_spectrum(
+                fspec, event_params["exposure_time"], sa, prng=prng
+            )
             ncts += fcts
             n_frgnd += fcts.sum()
-        chan = np.concatenate([channels[i] * np.ones(n)
-                               for i, n in enumerate(ncts)])
+        chan = np.concatenate([channels[i] * np.ones(n) for i, n in enumerate(ncts)])
         n_events = chan.size
         detx = prng.uniform(low=bounds[0], high=bounds[1], size=n_events)
         dety = prng.uniform(low=bounds[2], high=bounds[3], size=n_events)
@@ -161,13 +175,13 @@ def make_diffuse_background(foreground, instr_bkgnd, inst_spec, event_params,
         else:
             thisc = r.contains(PixCoord(detx, dety))
             n_det = thisc.sum()
-        ch = chan[thisc].astype('int')
+        ch = chan[thisc].astype("int")
         e = rmf.ch_to_eb(ch, prng=prng)
         bkg_events["energy"].append(e)
         bkg_events[rmf.chan_type].append(ch)
         bkg_events["detx"].append(detx[thisc])
         bkg_events["dety"].append(dety[thisc])
-        bkg_events["chip_id"].append(i*np.ones(n_det))
+        bkg_events["chip_id"].append(i * np.ones(n_det))
     for key in bkg_events:
         bkg_events[key] = np.concatenate(bkg_events[key])
 
@@ -180,23 +194,31 @@ def make_diffuse_background(foreground, instr_bkgnd, inst_spec, event_params,
 
     n_e = bkg_events["energy"].size
 
-    bkg_events['time'] = prng.uniform(size=n_e, low=0.0,
-                                      high=event_params["exposure_time"])
+    bkg_events["time"] = prng.uniform(
+        size=n_e, low=0.0, high=event_params["exposure_time"]
+    )
 
-    x_offset, y_offset = perform_dither(bkg_events["time"],
-                                        event_params["dither_params"])
+    x_offset, y_offset = perform_dither(
+        bkg_events["time"], event_params["dither_params"]
+    )
 
     rot_mat = get_rot_mat(event_params["roll_angle"])
 
-    det = np.array([bkg_events["detx"] + x_offset -
-                    event_params["aimpt_coords"][0] -
-                    event_params["aimpt_shift"][0],
-                    bkg_events["dety"] + y_offset -
-                    event_params["aimpt_coords"][1] -
-                    event_params["aimpt_shift"][1]])
+    det = np.array(
+        [
+            bkg_events["detx"]
+            + x_offset
+            - event_params["aimpt_coords"][0]
+            - event_params["aimpt_shift"][0],
+            bkg_events["dety"]
+            + y_offset
+            - event_params["aimpt_coords"][1]
+            - event_params["aimpt_shift"][1],
+        ]
+    )
     pix = np.dot(rot_mat.T, det)
 
-    bkg_events["xpix"] = pix[0, :] + event_params['pix_center'][0]
-    bkg_events["ypix"] = pix[1, :] + event_params['pix_center'][1]
+    bkg_events["xpix"] = pix[0, :] + event_params["pix_center"][0]
+    bkg_events["ypix"] = pix[1, :] + event_params["pix_center"][1]
 
     return bkg_events

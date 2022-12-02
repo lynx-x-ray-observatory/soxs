@@ -1,16 +1,29 @@
-from soxs.instrument import instrument_simulator
-from soxs.events import write_image, make_exposure_map, wcs_from_header
-from soxs.utils import mylog
 import numpy as np
-from astropy.io import fits, ascii
+from astropy.io import ascii, fits
 from astropy.table import Table
 
+from soxs.events import make_exposure_map, wcs_from_header, write_image
+from soxs.instrument import instrument_simulator
+from soxs.utils import mylog
 
-def make_mosaic_events(pointing_list, input_source, out_prefix, exp_time, 
-                       instrument, overwrite=False, instr_bkgnd=True,
-                       foreground=True, ptsrc_bkgnd=True, bkgnd_file=None, 
-                       no_dither=False, dither_params=None, subpixel_res=False, 
-                       aimpt_shift=None, prng=None):
+
+def make_mosaic_events(
+    pointing_list,
+    input_source,
+    out_prefix,
+    exp_time,
+    instrument,
+    overwrite=False,
+    instr_bkgnd=True,
+    foreground=True,
+    ptsrc_bkgnd=True,
+    bkgnd_file=None,
+    no_dither=False,
+    dither_params=None,
+    subpixel_res=False,
+    aimpt_shift=None,
+    prng=None,
+):
     """
     Observe a source from many different pointings.
 
@@ -66,26 +79,42 @@ def make_mosaic_events(pointing_list, input_source, out_prefix, exp_time,
         which sets the seed based on the system time. 
     """
     if isinstance(pointing_list, str):
-        t = ascii.read(pointing_list, format='commented_header', guess=False,
-                       header_start=0, delimiter="\t")
+        t = ascii.read(
+            pointing_list,
+            format="commented_header",
+            guess=False,
+            header_start=0,
+            delimiter="\t",
+        )
     elif not isinstance(pointing_list, Table):
         t = Table(np.array(pointing_list), names=["ra", "dec"])
     out_list = []
     for i, row in enumerate(t):
         out_file = f"{out_prefix}_{i}_evt.fits"
         out_list.append(out_file)
-        instrument_simulator(input_source, out_file, exp_time, instrument,
-                             (row["ra"], row["dec"]), overwrite=overwrite,
-                             instr_bkgnd=instr_bkgnd, foreground=foreground,
-                             ptsrc_bkgnd=ptsrc_bkgnd, bkgnd_file=bkgnd_file,
-                             no_dither=no_dither, dither_params=dither_params,
-                             subpixel_res=subpixel_res, aimpt_shift=aimpt_shift,
-                             prng=prng)
+        instrument_simulator(
+            input_source,
+            out_file,
+            exp_time,
+            instrument,
+            (row["ra"], row["dec"]),
+            overwrite=overwrite,
+            instr_bkgnd=instr_bkgnd,
+            foreground=foreground,
+            ptsrc_bkgnd=ptsrc_bkgnd,
+            bkgnd_file=bkgnd_file,
+            no_dither=no_dither,
+            dither_params=dither_params,
+            subpixel_res=subpixel_res,
+            aimpt_shift=aimpt_shift,
+            prng=prng,
+        )
     t["evtfile"] = out_list
     outfile = f"{out_prefix}_event_mosaic.dat"
     mylog.info(f"Writing mosaic information to {outfile}.")
-    t.write(outfile, overwrite=overwrite, delimiter="\t",
-            format='ascii.commented_header')
+    t.write(
+        outfile, overwrite=overwrite, delimiter="\t", format="ascii.commented_header"
+    )
     return outfile
 
 
@@ -120,11 +149,11 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     elif chantype == "PI":
         cunit = "Chan"
 
-    col_x = fits.Column(name='X', format='D', unit='pixel', array=x)
-    col_y = fits.Column(name='Y', format='D', unit='pixel', array=y)
-    col_e = fits.Column(name='ENERGY', format='E', unit='eV', array=e)
-    col_ch = fits.Column(name=chantype, format='1J', unit=cunit, array=ch)
-    col_t = fits.Column(name='TIME', format='1D', unit='s', array=t)
+    col_x = fits.Column(name="X", format="D", unit="pixel", array=x)
+    col_y = fits.Column(name="Y", format="D", unit="pixel", array=y)
+    col_e = fits.Column(name="ENERGY", format="E", unit="eV", array=e)
+    col_ch = fits.Column(name=chantype, format="1J", unit=cunit, array=ch)
+    col_t = fits.Column(name="TIME", format="1D", unit="s", array=t)
 
     coldefs = fits.ColDefs([col_e, col_x, col_y, col_ch, col_t])
     tbhdu = fits.BinTableHDU.from_columns(coldefs)
@@ -152,22 +181,35 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     tbhdu.header["TCUNI3"] = "deg"
     tbhdu.header["TLMIN2"] = 0.5
     tbhdu.header["TLMIN3"] = 0.5
-    tbhdu.header["TLMAX2"] = shape_out[0]+0.5
-    tbhdu.header["TLMAX3"] = shape_out[1]+0.5
+    tbhdu.header["TLMAX2"] = shape_out[0] + 0.5
+    tbhdu.header["TLMAX3"] = shape_out[1] + 0.5
     tbhdu.header["CHANTYPE"] = chantype
 
     with fits.open(eventfiles[0], memmap=True) as f:
-        for key in ["TELESCOP", "INSTRUME", "ANCRFILE", "RESPFILE",
-                    "EXPOSURE", "DATE", "DATE-OBS", "DATE-END", "MISSION",
-                    "TSTART", "TSTOP", "TLMIN4", "TLMAX4", "PHA_BINS"]:
+        for key in [
+            "TELESCOP",
+            "INSTRUME",
+            "ANCRFILE",
+            "RESPFILE",
+            "EXPOSURE",
+            "DATE",
+            "DATE-OBS",
+            "DATE-END",
+            "MISSION",
+            "TSTART",
+            "TSTOP",
+            "TLMIN4",
+            "TLMAX4",
+            "PHA_BINS",
+        ]:
             tbhdu.header[key] = f["EVENTS"].header[key]
 
-    start = fits.Column(name='START', format='1D', unit='s',
-                          array=np.array([0.0]))
-    stop = fits.Column(name='STOP', format='1D', unit='s',
-                         array=np.array([tbhdu.header["EXPOSURE"]]))
+    start = fits.Column(name="START", format="1D", unit="s", array=np.array([0.0]))
+    stop = fits.Column(
+        name="STOP", format="1D", unit="s", array=np.array([tbhdu.header["EXPOSURE"]])
+    )
 
-    tbhdu_gti = fits.BinTableHDU.from_columns([start,stop])
+    tbhdu_gti = fits.BinTableHDU.from_columns([start, stop])
     tbhdu_gti.name = "STDGTI"
     tbhdu_gti.header["TSTART"] = 0.0
     tbhdu_gti.header["TSTOP"] = tbhdu.header["EXPOSURE"]
@@ -185,10 +227,21 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     fits.HDUList(hdulist).writeto(outfile, overwrite=overwrite)
 
 
-def make_mosaic_image(evtfile_list, image_file, evt_file=None, emin=None, emax=None,
-                      reblock=1, use_expmap=False, expmap_energy=None, 
-                      expmap_weights=None, normalize=True, nhistx=16,
-                      nhisty=16, overwrite=False):
+def make_mosaic_image(
+    evtfile_list,
+    image_file,
+    evt_file=None,
+    emin=None,
+    emax=None,
+    reblock=1,
+    use_expmap=False,
+    expmap_energy=None,
+    expmap_weights=None,
+    normalize=True,
+    nhistx=16,
+    nhisty=16,
+    overwrite=False,
+):
     """
     Make a single FITS image from a grid of observations. Optionally,
     an exposure map can be computed and a flux image may be generated.
@@ -229,14 +282,20 @@ def make_mosaic_image(evtfile_list, image_file, evt_file=None, emin=None, emax=N
         Default: False
     """
     try:
-        from reproject.mosaicking import find_optimal_celestial_wcs, \
-            reproject_and_coadd
         from reproject import reproject_interp
+        from reproject.mosaicking import find_optimal_celestial_wcs, reproject_and_coadd
     except ImportError:
-        raise ImportError("The mosaic functionality of SOXS requires the "
-                          "'reproject' package to be installed!")
-    t = ascii.read(evtfile_list, format='commented_header',
-                   guess=False, header_start=0, delimiter="\t")
+        raise ImportError(
+            "The mosaic functionality of SOXS requires the "
+            "'reproject' package to be installed!"
+        )
+    t = ascii.read(
+        evtfile_list,
+        format="commented_header",
+        guess=False,
+        header_start=0,
+        delimiter="\t",
+    )
 
     files = []
     for row in t:
@@ -244,40 +303,68 @@ def make_mosaic_image(evtfile_list, image_file, evt_file=None, emin=None, emax=N
         img_file = evtfile.replace("evt", "img")
         if use_expmap:
             emap_file = evtfile.replace("evt", "expmap")
-            make_exposure_map(evtfile, emap_file, energy=expmap_energy,
-                              weights=expmap_weights, normalize=normalize,
-                              overwrite=overwrite, reblock=reblock, 
-                              nhistx=nhistx, nhisty=nhisty)
+            make_exposure_map(
+                evtfile,
+                emap_file,
+                energy=expmap_energy,
+                weights=expmap_weights,
+                normalize=normalize,
+                overwrite=overwrite,
+                reblock=reblock,
+                nhistx=nhistx,
+                nhisty=nhisty,
+            )
         else:
             emap_file = None
-        write_image(evtfile, img_file, emin=emin, emax=emax,
-                    overwrite=overwrite, reblock=reblock)
+        write_image(
+            evtfile,
+            img_file,
+            emin=emin,
+            emax=emax,
+            overwrite=overwrite,
+            reblock=reblock,
+        )
         files.append([img_file, emap_file])
 
     img_hdus = [fits.open(fns[0], memmap=True)[0] for fns in files]
     wcs_out, shape_out = find_optimal_celestial_wcs(img_hdus)
     if evt_file is not None:
-        _combine_events(t["evtfile"], wcs_out, (shape_out[1], shape_out[0]), evt_file,
-                        overwrite=overwrite)
-    img, footprint = reproject_and_coadd(img_hdus, wcs_out, shape_out=shape_out,
-                                         reproject_function=reproject_interp,
-                                         combine_function='sum')
+        _combine_events(
+            t["evtfile"],
+            wcs_out,
+            (shape_out[1], shape_out[0]),
+            evt_file,
+            overwrite=overwrite,
+        )
+    img, footprint = reproject_and_coadd(
+        img_hdus,
+        wcs_out,
+        shape_out=shape_out,
+        reproject_function=reproject_interp,
+        combine_function="sum",
+    )
     hdu = fits.PrimaryHDU(img, header=wcs_out.to_header())
     hdu.writeto(image_file, overwrite=overwrite)
 
     if use_expmap:
         if expmap_energy is None:
-            raise RuntimeError("The 'expmap_energy' argument must be set if "
-                               "making a mosaicked exposure map!")
+            raise RuntimeError(
+                "The 'expmap_energy' argument must be set if "
+                "making a mosaicked exposure map!"
+            )
         emap_hdus = [fits.open(fns[1], memmap=True)[1] for fns in files]
         emap, footprint = reproject_and_coadd(
-            emap_hdus, wcs_out, shape_out=shape_out,
-            reproject_function=reproject_interp, combine_function='sum')
+            emap_hdus,
+            wcs_out,
+            shape_out=shape_out,
+            reproject_function=reproject_interp,
+            combine_function="sum",
+        )
         hdu = fits.PrimaryHDU(emap, header=wcs_out.to_header())
         expmap_file = image_file.replace("fits", "expmap")
         hdu.writeto(expmap_file, overwrite=overwrite)
 
-        with np.errstate(invalid='ignore', divide='ignore'):
+        with np.errstate(invalid="ignore", divide="ignore"):
             flux = img / emap
         flux[np.isinf(flux)] = 0.0
         flux = np.nan_to_num(flux)

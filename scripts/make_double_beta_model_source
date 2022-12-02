@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+
 import soxs
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT source of a double-beta-model '

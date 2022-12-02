@@ -1,9 +1,9 @@
 import numpy as np
-from soxs.spectra import Spectrum, ConvolvedSpectrum, \
-    _generate_energies, Energies
+
 from soxs.constants import erg_per_keV
-from soxs.utils import parse_prng, parse_value
 from soxs.response import AuxiliaryResponseFile
+from soxs.spectra import ConvolvedSpectrum, Energies, Spectrum, _generate_energies
+from soxs.utils import parse_prng, parse_value
 
 
 class BackgroundSpectrum(Spectrum):
@@ -28,11 +28,10 @@ class BackgroundSpectrum(Spectrum):
             arcminutes.
         """
         fov = parse_value(fov, "arcmin")
-        flux = spec.flux.value/fov/fov
+        flux = spec.flux.value / fov / fov
         return cls(spec.ebins.value, flux, binscale=spec.binscale)
 
-    def generate_energies(self, t_exp, area, fov, prng=None, 
-                          quiet=False):
+    def generate_energies(self, t_exp, area, fov, prng=None, quiet=False):
         """
         Generate photon energies from this background 
         spectrum given an exposure time, effective area, 
@@ -64,23 +63,24 @@ class BackgroundSpectrum(Spectrum):
         fov = parse_value(fov, "arcmin")
         area = parse_value(area, "cm**2")
         prng = parse_prng(prng)
-        rate = area*fov*fov*self.total_flux.value
+        rate = area * fov * fov * self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
-        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        flux = np.sum(energy) * erg_per_keV / t_exp / area
         energies = Energies(energy, flux)
         return energies
 
     def to_spectrum(self, fov):
         fov = parse_value(fov, "arcmin")
-        flux = self.flux.value*fov*fov
+        flux = self.flux.value * fov * fov
         return Spectrum(self.ebins.value, flux, binscale=self.binscale)
 
     def __mul__(self, other):
         if isinstance(other, AuxiliaryResponseFile):
             return ConvolvedBackgroundSpectrum.convolve(self, other)
         else:
-            return BackgroundSpectrum(self.ebins, other*self.flux, 
-                                      binscale=self.binscale)
+            return BackgroundSpectrum(
+                self.ebins, other * self.flux, binscale=self.binscale
+            )
 
     __rmul__ = __mul__
 
@@ -104,11 +104,10 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
             arcminutes.
         """
         fov = parse_value(fov, "arcmin")
-        flux = spec.flux.value/fov/fov
+        flux = spec.flux.value / fov / fov
         return cls(spec.ebins.value, flux, spec.binscale)
 
-    def generate_energies(self, t_exp, fov, prng=None, 
-                          quiet=False):
+    def generate_energies(self, t_exp, fov, prng=None, quiet=False):
         """
         Generate photon energies from this convolved 
         background spectrum given an exposure time and 
@@ -134,9 +133,9 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         t_exp = parse_value(t_exp, "s")
         fov = parse_value(fov, "arcmin")
         prng = parse_prng(prng)
-        rate = fov*fov*self.total_flux.value
+        rate = fov * fov * self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
-        flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
+        flux = np.sum(energy) * erg_per_keV / t_exp / earea.sum()
         energies = Energies(energy, flux)
         return energies

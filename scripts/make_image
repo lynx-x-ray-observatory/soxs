@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+
 from soxs import write_image
 
 parser = argparse.ArgumentParser(description='Make a FITS image from a SOXS event file.')

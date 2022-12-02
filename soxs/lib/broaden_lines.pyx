@@ -1,7 +1,9 @@
 import numpy as np
-cimport numpy as np
+
 cimport cython
+cimport numpy as np
 from libc.math cimport erf
+
 
 @cython.cdivision(True)
 @cython.boundscheck(False)

@@ -1,21 +1,19 @@
 import os
-from numpy.testing import assert_allclose, assert_equal
-from astropy.io import fits
 import shutil
+
 import numpy as np
+from astropy.io import fits
+from numpy.testing import assert_allclose, assert_equal
 
 
-def spectrum_answer_testing(spec, filename, answer_store, answer_dir,
-                            rtol=1.0e-7):
+def spectrum_answer_testing(spec, filename, answer_store, answer_dir, rtol=1.0e-7):
     testfile = os.path.join(answer_dir, filename)
     if answer_store:
         spec.write_hdf5_file(testfile, overwrite=True)
     else:
         answer_spec = type(spec).from_file(testfile)
-        assert_allclose(answer_spec.emid.value,
-                        spec.emid.value)
-        assert_allclose(answer_spec.flux.value,
-                        spec.flux.value, rtol=rtol)
+        assert_allclose(answer_spec.emid.value, spec.emid.value)
+        assert_allclose(answer_spec.flux.value, spec.flux.value, rtol=rtol)
         assert answer_spec.flux.unit == spec.flux.unit
 
 
@@ -48,8 +46,8 @@ def file_answer_testing(hdu, filename, answer_store, answer_dir):
                         rtol = 1.0e-6
                     else:
                         rtol = 1.0e-8
-                    assert_allclose(f_old[hdu].data[name],
-                                    f_new[hdu].data[name],
-                                    rtol=rtol)
+                    assert_allclose(
+                        f_old[hdu].data[name], f_new[hdu].data[name], rtol=rtol
+                    )
         f_old.close()
         f_new.close()

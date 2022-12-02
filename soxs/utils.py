@@ -1,50 +1,52 @@
-import os
 import logging
-import numpy as np
-from numpy.random import RandomState
-import astropy.units as u
-from astropy.units import Quantity
+import os
 import warnings
 from configparser import ConfigParser
-import regions
-import appdirs
-from scipy.interpolate import interp1d
 
+import appdirs
+import astropy.units as u
+import numpy as np
+import regions
+from astropy.units import Quantity
+from numpy.random import RandomState
+from scipy.interpolate import interp1d
 
 # Configuration
 
-soxs_cfg_defaults = {"soxs_data_dir": "/does/not/exist",
-                     "abund_table": "angr",
-                     "apec_vers": "3.0.9",
-                     "spex_vers": "3.06.01",
-                     "bkgnd_nH": 0.018,
-                     "bkgnd_absorb_model": "tbabs",
-                     "frgnd_spec_model": "default",
-                     "frgnd_velocity": 0.0}
+soxs_cfg_defaults = {
+    "soxs_data_dir": "/does/not/exist",
+    "abund_table": "angr",
+    "apec_vers": "3.0.9",
+    "spex_vers": "3.06.01",
+    "bkgnd_nH": 0.018,
+    "bkgnd_absorb_model": "tbabs",
+    "frgnd_spec_model": "default",
+    "frgnd_velocity": 0.0,
+}
 
-CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME',
-                            os.path.join(os.path.expanduser('~'),
-                                         '.config', 'soxs'))
+CONFIG_DIR = os.environ.get(
+    "XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config", "soxs")
+)
 if not os.path.exists(CONFIG_DIR):
     try:
         os.makedirs(CONFIG_DIR)
     except OSError:
         warnings.warn("unable to create soxs config directory")
 
-CURRENT_CONFIG_FILE = os.path.join(CONFIG_DIR, 'soxs.cfg')
+CURRENT_CONFIG_FILE = os.path.join(CONFIG_DIR, "soxs.cfg")
 
 if not os.path.exists(CURRENT_CONFIG_FILE):
     cp = ConfigParser()
     cp.add_section("soxs")
     try:
-        with open(CURRENT_CONFIG_FILE, 'w') as new_cfg:
+        with open(CURRENT_CONFIG_FILE, "w") as new_cfg:
             cp.write(new_cfg)
     except IOError:
         warnings.warn("unable to write new config file")
 
 
 soxs_cfg = ConfigParser(soxs_cfg_defaults)
-soxs_cfg.read([CURRENT_CONFIG_FILE, 'soxs.cfg'])
+soxs_cfg.read([CURRENT_CONFIG_FILE, "soxs.cfg"])
 if not soxs_cfg.has_section("soxs"):
     soxs_cfg.add_section("soxs")
 
@@ -61,23 +63,27 @@ formatter = logging.Formatter(ufstring)
 soxs_sh.setFormatter(formatter)
 # add the handler to the logger
 soxsLogger.addHandler(soxs_sh)
-soxsLogger.setLevel('INFO')
+soxsLogger.setLevel("INFO")
 soxsLogger.propagate = False
 
 mylog = soxsLogger
 
-mylog.setLevel('INFO')
+mylog.setLevel("INFO")
 
 if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
     soxs_data_dir = appdirs.user_cache_dir("soxs")
-    mylog.warning(f"Setting 'soxs_data_dir' to {soxs_data_dir} for this session. "
-                  f"Please update your configuration if you want it somewhere else.")
+    mylog.warning(
+        f"Setting 'soxs_data_dir' to {soxs_data_dir} for this session. "
+        f"Please update your configuration if you want it somewhere else."
+    )
     soxs_cfg.set("soxs", "soxs_data_dir", appdirs.user_cache_dir("soxs"))
 
 
 def issue_deprecation_warning(msg):
     import warnings
+
     from numpy import VisibleDeprecationWarning
+
     warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
 
 
@@ -154,12 +160,16 @@ def parse_value(value, default_units, equivalence=None):
 
 def get_rot_mat(roll_angle):
     roll_angle = np.deg2rad(roll_angle)
-    rot_mat = np.array([[np.cos(roll_angle), -np.sin(roll_angle)],
-                        [np.sin(roll_angle), np.cos(roll_angle)]])
+    rot_mat = np.array(
+        [
+            [np.cos(roll_angle), -np.sin(roll_angle)],
+            [np.sin(roll_angle), np.cos(roll_angle)],
+        ]
+    )
     return rot_mat
 
 
-def downsample(myarr,factor,estimator=np.mean):
+def downsample(myarr, factor, estimator=np.mean):
     """
     Downsample a 2D array by averaging over *factor* pixels in each axis.
     Crops upper edge if the shape is not a multiple of factor.
@@ -171,20 +181,27 @@ def downsample(myarr,factor,estimator=np.mean):
             something else if you want a different estimator
             (e.g., downsampling error: you want to sum & divide by sqrt(n))
     """
-    ys,xs = myarr.shape
-    crarr = myarr[:ys-(ys % int(factor)),:xs-(xs % int(factor))]
-    dsarr = estimator(np.concatenate([[crarr[i::factor,j::factor]
-                                       for i in range(factor)]
-                                      for j in range(factor)]), axis=0)
+    ys, xs = myarr.shape
+    crarr = myarr[: ys - (ys % int(factor)), : xs - (xs % int(factor))]
+    dsarr = estimator(
+        np.concatenate(
+            [
+                [crarr[i::factor, j::factor] for i in range(factor)]
+                for j in range(factor)
+            ]
+        ),
+        axis=0,
+    )
     return dsarr
 
 
 def line_width_equiv(rest):
     from astropy.constants import c
-    ckms = c.to_value('km/s')
-    forward = lambda x: rest*x/ckms
-    backward = lambda x: x/rest*ckms
-    return [(u.km/u.s, u.keV, forward, backward)]
+
+    ckms = c.to_value("km/s")
+    forward = lambda x: rest * x / ckms
+    backward = lambda x: x / rest * ckms
+    return [(u.km / u.s, u.keV, forward, backward)]
 
 
 class DummyPbar(object):
@@ -201,21 +218,21 @@ class DummyPbar(object):
 def create_region(rtype, args, dx, dy):
     if rtype in ["Rectangle", "Box"]:
         xctr, yctr, xw, yw = args
-        x = xctr+dx
-        y = yctr+dy
+        x = xctr + dx
+        y = yctr + dy
         center = regions.PixCoord(x=x, y=y)
         reg = regions.RectanglePixelRegion(center=center, width=xw, height=yw)
-        bounds = [x-0.5*xw, x+0.5*xw, y-0.5*yw, y+0.5*yw]
+        bounds = [x - 0.5 * xw, x + 0.5 * xw, y - 0.5 * yw, y + 0.5 * yw]
     elif rtype == "Circle":
         xctr, yctr, radius = args
-        x = xctr+dx
-        y = yctr+dy
+        x = xctr + dx
+        y = yctr + dy
         center = regions.PixCoord(x=x, y=y)
         reg = regions.CirclePixelRegion(center=center, radius=radius)
-        bounds = [x-radius, x+radius, y-radius, y+radius]
+        bounds = [x - radius, x + radius, y - radius, y + radius]
     elif rtype == "Polygon":
-        x = np.array(args[0])+dx
-        y = np.array(args[1])+dy
+        x = np.array(args[0]) + dx
+        y = np.array(args[1]) + dy
         vertices = regions.PixCoord(x=x, y=y)
         reg = regions.PolygonPixelRegion(vertices=vertices)
         bounds = [x.min(), x.max(), y.min(), y.max()]
@@ -226,15 +243,18 @@ def create_region(rtype, args, dx, dy):
 
 def process_fits_string(fitsstr):
     import re
+
     from astropy.io import fits
+
     fn = fitsstr.split("[")[0]
     brackets = re.findall(r"[^[]*\[([^]]*)\]", fitsstr)
     with fits.open(fn) as f:
         if len(brackets) == 0:
             imgs = np.array([hdu.is_image for hdu in f])
             if imgs.sum() > 1:
-                raise IOError("Multiple HDUs in this file, "
-                              "please specify one to read!")
+                raise IOError(
+                    "Multiple HDUs in this file, " "please specify one to read!"
+                )
             ext = np.where(imgs)[0][0]
         else:
             ext = brackets[0]
@@ -249,22 +269,26 @@ class PoochHandle:
     Container for a pooch object used to fetch remote response that isn't
     already stored locally.
     """
+
     def __init__(self, cache_dir=None):
         import json
-        import pooch
+
         import pkg_resources
+        import pooch
+
         if cache_dir is None:
             if os.path.isdir(soxs_cfg.get("soxs", "soxs_data_dir")):
                 cache_dir = soxs_cfg.get("soxs", "soxs_data_dir")
             else:
                 cache_dir = pooch.os_cache("soxs")
         self._registry = json.load(
-            pkg_resources.resource_stream("soxs", "file_hash_registry.json"))
+            pkg_resources.resource_stream("soxs", "file_hash_registry.json")
+        )
         self.pooch_obj = pooch.create(
             path=cache_dir,
             registry=self._registry,
             env="SOXS_DATA_DIR",
-            base_url="https://hea-www.cfa.harvard.edu/soxs/soxs_responses/"
+            base_url="https://hea-www.cfa.harvard.edu/soxs/soxs_responses/",
         )
         self.dl = pooch.HTTPDownloader(progressbar=True)
 
@@ -289,12 +313,12 @@ def get_data_file(fn):
 
 def image_pos(im, nph, prng):
     im[im < 0.0] = 0.0
-    im = im/im.sum()
+    im = im / im.sum()
     idxs = prng.choice(im.size, size=nph, p=im.flatten())
     x, y = np.unravel_index(idxs, im.shape)
     dx = prng.uniform(low=0.5, high=1.5, size=x.size)
     dy = prng.uniform(low=0.5, high=1.5, size=y.size)
-    return x+dx, y+dy
+    return x + dx, y + dy
 
 
 def set_soxs_config(option, value):
@@ -319,7 +343,7 @@ def set_mission_config(mission):
     if mission == "lem":
         frgnd_spec_model = "halosat"
         bkgnd_absorb_model = "tbabs"
-        frgnd_velocity = 100.0 # km/s
+        frgnd_velocity = 100.0  # km/s
         set_soxs_config("frgnd_spec_model", frgnd_spec_model)
         set_soxs_config("bkgnd_absorb_model", bkgnd_absorb_model)
         set_soxs_config("frgnd_velocity", frgnd_velocity)
@@ -329,6 +353,5 @@ def set_mission_config(mission):
 
 def regrid_spectrum(ebins_new, ebins, spec):
     cspec = np.insert(np.cumsum(spec, axis=-1), 0, 0.0, axis=-1)
-    f = interp1d(ebins, cspec, axis=-1, fill_value=0.0,
-                 assume_sorted=True, copy=False)
+    f = interp1d(ebins, cspec, axis=-1, fill_value=0.0, assume_sorted=True, copy=False)
     return np.diff(f(ebins_new), axis=-1)

@@ -3,15 +3,15 @@ from astropy.io import fits
 from astropy.units import Quantity
 
 from soxs.constants import sigma_to_fwhm
-from soxs.utils import parse_prng, get_data_file, \
-    image_pos
+from soxs.utils import get_data_file, image_pos, parse_prng
 
 
 def score_img(img_bins, e, r):
     de = np.abs(img_bins[0][:, np.newaxis] - e)
     dr = np.abs(img_bins[1][:, np.newaxis] - r)
-    score = 100*de+dr
+    score = 100 * de + dr
     return score
+
 
 psf_model_registry = {}
 
@@ -39,7 +39,7 @@ class GaussianPSF(PSF):
     def __init__(self, inst, prng=None):
         super().__init__(prng)
         fwhm = inst["psf"][1]
-        plate_scale_arcsec = inst['fov']/inst['num_pixels']*60.0
+        plate_scale_arcsec = inst["fov"] / inst["num_pixels"] * 60.0
         self.sigma = fwhm / sigma_to_fwhm / plate_scale_arcsec
 
     def scatter(self, x, y, e):
@@ -54,18 +54,19 @@ class ImagePSF(PSF):
 
     def __init__(self, inst, prng=None):
         super().__init__(prng)
-        img_file = get_data_file(inst['psf'][1])
-        hdu = inst['psf'][2]
-        plate_scale_arcmin = inst['fov']/inst['num_pixels']
-        plate_scale_deg = plate_scale_arcmin/60.0
-        plate_scale_mm = inst['focal_length']*1e3*np.deg2rad(plate_scale_deg)
+        img_file = get_data_file(inst["psf"][1])
+        hdu = inst["psf"][2]
+        plate_scale_arcmin = inst["fov"] / inst["num_pixels"]
+        plate_scale_deg = plate_scale_arcmin / 60.0
+        plate_scale_mm = inst["focal_length"] * 1e3 * np.deg2rad(plate_scale_deg)
         self.imhdu = fits.open(get_data_file(img_file))[hdu]
-        self.imctr = np.array([self.imhdu.header["CRPIX1"],
-                               self.imhdu.header["CRPIX2"]])
+        self.imctr = np.array(
+            [self.imhdu.header["CRPIX1"], self.imhdu.header["CRPIX2"]]
+        )
         unit = self.imhdu.header.get("CUNIT1", "mm")
-        self.scale = Quantity([self.imhdu.header["CDELT1"],
-                               self.imhdu.header["CDELT2"]],
-                              unit).to_value('mm')
+        self.scale = Quantity(
+            [self.imhdu.header["CDELT1"], self.imhdu.header["CDELT2"]], unit
+        ).to_value("mm")
         self.scale /= plate_scale_mm
 
     def scatter(self, x, y, e):
@@ -77,7 +78,7 @@ class ImagePSF(PSF):
         dy -= self.imctr[1]
         dx *= self.scale[0]
         dy *= self.scale[1]
-        return x+dx, y+dy
+        return x + dx, y + dy
 
 
 class MultiImagePSF(PSF):
@@ -85,11 +86,11 @@ class MultiImagePSF(PSF):
 
     def __init__(self, inst, prng=None):
         super().__init__(prng)
-        self.img_file = get_data_file(inst['psf'][1])
-        self.det_ctr = np.array(inst['aimpt_coords'])
-        plate_scale_arcmin = inst['fov']/inst['num_pixels']
-        plate_scale_deg = plate_scale_arcmin/60.0
-        plate_scale_mm = inst['focal_length']*1e3*np.deg2rad(plate_scale_deg)
+        self.img_file = get_data_file(inst["psf"][1])
+        self.det_ctr = np.array(inst["aimpt_coords"])
+        plate_scale_arcmin = inst["fov"] / inst["num_pixels"]
+        plate_scale_deg = plate_scale_arcmin / 60.0
+        plate_scale_mm = inst["focal_length"] * 1e3 * np.deg2rad(plate_scale_deg)
         img_e = []
         img_r = []
         img_i = []
@@ -108,7 +109,7 @@ class MultiImagePSF(PSF):
                 img_i.append(i)
                 img_u.append(hdu.header.get("CUNIT1", "mm"))
         img_e = np.array(img_e)
-        img_r = (np.array(img_r)/plate_scale_arcmin)**2
+        img_r = (np.array(img_r) / plate_scale_arcmin) ** 2
         if np.all(img_e > 100.0):
             # this is probably in eV
             img_e *= 1.0e-3
@@ -119,10 +120,10 @@ class MultiImagePSF(PSF):
         unit = list(set(img_u))
         if len(unit) > 1:
             raise RuntimeError("More than one delta unit detected!!")
-        self.img_s = Quantity(img_s, unit[0]).to_value('mm')/plate_scale_mm
+        self.img_s = Quantity(img_s, unit[0]).to_value("mm") / plate_scale_mm
 
     def scatter(self, x, y, e):
-        r2 = (x-self.det_ctr[0])**2 + (y-self.det_ctr[1])**2
+        r2 = (x - self.det_ctr[0]) ** 2 + (y - self.det_ctr[1]) ** 2
         score = score_img(self.img_bins, e, r2)
         idx_score = np.argmin(score, axis=0)
         n_in = x.size
@@ -141,7 +142,9 @@ class MultiImagePSF(PSF):
                 x[idxs] += dx
                 y[idxs] += dy
         if n_in != n_out:
-            raise ValueError(f"The number of photons scattered by the PSF "
-                             f"({n_out}) does not equal the input number "
-                             f"({n_in})!")
+            raise ValueError(
+                f"The number of photons scattered by the PSF "
+                f"({n_out}) does not equal the input number "
+                f"({n_in})!"
+            )
         return x, y

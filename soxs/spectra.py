@@ -1,21 +1,26 @@
-import numpy as np
+import os
+import shutil
 import subprocess
 import tempfile
-import shutil
-import os
-from soxs.utils import mylog, \
-    parse_prng, parse_value, line_width_equiv, \
-    issue_deprecation_warning, get_data_file, \
-    regrid_spectrum
-from soxs.constants import erg_per_keV, hc, \
-    sigma_to_fwhm, sqrt2pi
+
 import astropy.units as u
 import h5py
-from scipy.interpolate import interp1d
-from astropy.modeling.functional_models import \
-    Gaussian1D
+import numpy as np
+from astropy.modeling.functional_models import Gaussian1D
 from astropy.table import QTable
 from pathlib import Path, PurePath
+from scipy.interpolate import interp1d
+
+from soxs.constants import erg_per_keV, hc, sigma_to_fwhm, sqrt2pi
+from soxs.utils import (
+    get_data_file,
+    issue_deprecation_warning,
+    line_width_equiv,
+    mylog,
+    parse_prng,
+    parse_value,
+    regrid_spectrum,
+)
 
 
 class Energies(u.Quantity):
@@ -27,7 +32,7 @@ class Energies(u.Quantity):
 
 def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
     cumspec = spec.cumspec
-    n_ph = prng.poisson(t_exp*rate)
+    n_ph = prng.poisson(t_exp * rate)
     if not quiet:
         mylog.info("Creating %d energies from this spectrum." % n_ph)
     randvec = prng.uniform(size=n_ph)
@@ -38,7 +43,7 @@ def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
         bin_edges = np.log10(spec.ebins.value)
     e = np.interp(randvec, cumspec, bin_edges)
     if binscale == "log":
-        e = 10**e
+        e = 10 ** e
     if not quiet:
         mylog.info("Finished creating energies.")
     return e
@@ -47,9 +52,9 @@ def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
 class Spectrum:
     _units = "photon/(cm**2*s*keV)"
 
-    def __init__(self, ebins, flux, binscale='linear'):
+    def __init__(self, ebins, flux, binscale="linear"):
         self.ebins = u.Quantity(ebins, "keV")
-        self.emid = 0.5*(self.ebins[1:]+self.ebins[:-1])
+        self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
         self.flux = u.Quantity(flux, self._units)
         self.nbins = len(self.emid)
         self.de = np.diff(self.ebins)
@@ -57,27 +62,30 @@ class Spectrum:
         self._compute_total_flux()
 
     def _compute_total_flux(self):
-        self.total_flux = (self.flux*self.de).sum()
-        self.total_energy_flux = (self.flux*self.emid.to("erg")*self.de).sum()/(1.0*u.photon)
-        cumspec = np.cumsum((self.flux*self.de).value)
+        self.total_flux = (self.flux * self.de).sum()
+        self.total_energy_flux = (self.flux * self.emid.to("erg") * self.de).sum() / (
+            1.0 * u.photon
+        )
+        cumspec = np.cumsum((self.flux * self.de).value)
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
         self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
 
     def _check_binning_units(self, other):
-        if self.nbins != other.nbins or \
-                not np.isclose(self.ebins.value, other.ebins.value).all():
-            raise RuntimeError("Energy binning for these two "
-                               "spectra is not the same!!")
+        if (
+            self.nbins != other.nbins
+            or not np.isclose(self.ebins.value, other.ebins.value).all()
+        ):
+            raise RuntimeError(
+                "Energy binning for these two " "spectra is not the same!!"
+            )
         if self._units != other._units:
-            raise RuntimeError("The units for these two spectra "
-                               "are not the same!")
+            raise RuntimeError("The units for these two spectra " "are not the same!")
 
     def __add__(self, other):
         self._check_binning_units(other)
-        return type(self)(self.ebins, self.flux+other.flux, 
-                          binscale=self.binscale)
+        return type(self)(self.ebins, self.flux + other.flux, binscale=self.binscale)
 
     def __iadd__(self, other):
         self._check_binning_units(other)
@@ -86,20 +94,18 @@ class Spectrum:
 
     def __sub__(self, other):
         self._check_binning_units(other)
-        return type(self)(self.ebins, self.flux-other.flux, 
-                          binscale=self.binscale)
+        return type(self)(self.ebins, self.flux - other.flux, binscale=self.binscale)
 
     def __mul__(self, other):
         if hasattr(other, "eff_area"):
             return ConvolvedSpectrum.convolve(self, other)
         else:
-            return type(self)(self.ebins, other*self.flux, 
-                              binscale=self.binscale)
+            return type(self)(self.ebins, other * self.flux, binscale=self.binscale)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
-        return type(self)(self.ebins, self.flux/other)
+        return type(self)(self.ebins, self.flux / other)
 
     __div__ = __truediv__
 
@@ -135,12 +141,14 @@ class Spectrum:
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         if binscale == "linear":
-            ebins = np.linspace(emin, emax, nbins+1)
+            ebins = np.linspace(emin, emax, nbins + 1)
         elif binscale == "log":
-            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins+1)
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
         de = np.diff(ebins)
-        spec_new = regrid_spectrum(ebins, self.ebins.value, 
-                                   self.flux.value*self.de.value)/de
+        spec_new = (
+            regrid_spectrum(ebins, self.ebins.value, self.flux.value * self.de.value)
+            / de
+        )
         return type(self)(ebins, spec_new, binscale=binscale)
 
     def restrict_within_band(self, emin=None, emax=None):
@@ -173,8 +181,10 @@ class Spectrum:
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
-        pflux = (self.flux*self.de)[range].sum()
-        eflux = (self.flux*self.emid.to("erg")*self.de)[range].sum()/(1.0*u.photon)
+        pflux = (self.flux * self.de)[range].sum()
+        eflux = (self.flux * self.emid.to("erg") * self.de)[range].sum() / (
+            1.0 * u.photon
+        )
         return pflux, eflux
 
     def get_lum_in_band(self, emin, emax, redshift=0.0, dist=None, cosmology=None):
@@ -205,19 +215,24 @@ class Spectrum:
         in terms of the energy rate. 
         """
         from astropy.cosmology import Planck18
+
         if cosmology is None:
             cosmology = Planck18
         if redshift == 0.0 and dist is None:
-            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot "
-                             "be None for 'get_lum_in_band'!")
-        pflux, eflux = self.get_flux_in_band(emin/(1.0+redshift), emax/(1.0+redshift))
+            raise ValueError(
+                "Either 'redshift' must be > 0 or 'dist' cannot "
+                "be None for 'get_lum_in_band'!"
+            )
+        pflux, eflux = self.get_flux_in_band(
+            emin / (1.0 + redshift), emax / (1.0 + redshift)
+        )
         if dist is None:
             D_L = cosmology.luminosity_distance(redshift).to("cm")
         else:
             D_L = u.Quantity(parse_value(dist, "kpc"), "kpc").to("cm")
-        dist_fac = 4.0*np.pi*D_L**2
-        elum = dist_fac*eflux
-        plum = dist_fac*pflux/(1.0+redshift)
+        dist_fac = 4.0 * np.pi * D_L ** 2
+        elum = dist_fac * eflux
+        plum = dist_fac * pflux / (1.0 + redshift)
         return plum, elum
 
     @classmethod
@@ -245,8 +260,9 @@ class Spectrum:
         return cls._from_xspec(xspec_in, emin, emax, nbins, binscale=binscale)
 
     @classmethod
-    def from_xspec_model(cls, model_string, params, emin, emax, nbins,
-                         binscale="linear"):
+    def from_xspec_model(
+        cls, model_string, params, emin, emax, nbins, binscale="linear"
+    ):
         """
         Create a model spectrum using a model string and parameters
         as input to XSPEC.
@@ -284,38 +300,47 @@ class Spectrum:
         tmpdir = Path(tempfile.mkdtemp())
         curdir = Path.cwd()
         xspec_in.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
-        xspec_in += [f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
-                     "tclout energies\n", "puts $fp $xspec_tclout\n",
-                     "tclout modval\n", "puts $fp $xspec_tclout\n",
-                     "close $fp\n", "quit\n"]
+        xspec_in += [
+            f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
+            "tclout energies\n",
+            "puts $fp $xspec_tclout\n",
+            "tclout modval\n",
+            "puts $fp $xspec_tclout\n",
+            "close $fp\n",
+            "quit\n",
+        ]
         with open(tmpdir / "xspec.in", "w") as f_xin:
             f_xin.writelines(xspec_in)
         logfile = curdir / "xspec.log"
-        if os.environ['SHELL'] in ['tcsh', 'csh']:
-            init_suffix = 'csh'
+        if os.environ["SHELL"] in ["tcsh", "csh"]:
+            init_suffix = "csh"
         else:
-            init_suffix = 'sh'
+            init_suffix = "sh"
         sh_file = [
             f"#!{os.environ['SHELL']}\n",
             f". {os.environ['HEADAS']}/headas-init.{init_suffix}\n",
-            f"xspec - {str(tmpdir)}/xspec.in\n"
+            f"xspec - {str(tmpdir)}/xspec.in\n",
         ]
         with open(tmpdir / "xspec.sh", "w") as f_xs:
             f_xs.writelines(sh_file)
         with open(logfile, "ab") as xsout:
-            subprocess.call([os.environ['SHELL'], f"{str(tmpdir)}/xspec.sh"],
-                            stdout=xsout, stderr=xsout)
+            subprocess.call(
+                [os.environ["SHELL"], f"{str(tmpdir)}/xspec.sh"],
+                stdout=xsout,
+                stderr=xsout,
+            )
         with open(tmpdir / "spec_therm.xspec", "r") as f_s:
             lines = f_s.readlines()
         ebins = np.array(lines[0].split()).astype("float64")
         de = np.diff(ebins)
-        flux = np.array(lines[1].split()).astype("float64")/de
+        flux = np.array(lines[1].split()).astype("float64") / de
         shutil.rmtree(str(tmpdir))
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
-    def from_powerlaw(cls, photon_index, redshift, norm, emin, emax,
-                      nbins, binscale="linear"):
+    def from_powerlaw(
+        cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"
+    ):
         """
         Create a spectrum from a power-law model. Form of the model
         is F(E) = norm*(e/1 keV)**-photon_index.
@@ -340,14 +365,14 @@ class Spectrum:
             The scale of the energy binning: "linear" or "log". 
             Default: "linear"
         """
-        emin = parse_value(emin, 'keV')
-        emax = parse_value(emax, 'keV')
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
         if binscale == "linear":
-            ebins = np.linspace(emin, emax, nbins+1)
+            ebins = np.linspace(emin, emax, nbins + 1)
         elif binscale == "log":
-            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins+1)
-        emid = 0.5*(ebins[1:]+ebins[:-1])
-        flux = norm*(emid*(1.0+redshift))**(-photon_index)
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
+        emid = 0.5 * (ebins[1:] + ebins[:-1])
+        flux = norm * (emid * (1.0 + redshift)) ** (-photon_index)
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
@@ -371,19 +396,20 @@ class Spectrum:
                 nbins = flux.size
                 binscale = f.attrs.get("binscale", "linear")
                 if binscale == "linear":
-                    ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
+                    ebins = np.linspace(f["emin"][()], f["emax"][()], nbins + 1)
                 elif binscale == "log":
-                    ebins = np.logspace(np.log10(f["emin"][()]), 
-                                        np.log10(f["emax"][()]), nbins+1)
+                    ebins = np.logspace(
+                        np.log10(f["emin"][()]), np.log10(f["emax"][()]), nbins + 1
+                    )
                 if "arf" in f.attrs:
                     arf = f.attrs["arf"]
         except OSError:
             # If that fails, try reading the file as ASCII or FITS
             # using AstroPy QTable
             try:
-                t = QTable.read(filename, format='fits')
+                t = QTable.read(filename, format="fits")
             except OSError:
-                t = QTable.read(filename, format='ascii.ecsv')
+                t = QTable.read(filename, format="ascii.ecsv")
             ebins = np.append(t["elo"].value, t["ehi"].value[-1])
             flux = t["flux"].value
             binscale = t.meta.get("binscale", "linear")
@@ -415,19 +441,18 @@ class Spectrum:
             Default: "linear"
         """
         emin = parse_value(emin, "keV")
-        emax = parse_value(emax, 'keV')
+        emax = parse_value(emax, "keV")
         if binscale == "linear":
-            ebins = np.linspace(emin, emax, nbins+1)
+            ebins = np.linspace(emin, emax, nbins + 1)
         elif binscale == "log":
-            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins+1)
-        flux = const_flux*np.ones(nbins)
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
+        flux = const_flux * np.ones(nbins)
         return cls(ebins, flux, binscale=binscale)
 
     def _new_spec_from_band(self, emin, emax):
         emin = parse_value(emin, "keV")
-        emax = parse_value(emax, 'keV')
-        band = np.logical_and(self.ebins.value >= emin,
-                              self.ebins.value <= emax)
+        emax = parse_value(emax, "keV")
+        band = np.logical_and(self.ebins.value >= emin, self.ebins.value <= emax)
         idxs = np.where(band)[0]
         ebins = self.ebins.value[idxs]
         flux = self.flux.value[idxs[:-1]]
@@ -476,21 +501,24 @@ class Spectrum:
         if emax is None:
             emax = self.ebins[-1].value
         emin = parse_value(emin, "keV")
-        emax = parse_value(emax, 'keV')
+        emax = parse_value(emax, "keV")
         idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         if flux_type == "photons":
-            f = (self.flux*self.de)[idxs].sum()
+            f = (self.flux * self.de)[idxs].sum()
         elif flux_type == "energy":
-            f = (self.flux*self.emid.to("erg")*self.de)[idxs].sum()
-        self.flux *= new_flux/f.value
+            f = (self.flux * self.emid.to("erg") * self.de)[idxs].sum()
+        self.flux *= new_flux / f.value
         self._compute_total_flux()
 
     def _write_fits_or_ascii(self):
         meta = {"binscale": self.binscale}
         if hasattr(self, "arf"):
             meta["arf"] = self.arf.filename
-        t = QTable([self.ebins[:-1], self.ebins[1:], self.flux],
-                   names=["elo", "ehi", "flux"], meta=meta)
+        t = QTable(
+            [self.ebins[:-1], self.ebins[1:], self.flux],
+            names=["elo", "ehi", "flux"],
+            meta=meta,
+        )
         return t
 
     def write_ascii_file(self, specfile, overwrite=False):
@@ -562,8 +590,10 @@ class Spectrum:
                 f.attrs["arf"] = self.arf.filename
 
     def write_h5_file(self, specfile, overwrite=False):
-        issue_deprecation_warning("'Spectrum.write_h5_file' is deprecated and has been "
-                                  "superseded by 'Spectrum.write_hdf5_file'")
+        issue_deprecation_warning(
+            "'Spectrum.write_h5_file' is deprecated and has been "
+            "superseded by 'Spectrum.write_hdf5_file'"
+        )
         self.write_hdf5_file(specfile, overwrite=overwrite)
 
     def write_fits_file(self, specfile, overwrite=False):
@@ -581,8 +611,9 @@ class Spectrum:
         t = self._write_fits_or_ascii()
         t.write(specfile, overwrite=overwrite, format="fits")
 
-    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0,
-                                    abund_table="angr"):
+    def apply_foreground_absorption(
+        self, nH, model="wabs", redshift=0.0, abund_table="angr"
+    ):
         """
         Given a hydrogen column density, apply
         galactic foreground absorption to the spectrum.
@@ -614,20 +645,23 @@ class Spectrum:
             "cl17.03" : the default abundance table in Cloudy 17.03
         """
         nH = parse_value(nH, "1.0e22*cm**-2")
-        e = self.emid.value*(1.0+redshift)
+        e = self.emid.value * (1.0 + redshift)
         if model == "wabs":
             sigma = wabs_cross_section(e)
         elif model == "tbabs":
             if not isinstance(abund_table, str):
-                raise ValueError("Must supply a string corresponding to one of "
-                                 "the abundance tables provided in SOXS for "
-                                 "the TBabs model!")
+                raise ValueError(
+                    "Must supply a string corresponding to one of "
+                    "the abundance tables provided in SOXS for "
+                    "the TBabs model!"
+                )
             sigma = tbabs_cross_section(e, abund_table=abund_table)
-        self.flux *= np.exp(-nH*1.0e22*sigma)
+        self.flux *= np.exp(-nH * 1.0e22 * sigma)
         self._compute_total_flux()
 
-    def add_emission_line(self, line_center, line_width, line_amp,
-                          line_type="gaussian"):
+    def add_emission_line(
+        self, line_center, line_width, line_amp, line_type="gaussian"
+    ):
         """
         Add an emission line to this spectrum.
 
@@ -646,20 +680,24 @@ class Spectrum:
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
+        line_width = parse_value(
+            line_width, "keV", equivalence=line_width_equiv(line_center)
+        )
         line_amp = parse_value(line_amp, self._units)
         if line_type == "gaussian":
             sigma = line_width / sigma_to_fwhm
             line_amp /= sqrt2pi * sigma
             f = Gaussian1D(line_amp, line_center, sigma)
         else:
-            raise NotImplementedError("Line profile type '%s' " % line_type +
-                                      "not implemented!")
+            raise NotImplementedError(
+                "Line profile type '%s' " % line_type + "not implemented!"
+            )
         self.flux += u.Quantity(f(self.emid.value), self._units)
         self._compute_total_flux()
 
-    def add_absorption_line(self, line_center, line_width, equiv_width, 
-                            line_type='gaussian'):
+    def add_absorption_line(
+        self, line_center, line_width, equiv_width, line_type="gaussian"
+    ):
         """
         Add an absorption line to this spectrum.
 
@@ -678,17 +716,20 @@ class Spectrum:
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
-        equiv_width = parse_value(equiv_width, "1.0e-3*angstrom") # in milliangstroms
-        equiv_width *= 1.0e-3 # convert to angstroms
+        line_width = parse_value(
+            line_width, "keV", equivalence=line_width_equiv(line_center)
+        )
+        equiv_width = parse_value(equiv_width, "1.0e-3*angstrom")  # in milliangstroms
+        equiv_width *= 1.0e-3  # convert to angstroms
         if line_type == "gaussian":
             sigma = line_width / sigma_to_fwhm
-            B = equiv_width*line_center*line_center
+            B = equiv_width * line_center * line_center
             B /= hc * sqrt2pi * sigma
             f = Gaussian1D(B, line_center, sigma)
         else:
-            raise NotImplementedError("Line profile type '%s' " % line_type +
-                                      "not implemented!")
+            raise NotImplementedError(
+                "Line profile type '%s' " % line_type + "not implemented!"
+            )
         self.flux *= np.exp(-f(self.emid.value))
         self._compute_total_flux()
 
@@ -719,15 +760,27 @@ class Spectrum:
         t_exp = parse_value(t_exp, "s")
         area = parse_value(area, "cm**2")
         prng = parse_prng(prng)
-        rate = area*self.total_flux.value
+        rate = area * self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
-        flux = np.sum(energy)*erg_per_keV/t_exp/area
+        flux = np.sum(energy) * erg_per_keV / t_exp / area
         energies = Energies(energy, flux)
         return energies
 
-    def plot(self, lw=2, xmin=None, xmax=None, ymin=None, ymax=None,
-             xscale=None, yscale=None, label=None, fontsize=18, 
-             fig=None, ax=None, **kwargs):
+    def plot(
+        self,
+        lw=2,
+        xmin=None,
+        xmax=None,
+        ymin=None,
+        ymax=None,
+        xscale=None,
+        yscale=None,
+        label=None,
+        fontsize=18,
+        fig=None,
+        ax=None,
+        **kwargs,
+    ):
         """
         Make a quick Matplotlib plot of the spectrum. A Matplotlib
         figure and axis is returned.
@@ -766,6 +819,7 @@ class Spectrum:
         A tuple of the :class:`~matplotlib.figure.Figure` and the :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
+
         if fig is None:
             fig = plt.figure(figsize=(10, 10))
         if xscale is None:
@@ -788,27 +842,92 @@ class Spectrum:
         ax.set_xlabel("Energy (keV)", fontsize=fontsize)
         yunit = u.Unit(self._units).to_string("latex").replace("{}^{\\prime}", "arcmin")
         ax.set_ylabel("Spectrum (%s)" % yunit, fontsize=fontsize)
-        ax.tick_params(axis='both',labelsize=fontsize)
+        ax.tick_params(axis="both", labelsize=fontsize)
         return fig, ax
 
 
 def wabs_cross_section(E):
-    emax = np.array([0.0, 0.1, 0.284, 0.4, 0.532, 0.707, 0.867, 1.303, 1.840, 
-                     2.471, 3.210, 4.038, 7.111, 8.331, 10.0])
-    c0 = np.array([17.3, 34.6, 78.1, 71.4, 95.5, 308.9, 120.6, 141.3,
-                   202.7,342.7,352.2,433.9,629.0,701.2])
-    c1 = np.array([608.1, 267.9, 18.8, 66.8, 145.8, -380.6, 169.3,
-                   146.8, 104.7, 18.7, 18.7, -2.4, 30.9, 25.2]) 
-    c2 = np.array([-2150., -476.1 ,4.3, -51.4, -61.1, 294.0, -47.7,
-                   -31.5, -17.0, 0.0, 0.0, 0.75, 0.0, 0.0])
-    idxs = np.minimum(np.searchsorted(emax, E)-1, 13)
-    sigma = (c0[idxs]+c1[idxs]*E+c2[idxs]*E*E)*1.0e-24/E**3
+    emax = np.array(
+        [
+            0.0,
+            0.1,
+            0.284,
+            0.4,
+            0.532,
+            0.707,
+            0.867,
+            1.303,
+            1.840,
+            2.471,
+            3.210,
+            4.038,
+            7.111,
+            8.331,
+            10.0,
+        ]
+    )
+    c0 = np.array(
+        [
+            17.3,
+            34.6,
+            78.1,
+            71.4,
+            95.5,
+            308.9,
+            120.6,
+            141.3,
+            202.7,
+            342.7,
+            352.2,
+            433.9,
+            629.0,
+            701.2,
+        ]
+    )
+    c1 = np.array(
+        [
+            608.1,
+            267.9,
+            18.8,
+            66.8,
+            145.8,
+            -380.6,
+            169.3,
+            146.8,
+            104.7,
+            18.7,
+            18.7,
+            -2.4,
+            30.9,
+            25.2,
+        ]
+    )
+    c2 = np.array(
+        [
+            -2150.0,
+            -476.1,
+            4.3,
+            -51.4,
+            -61.1,
+            294.0,
+            -47.7,
+            -31.5,
+            -17.0,
+            0.0,
+            0.0,
+            0.75,
+            0.0,
+            0.0,
+        ]
+    )
+    idxs = np.minimum(np.searchsorted(emax, E) - 1, 13)
+    sigma = (c0[idxs] + c1[idxs] * E + c2[idxs] * E * E) * 1.0e-24 / E ** 3
     return sigma
 
 
 def get_wabs_absorb(e, nH):
     sigma = wabs_cross_section(e)
-    return np.exp(-nH*1.0e22*sigma)
+    return np.exp(-nH * 1.0e22 * sigma)
 
 
 _tbabs_emid = None
@@ -824,17 +943,22 @@ def tbabs_cross_section(E, abund_table="angr"):
         with h5py.File(get_data_file("tbabs_table.h5"), "r") as f:
             _tbabs_sigma = f["cross_section"][abund_table][:]
             nbins = _tbabs_sigma.size
-            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins+1)
-        _tbabs_emid = 0.5*(ebins[1:]+ebins[:-1])
-        _tbabs_func = interp1d(_tbabs_emid, _tbabs_sigma, bounds_error=False,
-                               fill_value=(_tbabs_sigma[0], _tbabs_sigma[-1]),
-                               assume_sorted=True, copy=False)
+            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins + 1)
+        _tbabs_emid = 0.5 * (ebins[1:] + ebins[:-1])
+        _tbabs_func = interp1d(
+            _tbabs_emid,
+            _tbabs_sigma,
+            bounds_error=False,
+            fill_value=(_tbabs_sigma[0], _tbabs_sigma[-1]),
+            assume_sorted=True,
+            copy=False,
+        )
     return _tbabs_func(E)
 
 
 def get_tbabs_absorb(e, nH, abund_table="angr"):
     sigma = tbabs_cross_section(e, abund_table=abund_table)
-    return np.exp(-nH*1.0e22*sigma)
+    return np.exp(-nH * 1.0e22 * sigma)
 
 
 class CountRateSpectrum(Spectrum):
@@ -867,40 +991,43 @@ class CountRateSpectrum(Spectrum):
         return energies
 
     @classmethod
-    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0,
-                         nbins=10000):
+    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
 
     @classmethod
     def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
 
-    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0,
-                                    abund_table="angr"):
+    def apply_foreground_absorption(
+        self, nH, model="wabs", redshift=0.0, abund_table="angr"
+    ):
         raise NotImplementedError
 
 
 class ConvolvedSpectrum(CountRateSpectrum):
-
-    def __init__(self, ebins, flux, arf, binscale='linear'):
+    def __init__(self, ebins, flux, arf, binscale="linear"):
         from numbers import Number
+
         from soxs.response import AuxiliaryResponseFile, FlatResponse
+
         super(ConvolvedSpectrum, self).__init__(ebins, flux, binscale=binscale)
         if isinstance(arf, Number):
-            arf = FlatResponse(ebins[0], ebins[-1], arf, ebins.size-1)
+            arf = FlatResponse(ebins[0], ebins[-1], arf, ebins.size - 1)
         elif isinstance(arf, str):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
 
     def __add__(self, other):
         self._check_binning_units(other)
-        return ConvolvedSpectrum(self.ebins, self.flux+other.flux, self.arf, 
-                                 binscale=self.binscale)
+        return ConvolvedSpectrum(
+            self.ebins, self.flux + other.flux, self.arf, binscale=self.binscale
+        )
 
     def __sub__(self, other):
         self._check_binning_units(other)
-        return ConvolvedSpectrum(self.ebins, self.flux-other.flux, self.arf,
-                                 binscale=self.binscale)
+        return ConvolvedSpectrum(
+            self.ebins, self.flux - other.flux, self.arf, binscale=self.binscale
+        )
 
     @classmethod
     def convolve(cls, spectrum, arf):
@@ -916,6 +1043,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
             The ARF to use in the convolution.
         """
         from soxs.response import AuxiliaryResponseFile
+
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
         earea = arf.interpolate_area(spectrum.emid.value)
@@ -972,7 +1100,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         rate = self.total_flux.value
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
-        flux = np.sum(energy)*erg_per_keV/t_exp/earea.sum()
+        flux = np.sum(energy) * erg_per_keV / t_exp / earea.sum()
         energies = Energies(energy, flux)
         return energies
 
@@ -984,13 +1112,13 @@ class ConvolvedSpectrum(CountRateSpectrum):
         raise NotImplementedError
 
     @classmethod
-    def from_powerlaw(cls, photon_index, redshift, norm,
-                      emin=0.01, emax=50.0, nbins=10000):
+    def from_powerlaw(
+        cls, photon_index, redshift, norm, emin=0.01, emax=50.0, nbins=10000
+    ):
         raise NotImplementedError
 
     @classmethod
-    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0,
-                         nbins=10000):
+    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
 
     @classmethod

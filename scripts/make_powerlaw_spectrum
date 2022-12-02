@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+
 from soxs import Spectrum
 
 parser = argparse.ArgumentParser(description='Create a power-law spectrum and write it to a file.')

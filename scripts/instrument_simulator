@@ -2,9 +2,10 @@
 
 import argparse
 import os
+
 import numpy as np
-from soxs import instrument_simulator, \
-    add_instrument_to_registry
+
+from soxs import add_instrument_to_registry, instrument_simulator
 from soxs.instrument import instrument_registry
 
 parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated event file.')

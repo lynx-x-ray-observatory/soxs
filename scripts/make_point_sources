@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import argparse
+
 import numpy as np
+
 from soxs.background import make_point_sources_file
 
 parser = argparse.ArgumentParser(description='Create a SIMPUT photon list catalog of a '
