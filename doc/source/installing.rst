@@ -34,11 +34,11 @@ manually:
     
     git clone https://github.com/lynx-x-ray-observatory/soxs
     cd soxs
-    python setup.py install
+    pip install . 
     
-or run ``python setup.py develop`` instead if you want to make changes to the 
+or run ``pip install -e .`` instead if you want to make changes to the 
 code and see them reflected without recompiling (though if you make updates to 
-the command-line scripts you will have to run ``python setup.py develop`` 
+the command-line scripts you will have to run ``pip install -e .`` 
 again). 
 
 SOXS Dependencies

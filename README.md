@@ -46,7 +46,7 @@ These methods install both the Python interface and the command-line scripts.
 Alternatively, to install into your Python distribution from [source](http://github.com/lynx-x-ray-observatory/soxs):
 
 ```
-[~]$ python setup.py install
+[~]$ pip install . 
 ```
 
 # Getting Help
