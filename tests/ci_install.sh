@@ -4,7 +4,7 @@ if [[ ${mode} == "testing" ]]; then
 
   # Download answers
   
-  wget -q http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data_${ANSWER_VER}.tar.gz
+  curl -O http://hea-www.cfa.harvard.edu/~jzuhone/soxs_test_data_${ANSWER_VER}.tar.gz
   tar -zxf soxs_test_data_${ANSWER_VER}.tar.gz
   
   # Set location of soxs data
