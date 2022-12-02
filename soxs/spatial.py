@@ -80,7 +80,7 @@ class SpatialModel:
         img /= img.sum()
         dtheta = width/60.0/nx
         w = construct_wcs(0.0, 0.0, dtheta=dtheta, nx=nx)
-        imhdu = fits.ImageHDU(data=img.T, header=w.to_header())
+        imhdu = fits.ImageHDU(data=img, header=w.to_header())
         imhdu.name = "IMAGE"
         imhdu.header["HDUCLASS"] = "HEASARC/SIMPUT"
         imhdu.header["HDUCLAS1"] = "IMAGE"

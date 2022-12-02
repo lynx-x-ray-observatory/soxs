@@ -10,8 +10,8 @@ This update to SOXS contains bug fixes and two new features.
 
 * A bug that scaled the flux of :class:`~soxs.simput.SimputSpectrum` sources
   incorrectly has been corrected.
-* A bug that prevented :class:`~soxs.simput.SimputSpectrum` sources from being
-  used in SIXTE and MARX has been fixed.
+* Bugs that prevented :class:`~soxs.simput.SimputSpectrum` sources from being
+  used in SIXTE, SIMX, and MARX have been fixed.
 * It is now possible to specify a region file with creating a spectrum with 
   :func:`~soxs.events.write_spectrum`, to select a subset of events based on 
   spatial region. See :ref:`write-spectrum` for more details. 

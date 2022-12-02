@@ -289,7 +289,7 @@ def get_data_file(fn):
 
 def image_pos(im, nph, prng):
     im[im < 0.0] = 0.0
-    im = im.T/im.sum()
+    im = im/im.sum()
     idxs = prng.choice(im.size, size=nph, p=im.flatten())
     x, y = np.unravel_index(idxs, im.shape)
     dx = prng.uniform(low=0.5, high=1.5, size=x.size)
