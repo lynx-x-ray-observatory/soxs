@@ -6,38 +6,77 @@ import numpy as np
 
 from soxs import make_exposure_map
 
-parser = argparse.ArgumentParser(description='Make a SOXS exposure map from an event file.')
-parser.add_argument("event_file", type=str, help="The event file to use to make the exposure map.")
-parser.add_argument("expmap_file", type=str, help='The file to write the exposure map to.')
-parser.add_argument("--energy", help="The reference energy to use when making the exposure map. "
-                                     "This parameter will be ignored if a 'weightsfile' is set.")
-parser.add_argument("--weightsfile", type=str, help="A file containing two columns: energy in keV and "
-                                                    "spectral weights, to create an exposure map "
-                                                    "weighted over an energy band.")
-parser.add_argument("--asol_file", type=str, help="If set, write the aspect solution to this file.")
-parser.add_argument("--overwrite", action='store_true',
-                    help='Overwrite an existing file with the same name.')
-parser.add_argument("--nhistx", type=int, default=16, 
-                    help="The number of bins in the aspect histogram in the "
-                         "DETX direction. Default: 16")
-parser.add_argument("--nhisty", type=int, default=16,
-                    help="The number of bins in the aspect histogram in the "
-                         "DETY direction. Default: 16")
+parser = argparse.ArgumentParser(
+    description="Make a SOXS exposure map from an event file."
+)
+parser.add_argument(
+    "event_file", type=str, help="The event file to use to make the exposure map."
+)
+parser.add_argument(
+    "expmap_file", type=str, help="The file to write the exposure map to."
+)
+parser.add_argument(
+    "--energy",
+    help="The reference energy to use when making the exposure map. "
+    "This parameter will be ignored if a 'weightsfile' is set.",
+)
+parser.add_argument(
+    "--weightsfile",
+    type=str,
+    help="A file containing two columns: energy in keV and "
+    "spectral weights, to create an exposure map "
+    "weighted over an energy band.",
+)
+parser.add_argument(
+    "--asol_file", type=str, help="If set, write the aspect solution to this file."
+)
+parser.add_argument(
+    "--overwrite",
+    action="store_true",
+    help="Overwrite an existing file with the same name.",
+)
+parser.add_argument(
+    "--nhistx",
+    type=int,
+    default=16,
+    help="The number of bins in the aspect histogram in the "
+    "DETX direction. Default: 16",
+)
+parser.add_argument(
+    "--nhisty",
+    type=int,
+    default=16,
+    help="The number of bins in the aspect histogram in the "
+    "DETY direction. Default: 16",
+)
 feature_parser = parser.add_mutually_exclusive_group(required=False)
-feature_parser.add_argument("--normalize", dest='normalize', action='store_true',
-                            help='Normalize the exposure map by the exposure time. This is the default.')
-feature_parser.add_argument("--no_normalize", dest='normalize', action='store_false',
-                            help="Don't normalize the exposure map by the exposure time.")
-parser.add_argument("--reblock", type=int, default=1,
-                    help="Supply an integer power of two to set the binning of the "
-                         "exposure map. Default: 1")
+feature_parser.add_argument(
+    "--normalize",
+    dest="normalize",
+    action="store_true",
+    help="Normalize the exposure map by the exposure time. This is the default.",
+)
+feature_parser.add_argument(
+    "--no_normalize",
+    dest="normalize",
+    action="store_false",
+    help="Don't normalize the exposure map by the exposure time.",
+)
+parser.add_argument(
+    "--reblock",
+    type=int,
+    default=1,
+    help="Supply an integer power of two to set the binning of the "
+    "exposure map. Default: 1",
+)
 parser.set_defaults(normalize=True)
 
 args = parser.parse_args()
 
 if args.weightsfile is None and args.energy is None:
-    raise RuntimeError("Must specify either an energy or a weightsfile to create "
-                       "the exposure map!")
+    raise RuntimeError(
+        "Must specify either an energy or a weightsfile to create " "the exposure map!"
+    )
 
 if args.weightsfile is None:
     energy = args.energy
@@ -45,7 +84,15 @@ if args.weightsfile is None:
 else:
     energy, weights = np.loadtxt(args.weightsfile)
 
-make_exposure_map(args.event_file, args.expmap_file, energy, weights=weights,
-                  asol_file=args.asol_file, normalize=args.normalize, 
-                  overwrite=args.overwrite, nhistx=args.nhistx, nhisty=args.nhisty,
-                  reblock=args.reblock)
+make_exposure_map(
+    args.event_file,
+    args.expmap_file,
+    energy,
+    weights=weights,
+    asol_file=args.asol_file,
+    normalize=args.normalize,
+    overwrite=args.overwrite,
+    nhistx=args.nhistx,
+    nhisty=args.nhisty,
+    reblock=args.reblock,
+)

@@ -4,54 +4,87 @@ import argparse
 
 import soxs
 
-parser = argparse.ArgumentParser(description='Create a SIMPUT source of a double-beta-model '
-                                             'from a spectrum supplied in a file.')
-parser.add_argument("filename", type=str,
-                    help='The filename of the SIMPUT catalog to write or to append to.')
-parser.add_argument("name", type=str,
-                    help='The name of the source in the SIMPUT catalog.')
+parser = argparse.ArgumentParser(
+    description="Create a SIMPUT source of a double-beta-model "
+    "from a spectrum supplied in a file."
+)
+parser.add_argument(
+    "filename",
+    type=str,
+    help="The filename of the SIMPUT catalog to write or to append to.",
+)
+parser.add_argument(
+    "name", type=str, help="The name of the source in the SIMPUT catalog."
+)
 parser.add_argument("ra0", help="The right ascension of the source center in degrees.")
 parser.add_argument("dec0", help="The declination of the source center in degrees.")
 parser.add_argument("r_c1", help="The inner core radius in arcseconds.")
 parser.add_argument("beta1", type=float, help="The inner beta parameter.")
 parser.add_argument("r_c2", help="The outer core radius in arcseconds.")
 parser.add_argument("beta2", type=float, help="The outer beta parameter.")
-parser.add_argument("sb_ratio", type=float, help="The ratio of the outer to the inner SB peak value.")
-parser.add_argument("specfile", type=str, help="The file containing the spectrum to be used.")
+parser.add_argument(
+    "sb_ratio", type=float, help="The ratio of the outer to the inner SB peak value."
+)
+parser.add_argument(
+    "specfile", type=str, help="The file containing the spectrum to be used."
+)
 parser.add_argument("image_width", help="The width of the image in arcminutes.")
 parser.add_argument("nx", type=int, help="The resolution of the image.")
-parser.add_argument("--theta", default=0.0, 
-                    help="The angle through which to rotate the beta model in degrees. "
-                         "Only makes sense if ellipticity is added. Default: 0.0")
-parser.add_argument("--ellipticity", type=float, default=1.0,
-                    help="The ellipticity of the radial profile, expressed as the ratio "
-                         "between the length scales of the x and y coordinates. The value "
-                         "of this parameter will shrink or expand the profile in the "
-                         "direction of the \"y\" coordinate, so you may need to rotate to "
-                         "get the shape you want. Default: 1.0")
-parser.add_argument("--src_filename", type=str,
-                    help='An optional filename to store the source instead of the SIMPUT '
-                         'catalog file.')
-parser.add_argument("--append", action='store_true',
-                    help='If set, append a new source an existing SIMPUT catalog. ')
-parser.add_argument("--overwrite", action='store_true', 
-                    help='Overwrite an existing file with the same name.')
+parser.add_argument(
+    "--theta",
+    default=0.0,
+    help="The angle through which to rotate the beta model in degrees. "
+    "Only makes sense if ellipticity is added. Default: 0.0",
+)
+parser.add_argument(
+    "--ellipticity",
+    type=float,
+    default=1.0,
+    help="The ellipticity of the radial profile, expressed as the ratio "
+    "between the length scales of the x and y coordinates. The value "
+    "of this parameter will shrink or expand the profile in the "
+    'direction of the "y" coordinate, so you may need to rotate to '
+    "get the shape you want. Default: 1.0",
+)
+parser.add_argument(
+    "--src_filename",
+    type=str,
+    help="An optional filename to store the source instead of the SIMPUT "
+    "catalog file.",
+)
+parser.add_argument(
+    "--append",
+    action="store_true",
+    help="If set, append a new source an existing SIMPUT catalog. ",
+)
+parser.add_argument(
+    "--overwrite",
+    action="store_true",
+    help="Overwrite an existing file with the same name.",
+)
 
 args = parser.parse_args()
 
 spec = soxs.Spectrum.from_file(args.specfile)
 
-dbeta = soxs.DoubleBetaModel(args.ra0, args.dec0, args.r_c1, args.beta1, args.r_c2, 
-                             args.beta2, args.sb_ratio, theta=args.theta, 
-                             ellipticity=args.ellipticity)
+dbeta = soxs.DoubleBetaModel(
+    args.ra0,
+    args.dec0,
+    args.r_c1,
+    args.beta1,
+    args.r_c2,
+    args.beta2,
+    args.sb_ratio,
+    theta=args.theta,
+    ellipticity=args.ellipticity,
+)
 
-src = soxs.SimputSpectrum.from_models(args.name, spec, dbeta, args.image_width,
-                                      args.nx)
+src = soxs.SimputSpectrum.from_models(args.name, spec, dbeta, args.image_width, args.nx)
 
 if args.append:
     cat = soxs.SimputCatalog.from_file(args.filename)
     cat.append(src, src_filename=args.src_filename, overwrite=args.overwrite)
 else:
-    cat = soxs.SimputCatalog.from_source(args.filename, src,
-                                         src_filename=args.src_filename,
-                                         overwrite=args.overwrite)
+    cat = soxs.SimputCatalog.from_source(
+        args.filename, src, src_filename=args.src_filename, overwrite=args.overwrite
+    )

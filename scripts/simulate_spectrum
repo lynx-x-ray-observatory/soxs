@@ -7,39 +7,83 @@ from soxs.instrument import simulate_spectrum
 from soxs.instrument_registry import add_instrument_to_registry, instrument_registry
 from soxs.spectra import Spectrum
 
-parser = argparse.ArgumentParser(description='Convolve a spectrum with an ARF and RMF and '
-                                             'produce a PHA or PI spectrum.')
-parser.add_argument("spec_file", type=str, help="The file containing the spectrum to be used. "
-                                                "If None, then only a simulated background "
-                                                "may be generated if they are turned on.")
-parser.add_argument("instrument", type=str, help='The name of the instrument to use, '
-                                                 'or alternatively the name of a JSON file '
-                                                 'which contains an instrument specification.')
-parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
-parser.add_argument("out_file", type=str, help="The file to write the convolved spectrum to.")
-parser.add_argument("--overwrite", action='store_true',
-                    help='Overwrite an existing file with the same name.')
-parser.add_argument("--bkgnd_area",
-                    help="The area on the sky for the background components, "
-                         "in square arcminutes. Default: None. Must be specified "
-                         "if any of the background components are turned on.")
-parser.add_argument("--random_seed", type=int,
-                    help="A constant integer random seed to produce a consistent set of random numbers.")
+parser = argparse.ArgumentParser(
+    description="Convolve a spectrum with an ARF and RMF and "
+    "produce a PHA or PI spectrum."
+)
+parser.add_argument(
+    "spec_file",
+    type=str,
+    help="The file containing the spectrum to be used. "
+    "If None, then only a simulated background "
+    "may be generated if they are turned on.",
+)
+parser.add_argument(
+    "instrument",
+    type=str,
+    help="The name of the instrument to use, "
+    "or alternatively the name of a JSON file "
+    "which contains an instrument specification.",
+)
+parser.add_argument("exp_time", help="The exposure time to use, in seconds.")
+parser.add_argument(
+    "out_file", type=str, help="The file to write the convolved spectrum to."
+)
+parser.add_argument(
+    "--overwrite",
+    action="store_true",
+    help="Overwrite an existing file with the same name.",
+)
+parser.add_argument(
+    "--bkgnd_area",
+    help="The area on the sky for the background components, "
+    "in square arcminutes. Default: None. Must be specified "
+    "if any of the background components are turned on.",
+)
+parser.add_argument(
+    "--random_seed",
+    type=int,
+    help="A constant integer random seed to produce a consistent set of random numbers.",
+)
 ptsrc_parser = parser.add_mutually_exclusive_group(required=False)
-ptsrc_parser.add_argument("--ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_true',
-                          help='Turn the unresolved point-source background on.')
-ptsrc_parser.add_argument("--no_ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_false',
-                          help='Turn the unresolved point-source background off.')
+ptsrc_parser.add_argument(
+    "--ptsrc_bkgnd",
+    dest="ptsrc_bkgnd",
+    action="store_true",
+    help="Turn the unresolved point-source background on.",
+)
+ptsrc_parser.add_argument(
+    "--no_ptsrc_bkgnd",
+    dest="ptsrc_bkgnd",
+    action="store_false",
+    help="Turn the unresolved point-source background off.",
+)
 instr_parser = parser.add_mutually_exclusive_group(required=False)
-instr_parser.add_argument("--instr_bkgnd", dest='instr_bkgnd', action='store_true',
-                          help='Turn the instrumental background on.')
-instr_parser.add_argument("--no_instr_bkgnd", dest='instr_bkgnd', action='store_false',
-                          help='Turn the instrumental background off.')
+instr_parser.add_argument(
+    "--instr_bkgnd",
+    dest="instr_bkgnd",
+    action="store_true",
+    help="Turn the instrumental background on.",
+)
+instr_parser.add_argument(
+    "--no_instr_bkgnd",
+    dest="instr_bkgnd",
+    action="store_false",
+    help="Turn the instrumental background off.",
+)
 frgnd_parser = parser.add_mutually_exclusive_group(required=False)
-frgnd_parser.add_argument("--foreground", dest='foreground', action='store_true',
-                          help='Turn the galactic foreground on.')
-frgnd_parser.add_argument("--no_foreground", dest='foreground', action='store_false',
-                          help='Turn the galactic foreground off.')
+frgnd_parser.add_argument(
+    "--foreground",
+    dest="foreground",
+    action="store_true",
+    help="Turn the galactic foreground on.",
+)
+frgnd_parser.add_argument(
+    "--no_foreground",
+    dest="foreground",
+    action="store_false",
+    help="Turn the galactic foreground off.",
+)
 parser.set_defaults(foreground=False, ptsrc_bkgnd=False, instr_bkgnd=False)
 
 args = parser.parse_args()
@@ -54,7 +98,15 @@ if args.spec_file == "None":
 else:
     spec = Spectrum.from_file(args.spec_file)
 
-simulate_spectrum(spec, instrument, args.exp_time, args.out_file, 
-                  overwrite=args.overwrite, foreground=args.foreground,
-                  instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd,
-                  bkgnd_area=args.bkgnd_area, prng=args.random_seed)
+simulate_spectrum(
+    spec,
+    instrument,
+    args.exp_time,
+    args.out_file,
+    overwrite=args.overwrite,
+    foreground=args.foreground,
+    instr_bkgnd=args.instr_bkgnd,
+    ptsrc_bkgnd=args.ptsrc_bkgnd,
+    bkgnd_area=args.bkgnd_area,
+    prng=args.random_seed,
+)

@@ -4,43 +4,72 @@ import argparse
 
 from soxs import Spectrum
 
-parser = argparse.ArgumentParser(description='Create a power-law spectrum and write it to a file.')
-parser.add_argument("photon_index", type=float, 
-                    help='The spectral index of the power law.')
+parser = argparse.ArgumentParser(
+    description="Create a power-law spectrum and write it to a file."
+)
+parser.add_argument(
+    "photon_index", type=float, help="The spectral index of the power law."
+)
 parser.add_argument("redshift", type=float, help="The redshift of the source.")
-parser.add_argument("norm", type=float, 
-                    help='The normalization of the source in units of '+
-                         'photons/s/cm**2/keV at 1 keV in the source frame.')
+parser.add_argument(
+    "norm",
+    type=float,
+    help="The normalization of the source in units of "
+    + "photons/s/cm**2/keV at 1 keV in the source frame.",
+)
 parser.add_argument("specfile", type=str, help="The filename to write the spectrum to.")
-parser.add_argument("emin", help='The minimum energy in keV.')
-parser.add_argument("emax", help='The maximum energy in keV.')
-parser.add_argument("nbins", type=int, help='The number of bins in the spectrum.')
-parser.add_argument("--binscale", type=str, default='linear',
-                    help='The scale of the energy binning: '
-                         '"linear" or "log". Default: "linear"')
-parser.add_argument("--absorb_model", type=str,
-                    help='Model for applying foreground Galactic absorption.')
-parser.add_argument("--nH_abs",
-                    help='The hydrogen column in units of 10**22 atoms/cm**2.')
-parser.add_argument("--abund_table", type=str, default="angr",
-                    help="The abundance table to be used if the absorption model is "
-                         "TBabs. Takes a string corresponding to a built-in table. "
-                         "Default is set in the SOXS configuration file, the default "
-                         "for which is 'angr'.")
+parser.add_argument("emin", help="The minimum energy in keV.")
+parser.add_argument("emax", help="The maximum energy in keV.")
+parser.add_argument("nbins", type=int, help="The number of bins in the spectrum.")
+parser.add_argument(
+    "--binscale",
+    type=str,
+    default="linear",
+    help="The scale of the energy binning: " '"linear" or "log". Default: "linear"',
+)
+parser.add_argument(
+    "--absorb_model",
+    type=str,
+    help="Model for applying foreground Galactic absorption.",
+)
+parser.add_argument(
+    "--nH_abs", help="The hydrogen column in units of 10**22 atoms/cm**2."
+)
+parser.add_argument(
+    "--abund_table",
+    type=str,
+    default="angr",
+    help="The abundance table to be used if the absorption model is "
+    "TBabs. Takes a string corresponding to a built-in table. "
+    "Default is set in the SOXS configuration file, the default "
+    "for which is 'angr'.",
+)
 
-parser.add_argument("--overwrite", action='store_true', 
-                    help='Overwrite an existing file with the same name.')
+parser.add_argument(
+    "--overwrite",
+    action="store_true",
+    help="Overwrite an existing file with the same name.",
+)
 
 args = parser.parse_args()
 
-spec = Spectrum.from_powerlaw(args.photon_index, args.redshift, args.norm,
-                              args.emin, args.emax, args.nbins, binscale=args.binscale)
+spec = Spectrum.from_powerlaw(
+    args.photon_index,
+    args.redshift,
+    args.norm,
+    args.emin,
+    args.emax,
+    args.nbins,
+    binscale=args.binscale,
+)
 
 if args.absorb_model is not None:
     if args.nH_abs is None:
-        raise RuntimeError("Must specify a value for --nH_abs if including"
-                           "foreground absorption!")
-    spec.apply_foreground_absorption(args.nH_abs, model=args.absorb_model,
-                                     abund_table=args.abund_table)
+        raise RuntimeError(
+            "Must specify a value for --nH_abs if including" "foreground absorption!"
+        )
+    spec.apply_foreground_absorption(
+        args.nH_abs, model=args.absorb_model, abund_table=args.abund_table
+    )
 
 spec.write_file(args.specfile, overwrite=args.overwrite)

@@ -5,13 +5,19 @@ import os
 
 from soxs.instrument_registry import instrument_registry
 
-parser = argparse.ArgumentParser(description='Download files associated with a particular '
-                                             'instrument model.')
-parser.add_argument("instrument", type=str, help="The name of the instrument to download "
-                                                 "files for.")
-parser.add_argument("--loc", type=str, default=os.getcwd(),
-                    help="The path to download the files to. Defaults to the current "
-                         "working directory.")
+parser = argparse.ArgumentParser(
+    description="Download files associated with a particular " "instrument model."
+)
+parser.add_argument(
+    "instrument", type=str, help="The name of the instrument to download " "files for."
+)
+parser.add_argument(
+    "--loc",
+    type=str,
+    default=os.getcwd(),
+    help="The path to download the files to. Defaults to the current "
+    "working directory.",
+)
 args = parser.parse_args()
 
 instrument_registry.fetch_files(args.instrument, loc=args.loc)

@@ -7,53 +7,106 @@ import numpy as np
 
 from soxs import add_instrument_to_registry, instrument_registry, make_background_file
 
-parser = argparse.ArgumentParser(description='Run the instrument simulator and produce a simulated background event file.')
-parser.add_argument("out_file", type=str, help='The name of the event file to be written.')
-parser.add_argument("exp_time", help='The exposure time to use, in seconds.')
-parser.add_argument("instrument", type=str, help='The name of the instrument to use, '+
-                                                 'or alternatively the name of a JSON file which contains an instrument '+
-                                                 'specification.')
-parser.add_argument("sky_center", type=str, help='The center RA, Dec coordinates of the '+
-                                                 'observation, in degrees, comma-separated')
-parser.add_argument("--overwrite", action='store_true',
-                    help='Overwrite an existing file with the same name.')
-parser.add_argument("--input_pt_sources", type=str,
-                    help="Use a previously written table of point sources as input instead of generating them.")
-parser.add_argument("--subpixel_res", action='store_true',
-                    help="Don't uniformly distribute event positions within pixels.")
-parser.add_argument("--no_dither", action="store_true", help="Turn dithering off entirely.")
-parser.add_argument("--dither_params", help="The parameters controlling the size and period of "
-                                            "dither. Four floats joined by commas, in the form "
-                                            "of x_amp,y_amp,x_period,y_period. The first two "
-                                            "numbers are in arcseconds and the second are in "
-                                            "seconds. Default: 8.0,8.0,1000.0,707.0")
-parser.add_argument("--random_seed", type=int,
-                    help="A constant integer random seed to produce a consistent set of random numbers.")
+parser = argparse.ArgumentParser(
+    description="Run the instrument simulator and produce a simulated background event file."
+)
+parser.add_argument(
+    "out_file", type=str, help="The name of the event file to be written."
+)
+parser.add_argument("exp_time", help="The exposure time to use, in seconds.")
+parser.add_argument(
+    "instrument",
+    type=str,
+    help="The name of the instrument to use, "
+    + "or alternatively the name of a JSON file which contains an instrument "
+    + "specification.",
+)
+parser.add_argument(
+    "sky_center",
+    type=str,
+    help="The center RA, Dec coordinates of the "
+    + "observation, in degrees, comma-separated",
+)
+parser.add_argument(
+    "--overwrite",
+    action="store_true",
+    help="Overwrite an existing file with the same name.",
+)
+parser.add_argument(
+    "--input_pt_sources",
+    type=str,
+    help="Use a previously written table of point sources as input instead of generating them.",
+)
+parser.add_argument(
+    "--subpixel_res",
+    action="store_true",
+    help="Don't uniformly distribute event positions within pixels.",
+)
+parser.add_argument(
+    "--no_dither", action="store_true", help="Turn dithering off entirely."
+)
+parser.add_argument(
+    "--dither_params",
+    help="The parameters controlling the size and period of "
+    "dither. Four floats joined by commas, in the form "
+    "of x_amp,y_amp,x_period,y_period. The first two "
+    "numbers are in arcseconds and the second are in "
+    "seconds. Default: 8.0,8.0,1000.0,707.0",
+)
+parser.add_argument(
+    "--random_seed",
+    type=int,
+    help="A constant integer random seed to produce a consistent set of random numbers.",
+)
 ptsrc_parser = parser.add_mutually_exclusive_group(required=False)
-ptsrc_parser.add_argument("--ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_true',
-                          help='Turn the point-source background on.')
-ptsrc_parser.add_argument("--no_ptsrc_bkgnd", dest='ptsrc_bkgnd', action='store_false',
-                          help='Turn the point-source background off.')
+ptsrc_parser.add_argument(
+    "--ptsrc_bkgnd",
+    dest="ptsrc_bkgnd",
+    action="store_true",
+    help="Turn the point-source background on.",
+)
+ptsrc_parser.add_argument(
+    "--no_ptsrc_bkgnd",
+    dest="ptsrc_bkgnd",
+    action="store_false",
+    help="Turn the point-source background off.",
+)
 instr_parser = parser.add_mutually_exclusive_group(required=False)
-instr_parser.add_argument("--instr_bkgnd", dest='instr_bkgnd', action='store_true',
-                          help='Turn the instrumental background on.')
-instr_parser.add_argument("--no_instr_bkgnd", dest='instr_bkgnd', action='store_false',
-                          help='Turn the instrumental background off.')
+instr_parser.add_argument(
+    "--instr_bkgnd",
+    dest="instr_bkgnd",
+    action="store_true",
+    help="Turn the instrumental background on.",
+)
+instr_parser.add_argument(
+    "--no_instr_bkgnd",
+    dest="instr_bkgnd",
+    action="store_false",
+    help="Turn the instrumental background off.",
+)
 frgnd_parser = parser.add_mutually_exclusive_group(required=False)
-frgnd_parser.add_argument("--foreground", dest='foreground', action='store_true',
-                          help='Turn the galactic foreground on.')
-frgnd_parser.add_argument("--no_foreground", dest='foreground', action='store_false',
-                          help='Turn the galactic foreground off.')
+frgnd_parser.add_argument(
+    "--foreground",
+    dest="foreground",
+    action="store_true",
+    help="Turn the galactic foreground on.",
+)
+frgnd_parser.add_argument(
+    "--no_foreground",
+    dest="foreground",
+    action="store_false",
+    help="Turn the galactic foreground off.",
+)
 parser.set_defaults(foreground=True, ptsrc_bkgnd=True, instr_bkgnd=True)
 
 args = parser.parse_args()
 
-sky_center = np.array(args.sky_center.split(',')).astype("float64")
+sky_center = np.array(args.sky_center.split(",")).astype("float64")
 
 if args.dither_params is None:
     dither_params = None
 else:
-    dither_params = np.array(args.dither_params.split(',')).astype("float64")
+    dither_params = np.array(args.dither_params.split(",")).astype("float64")
 
 if args.instrument not in instrument_registry and os.path.exists(args.instrument):
     instrument = add_instrument_to_registry(args.instrument)
@@ -61,9 +114,18 @@ else:
     instrument = args.instrument
 
 
-make_background_file(args.out_file, args.exp_time, instrument,
-                     sky_center, args.overwrite, foreground=args.foreground,
-                     instr_bkgnd=args.instr_bkgnd, ptsrc_bkgnd=args.ptsrc_bkgnd,
-                     subpixel_res=args.subpixel_res, prng=args.random_seed,
-                     input_pt_sources=args.input_pt_sources, no_dither=args.no_dither,
-                     dither_params=dither_params)
+make_background_file(
+    args.out_file,
+    args.exp_time,
+    instrument,
+    sky_center,
+    args.overwrite,
+    foreground=args.foreground,
+    instr_bkgnd=args.instr_bkgnd,
+    ptsrc_bkgnd=args.ptsrc_bkgnd,
+    subpixel_res=args.subpixel_res,
+    prng=args.random_seed,
+    input_pt_sources=args.input_pt_sources,
+    no_dither=args.no_dither,
+    dither_params=dither_params,
+)
