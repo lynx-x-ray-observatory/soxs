@@ -4,7 +4,7 @@ Installation
 ============
 
 SOXS and its dependencies are installed as a standard Python package, and it is 
-compatible with Python 3.8 and higher. You may use ``pip`` to install it (if 
+compatible with Python 3.9 and higher. You may use ``pip`` to install it (if 
 you do not have pip, check that your executable is not named ``pip3``, otherwise 
 visit https://pip.pypa.io/ to download it):
 
@@ -25,12 +25,6 @@ may install SOXS using ``conda``:
   
 Note both the ``jzuhone`` and ``astropy`` channels are required. These methods 
 install both the Python interface and the command-line scripts. 
-
-.. warning::
-
-    Currently, there is no Anaconda package for 
-    `regions <https://astropy-regions.readthedocs.io/>`_ on Python 3.10, which 
-    is a SOXS dependency. It must be installed via pip. 
 
 Of course, you can always clone the source from 
 `GitHub <https://github.com/lynx-x-ray-observatory/soxs>`_ and install it 
