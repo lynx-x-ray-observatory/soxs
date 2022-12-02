@@ -4,6 +4,10 @@ doc/source/files/*.rmf
 doc/source/files/*.arf
 doc/source/cookbook/*.fits
 doc/source/cookbook/*.pha
+doc/source/cookbook/*.h5
+doc/source/cookbook/*.dat
+doc/source/cookbook/*.simput
+soxs_test_data
 soxs.egg-info
 .eggs
 *.pyc
