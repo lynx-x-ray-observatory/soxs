@@ -42,8 +42,12 @@ def test_append():
 
     with fits.open("pt_src_simput.fits") as f:
         cat = f["SRC_CAT"].data["SPECTRUM"].copy()
-        assert cat[0] == "./pt_src1_phlist.fits[PHLIST,1]"
-        assert cat[1] == "./pt_src2_phlist.fits[PHLIST,1]"
+        if os.name == "nt":
+            mypwd = ".\\"
+        else:
+            mypwd = "./"
+        assert cat[0] == f"{mypwd}pt_src1_phlist.fits[PHLIST,1]"
+        assert cat[1] == f"{mypwd}pt_src2_phlist.fits[PHLIST,1]"
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
