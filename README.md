@@ -3,7 +3,7 @@
 ![SOXS: Simulated Observations of X-ray Sources](doc/source/images/SOXS_Wordmark.png)
 
 [![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)  
-[![Build and Test](https://github.com/lynx-x-ray-observatory/soxs/actions/workflows/build-test.yaml/badge.svg)](https://github.com/lynx-x-ray-observatory/soxs/actions/workflows/build-test.yaml)
+[![Build and Test](https://github.com/lynx-x-ray-observatory/soxs/actions/workflows/build-test.yml/badge.svg)](https://github.com/lynx-x-ray-observatory/soxs/actions/workflows/build-test.yml/)
 
 # What is SOXS?
 
