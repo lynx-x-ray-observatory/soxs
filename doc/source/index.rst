@@ -14,7 +14,7 @@ SOXS is a software suite which creates simulated X-ray observations of
 astrophysical sources. The goal of SOXS is to provide a comprehensive set 
 of tools to design source models and convolve them with simulated models 
 of X-ray observatories. In particular, SOXS is the primary simulation tool
-for simulations of *Lynx* observations.  
+for simulations of *Lynx* and *Line Emission Mapper* observations.  
 
 There are two main entry points to SOXS: a Python interface, and a command-line
 interface. The former has more power and flexibility, but the latter is often

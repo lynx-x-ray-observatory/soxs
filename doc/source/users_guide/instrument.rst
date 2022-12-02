@@ -196,11 +196,10 @@ Light Element Mapper (LEM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two instrument specifications ``"lem_2eV"`` and ``"lem_0.9eV"``, are 
-available for the `Light Element Mapper (LEM) <https://lem.physics.wisc.edu>`_.
+available for the `Line Emission Mapper (LEM) <https://lem.cfa.harvard.edu>`_.
 This specification has a 32 arcminute field of view, a 4 m focal length, 
-an Gaussian PSF with a FWHM of 10 arcseconds. Currently, no instrumental 
-background is included. The response files for *LEM* were provided 
-`here <https://lem.physics.wisc.edu/LEM.html>`_.
+an Gaussian PSF with a FWHM of 10 arcseconds. The former has a spectral resolution
+of 2 eV and the latter a spectral resolution of 0.9 eV.
 
 .. _bkgnds:
 

@@ -44,7 +44,7 @@ class LazyReadSimputCatalog(Sequence):
 def read_simput_catalog(simput_file):
     r"""
     Read events from a SIMPUT catalog. This will read 
-    all of the sources in the catalog.
+    all the sources in the catalog.
 
     Parameters
     ----------
@@ -431,7 +431,7 @@ class SimputSpectrum(SimputSource):
             The Dec of the source in degrees.
         imhdu : string or :class:`~astropy.io.fits.ImageHDU` instance
             An image to be used to simulate an extended source. Can be an
-            ImageHDU instance or the name of a to read one from. If the
+            ImageHDU instance or the name of a file to read one from. If the
             name contains an HDU extension, e.g. "cluster.fits[1]" or
             "cluster.fits['perseus']", that extension will be loaded.
         """
