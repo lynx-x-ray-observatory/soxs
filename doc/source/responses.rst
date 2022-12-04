@@ -3,8 +3,8 @@
 Response Files for Lynx
 =======================
 
-This is where the response files for *Lynx* are located for users' convenience. 
-In SOXS, these and other response files can be obtained on-demand.  
+This is where the response files for *Lynx* are located for users' convenience.
+In SOXS, these and other response files can be obtained on-demand.
 
 HDXI
 ++++

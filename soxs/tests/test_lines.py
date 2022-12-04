@@ -33,9 +33,7 @@ def test_emission_line(answer_store, answer_dir):
     pt_src = SimputPhotonList.from_models(
         "emission_line", spec, pt_src_pos, exp_time, area, prng=69
     )
-    sim_cat = SimputCatalog.from_source(
-        "emission_line_simput.fits", pt_src, overwrite=True
-    )
+    SimputCatalog.from_source("emission_line_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
         "emission_line_simput.fits",

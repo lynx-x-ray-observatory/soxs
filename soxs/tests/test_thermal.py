@@ -2,7 +2,6 @@ import os
 import shutil
 import tempfile
 
-import numpy as np
 from numpy.random import RandomState
 from numpy.testing import assert_allclose, assert_almost_equal
 
@@ -99,9 +98,7 @@ def test_thermal(answer_store, answer_dir):
     pt_src = SimputPhotonList.from_models(
         "thermal_model", spec, pt_src_pos, exp_time, area, prng=prng
     )
-    sim_cat = SimputCatalog.from_source(
-        "thermal_model_simput.fits", pt_src, overwrite=True
-    )
+    SimputCatalog.from_source("thermal_model_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
         "thermal_model_simput.fits",
@@ -187,9 +184,7 @@ def test_thermal_abund_table(answer_store, answer_dir):
     pt_src = SimputPhotonList.from_models(
         "thermal_model_aspl", spec_aspl, pt_src_pos, exp_time, area, prng=prng
     )
-    sim_cat = SimputCatalog.from_source(
-        "thermal_model_aspl_simput.fits", pt_src, overwrite=True
-    )
+    SimputCatalog.from_source("thermal_model_aspl_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
         "thermal_model_aspl_simput.fits",
@@ -232,9 +227,7 @@ def test_thermal_nei(answer_store, answer_dir):
     pt_src = SimputPhotonList.from_models(
         "thermal_model_nei", spec_nei, pt_src_pos, exp_time, area, prng=prng
     )
-    sim_cat = SimputCatalog.from_source(
-        "thermal_model_nei_simput.fits", pt_src, overwrite=True
-    )
+    SimputCatalog.from_source("thermal_model_nei_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
         "thermal_model_nei_simput.fits",

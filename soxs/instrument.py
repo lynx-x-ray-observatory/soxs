@@ -73,7 +73,7 @@ def generate_events(
     prng=None,
 ):
     """
-    Take unconvolved events and convolve them with instrumental responses. This 
+    Take unconvolved events and convolve them with instrumental responses. This
     function does the following:
 
     1. Determines which events are observed using the ARF
@@ -97,10 +97,10 @@ def generate_events(
     out_file : string
         The name of the event file to be written.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The exposure time to use, in seconds. 
+        The exposure time to use, in seconds.
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry. 
+        specification from the instrument registry.
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     no_dither : boolean, optional
@@ -109,22 +109,22 @@ def generate_events(
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
         detector coordinates in arcseconds, and the second two numbers are
-        the dither period in x and y detector coordinates in seconds. 
+        the dither period in x and y detector coordinates in seconds.
         Default: [8.0, 8.0, 1000.0, 707.0].
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
     subpixel_res : boolean, optional
-        If True, event positions are not randomized within the pixels 
+        If True, event positions are not randomized within the pixels
         within which they are detected. Default: False
     aimpt_shift : array-like, optional
-        A two-float array-like object which shifts the aimpoint on the 
+        A two-float array-like object which shifts the aimpoint on the
         detector from the nominal position. Units are in arcseconds.
-        Default: None, which results in no shift from the nominal aimpoint. 
+        Default: None, which results in no shift from the nominal aimpoint.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     """
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
@@ -213,13 +213,13 @@ def generate_events(
 
     for i, src in enumerate(source_list):
 
-        mylog.info(f"Detecting events from source {parameters['src_names'][i]}")
+        mylog.info("Detecting events from source %s.", parameters["src_names"][i])
 
         # Step 1: Use ARF to determine which photons are observed
 
         mylog.info(
-            f"Applying energy-dependent effective area from "
-            f"{os.path.split(arf.filename)[-1]}."
+            "Applying energy-dependent effective area from %s.",
+            os.path.split(arf.filename)[-1],
         )
         refband = [parameters["emin"][i], parameters["emax"][i]]
         if src.src_type == "phlist":
@@ -271,7 +271,7 @@ def generate_events(
 
             # PSF scattering of detector coordinates
 
-            mylog.info(f"Scattering events with a {psf}-based PSF.")
+            mylog.info("Scattering events with a %s-based PSF.", psf)
             detx, dety = psf.scatter(detx, dety, events["energy"])
 
             # Convert detector coordinates to chip coordinates.
@@ -290,8 +290,8 @@ def generate_events(
             keep = events["chip_id"] > -1
 
             mylog.debug(
-                f"{n_evt-keep.sum()} events were rejected because "
-                f"they do not fall on any CCD."
+                "%d events were rejected because they do not fall on any CCD.",
+                n_evt - keep.sum(),
             )
             n_evt = keep.sum()
 
@@ -301,7 +301,7 @@ def generate_events(
                 )
             else:
 
-                mylog.info(f"{n_evt} events were detected from the source.")
+                mylog.info("%d events were detected from the source.", n_evt)
 
                 # Keep only those events which fall on a chip
 
@@ -364,9 +364,7 @@ def generate_events(
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
-        mylog.info(
-            f"Scattering energies with " f"RMF {os.path.split(rmf.filename)[-1]}."
-        )
+        mylog.info("Scattering energies with RMF %s.", os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
     return all_events, event_params
@@ -394,44 +392,44 @@ def make_background(
     Parameters
     ----------
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The exposure time to use, in seconds. 
+        The exposure time to use, in seconds.
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry. 
+        specification from the instrument registry.
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     foreground : boolean, optional
-        Whether or not to include the Galactic foreground. Default: True
+        Whether to include the Galactic foreground. Default: True
     instr_bkgnd : boolean, optional
-        Whether or not to include the instrumental background. Default: True
+        Whether to include the instrumental background. Default: True
     no_dither : boolean, optional
         If True, turn off dithering entirely. Default: False
     dither_params : array-like of floats, optional
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
         detector coordinates in arcseconds, and the second two numbers are
-        the dither period in x and y detector coordinates in seconds. 
+        the dither period in x and y detector coordinates in seconds.
         Default: [8.0, 8.0, 1000.0, 707.0].
     ptsrc_bkgnd : boolean, optional
-        Whether or not to include the point-source background. Default: True
+        Whether to include the point-source background. Default: True
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
     subpixel_res: boolean, optional
-        If True, event positions are not randomized within the pixels 
+        If True, event positions are not randomized within the pixels
         within which they are detected. Default: False
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
     aimpt_shift : array-like, optional
-        A two-float array-like object which shifts the aimpoint on the 
+        A two-float array-like object which shifts the aimpoint on the
         detector from the nominal position. Units are in arcseconds.
-        Default: None, which results in no shift from the nominal aimpoint. 
+        Default: None, which results in no shift from the nominal aimpoint.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically this will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     """
     if "nH" in kwargs or "absorb_model" in kwargs:
         warnings.warn(
@@ -496,8 +494,8 @@ def make_background(
             prng=prng,
         )
         mylog.info(
-            f"Generated {events['energy'].size} photons from "
-            f"the point-source background."
+            "Generated %d photons from the point-source background.",
+            events["energy"].size,
         )
     else:
         nx = instrument_spec["num_pixels"]
@@ -575,16 +573,16 @@ def make_background_file(
     **kwargs,
 ):
     """
-    Make an event file consisting entirely of background events. This will be 
+    Make an event file consisting entirely of background events. This will be
     useful for creating backgrounds that can be added to simulations of sources.
 
     Parameters
     ----------
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The exposure time to use, in seconds. 
+        The exposure time to use, in seconds.
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry. 
+        specification from the instrument registry.
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     overwrite : boolean, optional
@@ -602,20 +600,20 @@ def make_background_file(
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
         detector coordinates in arcseconds, and the second two numbers are
-        the dither period in x and y detector coordinates in seconds. 
+        the dither period in x and y detector coordinates in seconds.
         Default: [8.0, 8.0, 1000.0, 707.0].
     subpixel_res: boolean, optional
-        If True, event positions are not randomized within the pixels 
+        If True, event positions are not randomized within the pixels
         within which they are detected. Default: False
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     """
     if "nH" in kwargs or "absorb_model" in kwargs:
         warnings.warn(
@@ -696,23 +694,23 @@ def instrument_simulator(
     out_file : string
         The name of the event file to be written.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The exposure time to use, in seconds. 
+        The exposure time to use, in seconds.
     instrument : string
         The name of the instrument to use, which picks an instrument
-        specification from the instrument registry. 
+        specification from the instrument registry.
     sky_center : array, tuple, or list
         The center RA, Dec coordinates of the observation, in degrees.
     overwrite : boolean, optional
         Whether to overwrite an existing file with the same name.
         Default: False
     instr_bkgnd : boolean, optional
-        Whether to include the instrumental/particle background. 
+        Whether to include the instrumental/particle background.
         Default: True
     foreground : boolean, optional
-        Whether to include the local foreground. 
+        Whether to include the local foreground.
         Default: True
     ptsrc_bkgnd : boolean, optional
-        Whether to include the point-source background. 
+        Whether to include the point-source background.
         Default: True
     bkgnd_file : string, optional
         If set, backgrounds will be loaded from this file and not generated
@@ -723,37 +721,37 @@ def instrument_simulator(
         The parameters to use to control the size and period of the dither
         pattern. The first two numbers are the dither amplitude in x and y
         detector coordinates in arcseconds, and the second two numbers are
-        the dither period in x and y detector coordinates in seconds. 
+        the dither period in x and y detector coordinates in seconds.
         Default: [8.0, 8.0, 1000.0, 707.0].
     roll_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The roll angle of the observation in degrees. Default: 0.0
     subpixel_res: boolean, optional
-        If True, event positions are not randomized within the pixels 
+        If True, event positions are not randomized within the pixels
         within which they are detected. Default: False
     aimpt_shift : array-like, optional
-        A two-float array-like object which shifts the aimpoint on the 
+        A two-float array-like object which shifts the aimpoint on the
         detector from the nominal position. Units are in arcseconds.
-        Default: None, which results in no shift from the nominal aimpoint. 
+        Default: None, which results in no shift from the nominal aimpoint.
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
 
     Examples
     --------
-    >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits", 
+    >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits",
     ...                      300000.0, "lynx_hdxi", [30., 45.], overwrite=True)
     """
     from soxs.background import add_background_from_file
 
     if not out_file.endswith(".fits"):
         out_file += ".fits"
-    mylog.info(f"Making observation of source in {out_file}.")
+    mylog.info("Making observation of source in %s.", out_file)
     # Make the source first
     events, event_params = generate_events(
         input_events,
@@ -792,7 +790,7 @@ def instrument_simulator(
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
     else:
-        mylog.info(f"Adding background events from the file {bkgnd_file}.")
+        mylog.info("Adding background events from the file %s.", bkgnd_file)
         if not os.path.exists(bkgnd_file):
             raise IOError(f"Cannot find the background event file {bkgnd_file}!")
         events = add_background_from_file(events, event_params, bkgnd_file)
@@ -821,7 +819,7 @@ def simulate_spectrum(
 ):
     """
     Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
-    by convolving it with responses. To be used if one wants to 
+    by convolving it with responses. To be used if one wants to
     create a spectrum without worrying about spatial response. Similar
     to XSPEC's "fakeit".
 
@@ -838,30 +836,30 @@ def simulate_spectrum(
     out_file : string
         The file to write the spectrum to.
     instr_bkgnd : boolean, optional
-        Whether to include the instrumental/particle background. 
+        Whether to include the instrumental/particle background.
         Default: False
     foreground : boolean, optional
         Whether to include the local foreground.
         Default: False
     ptsrc_bkgnd : boolean, optional
-        Whether to include the unresolved point-source background. 
+        Whether to include the unresolved point-source background.
         Default: False
     bkgnd_area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The area on the sky for the background components, in square arcminutes.
         Default: None, necessary to specify if any of the background components
-        are turned on. 
+        are turned on.
     overwrite : boolean, optional
         Whether to overwrite an existing file. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
 
     Examples
     --------
     >>> spec = soxs.Spectrum.from_file("my_spectrum.txt")
-    >>> soxs.simulate_spectrum(spec, "lynx_lxm", 100000.0, 
+    >>> soxs.simulate_spectrum(spec, "lynx_lxm", 100000.0,
     ...                        "my_spec.pi", overwrite=True)
     """
     from soxs.background.diffuse import (
@@ -984,7 +982,7 @@ def simple_event_list(
 
     if not out_file.endswith(".fits"):
         out_file += ".fits"
-    mylog.info(f"Making simple observation of source in {out_file}.")
+    mylog.info("Making simple observation of source in %s.", out_file)
     exp_time = parse_value(exp_time, "s")
     prng = parse_prng(prng)
     source_list, parameters = make_source_list(input_events)
@@ -1020,11 +1018,11 @@ def simple_event_list(
 
     for i, src in enumerate(source_list):
 
-        mylog.info(f"Detecting events from source {parameters['src_names'][i]}")
+        mylog.info("Detecting events from source %s.", parameters["src_names"][i])
 
         mylog.info(
-            f"Applying energy-dependent effective area from "
-            f"{os.path.split(arf.filename)[-1]}."
+            "Applying energy-dependent effective area from %s.",
+            os.path.split(arf.filename)[-1],
         )
         refband = [parameters["emin"][i], parameters["emax"][i]]
         if src.src_type == "phlist":
@@ -1054,12 +1052,10 @@ def simple_event_list(
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
-        mylog.info(
-            f"Scattering energies with " f"RMF {os.path.split(rmf.filename)[-1]}."
-        )
+        mylog.info("Scattering energies with RMF %s.", os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
 
-    mylog.info(f"Writing events to file {out_file}.")
+    mylog.info("Writing events to file %s.", out_file)
 
     t_begin = Time.now()
     dt = TimeDelta(event_params["exposure_time"], format="sec")

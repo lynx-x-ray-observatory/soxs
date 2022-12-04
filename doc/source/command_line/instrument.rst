@@ -9,9 +9,9 @@ For details on what's going on under the hood, see :ref:`instrument`.
 ``instrument_simulator``
 ------------------------
 
-The ``instrument_simulator`` script takes a SIMPUT catalog and generates a 
-simulated observation in a standard event file format which can then be 
-processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc. 
+The ``instrument_simulator`` script takes a SIMPUT catalog and generates a
+simulated observation in a standard event file format which can then be
+processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
 
 .. code-block:: text
 
@@ -25,9 +25,9 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
                                 [--foreground | --no_foreground]
                                 simput_file out_file exp_time instrument
                                 sky_center
-    
+
     Run the instrument simulator and produce a simulated event file.
-    
+
     positional arguments:
       simput_file           The SIMPUT file to be used as input, or "None" if you
                             only want to simulate backgrounds.
@@ -38,7 +38,7 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
                             specification.
       sky_center            The center RA, Dec coordinates of the observation, in
                             degrees, comma-separated
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
@@ -149,8 +149,8 @@ Turn off the point-source background:
 
     [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --no_ptsrc_bkgnd --overwrite
 
-Any combination of these may be used to turn multiple components off or all 
-of them. 
+Any combination of these may be used to turn multiple components off or all
+of them.
 
 To use a background stored in an event file:
 
@@ -160,7 +160,7 @@ To use a background stored in an event file:
 
 .. note::
 
-    If you use a background stored in an event file, the background will be 
+    If you use a background stored in an event file, the background will be
     entirely determined from the contents of this file and any of the above
     background flags will be ignored.
 
@@ -169,11 +169,11 @@ To use a background stored in an event file:
 ``simulate_spectrum``
 ---------------------
 
-Generate a PI or PHA spectrum from a spectrum in an ASCII table (such as 
+Generate a PI or PHA spectrum from a spectrum in an ASCII table (such as
 one made by one of the commands detailed in :ref:`cmd-spectra`) by convolving
-it with responses. To be used if one wants to create a spectrum without 
+it with responses. To be used if one wants to create a spectrum without
 worrying about spatial response, or if the underlying instrument supports
-only simulating spectra. Similar to XSPEC's "fakeit". 
+only simulating spectra. Similar to XSPEC's "fakeit".
 
 .. code-block:: bash
 
@@ -183,9 +183,9 @@ only simulating spectra. Similar to XSPEC's "fakeit".
                              [--instr_bkgnd | --no_instr_bkgnd]
                              [--foreground | --no_foreground]
                              spec_file instrument exp_time out_file
-    
+
     Convolve a spectrum with an ARF and RMF and produce a PHA or PI spectrum.
-    
+
     positional arguments:
       spec_file             The file containing the spectrum to be used. If None,
                             then only a simulated background may be generated if
@@ -195,7 +195,7 @@ only simulating spectra. Similar to XSPEC's "fakeit".
                             specification.
       exp_time              The exposure time to use, in seconds.
       out_file              The file to write the convolved spectrum to.
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
@@ -223,7 +223,7 @@ Simulate a Lynx microcalorimeter spectrum.
     [~]$ simulate_spectrum power_law_spec.dat lynx_lxm 300.0,ks plaw_spec.pha
 
 The same spectrum, but with point-source, foreground, and instrumental backgrounds
-added. Two square arcminutes of background assumed. 
+added. Two square arcminutes of background assumed.
 
 .. code-block:: bash
 
@@ -240,18 +240,18 @@ Simulate backgrounds only.
 ``get_instrument_data``
 -----------------------
 
-Download the files needed for a particular instrument to a location of one's 
+Download the files needed for a particular instrument to a location of one's
 choosing.
 
 .. code-block:: bash
 
     usage: get_instrument_data [-h] [--loc LOC] instrument
-    
+
     Download files associated with a particular instrument model.
-    
+
     positional arguments:
       instrument  The name of the instrument to download files for.
-    
+
     optional arguments:
       -h, --help  show this help message and exit
       --loc LOC   The path to download the files to. Defaults to the current
@@ -261,7 +261,7 @@ Examples
 ++++++++
 
 Get the instrument files for the ``"lynx_hdxi"`` instrument model, saved to
-the current working directory. 
+the current working directory.
 
 .. code-block:: bash
 

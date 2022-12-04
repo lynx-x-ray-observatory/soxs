@@ -110,7 +110,7 @@ class SpatialModel:
 
 class PointSourceModel(SpatialModel):
     """
-    A model for positions of photons emanating from 
+    A model for positions of photons emanating from
     a point source.
 
     Parameters
@@ -135,8 +135,8 @@ class PointSourceModel(SpatialModel):
 
 class RadialFunctionModel(SpatialModel):
     """
-    A model for positions of photons using a generic 
-    surface brightness profile as a function of 
+    A model for positions of photons using a generic
+    surface brightness profile as a function of
     radius.
 
     Parameters
@@ -146,20 +146,20 @@ class RadialFunctionModel(SpatialModel):
     dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the source in degrees.
     func : function or function-like, something callable.
-        A function that takes an array of radii 
-        and generates a radial surface brightness profile. 
+        A function that takes an array of radii
+        and generates a radial surface brightness profile.
     num_events : integer
-        The number of events to generate. 
+        The number of events to generate.
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The angle through which to rotate the beta model 
-        in degrees. Only makes sense if ellipticity is 
+        The angle through which to rotate the beta model
+        in degrees. Only makes sense if ellipticity is
         added. Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed 
-        as the ratio between the length scales of the x 
-        and y coordinates. The value of this parameter 
-        will shrink or expand the profile in the direction 
-        of the "y" coordinate, so you may need to rotate 
+        The ellipticity of the radial profile, expressed
+        as the ratio between the length scales of the x
+        and y coordinates. The value of this parameter
+        will shrink or expand the profile in the direction
+        of the "y" coordinate, so you may need to rotate
         to get the shape you want. Default: 1.0
     """
 
@@ -178,15 +178,17 @@ class RadialFunctionModel(SpatialModel):
 
     def _generate_image(self, width, nx):
         coords = gen_img_coords(width, nx, self.theta)
-        coords[1,] /= self.ellipticity
-        r = np.sqrt((coords ** 2).sum(axis=0))
+        coords[
+            1,
+        ] /= self.ellipticity
+        r = np.sqrt((coords**2).sum(axis=0))
         return self.func(r.reshape(nx, nx))
 
 
 class RadialArrayModel(RadialFunctionModel):
     """
-    Create positions for photons using a table of radii and 
-    surface brightness contained in two arrays. 
+    Create positions for photons using a table of radii and
+    surface brightness contained in two arrays.
 
     Parameters
     ----------
@@ -195,24 +197,26 @@ class RadialArrayModel(RadialFunctionModel):
     dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the source in degrees.
     r : NumPy array
-        The array of radii for the profile in arcseconds. 
+        The array of radii for the profile in arcseconds.
     S_r: NumPy array
-        The array of the surface brightness of the profile. 
+        The array of the surface brightness of the profile.
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The angle through which to rotate the beta model 
-        in degrees. Only makes sense if ellipticity is 
+        The angle through which to rotate the beta model
+        in degrees. Only makes sense if ellipticity is
         added. Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed 
-        as the ratio between the length scales of the x 
-        and y coordinates. The value of this parameter will 
-        shrink or expand the profile in the direction of the 
-        "y" coordinate, so you may need to rotate to get the 
+        The ellipticity of the radial profile, expressed
+        as the ratio between the length scales of the x
+        and y coordinates. The value of this parameter will
+        shrink or expand the profile in the direction of the
+        "y" coordinate, so you may need to rotate to get the
         shape you want. Default: 1.0
     """
 
     def __init__(self, ra0, dec0, r, S_r, theta=0.0, ellipticity=1.0):
-        func = lambda rr: np.interp(rr, r, S_r, left=0.0, right=0.0)
+        def func(rr):
+            return np.interp(rr, r, S_r, left=0.0, right=0.0)
+
         super(RadialArrayModel, self).__init__(
             ra0, dec0, func, theta=theta, ellipticity=ellipticity
         )
@@ -220,8 +224,8 @@ class RadialArrayModel(RadialFunctionModel):
 
 class RadialFileModel(RadialArrayModel):
     """
-    A model for positions of photons using a table of radii and 
-    surface brightness contained in a file. 
+    A model for positions of photons using a table of radii and
+    surface brightness contained in a file.
 
     Parameters
     ----------
@@ -230,19 +234,19 @@ class RadialFileModel(RadialArrayModel):
     dec0 : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The center Dec of the source in degrees.
     radfile : string
-        The file containing the table of radii and surface 
+        The file containing the table of radii and surface
         brightness. It must be an ASCII table with only two
-        columns. 
+        columns.
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The angle through which to rotate the beta model in 
-        degrees. Only makes sense if ellipticity is added. 
+        The angle through which to rotate the beta model in
+        degrees. Only makes sense if ellipticity is added.
         Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed 
-        as the ratio between the length scales of the x 
-        and y coordinates. The value of this parameter will 
-        shrink or expand the profile in the direction of the 
-        "y" coordinate, so you may need to rotate to get the 
+        The ellipticity of the radial profile, expressed
+        as the ratio between the length scales of the x
+        and y coordinates. The value of this parameter will
+        shrink or expand the profile in the direction of the
+        "y" coordinate, so you may need to rotate to get the
         shape you want. Default: 1.0
     """
 
@@ -268,21 +272,24 @@ class BetaModel(RadialFunctionModel):
     beta : float
         The "beta" parameter of the profile.
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The angle through which to rotate the beta model in 
-        degrees. Only makes sense if ellipticity is added. 
+        The angle through which to rotate the beta model in
+        degrees. Only makes sense if ellipticity is added.
         Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed 
-        as the ratio between the length scales of the x 
-        and y coordinates. The value of this parameter will 
-        shrink or expand the profile in the direction of the 
-        "y" coordinate, so you may need to rotate to get the 
+        The ellipticity of the radial profile, expressed
+        as the ratio between the length scales of the x
+        and y coordinates. The value of this parameter will
+        shrink or expand the profile in the direction of the
+        "y" coordinate, so you may need to rotate to get the
         shape you want. Default: 1.0
     """
 
     def __init__(self, ra0, dec0, r_c, beta, theta=0.0, ellipticity=1.0):
         r_c = parse_value(r_c, "arcsec")
-        func = lambda r: (1.0 + (r / r_c) ** 2) ** (-3 * beta + 0.5)
+
+        def func(r):
+            return (1.0 + (r / r_c) ** 2) ** (-3 * beta + 0.5)
+
         super(BetaModel, self).__init__(
             ra0, dec0, func, theta=theta, ellipticity=ellipticity
         )
@@ -309,15 +316,15 @@ class DoubleBetaModel(RadialFunctionModel):
     sb_ratio : float
         The ratio of the outer to the inner SB peak value
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The angle through which to rotate the beta model in 
-        degrees. Only makes sense if ellipticity is added. 
+        The angle through which to rotate the beta model in
+        degrees. Only makes sense if ellipticity is added.
         Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed 
-        as the ratio between the length scales of the x 
-        and y coordinates. The value of this parameter will 
-        shrink or expand the profile in the direction of the 
-        "y" coordinate, so you may need to rotate to get the 
+        The ellipticity of the radial profile, expressed
+        as the ratio between the length scales of the x
+        and y coordinates. The value of this parameter will
+        shrink or expand the profile in the direction of the
+        "y" coordinate, so you may need to rotate to get the
         shape you want. Default: 1.0
     """
 
@@ -326,9 +333,12 @@ class DoubleBetaModel(RadialFunctionModel):
     ):
         r_c1 = parse_value(r_c1, "arcsec")
         r_c2 = parse_value(r_c2, "arcsec")
-        func = lambda r: (1.0 + (r / r_c1) ** 2) ** (-3 * beta1 + 0.5) + sb_ratio * (
-            1.0 + (r / r_c2) ** 2
-        ) ** (-3 * beta2 + 0.5)
+
+        def func(r):
+            return (1.0 + (r / r_c1) ** 2) ** (-3 * beta1 + 0.5) + sb_ratio * (
+                1.0 + (r / r_c2) ** 2
+            ) ** (-3 * beta2 + 0.5)
+
         super(DoubleBetaModel, self).__init__(
             ra0, dec0, func, theta=theta, ellipticity=ellipticity
         )
@@ -336,7 +346,7 @@ class DoubleBetaModel(RadialFunctionModel):
 
 class AnnulusModel(RadialFunctionModel):
     """
-    A model for positions of photons within an annulus shape 
+    A model for positions of photons within an annulus shape
     with uniform surface brightness.
 
     Parameters
@@ -350,15 +360,15 @@ class AnnulusModel(RadialFunctionModel):
     r_out: float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The outer radius of the annulus in arcseconds.
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The angle through which to rotate the beta model in 
-        degrees. Only makes sense if ellipticity is added. 
+        The angle through which to rotate the beta model in
+        degrees. Only makes sense if ellipticity is added.
         Default: 0.0
     ellipticity : float, optional
-        The ellipticity of the radial profile, expressed 
-        as the ratio between the length scales of the x 
-        and y coordinates. The value of this parameter will 
-        shrink or expand the profile in the direction of the 
-        "y" coordinate, so you may need to rotate to get the 
+        The ellipticity of the radial profile, expressed
+        as the ratio between the length scales of the x
+        and y coordinates. The value of this parameter will
+        shrink or expand the profile in the direction of the
+        "y" coordinate, so you may need to rotate to get the
         shape you want. Default: 1.0
     """
 
@@ -379,7 +389,7 @@ class AnnulusModel(RadialFunctionModel):
 
 class RectangleModel(SpatialModel):
     """
-    A model for positions of photons within a rectangle 
+    A model for positions of photons within a rectangle
     or line shape.
 
     Parameters
@@ -393,7 +403,7 @@ class RectangleModel(SpatialModel):
     height : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The height of the rectangle in arcseconds.
     theta : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The angle through which to rotate the rectangle 
+        The angle through which to rotate the rectangle
         in degrees. Default: 0.0
     """
 

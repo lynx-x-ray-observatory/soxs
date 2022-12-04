@@ -24,7 +24,7 @@ class BackgroundSpectrum(Spectrum):
         spec : :class:`~soxs.spectra.Spectrum`
             The spectrum to be used.
         fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The width of the field of view on a side in 
+            The width of the field of view on a side in
             arcminutes.
         """
         fov = parse_value(fov, "arcmin")
@@ -33,8 +33,8 @@ class BackgroundSpectrum(Spectrum):
 
     def generate_energies(self, t_exp, area, fov, prng=None, quiet=False):
         """
-        Generate photon energies from this background 
-        spectrum given an exposure time, effective area, 
+        Generate photon energies from this background
+        spectrum given an exposure time, effective area,
         and field of view.
 
         Parameters
@@ -42,21 +42,21 @@ class BackgroundSpectrum(Spectrum):
         t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
         area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The effective area in cm**2. If one is creating 
-            events for a SIMPUT file, a constant should be 
-            used and it must be large enough so that a 
+            The effective area in cm**2. If one is creating
+            events for a SIMPUT file, a constant should be
+            used and it must be large enough so that a
             sufficiently large sample is drawn for the ARF.
         fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The width of the field of view on a side in 
+            The width of the field of view on a side in
             arcminutes.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only 
-            be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is None, 
+            A pseudo-random number generator. Typically will only
+            be specified if you have a reason to generate the same
+            set of random numbers, such as for a test. Default is None,
             which sets the seed based on the system time.
         quiet : boolean, optional
-            If True, log messages will not be displayed when 
-            creating energies. Useful if you have to loop over 
+            If True, log messages will not be displayed when
+            creating energies. Useful if you have to loop over
             a lot of spectra. Default: False
         """
         t_exp = parse_value(t_exp, "s")
@@ -100,7 +100,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         spec : :class:`~soxs.spectra.ConvolvedSpectrum`
             The spectrum to be used.
         fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The width of the field of view on a side in 
+            The width of the field of view on a side in
             arcminutes.
         """
         fov = parse_value(fov, "arcmin")
@@ -109,8 +109,8 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
 
     def generate_energies(self, t_exp, fov, prng=None, quiet=False):
         """
-        Generate photon energies from this convolved 
-        background spectrum given an exposure time and 
+        Generate photon energies from this convolved
+        background spectrum given an exposure time and
         field of view.
 
         Parameters
@@ -118,16 +118,16 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
         fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The width of the field of view on a side 
+            The width of the field of view on a side
             in arcminutes.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only 
-            be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is None, 
-            which sets the seed based on the system time. 
+            A pseudo-random number generator. Typically will only
+            be specified if you have a reason to generate the same
+            set of random numbers, such as for a test. Default is None,
+            which sets the seed based on the system time.
         quiet : boolean, optional
-            If True, log messages will not be displayed when 
-            creating energies. Useful if you have to loop over 
+            If True, log messages will not be displayed when
+            creating energies. Useful if you have to loop over
             a lot of spectra. Default: False
         """
         t_exp = parse_value(t_exp, "s")

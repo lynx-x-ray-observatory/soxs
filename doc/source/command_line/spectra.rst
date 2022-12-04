@@ -3,7 +3,7 @@
 Command Line Scripts for Spectra
 ================================
 
-These are scripts that create ASCII tables of spectra for use by other 
+These are scripts that create ASCII tables of spectra for use by other
 modules in SOXS. For details on what's going on under the hood, see :ref:`thermal-spectra`.
 
 .. _cmd-make-cie-spectrum:
@@ -11,9 +11,9 @@ modules in SOXS. For details on what's going on under the hood, see :ref:`therma
 ``make_cie_spectrum``
 ---------------------
 
-This script creates an ASCII table of an optionally absorbed thermal spectrum 
+This script creates an ASCII table of an optionally absorbed thermal spectrum
 using a CIE model. Options are APEC (the default), SPEX, MeKaL, and Cloudy. For more
-details on these options, see :ref:`thermal-spectra`. 
+details on these options, see :ref:`thermal-spectra`.
 
 .. code-block:: text
 
@@ -23,11 +23,11 @@ details on these options, see :ref:`thermal-spectra`.
                              [--abund_table ABUND_TABLE] [--model MODEL]
                              [--broadening | --no_broadening]
                              kT abund redshift norm specfile emin emax nbins
-    
+
     Create a thermal CIE spectrum and write it to a file. The abundances of individual
     elements can be set by supplying optional arguments in the form of --O=0.5, --Mg=0.6,
     etc.
-    
+
     positional arguments:
       kT                    The temperature in keV.
       abund                 The metal abundance in solar units.
@@ -38,7 +38,7 @@ details on these options, see :ref:`thermal-spectra`.
       emin                  The minimum energy in keV.
       emax                  The maximum energy in keV.
       nbins                 The number of bins in the spectrum.
-    
+
     options:
       -h, --help            show this help message and exit
       --velocity VELOCITY   The velocity broadening parameter, in units of km/s. Default:
@@ -71,7 +71,7 @@ details on these options, see :ref:`thermal-spectra`.
 Examples
 ++++++++
 
-Make a basic spectrum for a thermal plasma. 
+Make a basic spectrum for a thermal plasma.
 
 .. code-block:: bash
 
@@ -102,7 +102,7 @@ The same spectrum, but with a different APEC version.
 
     [~]$ make_cie_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --model_vers=2.0.2 --overwrite
 
-The same spectrum, but without emission lines. 
+The same spectrum, but without emission lines.
 
 .. code-block:: bash
 
@@ -132,7 +132,7 @@ The same spectrum, but using abundances drawn from an ASCII table file instead o
 
     [~]$ make_cie_spectrum 6.0 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --abund_table=my_abund.dat --overwrite
 
-The same spectrum, but using the SPEX model instead of APEC. 
+The same spectrum, but using the SPEX model instead of APEC.
 
 .. code-block:: bash
 
@@ -143,9 +143,9 @@ The same spectrum, but using the SPEX model instead of APEC.
 ``make_igm_spectrum``
 ---------------------
 
-This script creates an ASCII table of an optionally absorbed thermal spectrum 
-using the SOXS IGM model. For more details on what's going on under the hood, 
-see :ref:`igm-spectra`. 
+This script creates an ASCII table of an optionally absorbed thermal spectrum
+using the SOXS IGM model. For more details on what's going on under the hood,
+see :ref:`igm-spectra`.
 
 .. code-block:: text
 
@@ -154,11 +154,11 @@ see :ref:`igm-spectra`.
                              [--absorb_model ABSORB_MODEL] [--nH_abs NH_ABS]
                              [--overwrite]
                              kT nH abund redshift norm specfile emin emax nbins
-    
+
     Create a thermal spectrum using the SOXS IGM model and write it to a file. The
     abundances of individual elements can be set by supplying optional arguments in the
     form of --O=0.5, --Mg=0.6, etc.
-    
+
     positional arguments:
       kT                    The temperature in keV.
       nH                    The hydrogen number density in cm**-3.
@@ -170,7 +170,7 @@ see :ref:`igm-spectra`.
       emin                  The minimum energy in keV.
       emax                  The maximum energy in keV.
       nbins                 The number of bins in the spectrum.
-    
+
     options:
       -h, --help            show this help message and exit
       --binscale BINSCALE   The scale of the energy binning: "linear" or "log". Default:
@@ -189,7 +189,7 @@ see :ref:`igm-spectra`.
 Examples
 ++++++++
 
-Make a basic IGM spectrum for a thermal plasma. 
+Make a basic IGM spectrum for a thermal plasma.
 
 .. code-block:: bash
 
@@ -205,7 +205,7 @@ with :math:`N_H = 0.04~\times~10^{22}~\rm{atoms~cm^{-2}}`.
 The same spectrum, but with log-spaced binning.
 
 .. code-block:: bash
-    
+
     [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite
 
 The same spectrum, but with resonant scattering.
@@ -242,9 +242,9 @@ form:
                                   [--absorb_model ABSORB_MODEL] [--nH_abs NH_ABS]
                                   [--abund_table ABUND_TABLE] [--overwrite]
                                   photon_index redshift norm specfile emin emax nbins
-    
+
     Create a power-law spectrum and write it to a file.
-    
+
     positional arguments:
       photon_index          The spectral index of the power law.
       redshift              The redshift of the source.
@@ -254,7 +254,7 @@ form:
       emin                  The minimum energy in keV.
       emax                  The maximum energy in keV.
       nbins                 The number of bins in the spectrum.
-    
+
     options:
       -h, --help            show this help message and exit
       --binscale BINSCALE   The scale of the energy binning: "linear" or "log". Default:
@@ -263,16 +263,16 @@ form:
                             Model for applying foreground Galactic absorption.
       --nH_abs NH_ABS       The hydrogen column in units of 10**22 atoms/cm**2.
       --abund_table ABUND_TABLE
-                            The abundance table to be used if the absorption model is 
+                            The abundance table to be used if the absorption model is
                             TBabs. Takes a string corresponding to a built-in table.
-                            Default is set in the SOXS configuration file, the default 
+                            Default is set in the SOXS configuration file, the default
                             for which is 'angr'.
       --overwrite           Overwrite an existing file with the same name.
 
 Examples
 ++++++++
 
-Make a basic power-law spectrum. 
+Make a basic power-law spectrum.
 
 .. code-block:: bash
 

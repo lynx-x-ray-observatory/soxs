@@ -22,8 +22,6 @@ import sys
 
 import sphinx_bootstrap_theme
 
-import soxs
-
 html_theme = "bootstrap"
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 

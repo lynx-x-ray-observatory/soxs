@@ -3,7 +3,7 @@ Instrument API
 
 .. automodule:: soxs.instrument
     :members:
-    :undoc-members: 
+    :undoc-members:
     :exclude-members: make_background, generate_events, perform_dither
 
 .. autoclass:: soxs.instrument_registry.InstrumentRegistry
@@ -11,4 +11,3 @@ Instrument API
 
 .. automodule:: soxs.instrument_registry
     :members: make_simple_instrument
-

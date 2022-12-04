@@ -59,7 +59,7 @@ def add_background_from_file(events, event_params, bkg_file):
 
     idxs = hdu.data["TIME"] < sexp
 
-    mylog.info(f"Adding {idxs.sum()} background events from {bkg_file}.")
+    mylog.info("Adding %s background events from %s.", idxs.sum(), bkg_file)
 
     if event_params["roll_angle"] == hdu.header["ROLL_PNT"]:
         xpix = hdu.data["X"][idxs]

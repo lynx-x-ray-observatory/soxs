@@ -44,7 +44,7 @@ XSPEC model used to create the "lem" foreground spectrum
                 1
                 0
               100
-         8.76e-08 
+         8.76e-08
 """
 
 
@@ -104,10 +104,10 @@ def generate_channel_spectrum(count_rate, t_exp, solid_angle, prng=None):
     solid_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The solid angle in arcmin**2.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     """
     t_exp = parse_value(t_exp, "s")
     solid_angle = parse_value(solid_angle, "arcmin**2")
@@ -188,9 +188,9 @@ def make_diffuse_background(
     if bkg_events["energy"].size == 0:
         raise RuntimeError("No background events were detected!!!")
     if foreground:
-        mylog.info(f"Making {n_frgnd} events from the galactic foreground.")
+        mylog.info("Making %s events from the galactic foreground.", n_frgnd)
     if instr_bkgnd:
-        mylog.info(f"Making {n_instr} events from the instrumental background.")
+        mylog.info("Making %s events from the instrumental background.", n_instr)
 
     n_e = bkg_events["energy"].size
 

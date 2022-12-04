@@ -3,14 +3,14 @@
 Command Line Scripts for Generating Backgrounds
 ===============================================
 
-These command line scripts allow one to generate background event files. 
+These command line scripts allow one to generate background event files.
 
 ``make_background_file``
 ------------------------
 
 The ``make_background_file`` generates a simulated observation of background
-in a standard event file format which can then be used as the background for 
-and observation or processed by standard tools such as CIAO, HEATOOLS, XSPEC, 
+in a standard event file format which can then be used as the background for
+and observation or processed by standard tools such as CIAO, HEATOOLS, XSPEC,
 etc.
 
 .. code-block:: text
@@ -23,9 +23,9 @@ etc.
                                 [--instr_bkgnd | --no_instr_bkgnd]
                                 [--foreground | --no_foreground]
                                 out_file exp_time instrument sky_center
-    
+
     Run the instrument simulator and produce a simulated background event file.
-    
+
     positional arguments:
       out_file              The name of the event file to be written.
       exp_time              The exposure time to use, in seconds.
@@ -34,7 +34,7 @@ etc.
                             specification.
       sky_center            The center RA, Dec coordinates of the observation, in
                             degrees, comma-separated
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
@@ -125,8 +125,8 @@ Turn off the point-source background:
 
     [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --no_ptsrc_bkgnd --overwrite
 
-Any combination of these may be used to turn multiple components off or all 
-of them. 
+Any combination of these may be used to turn multiple components off or all
+of them.
 
 Use a pre-made ASCII table of point-source properties to generate the point-source background:
 

@@ -5,4 +5,4 @@ Mosaic API
 
 .. automodule:: soxs.mosaic
     :members:
-    :undoc-members: 
+    :undoc-members:

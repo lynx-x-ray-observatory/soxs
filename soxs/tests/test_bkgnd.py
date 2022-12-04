@@ -46,9 +46,8 @@ def test_uniform_bkgnd_scale():
     t_exp = event_params["exposure_time"]
     fov = (event_params["fov"] * 60.0) ** 2
     S = ncts / t_exp / fov
-    dS = np.sqrt(ncts) / t_exp / fov
     foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
-    f_sum = foreground.get_flux_in_band(0.5, 2.0)[0] / u.arcmin ** 2
+    f_sum = foreground.get_flux_in_band(0.5, 2.0)[0] / u.arcmin**2
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.5, 2.0)[0] * (u.cm / u.arcmin) ** 2
     b_sum = (f_sum + i_sum).to_value("ph/(arcsec**2*s)")
     assert np.abs(S - b_sum) / b_sum < 0.02
@@ -82,9 +81,8 @@ def test_simulate_bkgnd_spectrum():
     with fits.open("test_bkgnd.pha") as f:
         ncts = f["SPECTRUM"].data["COUNTS"][ch_min:ch_max].sum()
     S = ncts / exp_time / fov
-    dS = np.sqrt(ncts) / exp_time / fov
     foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
-    f_sum = foreground.get_flux_in_band(0.5, 2.0)[0] / u.arcmin ** 2
+    f_sum = foreground.get_flux_in_band(0.5, 2.0)[0] / u.arcmin**2
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.5, 2.0)[0] * (u.cm / u.arcmin) ** 2
     b_sum = (f_sum + i_sum).to_value("ph/(arcsec**2*s)")
     assert np.abs(S - b_sum) / b_sum < 0.02
@@ -215,14 +213,14 @@ def test_change_bkgnd(answer_store, answer_dir):
     lem_rmf = RedistributionMatrixFile("lem_09ev_030322.rmf")
     spectrum_answer_testing(
         make_frgnd_spectrum(lem_arf, lem_rmf),
-        f"default_frgnd_spectrum.h5",
+        "default_frgnd_spectrum.h5",
         answer_store,
         answer_dir,
     )
     set_soxs_config("frgnd_spec_model", "halosat")
     spectrum_answer_testing(
         make_frgnd_spectrum(lem_arf, lem_rmf),
-        f"lem_frgnd_spectrum.h5",
+        "lem_frgnd_spectrum.h5",
         answer_store,
         answer_dir,
     )

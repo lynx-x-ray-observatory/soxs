@@ -51,7 +51,7 @@ class LazyReadSimputCatalog(Sequence):
 
 def read_simput_catalog(simput_file):
     r"""
-    Read events from a SIMPUT catalog. This will read 
+    Read events from a SIMPUT catalog. This will read
     all the sources in the catalog.
 
     Parameters
@@ -61,7 +61,7 @@ def read_simput_catalog(simput_file):
 
     Returns
     -------
-    1. Lists of dicts of NumPy arrays of the positions 
+    1. Lists of dicts of NumPy arrays of the positions
        and energies of the events from the sources.
     2. NumPy arrays of the parameters of the sources.
     """
@@ -103,7 +103,7 @@ class SimputCatalog:
         ----------
         filename : string
             The name of the SIMPUT catalog file to write. The
-            file will be written 
+            file will be written
         source : :class:`~soxs.simput.SimputSource`
             The SIMPUT source to create the catalog with.
         src_filename : string, optional
@@ -302,7 +302,7 @@ class SimputCatalog:
             # Don't overwrite the SIMPUT catalog file!!
             overwrite = False
         elif overwrite and os.path.exists(src_filename):
-            mylog.warning(f"Overwriting {src_filename}.")
+            mylog.warning("Overwriting %s.", src_filename)
             os.remove(src_filename)
 
         extver = _determine_extver(src_filename, source.src_type.upper())
@@ -379,7 +379,7 @@ class SimputSource:
             self.imhdu.header["EXTVER"] = img_extver
 
         if os.path.exists(filename) and not overwrite:
-            mylog.info(f"Appending this source to {filename}.")
+            mylog.info("Appending this source to %s.", filename)
             with fits.open(filename, mode="append") as f:
                 f.append(tbhdu)
                 if self.imhdu is not None:
@@ -387,9 +387,9 @@ class SimputSource:
                 f.flush()
         else:
             if os.path.exists(filename):
-                mylog.warning(f"Overwriting {filename} with this source.")
+                mylog.warning("Overwriting %s with this source.", filename)
             else:
-                mylog.info(f"Writing source to {filename}.")
+                mylog.info("Writing source to %s.", filename)
             f = [fits.PrimaryHDU(), tbhdu]
             if self.imhdu is not None:
                 f.append(self.imhdu)
@@ -520,7 +520,7 @@ class SimputPhotonList(SimputSource):
     def from_models(cls, name, spectral_model, spatial_model, t_exp, area, prng=None):
         """
         Generate a SIMPUT photon list from a spectral and a spatial
-        model. 
+        model.
 
         Parameters
         ----------
@@ -533,15 +533,15 @@ class SimputPhotonList(SimputSource):
         t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The exposure time in seconds.
         area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The effective area in cm**2. If one is creating 
-            events for a SIMPUT file, a constant should be 
-            used and it must be large enough so that a 
+            The effective area in cm**2. If one is creating
+            events for a SIMPUT file, a constant should be
+            used and it must be large enough so that a
             sufficiently large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only 
-            be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is None, 
-            which sets the seed based on the system time. 
+            A pseudo-random number generator. Typically will only
+            be specified if you have a reason to generate the same
+            set of random numbers, such as for a test. Default is None,
+            which sets the seed based on the system time.
         """
         prng = parse_prng(prng)
         t_exp = parse_value(t_exp, "s")
@@ -585,9 +585,9 @@ class SimputPhotonList(SimputSource):
         **kwargs,
     ):
         """
-        Plot event coordinates from this photon list in a scatter plot, 
+        Plot event coordinates from this photon list in a scatter plot,
         optionally restricting the photon energies which are plotted
-        and using only a subset of the photons. 
+        and using only a subset of the photons.
 
         Parameters
         ----------

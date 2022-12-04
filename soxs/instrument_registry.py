@@ -33,7 +33,7 @@ class InstrumentRegistry:
         """
         A handy method to fetch ARF, RMF, background,
         and PSF files to a location of one's choice.
-        Files are only actually downloaded if they are 
+        Files are only actually downloaded if they are
         not present already.
 
         Parameters
@@ -42,8 +42,8 @@ class InstrumentRegistry:
             The instrument specification to download
             the files for.
         loc : string, optional
-            The path to download the files to. If not 
-            specified, it will download them to the 
+            The path to download the files to. If not
+            specified, it will download them to the
             current working directory.
         """
         inst_spec = self[key]
@@ -66,7 +66,7 @@ class InstrumentRegistry:
                 fns.append(inst_spec["psf"][1])
                 logs.append("PSF model")
         for fn, log in zip(fns, logs):
-            mylog.info(log_msg % (log, fn))
+            mylog.info(log_msg, log, fn)
             dog.fetch(fn)
 
 
@@ -388,7 +388,7 @@ def add_instrument_to_registry(inst_spec):
     Add an instrument specification to the registry, contained
     in either a dictionary or a JSON file.
 
-    The *inst_spec* must have the structure as shown below. 
+    The *inst_spec* must have the structure as shown below.
     The order is not important. If you use a JSON file, the
     structure is the same, but the file cannot include comments,
     and use "null" instead of "None", and "true" or "false"
@@ -396,7 +396,7 @@ def add_instrument_to_registry(inst_spec):
 
     For the "chips" entry, "None" means no chips and the detector
     field of view is a single square. If you want to have multiple
-    chips, they must be specified in a format described in the 
+    chips, they must be specified in a format described in the
     online documentation.
 
     >>> {
@@ -506,8 +506,8 @@ def add_instrument_to_registry(inst_spec):
         )
     instrument_registry[name] = inst
     mylog.debug(
-        f"The {name} instrument specification has been added "
-        f"to the instrument registry."
+        "The %s instrument specification has been added " "to the instrument registry.",
+        name,
     )
     return name
 
@@ -536,7 +536,7 @@ def write_instrument_json(inst_name, filename):
     """
     Write an instrument specification to a JSON file.
     Useful if one would like to create a new specification
-    by editing an existing one. 
+    by editing an existing one.
 
     Parameters
     ----------
@@ -554,14 +554,14 @@ def make_simple_instrument(
     base_inst, new_inst, fov, num_pixels, no_bkgnd=False, no_psf=False, no_dither=False
 ):
     """
-    Using an existing imaging instrument specification, 
-    make a simple square instrument given a field of view 
+    Using an existing imaging instrument specification,
+    make a simple square instrument given a field of view
     and a resolution.
 
     Parameters
     ----------
     base_inst : string
-        The name for the instrument specification to base the 
+        The name for the instrument specification to base the
         new one on.
     new_inst : string
         The name for the new instrument specification.
@@ -570,13 +570,13 @@ def make_simple_instrument(
     num_pixels : integer
         The number of pixels on a side.
     no_bkgnd : boolean, optional
-        Set this new instrument to have no particle background. 
+        Set this new instrument to have no particle background.
         Default: False
     no_psf : boolean, optional
-        Set this new instrument to have no spatial PSF. 
+        Set this new instrument to have no spatial PSF.
         Default: False
     no_dither : boolean, optional
-        Set this new instrument to have no dithering. 
+        Set this new instrument to have no dithering.
         Default: False
     """
     sq_inst = get_instrument_from_registry(base_inst)

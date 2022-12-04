@@ -21,7 +21,7 @@ def wcs_from_header(h):
 def write_event_file(events, parameters, filename, overwrite=False):
     from astropy.time import Time, TimeDelta
 
-    mylog.info(f"Writing events to file {filename}.")
+    mylog.info("Writing events to file %s.", filename)
 
     t_begin = Time.now()
     dt = TimeDelta(parameters["exposure_time"], format="sec")
@@ -159,7 +159,7 @@ def make_exposure_map(
     expmap_file : string
         The path to write the exposure map file to.
     energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, or NumPy array
-        The energy in keV to use when computing the exposure map, or 
+        The energy in keV to use when computing the exposure map, or
         a set of energies to be used with the *weights* parameter. If
         providing a set, it must be in keV.
     weights : array-like, optional
@@ -184,7 +184,7 @@ def make_exposure_map(
         The number of bins in the aspect histogram in the DETY
         direction. Default: 16
     order : integer, optional
-        The interpolation order to use when making the exposure map. 
+        The interpolation order to use when making the exposure map.
         Default: 1
     """
     from scipy.ndimage import rotate
@@ -263,7 +263,7 @@ def make_exposure_map(
 
     rtypes = []
     args = []
-    for i, chip in enumerate(instr["chips"]):
+    for chip in instr["chips"]:
         rtypes.append(chip[0])
         args.append(np.array(chip[1:]) / reblock)
 
@@ -425,7 +425,7 @@ def filter_events(
 
     Parameters
     ----------
-    evtfile : string 
+    evtfile : string
         The input events file to be read in.
     newfile : string
         The new event file that will be written.
@@ -535,40 +535,40 @@ def write_radial_profile(
 ):
     r"""
     Bin up events into a radial profile and write them to a FITS
-    table. 
+    table.
 
     Parameters
     ----------
     evt_file : string
         Input event file.
     out_file : string
-        The output file to write the profile to. 
+        The output file to write the profile to.
     ctr : array-like
-        The central coordinate of the profile. Can either be in 
-        celestial coordinates (the default) or "physical" pixel 
-        coordinates. If the former, the ``ctr_type`` keyword 
+        The central coordinate of the profile. Can either be in
+        celestial coordinates (the default) or "physical" pixel
+        coordinates. If the former, the ``ctr_type`` keyword
         argument must be explicity set to "physical".
     rmin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-        The minimum radius of the profile, in arcseconds. 
+        The minimum radius of the profile, in arcseconds.
     rmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The maximum radius of the profile, in arcseconds.
     nbins : integer
         The number of bins in the profile.
     ctr_type : string, optional
-        The type of center coordinate. Either "celestial" for 
-        (RA, Dec) coordinates (the default), or "physical" for 
+        The type of center coordinate. Either "celestial" for
+        (RA, Dec) coordinates (the default), or "physical" for
         pixel coordinates.
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The minimum energy of the events to be binned in keV. 
+        The minimum energy of the events to be binned in keV.
         Default is the lowest energy available.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The maximum energy of the events to be binned in keV. 
+        The maximum energy of the events to be binned in keV.
         Default is the highest energy available.
     overwrite : boolean, optional
-        Whether to overwrite an existing file with the 
+        Whether to overwrite an existing file with the
         same name. Default: False
     expmap_file : string, optional
-        Supply an exposure map file to determine fluxes. 
+        Supply an exposure map file to determine fluxes.
         Default: None
     """
     rmin = parse_value(rmin, "arcsec")
@@ -685,7 +685,7 @@ def write_image(
     reblock=1,
 ):
     r"""
-    Generate a image by binning X-ray counts and write 
+    Generate a image by binning X-ray counts and write
     it to a FITS file.
 
     Parameters
@@ -695,20 +695,20 @@ def write_image(
     out_file : string
         The name of the image file to write.
     coord_type : string, optional
-        The type of coordinate to bin into an image. 
+        The type of coordinate to bin into an image.
         Can be "sky" or "det". Default: "sky"
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The minimum energy of the photons to put in the image, in keV.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The maximum energy of the photons to put in the image, in keV.
     overwrite : boolean, optional
-        Whether to overwrite an existing file with 
+        Whether to overwrite an existing file with
         the same name. Default: False
     expmap_file : string, optional
         Supply an exposure map file to divide this image by
         to get a flux map. Default: None
     reblock : integer, optional
-        Change this value to reblock the image to larger 
+        Change this value to reblock the image to larger
         pixel sizes (reblock >= 1). Only supported for
         sky coordinates. Default: 1
     """
@@ -832,11 +832,11 @@ def plot_spectrum(
     lw : float, optional
         The width of the lines in the plots. Default: 2.0 px.
     xmin : float, optional
-        The left-most energy (in keV) or channel to plot. Default is the 
-        minimum value in the spectrum. 
+        The left-most energy (in keV) or channel to plot. Default is the
+        minimum value in the spectrum.
     xmax : float, optional
-        The right-most energy (in keV) or channel to plot. Default is the 
-        maximum value in the spectrum. 
+        The right-most energy (in keV) or channel to plot. Default is the
+        maximum value in the spectrum.
     ymin : float, optional
         The lower extent of the y-axis. By default it is set automatically.
     ymax : float, optional
@@ -859,15 +859,15 @@ def plot_spectrum(
         If set to True, the counts instead of the count rate will
         be plotted. Default: False
     noerr : boolean, optional
-        If True, the spectrum will be plotted without errorbars. 
+        If True, the spectrum will be plotted without errorbars.
         Default: False
     plot_used : boolean, optional
-        If set to True, only the bins which contain more than 0 
+        If set to True, only the bins which contain more than 0
         counts will be plotted. Default: False
 
     Returns
     -------
-    A tuple of the :class:`~matplotlib.figure.Figure` and the 
+    A tuple of the :class:`~matplotlib.figure.Figure` and the
     :class:`~matplotlib.axes.Axes` objects.
     """
     import matplotlib.pyplot as plt
@@ -968,7 +968,7 @@ def plot_image(
     Parameters
     ----------
     img_file : str
-        The on-disk FITS image to plot. 
+        The on-disk FITS image to plot.
     hdu : str or int, optional
         The image extension to plot. Default is "IMAGE"
     stretch : str, optional
@@ -998,7 +998,7 @@ def plot_image(
 
     Returns
     -------
-    A tuple of the :class:`~matplotlib.figure.Figure` and the 
+    A tuple of the :class:`~matplotlib.figure.Figure` and the
     :class:`~matplotlib.axes.Axes` objects.
     """
     import matplotlib.pyplot as plt
@@ -1035,5 +1035,5 @@ def plot_image(
         ax.set_xlim(center[0] - 0.5 * dx_pix, center[0] + 0.5 * dx_pix)
         ax.set_ylim(center[1] - 0.5 * dy_pix, center[1] + 0.5 * dy_pix)
         ax.set_facecolor(facecolor)
-        cbar = plt.colorbar(im)
+        plt.colorbar(im)
     return fig, ax

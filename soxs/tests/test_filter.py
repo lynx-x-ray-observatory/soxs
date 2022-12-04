@@ -23,14 +23,13 @@ def test_filter():
     redshift = 0.01
 
     exp_time = (100.0, "ks")
-    area = 1000.0
     inst_name = "chandra_acisi_cy0"
 
     spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 2000)
     spec.apply_foreground_absorption(nH_sim, model="tbabs")
 
     pt_src = SimputSpectrum.from_spectrum("plaw_model", spec, 30.0, 45.0)
-    cat = SimputCatalog.from_source("plaw_model_simput.fits", pt_src, overwrite=True)
+    SimputCatalog.from_source("plaw_model_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
         "plaw_model_simput.fits",

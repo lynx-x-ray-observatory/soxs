@@ -42,7 +42,7 @@ def test_point_source():
     os.chdir(tmpdir)
 
     pt_src = SimputSpectrum.from_spectrum("pt_src", spec, ra0, dec0)
-    cat = SimputCatalog.from_source("pt_src_simput.fits", pt_src, overwrite=True)
+    SimputCatalog.from_source("pt_src_simput.fits", pt_src, overwrite=True)
 
     inst = get_instrument_from_registry("lynx_hdxi")
     inst["name"] = "hdxi_big_psf"
@@ -93,7 +93,7 @@ def test_annulus(answer_store, answer_dir):
     ann_src = SimputPhotonList.from_models(
         "ann", spec, ann_pos, exp_time, area, prng=prng
     )
-    sim_cat = SimputCatalog.from_source("ann_simput.fits", ann_src, overwrite=True)
+    SimputCatalog.from_source("ann_simput.fits", ann_src, overwrite=True)
 
     instrument_simulator(
         "ann_simput.fits",
@@ -143,7 +143,7 @@ def test_beta_model(answer_store, answer_dir):
     beta_src = SimputPhotonList.from_models(
         "beta", spec, beta_src_pos, exp_time, area, prng=prng
     )
-    sim_cat = SimputCatalog.from_source("beta_simput.fits", beta_src, overwrite=True)
+    SimputCatalog.from_source("beta_simput.fits", beta_src, overwrite=True)
 
     instrument_simulator(
         "beta_simput.fits",
@@ -196,7 +196,7 @@ def test_double_beta_model(answer_store, answer_dir):
     double_beta_src = SimputPhotonList.from_models(
         "double_beta", spec, double_beta_src_pos, exp_time, area, prng=prng
     )
-    sim_cat = SimputCatalog.from_source(
+    SimputCatalog.from_source(
         "double_beta_simput.fits", double_beta_src, overwrite=True
     )
 
@@ -248,7 +248,7 @@ def test_beta_model_flux(answer_store, answer_dir):
     beta_src = SimputPhotonList.from_models(
         "beta", spec, beta_src_pos, exp_time, area, prng=prng
     )
-    sim_cat = SimputCatalog.from_source("beta_simput.fits", beta_src, overwrite=True)
+    SimputCatalog.from_source("beta_simput.fits", beta_src, overwrite=True)
 
     instrument_simulator(
         "beta_simput.fits",

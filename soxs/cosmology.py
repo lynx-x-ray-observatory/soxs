@@ -71,7 +71,7 @@ def make_cosmological_sources(
 ):
     r"""
     Make an X-ray source made up of contributions from
-    galaxy clusters, galaxy groups, and galaxies. 
+    galaxy clusters, galaxy groups, and galaxies.
 
     Parameters
     ----------
@@ -83,29 +83,29 @@ def make_cosmological_sources(
         The center RA, Dec of the field of view in degrees.
     cat_center : array-like
         The center of the field in the coordinates of the
-        halo catalog, which range from -5.0 to 5.0 in 
-        degrees in both directions. If None is given, a 
+        halo catalog, which range from -5.0 to 5.0 in
+        degrees in both directions. If None is given, a
         center will be randomly chosen.
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The hydrogen column in units of 10**22 atoms/cm**2. 
+        The hydrogen column in units of 10**22 atoms/cm**2.
         Default: 0.05
     area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The effective area in cm**2. It must be large enough 
-        so that a sufficiently large sample is drawn for the 
+        The effective area in cm**2. It must be large enough
+        so that a sufficiently large sample is drawn for the
         ARF. Default: 40000.
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
     write_regions : string, optional
         If set to a filename, output circle ds9 regions corresponding to the
-        positions of the halos with radii corresponding to their R500 
+        positions of the halos with radii corresponding to their R500
         projected on the sky.  Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
         which sets the seed based on the system time.
     """
     exp_time = parse_value(exp_time, "s")
@@ -119,7 +119,7 @@ def make_cosmological_sources(
 
     mylog.info("Creating photons from cosmological sources.")
 
-    mylog.info("Loading halo data from catalog: %s" % halos_cat_file)
+    mylog.info("Loading halo data from catalog: %s", halos_cat_file)
     halo_data = h5py.File(halos_cat_file, "r")
 
     scale = cosmo.kpc_comoving_per_arcmin(halo_data["redshift"][()]).to("Mpc/arcmin")
@@ -140,8 +140,9 @@ def make_cosmological_sources(
         xc, yc = np.clip([xc, yc], cat_min + 0.5 * fov, cat_max - 0.5 * fov)
 
     mylog.info(
-        "Coordinates of the FOV within the catalog are (%g, %g) deg."
-        % (xc / 60.0, yc / 60.0)
+        "Coordinates of the FOV within the catalog are (%g, %g) deg.",
+        xc / 60.0,
+        yc / 60.0,
     )
 
     xlo = xc - 1.1 * 0.5 * fov
@@ -159,7 +160,7 @@ def make_cosmological_sources(
 
     n_halos = fov_idxs.sum()
 
-    mylog.info("Number of halos in the field of view: %d" % n_halos)
+    mylog.info("Number of halos in the field of view: %d", n_halos)
 
     # Now select the specific halos which are in the FOV
     z = halo_data["redshift"][fov_idxs].astype("float64")
@@ -271,7 +272,7 @@ def make_cosmological_sources(
     dec = np.concatenate(dec)
     ee = np.concatenate(ee)
 
-    mylog.info("Created %d photons from cosmological sources." % ee.size)
+    mylog.info("Created %d photons from cosmological sources.", ee.size)
 
     output_events = {"ra": ra, "dec": dec, "energy": ee, "flux": tot_flux.value}
 
@@ -319,11 +320,11 @@ def make_cosmological_sources_file(
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs". Default: "wabs"
     nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The hydrogen column in units of 10**22 atoms/cm**2. 
+        The hydrogen column in units of 10**22 atoms/cm**2.
         Default: 0.05
     area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The effective area in cm**2. It must be large enough 
-        so that a sufficiently large sample is drawn for the 
+        The effective area in cm**2. It must be large enough
+        so that a sufficiently large sample is drawn for the
         ARF. Default: 40000.
     overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
@@ -332,17 +333,17 @@ def make_cosmological_sources_file(
         within the field of view to an ASCII file. Default: None
     write_regions : string, optional
         If set to a filename, output circle ds9 regions corresponding to the
-        positions of the halos with radii corresponding to their R500 
+        positions of the halos with radii corresponding to their R500
         projected on the sky. Default: None
     src_filename : string, optional
         If set, this will be the filename to write the source
         to. By default, the source will be written to the same
         file as the SIMPUT catalog
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     append : boolean, optional
         If True, the photon list source will be appended to an existing
         SIMPUT catalog. Default: False

@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=45", 
+    "setuptools>=45",
     "setuptools_scm[toml]>=6.2",
     # see https://github.com/numpy/numpy/pull/18389
     "wheel>=0.36.2",
@@ -18,7 +18,7 @@ line-length = 88
 target-version = ['py38']
 include = '''
 /(
-    \.pyi?$  
+    \.pyi?$
   | scripts/*
 )/
 '''
@@ -52,9 +52,8 @@ known_third_party = [
   "astropy",
   "scipy",
   "pathlib",
-  "yt",   
+  "yt",
   "pyxsim"
 ]
 known_first_party = ["soxs"]
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-

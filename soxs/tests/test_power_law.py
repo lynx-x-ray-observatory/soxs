@@ -46,7 +46,7 @@ def plaw_fit(alpha_sim, answer_store, answer_dir):
     pt_src = SimputPhotonList.from_models(
         "plaw_model", spec, pt_src_pos, exp_time, area, prng=prng
     )
-    cat = SimputCatalog.from_source("plaw_model_simput.fits", pt_src, overwrite=True)
+    SimputCatalog.from_source("plaw_model_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
         "plaw_model_simput.fits",

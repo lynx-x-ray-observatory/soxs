@@ -73,8 +73,9 @@ mylog.setLevel("INFO")
 if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
     soxs_data_dir = appdirs.user_cache_dir("soxs")
     mylog.warning(
-        f"Setting 'soxs_data_dir' to {soxs_data_dir} for this session. "
-        f"Please update your configuration if you want it somewhere else."
+        "Setting 'soxs_data_dir' to %s for this session. "
+        "Please update your configuration if you want it somewhere else.",
+        soxs_data_dir,
     )
     soxs_cfg.set("soxs", "soxs_data_dir", appdirs.user_cache_dir("soxs"))
 
@@ -105,7 +106,7 @@ def iterable(obj):
     """
     try:
         len(obj)
-    except:
+    except TypeError:
         return False
     return True
 
@@ -125,8 +126,8 @@ def ensure_list(obj):
 
 def ensure_numpy_array(obj):
     """
-    This function ensures that *obj* is a numpy array. 
-    Typically used to convert scalar, list or tuple 
+    This function ensures that *obj* is a numpy array.
+    Typically used to convert scalar, list or tuple
     argument passed to functions using Cython.
     """
     if isinstance(obj, np.ndarray):
@@ -199,8 +200,13 @@ def line_width_equiv(rest):
     from astropy.constants import c
 
     ckms = c.to_value("km/s")
-    forward = lambda x: rest * x / ckms
-    backward = lambda x: x / rest * ckms
+
+    def forward(x):
+        return rest * x / ckms
+
+    def backward(x):
+        return x / rest * ckms
+
     return [(u.km / u.s, u.keV, forward, backward)]
 
 

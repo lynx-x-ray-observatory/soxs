@@ -4,10 +4,10 @@ Command Line Scripts for Source Catalogs
 ========================================
 
 This section documents command-line scripts for generating a SIMPUT catalog
-of photons from a halo catalog drawn from a cosmological simulation. 
+of photons from a halo catalog drawn from a cosmological simulation.
 
 For more information about how the source catalog generation is implemented
-in SOXS, see :ref:`source-catalogs`. 
+in SOXS, see :ref:`source-catalogs`.
 
 .. _cmd-make-cosmo-sources:
 
@@ -20,9 +20,9 @@ in SOXS, see :ref:`source-catalogs`.
                                      [--src_filename SRC_FILENAME] [--append] [--overwrite] [--output_sources OUTPUT_SOURCES]
                                      [--write_regions WRITE_REGIONS] [--random_seed RANDOM_SEED]
                                      filename name exp_time fov sky_center
-    
+
     Create a SIMPUT photon list catalog of a cosmological background.
-    
+
     positional arguments:
       filename              The filename of the SIMPUT catalog to be used as the root of the catalog. If it does not exist, it will be
                             created.
@@ -30,7 +30,7 @@ in SOXS, see :ref:`source-catalogs`.
       exp_time              The exposure time to use, in seconds.
       fov                   The field of view on a side in arcminutes.
       sky_center            The center RA, Dec coordinates of the observation, in degrees, comma-separated
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --cat_center CAT_CENTER
@@ -74,14 +74,14 @@ Append the halo photons to an existing SIMPUT catalog, "my_cat.simput":
 
     [~]$ make_cosmological_sources my_cat.simput halos 100.0,ks 10.0 22.0,-12.0 --append
 
-Append the halo photons to an existing SIMPUT catalog, "my_cat.simput", and 
+Append the halo photons to an existing SIMPUT catalog, "my_cat.simput", and
 write the source to a different file:
 
 .. code-block:: bash
 
     [~]$ make_cosmological_sources my_cat.simput halos 100.0,ks 10.0 22.0,-12.0 --append --src_filename=halos.fits
 
-Change the Galactic hydrogen column to :math:`2 \times 10^{20}~cm^{-2}`, and 
+Change the Galactic hydrogen column to :math:`2 \times 10^{20}~cm^{-2}`, and
 use the "tbabs" model:
 
 .. code-block:: bash
@@ -109,9 +109,9 @@ the sources:
     usage: make_point_sources [-h] [--absorb_model ABSORB_MODEL] [--nh NH] [--area AREA] [--src_filename SRC_FILENAME] [--append]
                               [--overwrite] [--input_sources INPUT_SOURCES] [--output_sources OUTPUT_SOURCES] [--random_seed RANDOM_SEED]
                               filename name exp_time fov sky_center
-    
+
     Create a SIMPUT photon list catalog of a point-source background.
-    
+
     positional arguments:
       filename              The filename of the SIMPUT catalog to be used as the root of the catalog. If it does not exist, it will be
                             created.
@@ -119,7 +119,7 @@ the sources:
       exp_time              The exposure time to use, in seconds.
       fov                   The field of view on a side in arcminutes.
       sky_center            The center RA, Dec coordinates of the observation, in degrees, comma-separated.
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --absorb_model ABSORB_MODEL
@@ -136,7 +136,7 @@ the sources:
                             Output the source properties to the specified file.
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent set of random numbers.
-    
+
 Examples
 ++++++++
 
@@ -153,14 +153,14 @@ Append the point source photons to an existing SIMPUT catalog, "my_cat":
 
     [~]$ make_point_sources my_cat.simput pt_src 75.0,ks 5.0 90.0,-10.0 --append
 
-Append the point source photons to an existing SIMPUT catalog, "my_cat", and 
+Append the point source photons to an existing SIMPUT catalog, "my_cat", and
 write the source to a different file:
 
 .. code-block:: bash
 
     [~]$ make_point_sources my_cat.simput pt_src 75.0,ks 5.0 90.0,-10.0 --append --src_filename=sources.fits
 
-Change the Galactic hydrogen column to :math:`3.5 \times 10^{20}~cm^{-2}`, 
+Change the Galactic hydrogen column to :math:`3.5 \times 10^{20}~cm^{-2}`,
 and use the "tbabs" model:
 
 .. code-block:: bash
@@ -176,7 +176,7 @@ Write the source properties to an ASCII text file:
 Use a previously written ASCII text file of point source properties as input:
 
 .. code-block:: bash
-        
+
     [~]$ make_point_sources pt_src.simput pt_src 75.0,ks 5.0 90.0,-10.0 --input_sources=my_ptsrc.txt --overwrite
 
 .. _cmd-make-point-source-list:
@@ -187,14 +187,14 @@ Use a previously written ASCII text file of point source properties as input:
 .. code-block:: text
 
     usage: make_point_source_list [-h] [--random_seed RANDOM_SEED] output_file fov sky_center
-    
+
     Make a list of point source properties and write it to an ASCII table file.
-    
+
     positional arguments:
       output_file           The ASCII table file to write the source properties to.
       fov                   The field of view on a side in arcminutes.
       sky_center            The center RA, Dec coordinates of the observation, in degrees, comma-separated.
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --random_seed RANDOM_SEED

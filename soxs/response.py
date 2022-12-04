@@ -53,7 +53,7 @@ class AuxiliaryResponseFile:
         Parameters
         ----------
         name : string
-            The name of the instrument specification to use 
+            The name of the instrument specification to use
             to obtain the ARF object from.
 
         Examples
@@ -70,7 +70,7 @@ class AuxiliaryResponseFile:
 
     def interpolate_area(self, energy):
         """
-        Interpolate the effective area to the energies 
+        Interpolate the effective area to the energies
         provided  by the supplied *energy* array.
         """
         earea = np.interp(
@@ -101,30 +101,30 @@ class AuxiliaryResponseFile:
             pones = np.ones_like(energy)
             ra = src.ra * pones
             dec = src.dec * pones
-        mylog.debug(f"{energy.size} events detected from this spectrum.")
+        mylog.debug("%d events detected from this spectrum.", energy.size)
         return {"energy": energy, "ra": ra, "dec": dec}
 
     def detect_events_phlist(self, events, exp_time, flux, refband, prng=None):
         """
-        Use the ARF to determine a subset of photons which 
+        Use the ARF to determine a subset of photons which
         will be detected.
 
         Parameters
         ----------
         events : dict of np.ndarrays
-            The energies and positions of the photons. 
+            The energies and positions of the photons.
         exp_time : float
             The exposure time in seconds.
         flux : float
-            The total flux of the photons in erg/s/cm^2. 
+            The total flux of the photons in erg/s/cm^2.
         refband : array_like
-            A two-element array or list containing the limits 
-            of the energy band which the flux was computed in. 
+            A two-element array or list containing the limits
+            of the energy band which the flux was computed in.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only 
-            be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is None, 
-            which sets the seed based on the system time. 
+            A pseudo-random number generator. Typically will only
+            be specified if you have a reason to generate the same
+            set of random numbers, such as for a test. Default is None,
+            which sets the seed based on the system time.
         """
         prng = parse_prng(prng)
         energy = np.asarray(events["energy"])
@@ -137,8 +137,9 @@ class AuxiliaryResponseFile:
         fak = float(n_ph) / energy.size
         if fak > 1.0:
             mylog.error(
-                f"Number of events in sample: {energy.size}, "
-                f"Number of events wanted: {n_ph}"
+                "Number of events in sample: %d, Number of events " "wanted: %d",
+                n_ph,
+                energy.size,
             )
             raise ValueError(
                 "This combination of exposure time and effective "
@@ -148,7 +149,7 @@ class AuxiliaryResponseFile:
         w = earea / self.max_area
         randvec = prng.uniform(size=energy.size)
         eidxs = prng.permutation(np.where(randvec < w)[0])[:n_ph].astype("int64")
-        mylog.debug(f"{n_ph} events detected out of {energy.size}.")
+        mylog.debug("%d events detected out of %d.", n_ph, energy.size)
         for key in events:
             events[key] = np.asarray(events[key][eidxs])
         return events
@@ -177,19 +178,19 @@ class AuxiliaryResponseFile:
         ylabel : string
             The label of the y-axis. Default: "$\\mathrm{A\\ (cm^2)}$"
         fig : :class:`~matplotlib.figure.Figure`, optional
-            The figure to place the plot in. If not supplied, 
+            The figure to place the plot in. If not supplied,
             one will be created.
         ax : :class:`~matplotlib.axes.Axes`, optional
-            The axes to place the plot in. If not supplied, 
+            The axes to place the plot in. If not supplied,
             one will be created.
 
-        All other arguments are passed to the call to 
+        All other arguments are passed to the call to
         :meth:`~matplotlib.axes.Axes.plot`.
 
         Returns
         -------
 
-        A tuple of the :class:`~matplotlib.figure.Figure` and 
+        A tuple of the :class:`~matplotlib.figure.Figure` and
         :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
@@ -219,11 +220,11 @@ class FlatResponse(AuxiliaryResponseFile):
     emin : float
         The minimum energy of the response in keV.
     emax : float
-        The maximum energy of the response in keV. 
+        The maximum energy of the response in keV.
     area : float
-        The effective area in cm**2. 
+        The effective area in cm**2.
     nbins : integer
-        The number of bins in the response file. 
+        The number of bins in the response file.
 
     Examples
     --------
@@ -296,7 +297,7 @@ class RedistributionMatrixFile:
         Parameters
         ----------
         name : string
-            The name of the instrument specification to use 
+            The name of the instrument specification to use
             to obtain the RMF object from.
 
         Examples
@@ -351,18 +352,18 @@ class RedistributionMatrixFile:
 
     def scatter_energies(self, events, prng=None):
         """
-        Scatter photon energies with the RMF and produce the 
+        Scatter photon energies with the RMF and produce the
         corresponding channel values.
 
         Parameters
         ----------
         events : dict of np.ndarrays
-            The energies and positions of the photons. 
+            The energies and positions of the photons.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only 
-            be specified if you have a reason to generate the same 
-            set of random numbers, such as for a test. Default is None, 
-            which sets the seed based on the system time. 
+            A pseudo-random number generator. Typically will only
+            be specified if you have a reason to generate the same
+            set of random numbers, such as for a test. Default is None,
+            which sets the seed based on the system time.
         """
         prng = parse_prng(prng)
         eidxs = np.argsort(events["energy"])

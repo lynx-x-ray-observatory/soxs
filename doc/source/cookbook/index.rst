@@ -5,7 +5,7 @@ SOXS Cookbook
 
 From this page, you will find links to runnable Jupyter notebooks and bash
 scripts that are examples of common tasks in SOXS. In particular, these
-examples show how different parts of SOXS will typically be combined. 
+examples show how different parts of SOXS will typically be combined.
 
 Jupyter Notebooks
 -----------------
@@ -25,10 +25,9 @@ Command Line Scripts
 
 .. toctree::
    :maxdepth: 1
-       
+
    make_multiple_sources
    change_instrument_spec
    make_background_file_cmd
    point_source_catalog_cmd
    cosmo_source_catalog_cmd
-

@@ -46,7 +46,7 @@ class CIEGenerator:
         self.binscale = binscale
         if model_vers is None:
             model_vers = soxs_cfg.get("soxs", f"{model.lower()}_vers")
-        mylog.debug(f"Using {model} version {model_vers}.")
+        mylog.debug("Using %s version %s.", model, model_vers)
         if nei and var_elem is None:
             raise RuntimeError(
                 "For NEI spectra, you must specify which elements "
@@ -85,8 +85,8 @@ class CIEGenerator:
                 f"Cannot find the {model} files!\n {self.cocofile}\n, "
                 f"{self.linefile}"
             )
-        mylog.debug(f"Using {cocofile} for generating spectral lines.")
-        mylog.debug(f"Using {linefile} for generating the continuum.")
+        mylog.debug("Using %s for generating spectral lines.", linefile)
+        mylog.debug("Using %s for generating the continuum.", cocofile)
         self.nolines = nolines
         self.wvbins = hc / self.ebins[::-1]
         self.broadening = broadening
@@ -305,14 +305,14 @@ class CIEGenerator:
         kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The temperature in keV.
         abund : float
-            The metal abundance in solar units. 
+            The metal abundance in solar units.
         redshift : float
             The redshift.
         norm : float
             The normalization of the model, in the standard
             Xspec units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
         velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The velocity broadening parameter, in units of 
+            The velocity broadening parameter, in units of
             km/s. Default: 0.0
         elem_abund : dict of element name, float pairs, optional
             A dictionary of elemental abundances in solar
@@ -364,7 +364,7 @@ class CIEGenerator:
             The normalization of the model, in the standard
             Xspec units of 1.0e-14*EM/(4*pi*(1+z)**2*D_A**2).
         velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The velocity broadening parameter, in units of 
+            The velocity broadening parameter, in units of
             km/s. Default: 0.0
         """
         from soxs.spectra import Spectrum
@@ -393,9 +393,9 @@ class CIEGenerator:
 class ApecGenerator(CIEGenerator):
     r"""
     Create spectra assuming a thermal plasma emission model
-    in collisional ionization equilibrium from the 
-    AtomDB APEC tables available at http://www.atomdb.org. 
-    This code borrows heavily from Python routines used to 
+    in collisional ionization equilibrium from the
+    AtomDB APEC tables available at http://www.atomdb.org.
+    This code borrows heavily from Python routines used to
     read the APEC tables developed by Adam Foster at the
     CfA (afoster@cfa.harvard.edu).
 
@@ -408,7 +408,7 @@ class ApecGenerator(CIEGenerator):
     nbins : integer
         The number of bins in the spectral model.
     binscale : string, optional
-        The scale of the energy binning: "linear" or "log". 
+        The scale of the energy binning: "linear" or "log".
         Default: "linear"
     var_elem : list of strings, optional
         The names of elements to allow to vary freely
@@ -417,32 +417,32 @@ class ApecGenerator(CIEGenerator):
         ionization states, e.g. ["O^1", "O^2", "N^4"]. Default:
         None
     apec_root : string, optional
-        The directory root where the APEC model files 
-        are stored. If not provided, the default is to 
+        The directory root where the APEC model files
+        are stored. If not provided, the default is to
         grab them from the tables stored with SOXS.
     apec_vers : string, optional
         The version identifier string for the APEC files. Default is
         set in the SOXS configuration file, the default for which is
         "3.0.9".
     broadening : boolean, optional
-        Whether or not the spectral lines should be 
+        Whether or not the spectral lines should be
         thermally and velocity broadened. Default: True
     nolines : boolean, optional
         Turn off lines entirely for generating spectra.
         Default: False
     abund_table : string or array_like, optional
-        The abundance table to be used for solar abundances. 
+        The abundance table to be used for solar abundances.
         Either a string corresponding to a built-in table or an array
         of 30 floats corresponding to the abundances of each element
         relative to the abundance of H. Default is set in the SOXS
         configuration file, the default for which is "angr".
         Built-in options are:
-        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et
         Cosmochimica Acta 53, 197)
-        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott
         P. (2009, ARAA, 47, 481)
         "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
-        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
         "cl17.03" : the abundance table used in Cloudy v17.03.
@@ -487,14 +487,14 @@ class ApecGenerator(CIEGenerator):
 
 class SpexGenerator(CIEGenerator):
     r"""
-    Create thermal spectral using the SPEX CIE model 
-    (https://spex-xray.github.io/spex-help/models/cie.html) 
+    Create thermal spectral using the SPEX CIE model
+    (https://spex-xray.github.io/spex-help/models/cie.html)
     The same underlying machinery as the APEC model is used, as the
     SPEX model has been converted to the APEC table format using the
     code at https://github.com/jeremysanders/spex_to_xspec.
 
     Note that the default abundance table is Anders & Grevasse (1989),
-    which can be changed using the abund_table keyword argument. 
+    which can be changed using the abund_table keyword argument.
 
     Parameters
     ----------
@@ -505,39 +505,39 @@ class SpexGenerator(CIEGenerator):
     nbins : integer
         The number of bins in the spectral model.
     binscale : string, optional
-        The scale of the energy binning: "linear" or "log". 
+        The scale of the energy binning: "linear" or "log".
         Default: "linear"
     var_elem : list of strings, optional
-        The names of elements to allow to vary freely from the single 
-        abundance parameter. These must be strings like ["O", "N", "He"]. 
+        The names of elements to allow to vary freely from the single
+        abundance parameter. These must be strings like ["O", "N", "He"].
         Default: None
     spex_root : string, optional
-        The directory root where the SPEX model files 
-        are stored. If not provided, the default is to 
+        The directory root where the SPEX model files
+        are stored. If not provided, the default is to
         grab them from the tables stored with SOXS.
     spex_vers : string, optional
         The version identifier string for the SPEX files. Default is
         set in the SOXS configuration file, the default for which is
         "3.06.01".
     broadening : boolean, optional
-        Whether or not the spectral lines should be 
+        Whether or not the spectral lines should be
         thermally and velocity broadened. Default: True
     nolines : boolean, optional
         Turn off lines entirely for generating spectra.
         Default: False
     abund_table : string or array_like, optional
-        The abundance table to be used for solar abundances. 
+        The abundance table to be used for solar abundances.
         Either a string corresponding to a built-in table or an array
         of 30 floats corresponding to the abundances of each element
         relative to the abundance of H. Default is set in the SOXS
         configuration file, the default for which is "angr".
         Built-in options are:
-        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et
         Cosmochimica Acta 53, 197)
-        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott
         P. (2009, ARAA, 47, 481)
         "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
-        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
         "cl17.03" : the abundance table used in Cloudy v17.03.
@@ -656,14 +656,14 @@ class AtableGenerator:
     def _get_table(self, ne, eidxs, redshift):
         scale_factor = 1.0 / (1.0 + redshift)
         metal_spec = np.zeros((self.n_T * self.n_D, ne))
-        mylog.debug(f"Opening {self.cosmic_table}.")
+        mylog.debug("Opening %s.", self.cosmic_table)
         with fits.open(self.cosmic_table) as f:
             cosmic_spec = (
                 f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64")
                 * self.norm_fac[0]
             )
         for j, mfile in enumerate(self.metal_tables):
-            mylog.debug(f"Opening {mfile}.")
+            mylog.debug("Opening %s.", mfile)
             with fits.open(mfile) as f:
                 metal_spec += (
                     f["SPECTRA"]
@@ -678,7 +678,7 @@ class AtableGenerator:
         )
         for i, el in enumerate(self._available_elem):
             for j, vfile in enumerate(self.var_tables[i]):
-                mylog.debug(f"Opening {vfile}.")
+                mylog.debug("Opening %s.", vfile)
                 with fits.open(vfile) as f:
                     data = (
                         f["SPECTRA"]
@@ -736,7 +736,7 @@ class Atable1DGenerator(AtableGenerator):
         kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The temperature in keV.
         abund : float
-            The metal abundance in solar units. 
+            The metal abundance in solar units.
         redshift : float
             The redshift.
         norm : float
@@ -824,7 +824,7 @@ class Atable2DGenerator(AtableGenerator):
         nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The hydrogen number density in cm**-3.
         abund : float
-            The metal abundance in solar units. 
+            The metal abundance in solar units.
         redshift : float
             The redshift.
         norm : float
@@ -925,27 +925,27 @@ class MekalGenerator(Atable1DGenerator):
     nbins : integer
         The number of bins in the spectral model.
     binscale : string, optional
-        The scale of the energy binning: "linear" or "log". 
+        The scale of the energy binning: "linear" or "log".
         Default: "linear"
     var_elem : list of strings, optional
-        The names of elements to allow to vary freely from the single 
+        The names of elements to allow to vary freely from the single
         abundance parameter. These must be strings like ["O", "N", "He"].
         Variable abundances available for the MeKaL model are
-        ["He", "C", "N", "O", "Ne", "Na", "Mg", "Al", "Si", "S", "Ar", 
+        ["He", "C", "N", "O", "Ne", "Na", "Mg", "Al", "Si", "S", "Ar",
         "Ca", "Fe", "Ni"]. Default: None
     abund_table : string or array_like, optional
-        The abundance table to be used for solar abundances. 
+        The abundance table to be used for solar abundances.
         Either a string corresponding to a built-in table or an array
         of 30 floats corresponding to the abundances of each element
         relative to the abundance of H. Default is set in the SOXS
         configuration file, the default for which is "angr".
         Built-in options are:
-        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et 
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et
         Cosmochimica Acta 53, 197)
-        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott 
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott
         P. (2009, ARAA, 47, 481)
         "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
-        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914 
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
         "cl17.03" : the abundance table used in Cloudy v17.03.
@@ -984,7 +984,7 @@ class MekalGenerator(Atable1DGenerator):
         var_spec = (
             np.zeros((self.nvar_elem, self.n_T, ne)) if self.nvar_elem > 0 else None
         )
-        mylog.debug(f"Opening {self.cosmic_table}.")
+        mylog.debug("Opening %s.", self.cosmic_table)
         with fits.open(self.cosmic_table) as f:
             cosmic_spec = (
                 f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64")
@@ -1038,9 +1038,9 @@ class CloudyCIEGenerator(Atable1DGenerator):
     #########
 
     This sequence of commands is repeated for solar and low abundances so that the
-    abundance parameter can be taken into account via a linear combination of two 
-    tables. For the individual abundances, they are obtained by setting e.g. "element 
-    neon off" in the run and doing the appropriate arithmetic. 
+    abundance parameter can be taken into account via a linear combination of two
+    tables. For the individual abundances, they are obtained by setting e.g. "element
+    neon off" in the run and doing the appropriate arithmetic.
 
     Assumes the abundance tables from Feldman 1992.
 
@@ -1065,7 +1065,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
     def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None):
         cosmic_table = get_data_file("c17.03_cie_nome.fits")
-        metal_tables = (get_data_file(f"c17.03_cie_mxxx.fits"),)
+        metal_tables = (get_data_file("c17.03_cie_mxxx.fits"),)
         var_tables = [
             (get_data_file(f"c17.03_cie_{metal_tab_names[el]}.fits"),)
             for el in self._available_elem
@@ -1087,10 +1087,10 @@ class CloudyCIEGenerator(Atable1DGenerator):
 class IGMGenerator(Atable2DGenerator):
     _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
     """
-    Initialize an emission model for a thermal plasma including 
-    photoionization and resonant scattering from the CXB based on 
+    Initialize an emission model for a thermal plasma including
+    photoionization and resonant scattering from the CXB based on
     Khabibullin & Churazov 2019
-    (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov 
+    (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov
     et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
 
     Assumes the abundance tables from Feldman 1992.
@@ -1110,7 +1110,7 @@ class IGMGenerator(Atable2DGenerator):
     nbins : integer
         The number of bins in the spectral model.
     binscale : string, optional
-        The scale of the energy binning: "linear" or "log". 
+        The scale of the energy binning: "linear" or "log".
         Default: "linear"
     resonant_scattering : boolean, optional
         Whether or not to include the effects of resonant scattering
@@ -1121,7 +1121,7 @@ class IGMGenerator(Atable2DGenerator):
     var_elem : list of strings, optional
         The names of elements to allow to vary freely from the single
         abundance parameter. These must be strings like ["C", "N", "O"].
-        Variable abundances available for the IGM model are ["C", "N", "O", 
+        Variable abundances available for the IGM model are ["C", "N", "O",
         "Ne", "Fe", "S", "Si", "Ca", "Mg"]. Default: None
     """
 
@@ -1139,8 +1139,8 @@ class IGMGenerator(Atable2DGenerator):
         cosmic_table = get_data_file("igm_v3ph2_nome.fits")
         if resonant_scattering:
             metal_tables = (
-                get_data_file(f"igm_v3ph2_mxxx.fits"),
-                get_data_file(f"igm_v3sc_mxxx.fits"),
+                get_data_file("igm_v3ph2_mxxx.fits"),
+                get_data_file("igm_v3sc_mxxx.fits"),
             )
             var_tables = [
                 (
@@ -1150,7 +1150,7 @@ class IGMGenerator(Atable2DGenerator):
                 for el in self._available_elem
             ]
         else:
-            metal_tables = (get_data_file(f"igm_v3ph2_mxxx.fits"),)
+            metal_tables = (get_data_file("igm_v3ph2_mxxx.fits"),)
             var_tables = [
                 (get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),)
                 for el in self._available_elem

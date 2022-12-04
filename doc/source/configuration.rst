@@ -3,12 +3,12 @@
 SOXS Configuration File
 =======================
 
-In SOXS, configuration elements can be set in the configuration file. 
-On most systems, this is placed in the ``XDG_CONFIG_HOME`` environment 
-variable, which is ``$HOME/.config`` for most systems. The SOXS configuration 
+In SOXS, configuration elements can be set in the configuration file.
+On most systems, this is placed in the ``XDG_CONFIG_HOME`` environment
+variable, which is ``$HOME/.config`` for most systems. The SOXS configuration
 file is therefore ``XDG_CONFIG_HOME/soxs/soxs.cfg``.
 
-In versions of SOXS post v4.0.0, these are the options available for 
+In versions of SOXS post v4.0.0, these are the options available for
 customization in the configuration file:
 
 .. code-block:: text
@@ -46,8 +46,8 @@ function:
 
     Changes to the ``"abund_table"``, ``"apec_vers"``, ``"bkgnd_nH"``,
     ``"bkgnd_absorb_model"``, or ``"frgnd_spec_model"`` config options using
-    :func:`~soxs.utils.set_soxs_config` will trigger a re-creation of the 
-    astrophysical foreground model. 
+    :func:`~soxs.utils.set_soxs_config` will trigger a re-creation of the
+    astrophysical foreground model.
 
 .. _mission-config:
 

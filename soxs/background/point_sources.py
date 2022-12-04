@@ -69,11 +69,11 @@ def generate_fluxes(fov, prng):
     f_gal = InterpolatedUnivariateSpline(F_gal, logf)
     f_agn = InterpolatedUnivariateSpline(F_agn, logf)
 
-    fov_area = fov ** 2
+    fov_area = fov**2
 
     n_gal = int(n_gal * fov_area / 3600.0)
     n_agn = int(n_agn * fov_area / 3600.0)
-    mylog.debug(f"{n_agn} AGN, {n_gal} galaxies in the FOV.")
+    mylog.debug("%s AGN, %s galaxies in the FOV.", n_agn, n_gal)
 
     randvec1 = prng.uniform(size=n_agn)
     agn_fluxes = 10 ** f_agn(randvec1)
@@ -104,10 +104,10 @@ def generate_sources(fov, sky_center, prng=None):
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     """
     prng = parse_prng(prng)
 
@@ -154,11 +154,11 @@ def make_ptsrc_background(
         The absorption model to use, "wabs" or "tbabs".
         Defaults to the value in the SOXS configuration file.
     nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The hydrogen column in units of 10**22 atoms/cm**2. 
+        The hydrogen column in units of 10**22 atoms/cm**2.
         Defaults to the value in the SOXS configuration file.
     area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The effective area in cm**2. It must be large enough 
-        so that a sufficiently large sample is drawn for the 
+        The effective area in cm**2. It must be large enough
+        so that a sufficiently large sample is drawn for the
         ARF. Default: 40000.
     input_sources : string, optional
         If set to a filename, input the source positions, fluxes,
@@ -171,10 +171,10 @@ def make_ptsrc_background(
         Add a diffuse component across the entire field of view to represent
         the unresolved flux from sources at very small fluxes. Default: True
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     """
     prng = parse_prng(prng)
 
@@ -186,7 +186,7 @@ def make_ptsrc_background(
     if input_sources is None:
         ra0, dec0, fluxes, ind = generate_sources(fov, sky_center, prng=prng)
     else:
-        mylog.info(f"Reading in point-source properties from {input_sources}.")
+        mylog.info("Reading in point-source properties from %s.", input_sources)
         t = ascii.read(input_sources)
         ra0 = t["RA"].data
         dec0 = t["Dec"].data
@@ -194,7 +194,7 @@ def make_ptsrc_background(
         ind = t["index"].data
     num_sources = fluxes.size
 
-    mylog.debug(f"Generating spectra from {num_sources} sources.")
+    mylog.debug("Generating spectra from %d sources.", num_sources)
 
     # If requested, output the source properties to a file
     if output_sources is not None:
@@ -215,9 +215,9 @@ def make_ptsrc_background(
         2006, ApJ, 645, 95. The first number "F12" is in erg/s/cm**2/deg**2, and
         is the difference between the total flux in sources below 5e-17 erg/s/cm**2
         and the "average" value in Table 3 for the unresolved flux in the 1-2 keV
-        band of 1.04e-12 erg/s/cm**2/deg**2. The factor of 2.0 comes from the 
-        scaling between the fluxes in the 1-2 keV and 0.5-2 keV bands, assuming 
-        a spectral index of 2. The whole thing finally needs to be scaled by the 
+        band of 1.04e-12 erg/s/cm**2/deg**2. The factor of 2.0 comes from the
+        scaling between the fluxes in the 1-2 keV and 0.5-2 keV bands, assuming
+        a spectral index of 2. The whole thing finally needs to be scaled by the
         FOV at the end.
         """
         F12 = 0.676e-12  # erg/s/cm**2/deg**2 in 1-2 keV band
@@ -230,8 +230,8 @@ def make_ptsrc_background(
     oma = 1.0 - ind
     invoma = 1.0 / oma
     invoma[oma == 0.0] = 1.0
-    fac1 = spec_emin ** oma
-    fac2 = spec_emax ** oma - fac1
+    fac1 = spec_emin**oma
+    fac2 = spec_emax**oma - fac1
     fluxscale = get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax)
 
     # Using the energy flux, determine the photon flux by simple scaling
@@ -251,7 +251,7 @@ def make_ptsrc_background(
             # Generate the energies in the source frame
             u = prng.uniform(size=nph)
             if ind[i] == 1.0:
-                energies = spec_emin * (eratio ** u)
+                energies = spec_emin * (eratio**u)
             else:
                 energies = fac1[i] + u * fac2[i]
                 if invoma[i] == -1.0:
@@ -303,7 +303,7 @@ def make_ptsrc_background(
         all_ra = all_ra[randvec < absorb]
         all_dec = all_dec[randvec < absorb]
         all_nph = all_energies.size
-        mylog.debug(f"{all_nph} photons remain after foreground galactic absorption.")
+        mylog.debug("%d photons remain after foreground galactic absorption.", all_nph)
 
     all_flux = np.sum(all_energies) * erg_per_keV / (exp_time * area)
 
@@ -336,7 +336,7 @@ def make_point_sources_file(
 ):
     """
     Make a SIMPUT catalog made up of contributions from
-    point sources. 
+    point sources.
 
     Parameters
     ----------
@@ -354,11 +354,11 @@ def make_point_sources_file(
         The absorption model to use, "wabs" or "tbabs".
         Defaults to the value in the SOXS configuration file.
     nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The hydrogen column in units of 10**22 atoms/cm**2. 
+        The hydrogen column in units of 10**22 atoms/cm**2.
         Defaults to the value in the SOXS configuration file.
     area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The effective area in cm**2. It must be large enough 
-        so that a sufficiently large sample is drawn for the 
+        The effective area in cm**2. It must be large enough
+        so that a sufficiently large sample is drawn for the
         ARF. Default: 40000.
     append : boolean, optional
         If True, the photon list source will be appended to an existing
@@ -380,9 +380,9 @@ def make_point_sources_file(
         Add a diffuse component across the entire field of view to represent
         the unresolved flux from sources at very small fluxes. Default: True
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
         which sets the seed based on the system time.
     """
     events = make_ptsrc_background(
@@ -424,10 +424,10 @@ def make_point_source_list(output_file, fov, sky_center, prng=None):
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
-        A pseudo-random number generator. Typically will only 
-        be specified if you have a reason to generate the same 
-        set of random numbers, such as for a test. Default is None, 
-        which sets the seed based on the system time. 
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
     """
     ra0, dec0, fluxes, ind = generate_sources(fov, sky_center, prng=prng)
 

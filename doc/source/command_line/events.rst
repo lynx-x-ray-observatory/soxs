@@ -3,14 +3,14 @@
 Command Line Scripts for Processing Events
 ==========================================
 
-These command-line scripts allow one to make derived products from 
-event files. For details on what's going on under the hood, see 
+These command-line scripts allow one to make derived products from
+event files. For details on what's going on under the hood, see
 :ref:`event-tools`.
 
 ``make_exposure_map``
 ---------------------
 
-This script takes an event file made by SOXS and makes a SOXS exposure map for it. 
+This script takes an event file made by SOXS and makes a SOXS exposure map for it.
 
 .. code-block:: text
 
@@ -19,13 +19,13 @@ This script takes an event file made by SOXS and makes a SOXS exposure map for i
                              [--nhistx NHISTX] [--nhisty NHISTY]
                              [--normalize | --no_normalize] [--reblock REBLOCK]
                              event_file expmap_file
-    
+
     Make a SOXS exposure map from an event file.
-    
+
     positional arguments:
       event_file            The event file to use to make the exposure map.
       expmap_file           The file to write the exposure map to.
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --energy ENERGY       The reference energy to use when making the exposure
@@ -63,20 +63,20 @@ Also write an aspect solution file.
 
     [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --asol_file=asol.fits --overwrite
 
-Make an exposure map, using an ASCII text file with two columns, energy and flux, 
-to weight the exposure. 
+Make an exposure map, using an ASCII text file with two columns, energy and flux,
+to weight the exposure.
 
 .. code-block:: bash
 
     [~]$ make_exposure_map evt.fits expmap.fits --weightsfile=spec.dat --overwrite
 
-Make an exposure map and change the binning of the aspect histogram. 
+Make an exposure map and change the binning of the aspect histogram.
 
 .. code-block:: bash
 
     [~]$ make_exposure_map evt.fits expmap.fits --energy=3.0 --overwrite --nhistx=32 --nhisty=32
 
-Make an exposure map, but don't normalize by the exposure time. 
+Make an exposure map, but don't normalize by the exposure time.
 
 .. code-block:: bash
 
@@ -97,13 +97,13 @@ Reblock the exposure map by 4.
                       [--overwrite] [--expmap_file EXPMAP_FILE]
                       [--reblock REBLOCK]
                       event_file out_file
-    
+
     Make a FITS image from a SOXS event file.
-    
+
     positional arguments:
       event_file            The event file to use to make the image.
       out_file              The file to write the image to.
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --coord_type COORD_TYPE
@@ -163,9 +163,9 @@ Reblock the image by 4.
                                [--emax EMAX] [--overwrite]
                                [--expmap_file EXPMAP_FILE]
                                event_file out_file ctr rmin rmax nbins
-    
+
     Make a FITS radial profile from a SOXS event file.
-    
+
     positional arguments:
       event_file            The event file to use to make the profile.
       out_file              The file to write the profile to.
@@ -176,7 +176,7 @@ Reblock the image by 4.
       rmin                  The minimum radius of the profile, in arcseconds.
       rmax                  The maximum radius of the profile, in arcseconds.
       nbins                 The number of bins in the profile.
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       --ctr_type CTR_TYPE   The type of center coordinate. Either 'celestial' for
@@ -196,7 +196,7 @@ Examples
 
 Make a radial profile from an event file, using (RA, Dec) = (30.0, 45.0) as the
 central coordinates of the profile. The profile runs from 0.0 arcseconds to 100.0
-arcseconds, with 50 linearly spaced bins. 
+arcseconds, with 50 linearly spaced bins.
 
 .. code-block:: bash
 
@@ -214,7 +214,7 @@ The same profile, but specifying the center in physical coordinates instead.
 
     [~]$ make_radial_profile evt.fits profile.fits 1024.0,300.0 0.0 100.0 50 --ctr_type=physical --overwrite
 
-Include an exposure map, allowing flux-based quantities to also be computed. 
+Include an exposure map, allowing flux-based quantities to also be computed.
 
 .. code-block:: bash
 

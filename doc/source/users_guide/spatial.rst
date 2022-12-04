@@ -3,9 +3,9 @@
 Spatial Models in SOXS
 ======================
 
-The ``SpatialModel`` class can be used to create RA and Dec positions of photons, 
-which can be combined with the energies from a ``Spectrum`` object to create a 
-source that can be written to a SIMPUT photon list. Several ``SpatialModel`` 
+The ``SpatialModel`` class can be used to create RA and Dec positions of photons,
+which can be combined with the energies from a ``Spectrum`` object to create a
+source that can be written to a SIMPUT photon list. Several ``SpatialModel``
 derivatives are available, which are documented below.
 
 In general, each ``SpatialModel`` takes the following information:
@@ -20,7 +20,7 @@ described below in :ref:`generate-coords`.
 ``PointSourceModel``
 --------------------
 
-The :class:`~soxs.spatial.PointSourceModel` generates photon positions for a 
+The :class:`~soxs.spatial.PointSourceModel` generates photon positions for a
 point source.
 
 .. code-block:: python
@@ -30,29 +30,29 @@ point source.
     dec0 = 45.0 # source Dec in degrees
     pt_src = PointSourceModel(ra0, dec0)
 
-Though this model is trivial, it is constructed in the same way as the other 
+Though this model is trivial, it is constructed in the same way as the other
 models below for consistency.
 
 Radial Models
 -------------
 
-The following classes generate azimuthally symmetric models (though see 
-:ref:`ellipticity`) from functions or lookup tables for a surface 
+The following classes generate azimuthally symmetric models (though see
+:ref:`ellipticity`) from functions or lookup tables for a surface
 brightness profile as a function of radius.
 
 ``BetaModel``
 +++++++++++++
 
-The :class:`~soxs.spatial.BetaModel` generates photon positions for a 
-:math:`\beta`-model profile, often used to model galaxy clusters. The 
-functional form of the :math:`\beta`-model for a surface brightness 
+The :class:`~soxs.spatial.BetaModel` generates photon positions for a
+:math:`\beta`-model profile, often used to model galaxy clusters. The
+functional form of the :math:`\beta`-model for a surface brightness
 profile is:
 
 .. math::
 
     S(r) = S_0\left[1+\left(\frac{r}{r_c}\right)^2\right]^{(-3\beta+1/2)}
 
-where :math:`S_0` is the central surface brightness, :math:`\beta` is 
+where :math:`S_0` is the central surface brightness, :math:`\beta` is
 the slope parameter, and :math:`r_c` is the core radius. To construct one:
 
 .. code-block:: python
@@ -65,16 +65,16 @@ the slope parameter, and :math:`r_c` is the core radius. To construct one:
     beta_src = BetaModel(ra0, dec0, r_c, beta)
 
 The normalization of the :class:`~soxs.spatial.BetaModel` will be determined
-by the :class:`~soxs.spectra.Spectrum` object it is combined with, so the 
-:math:`S_0` parameter is not specified. 
+by the :class:`~soxs.spectra.Spectrum` object it is combined with, so the
+:math:`S_0` parameter is not specified.
 
 .. _double-beta-model:
 
 ``DoubleBetaModel``
 +++++++++++++++++++
 
-The :class:`~soxs.spatial.DoubleBetaModel` generates photon positions for a 
-sum of two :math:`\beta`-model profiles, often used to model cool-core galaxy 
+The :class:`~soxs.spatial.DoubleBetaModel` generates photon positions for a
+sum of two :math:`\beta`-model profiles, often used to model cool-core galaxy
 clusters. This sum is parameterized as:
 
 .. math::
@@ -82,11 +82,11 @@ clusters. This sum is parameterized as:
     S(r) = S_{0,1}\left\{\left[1+\left(\frac{r}{r_{c,1}}\right)^2\right]^{(-3\beta_1+1/2)} +
            \frac{S_{0,2}}{S_{0,1}}\left[1+\left(\frac{r}{r_{c,2}}\right)^2\right]^{(-3\beta_2+1/2)}\right\}
 
-where :math:`S_{0,1}` and :math:`S_{0,2}` are the central surface brightness 
-parameters of the two profiles, :math:`\beta_1` and :math:`\beta_2` are the 
-slope parameters of the two profiles, and :math:`r_{c,1}` and :math:`r_{c,2}` are 
-the core radius parameters. The ratio :math:`S_{0,2}/S_{0,1}` is parameterized by 
-``sb_ratio`` in the example below. To construct a :class:`~soxs.spatial.DoubleBetaModel` 
+where :math:`S_{0,1}` and :math:`S_{0,2}` are the central surface brightness
+parameters of the two profiles, :math:`\beta_1` and :math:`\beta_2` are the
+slope parameters of the two profiles, and :math:`r_{c,1}` and :math:`r_{c,2}` are
+the core radius parameters. The ratio :math:`S_{0,2}/S_{0,1}` is parameterized by
+``sb_ratio`` in the example below. To construct a :class:`~soxs.spatial.DoubleBetaModel`
 object:
 
 .. code-block:: python
@@ -105,7 +105,7 @@ object:
 ``AnnulusModel``
 ++++++++++++++++
 
-The :class:`~soxs.spatial.AnnulusModel` can be used to generate photon 
+The :class:`~soxs.spatial.AnnulusModel` can be used to generate photon
 positions for a annulus or disk with uniform surface brightness:
 
 .. code-block:: python
@@ -121,16 +121,16 @@ positions for a annulus or disk with uniform surface brightness:
 ``RadialFunctionModel``
 +++++++++++++++++++++++
 
-:class:`~soxs.spatial.RadialFunctionModel` takes as input a central RA, 
-Dec, and a Python function or callable object to generate an azimuthally 
+:class:`~soxs.spatial.RadialFunctionModel` takes as input a central RA,
+Dec, and a Python function or callable object to generate an azimuthally
 symmetric distribution of photon positions:
 
 .. code-block:: python
 
     from soxs import RadialFunctionModel
     # A simple inverse square-law surface brightness profile.
-    # There is no need to normalize it properly, since that 
-    # will be taken care of by the accompanying spectral 
+    # There is no need to normalize it properly, since that
+    # will be taken care of by the accompanying spectral
     # model. r is in arcseconds.
     def S_r(r):
         return 1.0/(r*r)
@@ -141,8 +141,8 @@ symmetric distribution of photon positions:
 ``RadialArrayModel``
 ++++++++++++++++++++
 
-:class:`~soxs.spatial.RadialArrayModel` takes as input a central RA, 
-Dec, and two NumPy arrays of radius and surface brightness to generate 
+:class:`~soxs.spatial.RadialArrayModel` takes as input a central RA,
+Dec, and two NumPy arrays of radius and surface brightness to generate
 an azimuthally symmetric distribution of photon positions:
 
 .. code-block:: python
@@ -158,8 +158,8 @@ an azimuthally symmetric distribution of photon positions:
 ``RadialFileModel``
 +++++++++++++++++++
 
-:class:`~soxs.spatial.RadialFileModel` takes as input a central RA, Dec, 
-and an ASCII table of two columns, radius and surface brightness, to 
+:class:`~soxs.spatial.RadialFileModel` takes as input a central RA, Dec,
+and an ASCII table of two columns, radius and surface brightness, to
 generate an azimuthally symmetric distribution of photon positions:
 
 .. code-block:: python
@@ -174,9 +174,9 @@ generate an azimuthally symmetric distribution of photon positions:
 Ellipticity of Radial Source Models
 +++++++++++++++++++++++++++++++++++
 
-Any of the radial source models listed above take two parameters, 
-``ellipticity`` and ``theta``, which define the ellipticity of the 
-model and the orientation of the ellipse, respectively. For example, 
+Any of the radial source models listed above take two parameters,
+``ellipticity`` and ``theta``, which define the ellipticity of the
+model and the orientation of the ellipse, respectively. For example,
 to make an elliptical annulus source tilted 45 degrees from the horizontal:
 
 .. code-block:: python
@@ -190,14 +190,14 @@ to make an elliptical annulus source tilted 45 degrees from the horizontal:
     theta = 45.0
     ann_src = AnnulusModel(ra0, dec0, r_in, r_out, ellipticity=ellipticity)
 
-where ``ellipticity`` will shrink the annulus (or other shape) in 
-the y-direction if < 1 or will expand it in the y-direction if > 1. 
+where ``ellipticity`` will shrink the annulus (or other shape) in
+the y-direction if < 1 or will expand it in the y-direction if > 1.
 
 ``RectangleModel``
 ------------------
 
-The :class:`~soxs.spatial.RectangleModel` generates photon positions 
-on the sky which fill a given rectangle shape, which can be optionally 
+The :class:`~soxs.spatial.RectangleModel` generates photon positions
+on the sky which fill a given rectangle shape, which can be optionally
 rotated through an angle:
 
 .. code-block:: python
@@ -215,7 +215,7 @@ Setting either the ``width`` or ``height`` parameter to 0.0 creates a line sourc
 "Field of View" Sources
 -----------------------
 
-The :class:`~soxs.spatial.FillFOVModel` generates photon positions on 
+The :class:`~soxs.spatial.FillFOVModel` generates photon positions on
 the sky which fill a given field of view:
 
 .. code-block:: python
@@ -247,13 +247,13 @@ RA and Dec coordinates in degrees:
     r_c = 20.0 # the core radius in arc seconds
     beta = 2./3. # the beta slope parameter
     beta_src = BetaModel(ra0, dec0, r_c, beta)
-    
+
     # Generate coordinates
     prng = 24 # random seed
     num_events = 1000000 # number of events to generate
     ra, dec = beta_src.generate_coords(num_events, prng=prng)
 
-Normally, :meth:`~soxs.spatial.SpatialModel.generate_coords` will not need to be 
+Normally, :meth:`~soxs.spatial.SpatialModel.generate_coords` will not need to be
 called by the end-user but will be used "under the hood" in the generation of
 a :class:`~soxs.simput.PhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
 See :ref:`simput` for more information.
