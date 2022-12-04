@@ -21,10 +21,9 @@ may install SOXS using ``conda``:
 
 .. code-block:: bash
 
-    conda install -c jzuhone -c astropy soxs
+    conda install -c conda-forge soxs
 
-Note both the ``jzuhone`` and ``astropy`` channels are required. These methods
-install both the Python interface and the command-line scripts.
+These methods install both the Python interface and the command-line scripts.
 
 Of course, you can always clone the source from
 `GitHub <https://github.com/lynx-x-ray-observatory/soxs>`_ and install it

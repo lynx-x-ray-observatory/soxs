@@ -38,7 +38,7 @@ If you use [Anaconda Python](https://www.continuum.io/anaconda-overview), you ma
 install SOXS using `conda`:
 
 ```
-[~]$ conda install -c jzuhone soxs
+[~]$ conda install -c conda-forge soxs
 ```
 
 These methods install both the Python interface and the command-line scripts.
