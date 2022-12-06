@@ -19,7 +19,17 @@ def answer_store(request):
 
 @pytest.fixture()
 def answer_dir(request):
-    ad = os.path.abspath(request.config.getoption("--answer_dir"))
+    ad = request.config.getoption("--answer_dir")
+    if ad is None:
+        pytest.skip("No answer directory")
+    ad = os.path.abspath(ad)
     if not os.path.exists(ad):
         os.makedirs(ad)
     return ad
+
+
+@pytest.fixture
+def info_with_some_attr(info):
+    if not hasattr(info, "some_attr"):
+        pytest.skip("Missing attribute 'some_attr'")
+    yield info
