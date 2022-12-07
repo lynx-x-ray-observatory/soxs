@@ -919,7 +919,7 @@ def simulate_spectrum(
     out_spec = np.zeros(rmf.n_ch)
 
     if spec is not None:
-        cspec = ConvolvedSpectrum.convolve(spec, arf)
+        cspec = ConvolvedSpectrum.convolve(spec, arf, use_arf_energies=True)
         out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng)
 
     fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)

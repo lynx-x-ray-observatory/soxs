@@ -1030,7 +1030,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         )
 
     @classmethod
-    def convolve(cls, spectrum, arf):
+    def convolve(cls, spectrum, arf, use_arf_energies=False):
         """
         Generate a convolved spectrum by convolving a spectrum with an
         ARF.
@@ -1041,14 +1041,31 @@ class ConvolvedSpectrum(CountRateSpectrum):
             The input spectrum to convolve with.
         arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
             The ARF to use in the convolution.
+        use_arf_energies : boolean, optional
+            If True, use the energy binning of the ARF for
+            the convolved spectrum. Default: False, which uses
+            the original spectral binning.
         """
         from soxs.response import AuxiliaryResponseFile
 
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
-        earea = arf.interpolate_area(spectrum.emid.value)
-        rate = spectrum.flux * earea
-        return cls(spectrum.ebins, rate, arf, binscale=spectrum.binscale)
+        if use_arf_energies:
+            flux = u.Quantity(
+                np.interp(
+                    arf.emid, spectrum.emid.value, spectrum.flux, left=0.0, right=0.0
+                ),
+                "ph/s/cm**2/keV",
+            )
+            rate = u.Quantity(arf.eff_area, "cm**2") * flux
+            binscale = "linear"
+            ebins = u.Quantity(arf.ebins, "keV")
+        else:
+            earea = arf.interpolate_area(spectrum.emid.value)
+            rate = spectrum.flux * earea
+            binscale = spectrum.binscale
+            ebins = spectrum.ebins
+        return cls(ebins, rate, arf, binscale=binscale)
 
     def new_spec_from_band(self, emin, emax):
         """
