@@ -3,6 +3,14 @@
 ChangeLog
 =========
 
+Version 4.2.0
+-------------
+
+This update to SOXS contains new features.
+
+* Installation and use on Windows 64-bit platforms is now supported.
+*
+
 Version 4.1.0
 -------------
 
