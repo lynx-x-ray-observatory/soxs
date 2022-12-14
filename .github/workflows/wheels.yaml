@@ -2,8 +2,6 @@ name: Build CI Wheels
 
 on:
   push:
-    branches:
-      - main
     tags:
       - '*'
   workflow_dispatch:
