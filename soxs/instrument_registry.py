@@ -290,6 +290,24 @@ instrument_registry["xrism_resolve"] = {
     "grating": False,
 }
 
+# XRISM Xtend
+
+instrument_registry["xrism_xtend"] = {
+    "name": "xrism_xtend",
+    "arf": "sxt-i_140505_ts02um_int01.8r_intall_140618psf.arf",
+    "rmf": "ah_sxi_20120702.rmf",
+    "bkgnd": ["ah_sxi_pch_nxb_full_20110530.pi", 1422.6292229683816],
+    "num_pixels": 1305,
+    "fov": 38.0,
+    "aimpt_coords": [0.0, 0.0],
+    "chips": [["Box", 0, 0, 1305, 1305]],
+    "focal_length": 5.6,
+    "dither": False,
+    "psf": ["eef", "eef_from_sxi_psfimage_20140618.fits", 1],
+    "imaging": True,
+    "grating": False,
+}
+
 # AXIS
 
 instrument_registry["axis"] = {
