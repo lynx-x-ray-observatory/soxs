@@ -67,7 +67,7 @@ def make_frgnd_spectrum(arf, rmf):
 def read_instr_spectrum(filename, ext_area):
     """
     Read an instrumental background spectrum from
-    a FITS PHA file.
+    a FITS PHA/PI file.
 
     Parameters
     ----------
