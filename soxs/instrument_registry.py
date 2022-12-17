@@ -72,9 +72,7 @@ class InstrumentRegistry:
 
 instrument_registry = InstrumentRegistry()
 
-## Lynx
-
-# High-Definition X-ray Imager (HDXI)
+# Lynx High-Definition X-ray Imager (HDXI)
 
 instrument_registry["lynx_hdxi"] = {
     "name": "lynx_hdxi",
@@ -92,7 +90,7 @@ instrument_registry["lynx_hdxi"] = {
     "grating": False,
 }
 
-# Micro-calorimeter
+# Lynx Micro-calorimeter
 
 instrument_registry["lynx_lxm"] = {
     "name": "lynx_lxm",
@@ -142,8 +140,7 @@ instrument_registry["lynx_lxm_ultra"] = {
     "grating": False,
 }
 
-
-# Gratings (for spectra only)
+# Lynx Gratings (for spectra only)
 
 instrument_registry["lynx_xgs"] = {
     "name": "lynx_xgs",
@@ -155,9 +152,7 @@ instrument_registry["lynx_xgs"] = {
     "grating": True,
 }
 
-## Athena
-
-# WFI
+# Athena WFI
 
 instrument_registry["athena_wfi"] = {
     "name": "athena_wfi",
@@ -180,7 +175,7 @@ instrument_registry["athena_wfi"] = {
     "grating": False,
 }
 
-# XIFU
+# Athena XIFU
 
 instrument_registry["athena_xifu"] = {
     "name": "athena_xifu",
@@ -198,9 +193,7 @@ instrument_registry["athena_xifu"] = {
     "grating": False,
 }
 
-## Chandra
-
-# ACIS-I, Cycle 0 and 20
+# Chandra ACIS-I, Cycle 0 and 20
 
 for cycle in [0, 22]:
     name = f"chandra_acisi_cy{cycle}"
@@ -225,7 +218,7 @@ for cycle in [0, 22]:
         "grating": False,
     }
 
-# ACIS-S, Cycle 0 and 22
+# Chandra ACIS-S, Cycle 0 and 22
 
 for cycle in [0, 22]:
     name = f"chandra_aciss_cy{cycle}"
@@ -260,7 +253,7 @@ for cycle in [0, 22]:
     }
 
 
-# ACIS-S, Cycle 0 and 19 HETG (for spectra only)
+# Chandra ACIS-S, Cycle 0 and 19 HETG (for spectra only)
 
 orders = {"p1": 1, "m1": -1}
 
@@ -279,9 +272,7 @@ for energy in ["meg", "heg"]:
                 "grating": True,
             }
 
-## Hitomi
-
-# SXS
+# XRISM Resolve
 
 instrument_registry["xrism_resolve"] = {
     "name": "xrism_resolve",
@@ -299,7 +290,7 @@ instrument_registry["xrism_resolve"] = {
     "grating": False,
 }
 
-## AXIS
+# AXIS
 
 instrument_registry["axis"] = {
     "name": "axis",
@@ -317,7 +308,7 @@ instrument_registry["axis"] = {
     "grating": False,
 }
 
-## STAR-X
+# STAR-X
 
 instrument_registry["star-x"] = {
     "name": "star-x",
@@ -335,7 +326,7 @@ instrument_registry["star-x"] = {
     "grating": False,
 }
 
-## LEM
+# LEM
 
 instrument_registry["lem_2eV"] = {
     "name": "lem_2eV",
@@ -353,7 +344,6 @@ instrument_registry["lem_2eV"] = {
     "grating": False,
 }
 
-
 instrument_registry["lem_0.9eV"] = {
     "name": "lem_0.9eV",
     "arf": "lem_300522.arf",
@@ -369,7 +359,6 @@ instrument_registry["lem_0.9eV"] = {
     "imaging": True,
     "grating": False,
 }
-
 
 instrument_registry["lem_2eV_0422"] = instrument_registry["lem_2eV"].copy()
 instrument_registry["lem_2eV_0422"]["arf"] = "lem_110422.arf"
@@ -407,12 +396,12 @@ def add_instrument_to_registry(inst_spec):
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
-    ...     "dither": True, # Whether or not to dither the instrument
+    ...     "dither": True, # Whether to dither the instrument
     ...     "psf": ["image", "chandra_psf.fits", 6], # The type of PSF and associated parameters
     ...     "chips": [["Box", 0, 0, 4096, 4096]], # The specification for the chips
     ...     "aimpt_coords": [0.0, 0.0], # The detector coordinates of the aimpoint
-    ...     "imaging": True # Whether or not this is a imaging instrument
-    ...     "grating": False # Whether or not this is a grating instrument
+    ...     "imaging": True # Whether this is an imaging instrument
+    ...     "grating": False # Whether this is a grating instrument
     ... }
     """
     if isinstance(inst_spec, dict):
