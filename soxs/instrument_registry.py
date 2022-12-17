@@ -378,14 +378,14 @@ instrument_registry["lem_0.9eV"] = {
     "grating": False,
 }
 
-instrument_registry["lem_2eV_0422"] = instrument_registry["lem_2eV"].copy()
+instrument_registry["lem_2eV_0422"] = deepcopy(instrument_registry["lem_2eV"])
 instrument_registry["lem_2eV_0422"]["arf"] = "lem_110422.arf"
-instrument_registry["lem_0.9eV_0422"] = instrument_registry["lem_0.9eV"].copy()
+instrument_registry["lem_0.9eV_0422"] = deepcopy(instrument_registry["lem_0.9eV"])
 instrument_registry["lem_0.9eV_0422"]["arf"] = "lem_110422.arf"
-instrument_registry["lem_2eV_0322"] = instrument_registry["lem_2eV"].copy()
+instrument_registry["lem_2eV_0322"] = deepcopy(instrument_registry["lem_2eV"])
 instrument_registry["lem_2eV_0322"]["arf"] = "lem_030322a.arf"
 instrument_registry["lem_2eV_0322"]["rmf"] = "lem_2ev_030322.rmf"
-instrument_registry["lem_0.9eV_0322"] = instrument_registry["lem_0.9eV"].copy()
+instrument_registry["lem_0.9eV_0322"] = deepcopy(instrument_registry["lem_0.9eV"])
 instrument_registry["lem_0.9eV_0322"]["arf"] = "lem_030322a.arf"
 instrument_registry["lem_0.9eV_0322"]["rmf"] = "lem_09ev_030322.rmf"
 
