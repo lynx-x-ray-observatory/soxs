@@ -65,9 +65,9 @@ class EEFPSF(PSF):
         n_evt = x.size
         # This returns image coordinates from the PSF
         # image
-        rad = self.eefhdu.data["psfrad"] / self.scale
+        rad = self.eefhdu.data["psfrad"] * self.scale
         cdf = self.eefhdu.data["eef"]
-        randvec = self.prng.uniform(low=cdf[0], high=cdf[1], size=n_evt)
+        randvec = self.prng.uniform(low=cdf[0], high=cdf[-1], size=n_evt)
         r = np.interp(randvec, cdf, rad)
         phi = self.prng.uniform(low=0.0, high=2.0 * np.pi, size=n_evt)
         return x + r * np.cos(phi), y + r * np.sin(phi)
@@ -119,9 +119,9 @@ class MultiEEFPSF(PSF):
                 # curve
                 idxs = np.where(idx_score == j)[0]
                 n_out += idxs.size
-                rad = f[self.eef_i[j]].data["psfrad"] / self.eef_s[j]
+                rad = f[self.eef_i[j]].data["psfrad"] * self.eef_s[j]
                 cdf = f[self.eef_i[j]].data["eef"]
-                randvec = self.prng.uniform(low=cdf[0], high=cdf[1], size=idxs.size)
+                randvec = self.prng.uniform(low=cdf[0], high=cdf[-1], size=idxs.size)
                 r = np.interp(randvec, cdf, rad)
                 phi = self.prng.uniform(low=0.0, high=2.0 * np.pi, size=idxs.size)
                 x[idxs] += r * np.cos(phi)
