@@ -6,10 +6,11 @@ ChangeLog
 Version 4.2.0
 -------------
 
-This update to SOXS contains new features.
+This update to SOXS contains new features and a bugfix.
 
 * Installation and use on Windows 64-bit platforms is now supported.
-*
+* New PSF models using encircled energy fraction (EEF) files are now supported.
+  See :ref:`psf-models` for more details.
 
 Version 4.1.0
 -------------

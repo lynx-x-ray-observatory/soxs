@@ -157,12 +157,17 @@ the :math:`\pm` first order spectra. They are named:
 XRISM
 ~~~~~
 
-A single instrument specification is available for *XRISM*, for the "Resolve"
-microcalorimeter instrument, named ``"xrism_resolve"``. It has a 5.6-meter focal
-length, no dithering, a 3-arcminute field of view, and 0.5-arcminute pixels. The
-ARF assumes the full PSF without detector boundary, and an extended source flat
-model. The response files, PSF model, and instrumental background model used for
-*XRISM*/Resolve in SOXS were obtained from
+Three instrument specifications are available for *XRISM*. For the *Resolve*
+instrument, the ``"xrism_resolve"`` specification has a ~3 arcminute square FoV
+with 6 pixels on a side. The RMF assumes 5 eV spectral resolution. This instrument
+specification assumes no gate valve. The ``"xrism_resolve_withGV"`` specification
+assumes the presence of gate valve.
+
+For the *Xtend* instrument, the ``"xrism_xtend"`` specification has 2x2 CCDs laid
+out in a ~38' FoV, with a pixel size of ~1.77".
+
+The response files, PSF model, and instrumental background model used for
+*XRISM* in SOXS were obtained from
 `here <https://heasarc.gsfc.nasa.gov/docs/xrism/proposals/index.html>`_.
 
 .. _axis:
@@ -192,7 +197,7 @@ Currently, no instrumental background is included. The response files for
 
 .. _lem:
 
-Light Element Mapper (LEM)
+Line Emission Mapper (LEM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two instrument specifications ``"lem_2eV"`` and ``"lem_0.9eV"``, are
@@ -558,10 +563,10 @@ The various parts of each instrument specification are:
   square arcminutes from which the spectrum was extracted/modeled. This can also
   be set to ``None`` for no particle background. See :ref:`instr-bkgnd` for more
   details.
-* ``"psf"``: The PSF specification to use. At time of writing, the only one
-  available is that of a Gaussian PSF, with a single parameter, the HPD of the
-  PSF. This is specified using a Python list, e.g. ``["gaussian", 0.5]``. This
-  can also be set to ``None`` for no PSF.
+* ``"psf"``: The PSF specification to use. At time of writing, five PSF types
+  are available, reflecting Gaussian, encircled energy fraction (EEF), or image-based
+  PSFs. These are described in :ref:`psf-models`. This can also be set to ``None``
+  for no PSF.
 * ``"focal_length"``: The focal length of the telescope in meters.
 * ``"dither"``: Whether or not the instrument dithers by default.
 * ``"imaging"``: Whether or not the instrument supports imaging. If ``False``,
@@ -773,9 +778,9 @@ PSF Models
 For realistic X-ray instruments, the incident photons from a single position
 on the sky will not all hit the detector at the same place, but will be spread
 around, which can be modeled using a "point-spread function" (PSF). SOXS
-supports three different types of PSF models: ``"gaussian"``, ``"image"``, and
-``"multi_image"``. Each type is associated with arguments, and the type with
-its arguments are a list which is specified by the ``"psf"`` key in the
+supports five different types of PSF models: ``"gaussian"``, ``"eef"``, ``multi_eef"``,
+``"image"``, and ``"multi_image"``. Each type is associated with arguments, and
+the type with its arguments are a list which is specified by the ``"psf"`` key in the
 instrument specification.
 
 For example, the ``"star_x"`` instrument uses a ``"gaussian"`` PSF, where the
@@ -800,6 +805,40 @@ only argument is the FWHM of the Gaussian in arcseconds:
             "grating": False
         }
 
+
+The ``"xrism_extend"`` instrument uses a FITS table file with an "encircled energy
+fraction" (EEF), which is essentially a CDF of the encircled energy of a point
+source as a function of projected radius. The PSF model type is ``"eef"``, and the
+first argument is the filename, and the second argument is the number of the HDU
+in the FITS file:
+
+.. code-block:: python
+
+    instrument_registry["xrism_xtend"] = {
+        "name": "xrism_xtend",
+        "arf": "sxt-i_140505_ts02um_int01.8r_intall_140618psf.arf",
+        "rmf": "ah_sxi_20120702.rmf",
+        "bkgnd": ["ah_sxi_pch_nxb_full_20110530.pi", 1422.6292229683816],
+        "num_pixels": 1296,
+        "fov": 38.18845555660526,
+        "aimpt_coords": [-244.0, -244.0],
+        "chips": [
+            ["Box", -327, 327, 640, 640],
+            ["Box", -327, -327, 640, 640],
+            ["Box", 327, 327, 640, 640],
+            ["Box", 327, -327, 640, 640],
+        ],
+        "focal_length": 5.6,
+        "dither": False,
+        "psf": ["eef", "eef_from_sxi_psfimage_20140618.fits", 1],
+        "imaging": True,
+        "grating": False,
+    }
+
+In this case, the selected HDU (``1``) in the FITS file
+(``"eef_from_sxi_psfimage_20140618.fits"``), needs to be a table HDU with two
+columns, ``"psfrad"`` and ``"eef"``. The units for ``"psfrad"`` should be specified,
+but if they are not, it is assumed that they are arcseconds.
 
 The ``"lynx_hdxi"`` instrument uses a single ``"image"`` from a file, and the
 image is used as the probability distribution to scatter photons which are
@@ -835,7 +874,8 @@ needs to be an image of the PSF with the following header keywords set, where
 * ``"CDELTn"``: width of each pixel in the x and y directions in
   units of ``"CUNITn"``
 
-Finally, the ``"multi_image"`` PSF type simply takes the filename as an argument:
+Finally, the ``"multi_eef"`` and ``"multi_image"`` PSF types simply take
+the filename as an argument:
 
 .. code-block:: python
 
@@ -869,7 +909,8 @@ keywords:
 * ``"THETA"`` or ``"OFFAXIS"``: Off-axis angle in arcminutes
 
 In this case, the photons will be scattered by the images which are closest to
-them in terms of energy and off-axis angle.
+them in terms of energy and off-axis angle. The same is true for files containing
+multiple EEF HDUs.
 
 .. _simple-instruments:
 
