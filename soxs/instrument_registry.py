@@ -276,7 +276,7 @@ for energy in ["meg", "heg"]:
 
 instrument_registry["xrism_resolve"] = {
     "name": "xrism_resolve",
-    "arf": "resolve_pnt_spec_noGV_20190611.arf",
+    "arf": "resolve_pnt_heasim_noGV_20190701.arf",
     "rmf": "resolve_h5ev_2019a.rmf",
     "bkgnd": ["resolve_h5ev_2019a_rslnxb.pha", 9.130329009932256],
     "num_pixels": 6,
@@ -289,6 +289,13 @@ instrument_registry["xrism_resolve"] = {
     "imaging": True,
     "grating": False,
 }
+
+instrument_registry["xrism_resolve_withGV"] = deepcopy(
+    instrument_registry["xrism_resolve"]
+)
+instrument_registry["xrism_resolve_withGV"][
+    "arf"
+] = "resolve_pnt_heasim_withGV_20190701.arf"
 
 # XRISM Xtend
 

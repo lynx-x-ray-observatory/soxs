@@ -150,5 +150,7 @@
     "eef_from_sxi_psfimage_20140618.fits": "0fe00722b39cf4c62631deec71ce99d2d449d66e1179180c7a01b208af7d79f4",
     "ah_sxi_pch_nxb_full_20110530.pi": "a508d0341080855d34a26cfbd2ee98cc7424d2e525efa9aad67bb9c4d0f5b3f6",
     "resolve_h5ev_2019a.rmf": "375bf38105dcd272d4efd79de16d3d99d8d3656f5d8bfaa2b79ed3aa131bacf1",
-    "resolve_h5ev_2019a_rslnxb.pha": "a5de223361f88fd88807e0908dfb0c66b3c3b0da73b4f0c6762c77ba1c2b78a6"
+    "resolve_h5ev_2019a_rslnxb.pha": "a5de223361f88fd88807e0908dfb0c66b3c3b0da73b4f0c6762c77ba1c2b78a6",
+    "resolve_pnt_heasim_noGV_20190701.arf": "9c821ccaa5a175089dd1820b25ac8627205bdaefcb8e52af230c796e7213d7ca",
+    "resolve_pnt_heasim_withGV_20190701.arf": "a15ed1ab51fab84fe34edc575ed0b31b6d7bb12a97e98048a9b4033f71346958"
 }
