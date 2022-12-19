@@ -277,8 +277,8 @@ for energy in ["meg", "heg"]:
 instrument_registry["xrism_resolve"] = {
     "name": "xrism_resolve",
     "arf": "resolve_pnt_spec_noGV_20190611.arf",
-    "rmf": "resolve_h7ev_2019a.rmf",
-    "bkgnd": ["resolve_h7ev_2019a_rslnxb.pha", 9.130329009932256],
+    "rmf": "resolve_h5ev_2019a.rmf",
+    "bkgnd": ["resolve_h5ev_2019a_rslnxb.pha", 9.130329009932256],
     "num_pixels": 6,
     "fov": 3.06450576,
     "aimpt_coords": [0.0, 0.0],
