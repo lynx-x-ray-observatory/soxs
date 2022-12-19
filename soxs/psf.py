@@ -58,7 +58,7 @@ class EEFPSF(PSF):
         hdu = inst["psf"][2]
         plate_scale_arcsec = inst["fov"] / inst["num_pixels"] * 60.0
         self.eefhdu = fits.open(get_data_file(img_file))[hdu]
-        unit = self.eefhdu.columns["psfrad"].unit
+        unit = getattr(self.eefhdu.columns["psfrad"], "unit", "arcsec")
         self.scale = Quantity(1.0, unit).to_value("arcsec") / plate_scale_arcsec
 
     def scatter(self, x, y, e):
@@ -93,7 +93,7 @@ class MultiEEFPSF(PSF):
                 key = "THETA" if "OFFAXIS" not in hdu.header else "OFFAXIS"
                 eef_r.append(hdu.header[key])
                 eef_i.append(i)
-                eef_u.append(hdu.columns["psfrad"].unit)
+                eef_u.append(getattr(hdu.columns["psfrad"], "unit", "arcsec"))
         eef_e = np.array(eef_e)
         eef_r = (np.array(eef_r) / plate_scale_arcmin) ** 2
         if np.all(eef_e > 100.0):
