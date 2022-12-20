@@ -329,7 +329,7 @@ instrument_registry["axis"] = {
     "bkgnd": ["axis_nxb_FOV_10Msec_20221215.pha", 697.06],
     "num_pixels": 2952,
     "fov": 27.06194257961904,
-    "aimpt_coords": [0.0, 0.0],
+    "aimpt_coords": [-109, 109],
     "chips": [
         ["Box", -756, -756, 1440, 1440],
         ["Box", -756, 756, 1440, 1440],
