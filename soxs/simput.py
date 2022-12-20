@@ -669,3 +669,57 @@ def write_photon_list(
     SimputCatalog.from_source(
         simput_file, phlist, src_filename=phlist_file, overwrite=overwrite
     )
+
+
+def make_bkgnd_simput(
+    filename,
+    name,
+    exp_time,
+    fov,
+    sky_center,
+    absorb_model=None,
+    nH=None,
+    area=40000.0,
+    frgnd_velocity=100.0,
+    frgnd_spec_model="default",
+    overwrite=False,
+    input_sources=None,
+    output_sources=None,
+    diffuse_unresolved=True,
+    prng=None,
+):
+    from soxs.background.diffuse import _make_frgnd_spectrum
+    from soxs.background.point_sources import make_point_sources_file
+    from soxs.spatial import FillFOVModel
+
+    emin = 0.05
+    emax = 10.0
+    nbins = 10000
+    spec = _make_frgnd_spectrum(
+        emin,
+        emax,
+        nbins,
+        bkgnd_nH=nH,
+        absorb_model=absorb_model,
+        frgnd_velocity=frgnd_velocity,
+        frgnd_spec_model=frgnd_spec_model,
+    )
+    sp = FillFOVModel(sky_center[0], sky_center[1], fov)
+    src = SimputSpectrum.from_models(spec, sp, fov, 128)
+    cat = make_point_sources_file(
+        filename,
+        name,
+        exp_time,
+        fov,
+        sky_center,
+        absorb_model=absorb_model,
+        nH=nH,
+        area=area,
+        overwrite=overwrite,
+        input_sources=input_sources,
+        output_sources=output_sources,
+        diffuse_unresolved=diffuse_unresolved,
+        prng=prng,
+    )
+    cat.append(src, overwrite=overwrite)
+    return cat

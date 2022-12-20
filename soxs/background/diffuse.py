@@ -48,17 +48,38 @@ XSPEC model used to create the "lem" foreground spectrum
 """
 
 
-def make_frgnd_spectrum(arf, rmf):
-    bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
-    absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
-    frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
-    frgnd_velocity = float(soxs_cfg.get("soxs", "frgnd_velocity"))
-    agen = ApecGenerator(rmf.ebins[0], rmf.ebins[-1], rmf.n_e, broadening=True)
+def _make_frgnd_spectrum(
+    emin,
+    emax,
+    nbins,
+    bkgnd_nH=0.018,
+    absorb_model="tbabs",
+    frgnd_velocity=100.0,
+    frgnd_spec_model="default",
+):
+    agen = ApecGenerator(emin, emax, nbins, broadening=True)
     spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7, velocity=frgnd_velocity)
     if frgnd_spec_model == "halosat":
         spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8, velocity=frgnd_velocity)
     spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
     spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
+    return spec
+
+
+def make_frgnd_spectrum(arf, rmf):
+    bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
+    absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+    frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
+    frgnd_velocity = float(soxs_cfg.get("soxs", "frgnd_velocity"))
+    spec = _make_frgnd_spectrum(
+        rmf.ebins[0],
+        rmf.ebins[-1],
+        rmf.n_e,
+        bkgnd_nH=bkgnd_nH,
+        absorb_model=absorb_model,
+        frgnd_velocity=frgnd_velocity,
+        frgnd_spec_model=frgnd_spec_model,
+    )
     spec.restrict_within_band(emin=0.1)
     spec = ConvolvedSpectrum.convolve(spec, arf)
     return spec
