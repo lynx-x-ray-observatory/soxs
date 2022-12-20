@@ -43,7 +43,7 @@ sources with *Lynx* (formerly "X-ray Surveyor"). This tool is designed to
 provide support for developing a science case for the *Lynx* mission concept
 and help drive the design of the instruments. Having a standalone package
 (that still plays nice with others) that serves as a "one-stop shop" for *Lynx*
-simulations simplfies this task.
+simulations simplifies this task.
 
 Second, SOXS is being developed in Python, reflecting the growing popularity
 of the use of Python in astronomy and astrophysics. Though there are a number

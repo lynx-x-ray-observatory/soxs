@@ -286,7 +286,7 @@ def make_ptsrc_background(
     all_ra = np.concatenate(all_ra)
     all_dec = np.concatenate(all_dec)
 
-    # Remove some of the photons due to Galactic foreground absorption.
+    # Remove some photons due to Galactic foreground absorption.
     # We will throw a lot of stuff away, but this is more general and still
     # faster.
     if nH is None:
