@@ -177,11 +177,10 @@ AXIS
 
 A single instrument specification ``"axis"`` is available for
 `AXIS <http://axis.astro.umd.edu>`_, the Advanced X-ray Imaging Satellite.
-The specification is for the wide-field imaging instrument, with a 24' field of
-view and a 9.5 m focal length. Response files, the PSF model, and the
-instrumental background model are used from the
-`SIXTE <https://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_
-software package.
+The specification is for the wide-field imaging instrument, with a 27.1' field of
+view, 2x2 CCD array configuration, and a 9 m focal length. Response files, the
+PSF model, and the instrumental background model have been provided by Eric
+Miller of MIT.
 
 .. _starx:
 

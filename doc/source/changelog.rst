@@ -14,6 +14,8 @@ This update to SOXS contains new features and a bugfix.
 * The *XRISM* *Resolve* instrument specification has been updated, and a new
   instrument specification for *Xtend* has been added. See :ref:`xrism` for
   more details.
+* The *AXIS* instrument specification has been updated. See :ref:`axis` for
+  more details.
 * If one had not binned a :class:`~soxs.spectra.Spectrum` object more finely
   than the instrument's ARF/RMF when using :func:`~soxs.instrument.simulate_spectrum`,
   then gaps would appear in the resulting convolved spectrum. This is now
