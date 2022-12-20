@@ -23,12 +23,6 @@ This update to SOXS contains new features and a bugfix.
   bins.
 * The *LEM* instrumental background has been boosted to 1 counts/s/keV/(30'x30')
   from the previous value of 0.07 counts/s/keV/(30'x30').
-* A new version of the spectral model used in the
-  :class:`~soxs.thermal_spectra.CloudyCIEGenerator` class has been provided, with
-  improved energy resolution. See :ref:`cloudy-spectra` for more details.
-* A new version of the spectral model used in the
-  :class:`~soxs.thermal_spectra.IGMGenerator` clas has been provided, with
-  improved energy resolution. See :ref:`igm-spectra` for more details.
 
 
 Version 4.1.0
