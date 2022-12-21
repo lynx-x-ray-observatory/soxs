@@ -155,7 +155,7 @@ The event positions from a :class:`~soxs.simput.SimputPhotonList` can be plotted
 using the :meth:`~soxs.simput.SimputPhotonList.plot` method. This will make a
 scatter plot of the photon RA and Dec on the sky, optionally filtered within an
 energy band. For an example of how to use this method, see the
-:ref:`two-clusters` cookbook example.
+`"Two Clusters" cookbook example <../cookbook/Two_Clusters.html>`_.
 
 .. _simput-catalogs:
 
@@ -217,8 +217,8 @@ SOXS has the ability to model astrophysical background and foreground components
 :ref:`background` for more details). This modeling is typically carried out automatically
 during instrument simulation in SOXS (see :ref:`bkgnds`). However, as SIMPUT catalogs
 can be used in conjunction with other instrument simulators (such as
-`SIXTE <http://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_
-`SIMX <http://hea-www.cfa.harvard.edu/simx/>`_ and `MARX <http://space.mit.edu/CXC/MARX/>`_),
+`SIXTE <http://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_,
+`SIMX <http://hea-www.cfa.harvard.edu/simx/>`_, and `MARX <http://space.mit.edu/CXC/MARX/>`_),
 SOXS provides the ability to generate background and foreground models and write them to
 a SIMPUT catalog for reading in by these packages.
 

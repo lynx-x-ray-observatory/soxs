@@ -44,8 +44,8 @@ The ``make_sloshing.py`` script that is called:
 
     # We define our emission model to be a thermal model using the APEC tables.
     # Metallicity is the same everywhere with Z = 0.3 solar
-    source_model = pyxsim.ThermalSourceModel("apec", 0.05, 11.0, 10000, Zmet=0.3,
-                                             thermal_broad=True)
+    source_model = pyxsim.CIESourceModel("apec", 0.05, 11.0, 10000, 0.3,
+                                         thermal_broad=True)
 
     # We set up some basic parameters to determine the sample
     exp_time = (50., "ks") # exposure time

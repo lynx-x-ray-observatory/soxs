@@ -12,9 +12,7 @@ sp = ds.sphere("c", (500.0, "kpc"))
 
 # We define our emission model to be a thermal model using the APEC tables.
 # Metallicity is the same everywhere with Z = 0.3 solar
-source_model = pyxsim.ThermalSourceModel(
-    "apec", 0.05, 11.0, 1000, Zmet=0.3, thermal_broad=True
-)
+source_model = pyxsim.CIESourceModel("apec", 0.05, 11.0, 1000, 0.3, thermal_broad=True)
 
 # We set up some basic parameters to determine the sample
 exp_time = (50.0, "ks")  # exposure time
