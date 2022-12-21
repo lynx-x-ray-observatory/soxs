@@ -13,6 +13,7 @@ from soxs.utils import (
     parse_prng,
     parse_value,
     process_fits_string,
+    soxs_cfg,
 )
 
 
@@ -379,7 +380,7 @@ class SimputSource:
             self.imhdu.header["EXTVER"] = img_extver
 
         if os.path.exists(filename) and not overwrite:
-            mylog.info("Appending this source to %s.", filename)
+            mylog.info("Appending source '%s' to %s.", self.name, filename)
             with fits.open(filename, mode="append") as f:
                 f.append(tbhdu)
                 if self.imhdu is not None:
@@ -387,9 +388,9 @@ class SimputSource:
                 f.flush()
         else:
             if os.path.exists(filename):
-                mylog.warning("Overwriting %s with this source.", filename)
+                mylog.warning("Overwriting %s with source '%s'.", filename, self.name)
             else:
-                mylog.info("Writing source to %s.", filename)
+                mylog.info("Writing source '%s' to %s.", self.name, filename)
             f = [fits.PrimaryHDU(), tbhdu]
             if self.imhdu is not None:
                 f.append(self.imhdu)
@@ -669,3 +670,121 @@ def write_photon_list(
     SimputCatalog.from_source(
         simput_file, phlist, src_filename=phlist_file, overwrite=overwrite
     )
+
+
+def make_bkgnd_simput(
+    filename,
+    exp_time,
+    area,
+    fov,
+    sky_center,
+    absorb_model=None,
+    nH=None,
+    frgnd_velocity=None,
+    frgnd_spec_model=None,
+    overwrite=False,
+    input_sources=None,
+    output_sources=None,
+    diffuse_unresolved=True,
+    prng=None,
+):
+    """
+    Create a SIMPUT catalog including the Galactic foreground and the
+    CXB point sources, suitable for including in a simulation by another
+    package that can take SIMPUT inputs, such as SIXTE, SIMX, or MARX.
+
+    Parameters
+    ----------
+    filename : string
+        The filename to write the SIMPUT catalog to.
+    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The exposure time in seconds.
+    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The effective area in cm**2. If one is creating
+        events for a SIMPUT file, a constant should be
+        used and it must be large enough so that a
+        sufficiently large sample is drawn for the ARF.
+    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The field of view in arcminutes.
+    sky_center : array-like
+        The center RA, Dec of the field of view in degrees.
+    absorb_model : string, optional
+        The absorption model to use, "wabs" or "tbabs".
+        Defaults to the value in the SOXS configuration file.
+    nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The hydrogen column in units of 10**22 atoms/cm**2.
+        Defaults to the value in the SOXS configuration file.
+    frgnd_velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The velocity dispersion to apply to the Galactic foreground lines.
+        Defaults to the value in the SOXS configuration file.
+    frgnd_spec_model : string, optional
+        The model for the Galactic foreground spectrum to use, currently
+        either "default" or "halosat". Defaults to the value in the SOXS
+        configuration file.
+    overwrite : boolean, optional
+        Set to True to overwrite previous files. Default: False
+    input_sources : string, optional
+        If set to a filename, input the source positions, fluxes,
+        and spectral indices from an ASCII table instead of generating
+        them. Default: None
+    output_sources : string, optional
+        If set to a filename, output the properties of the sources
+        within the field of view to a file. Default: None
+    diffuse_unresolved : boolean, optional
+        Add a diffuse component across the entire field of view to represent
+        the unresolved flux from sources at very small fluxes. Default: True
+    prng : :class:`~numpy.random.RandomState` object, integer, or None
+        A pseudo-random number generator. Typically will only
+        be specified if you have a reason to generate the same
+        set of random numbers, such as for a test. Default is None,
+        which sets the seed based on the system time.
+    """
+    from soxs.background.diffuse import _make_frgnd_spectrum
+    from soxs.background.point_sources import make_point_sources_file
+    from soxs.spatial import FillFOVModel
+
+    emin = 0.05
+    emax = 10.0
+    nbins = 10000
+    if nH is None:
+        nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
+    else:
+        nH = parse_value(nH, "1.0e22*cm**-2")
+    if absorb_model is None:
+        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+    if frgnd_velocity is None:
+        frgnd_velocity = float(soxs_cfg.get("soxs", "frgnd_velocity"))
+    else:
+        frgnd_velocity = parse_value(frgnd_velocity, "km/s")
+    if frgnd_spec_model is None:
+        frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
+    mylog.info("Creating galactic foreground model.")
+    spec = _make_frgnd_spectrum(
+        emin,
+        emax,
+        nbins,
+        bkgnd_nH=nH,
+        absorb_model=absorb_model,
+        frgnd_velocity=frgnd_velocity,
+        frgnd_spec_model=frgnd_spec_model,
+    )
+    sp = FillFOVModel(sky_center[0], sky_center[1], fov)
+    src = SimputSpectrum.from_models("frgnd", spec, sp, fov, 128)
+    mylog.info("Creating CXB (point sources) model.")
+    cat = make_point_sources_file(
+        filename,
+        "cxb",
+        exp_time,
+        fov,
+        sky_center,
+        absorb_model=absorb_model,
+        nH=nH,
+        area=area,
+        overwrite=overwrite,
+        input_sources=input_sources,
+        output_sources=output_sources,
+        diffuse_unresolved=diffuse_unresolved,
+        prng=prng,
+    )
+    cat.append(src, overwrite=overwrite)
+    return cat

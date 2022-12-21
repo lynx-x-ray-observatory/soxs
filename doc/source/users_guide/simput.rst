@@ -207,3 +207,91 @@ An existing SIMPUT catalog can be read in from disk using
 
     import soxs
     sim_cat = soxs.SimputCatalog.from_file("my_sources_simput.fits")
+
+.. _bkgnd-simput:
+
+Creating Background Model SIMPUT Catalogs
+-----------------------------------------
+
+SOXS has the ability to model astrophysical background and foreground components (see
+:ref:`background` for more details). This modeling is typically carried out automatically
+during instrument simulation in SOXS (see :ref:`bkgnds`). However, as SIMPUT catalogs
+can be used in conjunction with other instrument simulators (such as ), SOXS provides
+the ability to generate background and foreground models and write them to a SIMPUT
+catalog for reading in by these packages.
+
+This capability is provided by the :func:`~soxs.simput.make_bkgnd_simput` function.
+It generates a galactic foreground model spectrum (see :ref:`foreground` for how to
+tune its parameters) uniformly over a square field of view between the energies of
+0.05 and 10 keV, and for the same field of view generates a photon-list realization
+of the cosmic X-ray background (CXB, see :ref:`ptsrc-bkgnd`). Both of these are
+stored to the same SIMPUT catalog. Because the CXB component requires a photon-list
+realization, an exposure time and collecting area must be specified, so make sure
+that these are at least somewhat larger than the exposure time and effective area
+that will be used in the instrument simulation.
+
+A simple invocation of :func:`~soxs.simput.make_bkgnd_simput` is shown here:
+
+.. code-block:: python
+
+    import soxs
+    t_exp = (100.0, "ks")
+    area = (3.0, "m**2")
+    fov = (1.0, "deg")
+    sky_center = (30.0, 45.0)
+    soxs.make_bkgnd_simput("bkgnd.simput", t_exp, area, fov, sky_center,
+                           overwrite=True)
+
+A number of optional customizations are possible. For example, the model for
+Galactic absorption and the value of the hydrogen column can be changed:
+
+.. code-block:: python
+
+    import soxs
+    t_exp = (100.0, "ks")
+    area = (3.0, "m**2")
+    fov = (1.0, "deg")
+    sky_center = (30.0, 45.0)
+    soxs.make_bkgnd_simput("bkgnd.simput", t_exp, area, fov, sky_center,
+                           overwrite=True, absorb_model="wabs", nH=0.02)
+
+The foreground model can be switched between ``"default"`` or ``"halosat"``:
+
+.. code-block:: python
+
+    import soxs
+    t_exp = (100.0, "ks")
+    area = (3.0, "m**2")
+    fov = (1.0, "deg")
+    sky_center = (30.0, 45.0)
+    soxs.make_bkgnd_simput("bkgnd.simput", t_exp, area, fov, sky_center,
+                           overwrite=True, frgnd_spec_model="halosat")
+
+If you generate a pre-existing set of point sources for the CXB using
+:func:`~soxs.background.point_sources.make_point_source_list`, you can input
+them here:
+
+.. code-block:: python
+
+    import soxs
+    t_exp = (100.0, "ks")
+    area = (3.0, "m**2")
+    fov = (1.0, "deg")
+    sky_center = (30.0, 45.0)
+    soxs.make_bkgnd_simput("bkgnd.simput", t_exp, area, fov, sky_center,
+                           overwrite=True, input_sources="my_srcs.dat")
+
+or you can let the function generate the sources for you and output them
+for later use:
+
+.. code-block:: python
+
+    import soxs
+    t_exp = (100.0, "ks")
+    area = (3.0, "m**2")
+    fov = (1.0, "deg")
+    sky_center = (30.0, 45.0)
+    soxs.make_bkgnd_simput("bkgnd.simput", t_exp, area, fov, sky_center,
+                           overwrite=True, output_sources="my_srcs.dat")
+
+Other customizations are detailed in the API docs, see :func:`~soxs.simput.make_bkgnd_simput`.

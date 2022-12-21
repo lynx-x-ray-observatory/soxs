@@ -9,3 +9,5 @@ SIMPUT API
 
 .. autoclass:: soxs.simput.SimputPhotonList
     :members:
+
+.. autofunction:: soxs.simput.make_bkgnd_simput

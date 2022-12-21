@@ -72,9 +72,7 @@ class InstrumentRegistry:
 
 instrument_registry = InstrumentRegistry()
 
-## Lynx
-
-# High-Definition X-ray Imager (HDXI)
+# Lynx High-Definition X-ray Imager (HDXI)
 
 instrument_registry["lynx_hdxi"] = {
     "name": "lynx_hdxi",
@@ -92,7 +90,7 @@ instrument_registry["lynx_hdxi"] = {
     "grating": False,
 }
 
-# Micro-calorimeter
+# Lynx Micro-calorimeter
 
 instrument_registry["lynx_lxm"] = {
     "name": "lynx_lxm",
@@ -142,8 +140,7 @@ instrument_registry["lynx_lxm_ultra"] = {
     "grating": False,
 }
 
-
-# Gratings (for spectra only)
+# Lynx Gratings (for spectra only)
 
 instrument_registry["lynx_xgs"] = {
     "name": "lynx_xgs",
@@ -155,9 +152,7 @@ instrument_registry["lynx_xgs"] = {
     "grating": True,
 }
 
-## Athena
-
-# WFI
+# Athena WFI
 
 instrument_registry["athena_wfi"] = {
     "name": "athena_wfi",
@@ -180,7 +175,7 @@ instrument_registry["athena_wfi"] = {
     "grating": False,
 }
 
-# XIFU
+# Athena XIFU
 
 instrument_registry["athena_xifu"] = {
     "name": "athena_xifu",
@@ -198,9 +193,7 @@ instrument_registry["athena_xifu"] = {
     "grating": False,
 }
 
-## Chandra
-
-# ACIS-I, Cycle 0 and 20
+# Chandra ACIS-I, Cycle 0 and 20
 
 for cycle in [0, 22]:
     name = f"chandra_acisi_cy{cycle}"
@@ -225,7 +218,7 @@ for cycle in [0, 22]:
         "grating": False,
     }
 
-# ACIS-S, Cycle 0 and 22
+# Chandra ACIS-S, Cycle 0 and 22
 
 for cycle in [0, 22]:
     name = f"chandra_aciss_cy{cycle}"
@@ -260,7 +253,7 @@ for cycle in [0, 22]:
     }
 
 
-# ACIS-S, Cycle 0 and 19 HETG (for spectra only)
+# Chandra ACIS-S, Cycle 0 and 19 HETG (for spectra only)
 
 orders = {"p1": 1, "m1": -1}
 
@@ -279,15 +272,13 @@ for energy in ["meg", "heg"]:
                 "grating": True,
             }
 
-## Hitomi
-
-# SXS
+# XRISM Resolve
 
 instrument_registry["xrism_resolve"] = {
     "name": "xrism_resolve",
-    "arf": "resolve_pnt_spec_noGV_20190611.arf",
-    "rmf": "resolve_h7ev_2019a.rmf",
-    "bkgnd": ["resolve_h7ev_2019a_rslnxb.pha", 9.130329009932256],
+    "arf": "resolve_pnt_heasim_noGV_20190701.arf",
+    "rmf": "resolve_h5ev_2019a.rmf",
+    "bkgnd": ["resolve_h5ev_2019a_rslnxb.pha", 9.130329009932256],
     "num_pixels": 6,
     "fov": 3.06450576,
     "aimpt_coords": [0.0, 0.0],
@@ -299,25 +290,60 @@ instrument_registry["xrism_resolve"] = {
     "grating": False,
 }
 
-## AXIS
+instrument_registry["xrism_resolve_withGV"] = deepcopy(
+    instrument_registry["xrism_resolve"]
+)
+instrument_registry["xrism_resolve_withGV"][
+    "arf"
+] = "resolve_pnt_heasim_withGV_20190701.arf"
 
-instrument_registry["axis"] = {
-    "name": "axis",
-    "arf": "axis-31jan18.arf",
-    "rmf": "axis-31jan18.rmf",
-    "bkgnd": ["axis_nxb_leo_fov_10Msec_20180205.pha", 225.0],
-    "num_pixels": 4000,
-    "fov": 24.0,
-    "aimpt_coords": [0.0, 0.0],
-    "chips": [["Box", 0, 0, 4000, 4000]],
-    "focal_length": 9.5,
-    "dither": True,
-    "psf": ["multi_image", "axis_psf_gauss_v1.fits"],
+# XRISM Xtend
+
+instrument_registry["xrism_xtend"] = {
+    "name": "xrism_xtend",
+    "arf": "sxt-i_140505_ts02um_int01.8r_intall_140618psf.arf",
+    "rmf": "ah_sxi_20120702.rmf",
+    "bkgnd": ["ah_sxi_pch_nxb_full_20110530.pi", 1422.6292229683816],
+    "num_pixels": 1296,
+    "fov": 38.18845555660526,
+    "aimpt_coords": [-244.0, -244.0],
+    "chips": [
+        ["Box", -327, 327, 640, 640],
+        ["Box", -327, -327, 640, 640],
+        ["Box", 327, 327, 640, 640],
+        ["Box", 327, -327, 640, 640],
+    ],
+    "focal_length": 5.6,
+    "dither": False,
+    "psf": ["eef", "eef_from_sxi_psfimage_20140618.fits", 1],
     "imaging": True,
     "grating": False,
 }
 
-## STAR-X
+# AXIS
+
+instrument_registry["axis"] = {
+    "name": "axis",
+    "arf": "axis_onaxis_20221116.arf",
+    "rmf": "axis_ccd_20221101.rmf",
+    "bkgnd": ["axis_nxb_FOV_10Msec_20221215.pha", 697.06],
+    "num_pixels": 2952,
+    "fov": 27.06194257961904,
+    "aimpt_coords": [-109, 109],
+    "chips": [
+        ["Box", -756, -756, 1440, 1440],
+        ["Box", -756, 756, 1440, 1440],
+        ["Box", 756, -756, 1440, 1440],
+        ["Box", 756, 756, 1440, 1440],
+    ],
+    "focal_length": 9.0,
+    "dither": True,
+    "psf": ["eef", "AXIS_EEF_2022-02-16.fits"],
+    "imaging": True,
+    "grating": False,
+}
+
+# STAR-X
 
 instrument_registry["star-x"] = {
     "name": "star-x",
@@ -335,13 +361,13 @@ instrument_registry["star-x"] = {
     "grating": False,
 }
 
-## LEM
+# LEM
 
 instrument_registry["lem_2eV"] = {
     "name": "lem_2eV",
     "arf": "lem_300522.arf",
     "rmf": "lem_2ev_110422.rmf",
-    "bkgnd": ["lem_2eV_110422_fov_bkg.pi", 1024.0],
+    "bkgnd": ["lem_2eV_171222_fov_bkg.pi", 900.0],
     "num_pixels": 128,
     "fov": 32.0,
     "aimpt_coords": [0.0, 0.0],
@@ -352,13 +378,12 @@ instrument_registry["lem_2eV"] = {
     "imaging": True,
     "grating": False,
 }
-
 
 instrument_registry["lem_0.9eV"] = {
     "name": "lem_0.9eV",
     "arf": "lem_300522.arf",
     "rmf": "lem_09ev_110422.rmf",
-    "bkgnd": ["lem_09eV_110422_fov_bkg.pi", 1024.0],
+    "bkgnd": ["lem_09eV_171222_fov_bkg.pi", 900.0],
     "num_pixels": 128,
     "fov": 32.0,
     "aimpt_coords": [0.0, 0.0],
@@ -370,15 +395,14 @@ instrument_registry["lem_0.9eV"] = {
     "grating": False,
 }
 
-
-instrument_registry["lem_2eV_0422"] = instrument_registry["lem_2eV"].copy()
+instrument_registry["lem_2eV_0422"] = deepcopy(instrument_registry["lem_2eV"])
 instrument_registry["lem_2eV_0422"]["arf"] = "lem_110422.arf"
-instrument_registry["lem_0.9eV_0422"] = instrument_registry["lem_0.9eV"].copy()
+instrument_registry["lem_0.9eV_0422"] = deepcopy(instrument_registry["lem_0.9eV"])
 instrument_registry["lem_0.9eV_0422"]["arf"] = "lem_110422.arf"
-instrument_registry["lem_2eV_0322"] = instrument_registry["lem_2eV"].copy()
+instrument_registry["lem_2eV_0322"] = deepcopy(instrument_registry["lem_2eV"])
 instrument_registry["lem_2eV_0322"]["arf"] = "lem_030322a.arf"
 instrument_registry["lem_2eV_0322"]["rmf"] = "lem_2ev_030322.rmf"
-instrument_registry["lem_0.9eV_0322"] = instrument_registry["lem_0.9eV"].copy()
+instrument_registry["lem_0.9eV_0322"] = deepcopy(instrument_registry["lem_0.9eV"])
 instrument_registry["lem_0.9eV_0322"]["arf"] = "lem_030322a.arf"
 instrument_registry["lem_0.9eV_0322"]["rmf"] = "lem_09ev_030322.rmf"
 
@@ -407,12 +431,12 @@ def add_instrument_to_registry(inst_spec):
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
-    ...     "dither": True, # Whether or not to dither the instrument
+    ...     "dither": True, # Whether to dither the instrument
     ...     "psf": ["image", "chandra_psf.fits", 6], # The type of PSF and associated parameters
     ...     "chips": [["Box", 0, 0, 4096, 4096]], # The specification for the chips
     ...     "aimpt_coords": [0.0, 0.0], # The detector coordinates of the aimpoint
-    ...     "imaging": True # Whether or not this is a imaging instrument
-    ...     "grating": False # Whether or not this is a grating instrument
+    ...     "imaging": True # Whether this is an imaging instrument
+    ...     "grating": False # Whether this is a grating instrument
     ... }
     """
     if isinstance(inst_spec, dict):

@@ -43,6 +43,7 @@ from soxs.simput import (
     SimputCatalog,
     SimputPhotonList,
     SimputSpectrum,
+    make_bkgnd_simput,
     read_simput_catalog,
     write_photon_list,
 )
