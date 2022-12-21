@@ -170,7 +170,7 @@ The response files, PSF model, and instrumental background model used for
 *XRISM* in SOXS were obtained from
 `here <https://heasarc.gsfc.nasa.gov/docs/xrism/proposals/index.html>`_.
 
-.. _axis:
+.. _axis-probe:
 
 AXIS
 ~~~~

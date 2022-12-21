@@ -6,10 +6,10 @@ Event File Tools
 This section documents some helpful tools to take event files produced by the SOXS instrument
 simulator and make derivative products from them.
 
+.. _filtering-events:
+
 ``filter_events``
 -----------------
-
-.. _filtering-events:
 
 The :func:`~soxs.events.filter_events` function is used to filter event files on event
 position or energy, and make a new event file. This may be useful if you want to analyze

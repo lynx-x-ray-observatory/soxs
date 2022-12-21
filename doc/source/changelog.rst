@@ -14,7 +14,7 @@ This update to SOXS contains new features and a bugfix.
 * The *XRISM* *Resolve* instrument specification has been updated, and a new
   instrument specification for *Xtend* has been added. See :ref:`xrism` for
   more details.
-* The *AXIS* instrument specification has been updated. See :ref:`axis` for
+* The *AXIS* instrument specification has been updated. See :ref:`axis-probe` for
   more details.
 * If one had not binned a :class:`~soxs.spectra.Spectrum` object more finely
   than the instrument's ARF/RMF when using :func:`~soxs.instrument.simulate_spectrum`,
@@ -220,7 +220,7 @@ This major version update of SOXS contains new features and optimizations.
 * SOXS now uses the `new 201-bin temperature files from AtomDB
   <http://www.atomdb.org/download.php>`_ for thermal spectrum models.
 * The SOXS configuration option ``"response_path"`` has been changed to
-  ``"soxs_data_dir"`` and the former is deprecated. See :ref:`configuration`
+  ``"soxs_data_dir"`` and the former is deprecated. See :ref:`config`
   for details.
 * All instrument specifications must now specifically implement at least one
   chip explicitly, so it is no longer permissible to specify the ``"chips"``
@@ -241,7 +241,7 @@ This major version update of SOXS contains new features and optimizations.
   added (see :ref:`double-beta-model`), along with the command-line script
   :ref:`cmd-make-double-beta-model-source`.
 * The ``make_beta_model`` command line script has been renamed to
-  :ref:`cmd-make-beta-model-source.
+  :ref:`cmd-make-beta-model-source`.
 * An instrument specification for the
   `*STAR-X* mission concept <https://ui.adsabs.harvard.edu/abs/2017SPIE10399E..08M/abstract>`_
   has been added.

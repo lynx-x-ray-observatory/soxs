@@ -216,9 +216,11 @@ Creating Background Model SIMPUT Catalogs
 SOXS has the ability to model astrophysical background and foreground components (see
 :ref:`background` for more details). This modeling is typically carried out automatically
 during instrument simulation in SOXS (see :ref:`bkgnds`). However, as SIMPUT catalogs
-can be used in conjunction with other instrument simulators (such as ), SOXS provides
-the ability to generate background and foreground models and write them to a SIMPUT
-catalog for reading in by these packages.
+can be used in conjunction with other instrument simulators (such as
+`SIXTE <http://www.sternwarte.uni-erlangen.de/research/sixte/index.php>`_
+`SIMX <http://hea-www.cfa.harvard.edu/simx/>`_ and `MARX <http://space.mit.edu/CXC/MARX/>`_),
+SOXS provides the ability to generate background and foreground models and write them to
+a SIMPUT catalog for reading in by these packages.
 
 This capability is provided by the :func:`~soxs.simput.make_bkgnd_simput` function.
 It generates a galactic foreground model spectrum (see :ref:`foreground` for how to
