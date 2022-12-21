@@ -23,7 +23,9 @@ This update to SOXS contains new features and a bugfix.
   bins.
 * The *LEM* instrumental background has been boosted to 1 counts/s/keV/(30'x30')
   from the previous value of 0.07 counts/s/keV/(30'x30').
-
+* A new function for creating a SIMPUT catalog including models for the Galactic
+  foreground and the CXB point sources, :func:`~soxs.simput.make_bkgnd_simput`,
+  has been included. See :ref:`bkgnd-simput` for more details.
 
 Version 4.1.0
 -------------
