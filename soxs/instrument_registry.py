@@ -338,7 +338,7 @@ instrument_registry["axis"] = {
     ],
     "focal_length": 9.0,
     "dither": True,
-    "psf": ["eef", "AXIS_EEF_2022-02-16.fits"],
+    "psf": ["eef", "AXIS_EEF_2022-02-16.fits", 1],
     "imaging": True,
     "grating": False,
 }
