@@ -32,10 +32,10 @@ setup(
     url="https://github.com/lynx-x-ray-observatory/soxs/",
     install_requires=[
         "numpy",
-        "astropy>=3.0",
+        "astropy>=4.0",
         "tqdm",
         "pooch",
-        "h5py",
+        "h5py>=3.0",
         "scipy",
         "pyyaml",
         "regions",
