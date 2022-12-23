@@ -361,3 +361,11 @@ def regrid_spectrum(ebins_new, ebins, spec):
     cspec = np.insert(np.cumsum(spec, axis=-1), 0, 0.0, axis=-1)
     f = interp1d(ebins, cspec, axis=-1, fill_value=0.0, assume_sorted=True, copy=False)
     return np.diff(f(ebins_new), axis=-1)
+
+
+def convert_endian(arr):
+    import sys
+
+    sys_byteorder = (">", "<")[sys.byteorder == "little"]
+    if arr.dtype.byteorder not in ("=", sys_byteorder):
+        return arr.byteswap().newbyteorder(sys_byteorder)

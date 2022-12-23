@@ -8,6 +8,7 @@ from pathlib import Path
 
 from soxs.spatial import construct_wcs
 from soxs.utils import (
+    convert_endian,
     ensure_numpy_array,
     mylog,
     parse_prng,
@@ -175,15 +176,15 @@ class SimputCatalog:
         ext = extname if extver is None else (extname, extver)
         data = fits.getdata(fn_src, ext)
         if extname == "phlist":
-            ra = Quantity(data["ra"], "deg")
-            dec = Quantity(data["dec"], "deg")
-            energy = Quantity(data["energy"], "keV")
+            ra = Quantity(convert_endian(data["ra"]).astype("float64"), "deg")
+            dec = Quantity(convert_endian(data["dec"]).astype("float64"), "deg")
+            energy = Quantity(convert_endian(data["energy"]).astype("float64"), "keV")
             src = SimputPhotonList(
                 ra, dec, energy, self.fluxes[i], name=self.src_names[i]
             )
         elif extname == "spectrum":
-            emid = data["energy"]
-            flux = data["fluxdensity"]
+            emid = convert_endian(data["energy"])
+            flux = convert_endian(data["fluxdensity"])
             if isinstance(data["energy"], _VLF):
                 emid = emid[0]
                 flux = flux[0]

@@ -19,6 +19,7 @@ from soxs.constants import (
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.utils import (
     DummyPbar,
+    convert_endian,
     get_data_file,
     mylog,
     parse_value,
@@ -93,7 +94,7 @@ class CIEGenerator:
         self.line_handle = fits.open(self.linefile)
         self.coco_handle = fits.open(self.cocofile)
         self.nT = self.line_handle[1].data.shape[0]
-        self.Tvals = self.line_handle[1].data.field("kT")
+        self.Tvals = convert_endian(self.line_handle[1].data.field("kT"))
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
@@ -722,7 +723,7 @@ class Atable1DGenerator(AtableGenerator):
         )
         with fits.open(self.cosmic_table) as f:
             self.n_T = f["PARAMETERS"].data["NUMBVALS"][0]
-            self.Tvals = f["PARAMETERS"].data["VALUE"][0]
+            self.Tvals = convert_endian(f["PARAMETERS"].data["VALUE"][0])
         self.dTvals = np.diff(self.Tvals)
         self.norm_fac = np.ones(max(1, len(metal_tables)))
         self.var_elem_names = self.var_elem.copy()
@@ -806,9 +807,9 @@ class Atable2DGenerator(AtableGenerator):
         )
         with fits.open(self.cosmic_table) as f:
             self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
-            self.Dvals = f["PARAMETERS"].data["VALUE"][0][: self.n_D]
+            self.Dvals = convert_endian(f["PARAMETERS"].data["VALUE"][0][: self.n_D])
             self.n_T = f["PARAMETERS"].data["NUMBVALS"][1]
-            self.Tvals = f["PARAMETERS"].data["VALUE"][1][: self.n_T]
+            self.Tvals = convert_endian(f["PARAMETERS"].data["VALUE"][1][: self.n_T])
         self.dDvals = np.diff(self.Dvals)
         self.dTvals = np.diff(self.Tvals)
         self.norm_fac = np.ones(len(metal_tables))
