@@ -3,6 +3,17 @@
 ChangeLog
 =========
 
+Version 4.2.1
+-------------
+
+This update to SOXS contains bugfixes.
+
+* The *AXIS* instrument specification was not working properly due to an issue
+  with the implementation of the PSF file. This has now been fixed.
+* In several places, data from FITS files is now converted to the native byteorder
+  of the system upon reading.
+* The minimum AstroPy version is now 4.0 and the minimum h5py version is now 3.0.
+
 Version 4.2.0
 -------------
 

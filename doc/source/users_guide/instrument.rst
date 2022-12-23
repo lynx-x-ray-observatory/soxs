@@ -873,8 +873,7 @@ needs to be an image of the PSF with the following header keywords set, where
 * ``"CDELTn"``: width of each pixel in the x and y directions in
   units of ``"CUNITn"``
 
-Finally, the ``"multi_eef"`` and ``"multi_image"`` PSF types simply take
-the filename as an argument:
+The ``"multi_image"`` PSF type simply takes the filename as an argument:
 
 .. code-block:: python
 
@@ -907,9 +906,45 @@ keywords:
 * ``"ENERGY"``: Energy of the PSF image in keV
 * ``"THETA"`` or ``"OFFAXIS"``: Off-axis angle in arcminutes
 
-In this case, the photons will be scattered by the images which are closest to
-them in terms of energy and off-axis angle. The same is true for files containing
-multiple EEF HDUs.
+The photons will be scattered by the images which are closest to them in terms
+of energy and off-axis angle.
+
+The ``"multi_eef"`` PSF type takes the name of the file containing the
+EEFs, and a number (1 or 2) indicating the way the EEFs are stored in the file.
+For type 1, the EEFs are stored in multiple table HDUs, each having the table
+of the EEF as a function of radius with the following keywords in the header
+of the HDU:
+
+* ``"ENERGY"``: Energy of the EEF in keV
+* ``"THETA"`` or ``"OFFAXIS"``: Off-axis angle in arcminutes
+
+For type 2, the EEFs are stored in a single table HDU, where the EEF as as
+function of radius are in two-dimensional arrays. One-dimensional arrays store
+the energy and off-axis angles. An example of this is used in the ``"axis"``
+instrument specification, which uses the second type of EEF file.
+
+.. code-block:: python
+
+    instrument_registry["axis"] = {
+        "name": "axis",
+        "arf": "axis_onaxis_20221116.arf",
+        "rmf": "axis_ccd_20221101.rmf",
+        "bkgnd": ["axis_nxb_FOV_10Msec_20221215.pha", 697.06],
+        "num_pixels": 2952,
+        "fov": 27.06194257961904,
+        "aimpt_coords": [-109, 109],
+        "chips": [
+            ["Box", -756, -756, 1440, 1440],
+            ["Box", -756, 756, 1440, 1440],
+            ["Box", 756, -756, 1440, 1440],
+            ["Box", 756, 756, 1440, 1440],
+        ],
+        "focal_length": 9.0,
+        "dither": False,
+        "psf": ["multi_eef", "AXIS_EEF_2022-02-16.fits", 2],
+        "imaging": True,
+        "grating": False,
+    }
 
 .. _simple-instruments:
 
