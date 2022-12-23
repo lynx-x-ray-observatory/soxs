@@ -21,6 +21,13 @@ cython_extensions = [
         libraries=std_libs,
         include_dirs=[np.get_include()],
     ),
+    Extension(
+        "soxs.lib.psf_cdf",
+        ["soxs/lib/psf_cdf.pyx"],
+        language="c",
+        libraries=std_libs,
+        include_dirs=[np.get_include()],
+    ),
 ]
 
 setup(

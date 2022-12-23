@@ -3,15 +3,8 @@ from astropy.io import fits
 from astropy.units import Quantity
 
 from soxs.constants import sigma_to_fwhm
-from soxs.utils import get_data_file, image_pos, parse_prng
-
-
-def score_psf(img_bins, e, r):
-    de = np.abs(img_bins[0][:, np.newaxis] - e)
-    dr = np.abs(img_bins[1][:, np.newaxis] - r)
-    score = 100 * de + dr
-    return score
-
+from soxs.lib.psf_cdf import eef_cdf, score_psf
+from soxs.utils import convert_endian, get_data_file, image_pos, parse_prng
 
 psf_model_registry = {}
 
@@ -54,10 +47,10 @@ class EEFPSF(PSF):
 
     def __init__(self, inst, prng=None):
         super().__init__(prng)
-        img_file = get_data_file(inst["psf"][1])
+        eef_file = get_data_file(inst["psf"][1])
         hdu = inst["psf"][2]
         plate_scale_arcsec = inst["fov"] / inst["num_pixels"] * 60.0
-        self.eefhdu = fits.open(get_data_file(img_file))[hdu]
+        self.eefhdu = fits.open(get_data_file(eef_file))[hdu]
         unit = getattr(self.eefhdu.columns["psfrad"], "unit", "arcsec")
         self.scale = Quantity(1.0, unit).to_value("arcsec") / plate_scale_arcsec
 
@@ -79,38 +72,57 @@ class MultiEEFPSF(PSF):
     def __init__(self, inst, prng=None):
         super().__init__(prng)
         self.eef_file = get_data_file(inst["psf"][1])
+        self.eef_type = inst["psf"][2]
+        self.det_ctr = np.array(inst["aimpt_coords"])
         plate_scale_arcmin = inst["fov"] / inst["num_pixels"]
         plate_scale_arcsec = plate_scale_arcmin * 60.0
-        eef_e = []
-        eef_r = []
-        eef_i = []
-        eef_u = []
         with fits.open(self.eef_file, lazy_load_hdus=True) as f:
-            for i, hdu in enumerate(f):
-                if hdu.header["XTENSION"] != "BINTABLE":
-                    continue
-                eef_e.append(hdu.header["ENERGY"])
-                key = "THETA" if "OFFAXIS" not in hdu.header else "OFFAXIS"
-                eef_r.append(hdu.header[key])
-                eef_i.append(i)
-                eef_u.append(getattr(hdu.columns["psfrad"], "unit", "arcsec"))
-        eef_e = np.array(eef_e)
-        eef_r = (np.array(eef_r) / plate_scale_arcmin) ** 2
+            if self.eef_type == 1:
+                eef_e = []
+                eef_r = []
+                eef_i = []
+                eef_u = []
+                for i, hdu in enumerate(f):
+                    if hdu.header["XTENSION"] != "BINTABLE":
+                        continue
+                    eef_e.append(hdu.header["ENERGY"])
+                    key = "THETA" if "OFFAXIS" not in hdu.header else "OFFAXIS"
+                    eef_r.append(hdu.header[key])
+                    eef_i.append(i)
+                    eef_u.append(getattr(hdu.columns["psfrad"], "unit", "arcsec"))
+                eef_e = np.array(eef_e)
+                eef_r = np.array(eef_r)
+                units = list(set(eef_u))
+                if len(units) > 1:
+                    raise RuntimeError("More than one psfrad unit detected!!")
+                unit = units[0]
+            elif self.eef_type == 2:
+                hdu = f[1]
+                unit = getattr(hdu.columns["Radius"], "unit", "arcsec")
+                eef_e = convert_endian(hdu.data["Energy"])
+                eef_r = Quantity(
+                    convert_endian(hdu.data["Theta"]), hdu.columns["Theta"].unit
+                ).to_value("arcmin")
+                eef_i = np.arange(eef_e.size)
+        eef_r = (eef_r / plate_scale_arcmin) ** 2
         if np.all(eef_e > 100.0):
             # this is probably in eV
             eef_e *= 1.0e-3
-        self.eef_bins = np.array([eef_e, eef_r])
+        self.eef_bins = np.array([eef_e, eef_r]).astype("float64")
         self.eef_i = eef_i
         self.num_eef = len(eef_e)
-        unit = list(set(eef_u))
-        if len(unit) > 1:
-            raise RuntimeError("More than one psfrad unit detected!!")
-        self.eef_s = Quantity(1.0, unit[0]).to_value("arcsec") / plate_scale_arcsec
+        self.eef_s = Quantity(1.0, unit).to_value("arcsec") / plate_scale_arcsec
 
     def scatter(self, x, y, e):
         r2 = (x - self.det_ctr[0]) ** 2 + (y - self.det_ctr[1]) ** 2
-        score = score_psf(self.img_bins, e, r2)
-        idx_score = np.argmin(score, axis=0)
+        idx_score = score_psf(self.eef_bins[0], self.eef_bins[1], e, r2)
+        if self.eef_type == 1:
+            x, y = self._scatter1(x, y, idx_score)
+        elif self.eef_type == 2:
+            x, y = self._scatter2(x, y, idx_score)
+        return x, y
+
+    def _scatter1(self, x, y, idx_score):
         n_in = x.size
         n_out = 0
         with fits.open(self.eef_file) as f:
@@ -119,19 +131,35 @@ class MultiEEFPSF(PSF):
                 # curve
                 idxs = np.where(idx_score == j)[0]
                 n_out += idxs.size
-                rad = f[self.eef_i[j]].data["psfrad"] * self.eef_s[j]
+                rad = f[self.eef_i[j]].data["psfrad"] * self.eef_s
                 cdf = f[self.eef_i[j]].data["eef"]
                 randvec = self.prng.uniform(low=cdf[0], high=cdf[-1], size=idxs.size)
                 r = np.interp(randvec, cdf, rad)
                 phi = self.prng.uniform(low=0.0, high=2.0 * np.pi, size=idxs.size)
                 x[idxs] += r * np.cos(phi)
                 y[idxs] += r * np.sin(phi)
-            if n_in != n_out:
-                raise ValueError(
-                    f"The number of photons scattered by the PSF "
-                    f"({n_out}) does not equal the input number "
-                    f"({n_in})!"
-                )
+        if n_in != n_out:
+            raise ValueError(
+                f"The number of photons scattered by the PSF "
+                f"({n_out}) does not equal the input number "
+                f"({n_in})!"
+            )
+        return x, y
+
+    def _scatter2(self, x, y, idx_score):
+        n_evt = x.size
+        with fits.open(self.eef_file) as f:
+            hdu = f[1]
+            rad = convert_endian(hdu.data["Radius"]).astype("float64") * self.eef_s
+            cdf = np.insert(
+                convert_endian(hdu.data["EEF"]).astype("float64"), 0, 0.0, axis=1
+            )
+            cdf /= cdf[:, -1, np.newaxis]
+        randvec = self.prng.uniform(low=0.0, high=1.0, size=n_evt)
+        r = eef_cdf(idx_score, randvec, rad, cdf)
+        phi = self.prng.uniform(low=0.0, high=2.0 * np.pi, size=n_evt)
+        x += r * np.cos(phi)
+        y += r * np.sin(phi)
         return x, y
 
 
@@ -199,7 +227,7 @@ class MultiImagePSF(PSF):
         if np.all(img_e > 100.0):
             # this is probably in eV
             img_e *= 1.0e-3
-        self.img_bins = np.array([img_e, img_r])
+        self.img_bins = np.array([img_e, img_r]).astype("float64")
         self.img_i = img_i
         self.num_images = len(img_e)
         self.img_c = np.array(img_c)
@@ -210,8 +238,7 @@ class MultiImagePSF(PSF):
 
     def scatter(self, x, y, e):
         r2 = (x - self.det_ctr[0]) ** 2 + (y - self.det_ctr[1]) ** 2
-        score = score_psf(self.img_bins, e, r2)
-        idx_score = np.argmin(score, axis=0)
+        idx_score = score_psf(self.img_bins[0], self.img_bins[1], e, r2)
         n_in = x.size
         n_out = 0
         with fits.open(self.img_file) as f:
