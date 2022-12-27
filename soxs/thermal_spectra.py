@@ -687,7 +687,6 @@ class AtableGenerator:
                         .astype("float64")
                         * self.norm_fac[j]
                     )
-                    # np.clip(data, 0.0, None, out=data)
                 if el in self.var_elem:
                     k = self.var_elem.index(el)
                     var_spec[k, :, :] += data
@@ -778,6 +777,7 @@ class Atable1DGenerator(AtableGenerator):
                 spec += eabund * (
                     vspec[j, tidx, :] * (1.0 - dT) + vspec[j, tidx + 1, :] * dT
                 )
+        np.clip(spec, 0.0, None, out=spec)
         spec = norm * regrid_spectrum(self.ebins, ebins, spec[0, :]) / self.de
         return Spectrum(self.ebins, spec, binscale=self.binscale)
 
@@ -887,6 +887,7 @@ class Atable2DGenerator(AtableGenerator):
                 spec += eabund * dx2 * vspec[j, idx2, :]
                 spec += eabund * dx3 * vspec[j, idx3, :]
                 spec += eabund * dx4 * vspec[j, idx4, :]
+        np.clip(spec, 0.0, None, out=spec)
         spec = norm * regrid_spectrum(self.ebins, ebins, spec[0, :]) / self.de
         if self._scale_nH:
             spec /= nH
