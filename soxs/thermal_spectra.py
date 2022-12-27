@@ -687,6 +687,7 @@ class AtableGenerator:
                         .astype("float64")
                         * self.norm_fac[j]
                     )
+                    # np.clip(data, 0.0, None, out=data)
                 if el in self.var_elem:
                     k = self.var_elem.index(el)
                     var_spec[k, :, :] += data
@@ -1013,29 +1014,26 @@ class MekalGenerator(Atable1DGenerator):
 
 
 class CloudyCIEGenerator(Atable1DGenerator):
-    _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
+    _available_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
     """
     Initialize an emission model for a thermal plasma assuming CIE
-    generated from Cloudy v17.03. The sequence of Cloudy commands used
-    to generate the XSPEC atable is as follows:
+    generated from Cloudy. The sequence of Cloudy commands used
+    to generate the XSPEC atable are as follows:
 
     #########
-    title c17.03_cie_tgrid
-    #
-    #database stout level MAX
+    title cie_hi_z1
     database chianti level MAX
     no molecules
     no grain physics
     set phfit 1996
     abundances "./feld.abn"
-    ###
     metals 0.0
     hden 0
-    #
     coronal equil 5 vary
+    set continuum resolution 0.025
     grid range 4.0 to 9.0 in 0.025 dex steps sequential
     stop column density 1.5032e+18 linear
-    save xspec atable reflected spectrum "c17.03_cie_tgrid_n1z1.fits" range 0.05 50.
+    save xspec atable reflected spectrum "cie_hi_z1.fits" range 0.05 10.
     #########
 
     This sequence of commands is repeated for solar and low abundances so that the
@@ -1060,15 +1058,28 @@ class CloudyCIEGenerator(Atable1DGenerator):
         The names of elements to allow to vary freely from the single
         abundance parameter. These must be strings, like ["C", "N", "O"].
         Variable abundances available for the Cloudy CIE model are
-        ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"].
+        ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"].
         Default: None
+    model_res : string, optional
+        The resolution of the Cloudy CIE tables to use in the calculations.
+        Options are:
+        "lo": Tables computed from Cloudy using a continuum resolution
+        of with a range of 0.05 to 10 keV.
+        "hi": Tables computed from Cloudy using enhanced continuum
+        resolution with a range of 0.05 to 10 keV. Excellent energy
+        resolution, but may be expensive to evaluate.
+        Default: "lo"
     """
 
-    def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None):
-        cosmic_table = get_data_file("c17.03_cie_nome.fits")
-        metal_tables = (get_data_file("c17.03_cie_mxxx.fits"),)
+    def __init__(
+        self, emin, emax, nbins, binscale="linear", var_elem=None, model_res=None
+    ):
+        if model_res is None:
+            model_res = "lo"
+        cosmic_table = get_data_file(f"cie_{model_res}_nome.fits")
+        metal_tables = (get_data_file(f"cie_{model_res}_mxxx.fits"),)
         var_tables = [
-            (get_data_file(f"c17.03_cie_{metal_tab_names[el]}.fits"),)
+            (get_data_file(f"cie_{model_res}_{metal_tab_names[el]}.fits"),)
             for el in self._available_elem
         ]
         super().__init__(
@@ -1086,7 +1097,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
 
 class IGMGenerator(Atable2DGenerator):
-    _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
+    _available_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
     """
     Initialize an emission model for a thermal plasma including
     photoionization and resonant scattering from the CXB based on
@@ -1096,11 +1107,8 @@ class IGMGenerator(Atable2DGenerator):
 
     Assumes the abundance tables from Feldman 1992.
 
-    Energy bins in the table are log-spaced between ~0.05 and ~50.0 keV,
-    with dex spacing of ~ 0.00145.
-
-    Table data and README files can be found at
-    https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v3/.
+    Energy bins in the table are adaptively spaced
+    between 0.05 and 10.0 keV.
 
     Parameters
     ----------
@@ -1123,7 +1131,16 @@ class IGMGenerator(Atable2DGenerator):
         The names of elements to allow to vary freely from the single
         abundance parameter. These must be strings like ["C", "N", "O"].
         Variable abundances available for the IGM model are ["C", "N", "O",
-        "Ne", "Fe", "S", "Si", "Ca", "Mg"]. Default: None
+        "Ne", "Mg", "Si", "S", "Ca", "Fe"]. Default: None
+    model_res : string, optional
+        The resolution of the IGM tables to use in the calculations.
+        Options are:
+        "lo": Tables computed from Cloudy using a continuum resolution
+        of with a range of 0.05 to 10 keV.
+        "hi": Tables computed from Cloudy using enhanced continuum
+        resolution with a range of 0.05 to 10 keV. Excellent energy
+        resolution, but may be expensive to evaluate.
+        Default: "lo"
     """
 
     def __init__(
@@ -1135,25 +1152,28 @@ class IGMGenerator(Atable2DGenerator):
         resonant_scattering=False,
         cxb_factor=0.5,
         var_elem=None,
+        model_res=None,
     ):
+        if model_res is None:
+            model_res = "lo"
         self.resonant_scattering = resonant_scattering
-        cosmic_table = get_data_file("igm_v3ph2_nome.fits")
+        cosmic_table = get_data_file(f"igm_v4ph_{model_res}_nome.fits")
         if resonant_scattering:
             metal_tables = (
-                get_data_file("igm_v3ph2_mxxx.fits"),
-                get_data_file("igm_v3sc_mxxx.fits"),
+                get_data_file(f"igm_v4ph_{model_res}_mxxx.fits"),
+                get_data_file(f"igm_v4sc_{model_res}_mxxx.fits"),
             )
             var_tables = [
                 (
-                    get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),
-                    get_data_file(f"igm_v3sc_{metal_tab_names[el]}.fits"),
+                    get_data_file(f"igm_v4ph_{model_res}_{metal_tab_names[el]}.fits"),
+                    get_data_file(f"igm_v4sc_{model_res}_{metal_tab_names[el]}.fits"),
                 )
                 for el in self._available_elem
             ]
         else:
-            metal_tables = (get_data_file("igm_v3ph2_mxxx.fits"),)
+            metal_tables = (get_data_file(f"igm_v4ph_{model_res}_mxxx.fits"),)
             var_tables = [
-                (get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),)
+                (get_data_file(f"igm_v4ph_{model_res}_{metal_tab_names[el]}.fits"),)
                 for el in self._available_elem
             ]
         self.cxb_factor = cxb_factor
