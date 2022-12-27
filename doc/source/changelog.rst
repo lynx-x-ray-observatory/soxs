@@ -3,6 +3,16 @@
 ChangeLog
 =========
 
+Version 4.3.0
+-------------
+
+* A new version of the spectral model used in the
+  :class:`~soxs.thermal_spectra.CloudyCIEGenerator` class has been provided, with
+  improved energy resolution. See :ref:`cloudy-spectra` for more details.
+* A new version of the spectral model used in the
+  :class:`~soxs.thermal_spectra.IGMGenerator` class has been provided, with
+  improved energy resolution. See :ref:`igm-spectra` for more details.
+
 Version 4.2.1
 -------------
 
