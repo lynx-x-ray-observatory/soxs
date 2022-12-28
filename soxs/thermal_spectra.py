@@ -1031,7 +1031,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
     metals 0.0
     hden 0
     coronal equil 5 vary
-    set continuum resolution 0.025
+    set continuum resolution 0.1
     grid range 4.0 to 9.0 in 0.025 dex steps sequential
     stop column density 1.5032e+18 linear
     save xspec atable reflected spectrum "cie_hi_z1.fits" range 0.05 10.
@@ -1041,6 +1041,9 @@ class CloudyCIEGenerator(Atable1DGenerator):
     abundance parameter can be taken into account via a linear combination of two
     tables. For the individual abundances, they are obtained by setting e.g. "element
     neon off" in the run and doing the appropriate arithmetic.
+
+    Two different continuum resolutions are run, 0.1 and 0.025. Switching between
+    these is described below.
 
     Assumes the abundance tables from Feldman 1992.
 
@@ -1065,10 +1068,10 @@ class CloudyCIEGenerator(Atable1DGenerator):
         The resolution of the Cloudy CIE tables to use in the calculations.
         Options are:
         "lo": Tables computed from Cloudy using a continuum resolution
-        of with a range of 0.05 to 10 keV.
+        of 0.1 with a range of 0.05 to 10 keV.
         "hi": Tables computed from Cloudy using enhanced continuum
-        resolution with a range of 0.05 to 10 keV. Excellent energy
-        resolution, but may be expensive to evaluate.
+        resolution of 0.025 with a range of 0.05 to 10 keV. Excellent
+        energy resolution, but may be expensive to evaluate.
         Default: "lo"
     """
 
@@ -1137,10 +1140,10 @@ class IGMGenerator(Atable2DGenerator):
         The resolution of the IGM tables to use in the calculations.
         Options are:
         "lo": Tables computed from Cloudy using a continuum resolution
-        of with a range of 0.05 to 10 keV.
+        of 0.1 with a range of 0.05 to 10 keV.
         "hi": Tables computed from Cloudy using enhanced continuum
-        resolution with a range of 0.05 to 10 keV. Excellent energy
-        resolution, but may be expensive to evaluate.
+        resolution of 0.025 with a range of 0.05 to 10 keV. Excellent
+        energy resolution, but may be expensive to evaluate.
         Default: "lo"
     """
 
