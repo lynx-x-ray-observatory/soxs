@@ -1080,10 +1080,10 @@ class CloudyCIEGenerator(Atable1DGenerator):
     ):
         if model_res is None:
             model_res = "lo"
-        cosmic_table = get_data_file(f"cie_{model_res}_nome.fits")
-        metal_tables = (get_data_file(f"cie_{model_res}_mxxx.fits"),)
+        cosmic_table = get_data_file(f"cie_v4_{model_res}_nome.fits")
+        metal_tables = (get_data_file(f"cie_v4_{model_res}_mxxx.fits"),)
         var_tables = [
-            (get_data_file(f"cie_{model_res}_{metal_tab_names[el]}.fits"),)
+            (get_data_file(f"cie_v4_{model_res}_{metal_tab_names[el]}.fits"),)
             for el in self._available_elem
         ]
         super().__init__(
