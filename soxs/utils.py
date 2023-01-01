@@ -210,7 +210,7 @@ def line_width_equiv(rest):
     return [(u.km / u.s, u.keV, forward, backward)]
 
 
-class DummyPbar(object):
+class DummyPbar:
     def __init__(self):
         pass
 
@@ -294,7 +294,7 @@ class PoochHandle:
             path=cache_dir,
             registry=self._registry,
             env="SOXS_DATA_DIR",
-            base_url="https://hea-www.cfa.harvard.edu/soxs/soxs_responses/",
+            base_url="https://www.jzuhone.com/soxs_data/",
         )
         self.dl = pooch.HTTPDownloader(progressbar=True)
 
