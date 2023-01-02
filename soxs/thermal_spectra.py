@@ -1190,3 +1190,56 @@ class IGMGenerator(Atable2DGenerator):
         )
         self.norm_fac = 5.50964e-5 * np.array([1.0, self.cxb_factor])
         self.atable = abund_tables["feld"].copy()
+
+
+def download_spectrum_tables(model, model_vers=None, loc=None):
+    """
+    Download thermal model spectrum tables used for the various
+    models supported by SOXS.
+
+    Parameters
+    ----------
+    model : string
+        Model string to specify which model files to download.
+        Options are: "cie", "igm", "apec", "spex", "mekal"
+    model_vers : string
+        The version of the model to download. If not specified,
+        the default for the given model will be assumed, which
+        are detailed in the docstrings for the various models.
+    loc : string or Path object, optional
+        The path to download the files to. If not specified,
+        it will download them to the current working directory.
+    """
+    from soxs.utils import PoochHandle
+
+    if loc is None:
+        loc = os.getcwd()
+    elems = list(metal_tab_names.values()) + ["nome", "mxxx"]
+    fns = None
+    try:
+        if model == "cie":
+            if model_vers is None:
+                model_vers = "4_lo"
+            fns = [f"{model}_v{model_vers}_{elem}.fits" for elem in elems]
+        elif model == "igm":
+            if model_vers is None:
+                model_vers = "4_lo"
+            vers, res = model_vers.split("_")
+            fns = [f"{model}_v{vers}ph_{res}_{elem}.fits" for elem in elems] + [
+                f"{model}_v{vers}sc_{res}_{elem}.fits" for elem in elems
+            ]
+        elif model in ["apec", "spex"]:
+            if model_vers is None:
+                model_vers = soxs_cfg.get("soxs", f"{model.lower()}_vers")
+            if model_vers.endswith("_nei"):
+                cfile = f"{model}_v{model_vers}_comp.fits"
+            else:
+                cfile = f"{model}_v{model_vers}_coco.fits"
+            fns = [f"{model}_v{model_vers}_line.fits", cfile]
+        elif model == "mekal":
+            fns = ["mekal.mod"]
+        dog = PoochHandle(cache_dir=loc)
+        for fn in fns:
+            dog.fetch(fn)
+    except ValueError:
+        raise ValueError(f"Invalid model specification '{model}'.")

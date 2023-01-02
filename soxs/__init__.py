@@ -66,5 +66,6 @@ from soxs.thermal_spectra import (
     IGMGenerator,
     MekalGenerator,
     SpexGenerator,
+    download_spectrum_tables,
 )
 from soxs.utils import set_mission_config, set_soxs_config
