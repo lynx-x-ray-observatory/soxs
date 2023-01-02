@@ -426,8 +426,8 @@ class ApecGenerator(CIEGenerator):
         set in the SOXS configuration file, the default for which is
         "3.0.9".
     broadening : boolean, optional
-        Whether or not the spectral lines should be
-        thermally and velocity broadened. Default: True
+        Whether the spectral lines should be thermally and velocity
+        broadened. Default: True
     nolines : boolean, optional
         Turn off lines entirely for generating spectra.
         Default: False
@@ -1064,26 +1064,24 @@ class CloudyCIEGenerator(Atable1DGenerator):
         Variable abundances available for the Cloudy CIE model are
         ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"].
         Default: None
-    model_res : string, optional
-        The resolution of the Cloudy CIE tables to use in the calculations.
+    model_vers : string, optional
+        The version of the Cloudy CIE tables to use in the calculations.
         Options are:
-        "lo": Tables computed from Cloudy using a continuum resolution
+        "4_lo": Tables computed from Cloudy using a continuum resolution
         of 0.1 with a range of 0.05 to 10 keV.
-        "hi": Tables computed from Cloudy using enhanced continuum
+        "4_hi": Tables computed from Cloudy using enhanced continuum
         resolution of 0.025 with a range of 0.05 to 10 keV. Excellent
         energy resolution, but may be expensive to evaluate.
-        Default: "lo"
+        Default: "4_lo"
     """
 
     def __init__(
-        self, emin, emax, nbins, binscale="linear", var_elem=None, model_res=None
+        self, emin, emax, nbins, binscale="linear", var_elem=None, model_vers="v4_lo"
     ):
-        if model_res is None:
-            model_res = "lo"
-        cosmic_table = get_data_file(f"cie_v4_{model_res}_nome.fits")
-        metal_tables = (get_data_file(f"cie_v4_{model_res}_mxxx.fits"),)
+        cosmic_table = get_data_file(f"cie_v{model_vers}_nome.fits")
+        metal_tables = (get_data_file(f"cie_v{model_vers}_mxxx.fits"),)
         var_tables = [
-            (get_data_file(f"cie_v4_{model_res}_{metal_tab_names[el]}.fits"),)
+            (get_data_file(f"cie_v{model_vers}_{metal_tab_names[el]}.fits"),)
             for el in self._available_elem
         ]
         super().__init__(
@@ -1136,15 +1134,15 @@ class IGMGenerator(Atable2DGenerator):
         abundance parameter. These must be strings like ["C", "N", "O"].
         Variable abundances available for the IGM model are ["C", "N", "O",
         "Ne", "Mg", "Si", "S", "Ca", "Fe"]. Default: None
-    model_res : string, optional
-        The resolution of the IGM tables to use in the calculations.
+    model_vers : string, optional
+        The version of the IGM tables to use in the calculations.
         Options are:
-        "lo": Tables computed from Cloudy using a continuum resolution
+        "4_lo": Tables computed from Cloudy using a continuum resolution
         of 0.1 with a range of 0.05 to 10 keV.
-        "hi": Tables computed from Cloudy using enhanced continuum
+        "4_hi": Tables computed from Cloudy using enhanced continuum
         resolution of 0.025 with a range of 0.05 to 10 keV. Excellent
         energy resolution, but may be expensive to evaluate.
-        Default: "lo"
+        Default: "4_lo"
     """
 
     def __init__(
@@ -1156,28 +1154,27 @@ class IGMGenerator(Atable2DGenerator):
         resonant_scattering=False,
         cxb_factor=0.5,
         var_elem=None,
-        model_res=None,
+        model_vers="4_lo",
     ):
-        if model_res is None:
-            model_res = "lo"
+        vers, res = model_vers.split("_")
         self.resonant_scattering = resonant_scattering
-        cosmic_table = get_data_file(f"igm_v4ph_{model_res}_nome.fits")
+        cosmic_table = get_data_file(f"igm_v{vers}ph_{res}_nome.fits")
         if resonant_scattering:
             metal_tables = (
-                get_data_file(f"igm_v4ph_{model_res}_mxxx.fits"),
-                get_data_file(f"igm_v4sc_{model_res}_mxxx.fits"),
+                get_data_file(f"igm_v{vers}ph_{res}_mxxx.fits"),
+                get_data_file(f"igm_v{vers}sc_{res}_mxxx.fits"),
             )
             var_tables = [
                 (
-                    get_data_file(f"igm_v4ph_{model_res}_{metal_tab_names[el]}.fits"),
-                    get_data_file(f"igm_v4sc_{model_res}_{metal_tab_names[el]}.fits"),
+                    get_data_file(f"igm_v{vers}ph_{res}_{metal_tab_names[el]}.fits"),
+                    get_data_file(f"igm_v{vers}sc_{res}_{metal_tab_names[el]}.fits"),
                 )
                 for el in self._available_elem
             ]
         else:
-            metal_tables = (get_data_file(f"igm_v4ph_{model_res}_mxxx.fits"),)
+            metal_tables = (get_data_file(f"igm_v{vers}ph_{res}_mxxx.fits"),)
             var_tables = [
-                (get_data_file(f"igm_v4ph_{model_res}_{metal_tab_names[el]}.fits"),)
+                (get_data_file(f"igm_v{vers}ph_{res}_{metal_tab_names[el]}.fits"),)
                 for el in self._available_elem
             ]
         self.cxb_factor = cxb_factor
