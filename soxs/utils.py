@@ -359,7 +359,15 @@ def set_mission_config(mission):
 
 def regrid_spectrum(ebins_new, ebins, spec):
     cspec = np.insert(np.cumsum(spec, axis=-1), 0, 0.0, axis=-1)
-    f = interp1d(ebins, cspec, axis=-1, fill_value=0.0, assume_sorted=True, copy=False)
+    f = interp1d(
+        ebins,
+        cspec,
+        axis=-1,
+        fill_value=0.0,
+        bounds_error=False,
+        assume_sorted=True,
+        copy=False,
+    )
     return np.diff(f(ebins_new), axis=-1)
 
 
