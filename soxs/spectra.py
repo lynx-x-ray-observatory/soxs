@@ -1141,3 +1141,43 @@ class ConvolvedSpectrum(CountRateSpectrum):
     @classmethod
     def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
+
+
+def plot_energy_bins(emin, emax, nbins, binscale="log"):
+    """
+    Make a quick plot of energy values E vs. energy bin widths ΔE
+    for a given binning, to determine the optimal binning for your
+    problem. Really only useful for logspace binning.
+
+    Parameters
+    ----------
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The minimum energy of the spectrum in keV.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The maximum energy of the spectrum in keV.
+    nbins : integer
+        The number of bins in the spectrum.
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log".
+        Default: "log"
+    """
+    import matplotlib.pyplot as plt
+
+    emin = parse_value(emin, "keV")
+    emax = parse_value(emax, "keV")
+    if binscale == "linear":
+        ebins = np.linspace(emin, emax, nbins + 1)
+    elif binscale == "log":
+        ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
+
+    if binscale == "linear":
+        ebins = np.linspace(emin, emax, nbins + 1)
+    elif binscale == "log":
+        ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
+    emid = 0.5 * (ebins[1:] + ebins[:-1])
+    de = np.diff(ebins)
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.loglog(emid, de * 1000)
+    ax.set_xlabel("E (keV)")
+    ax.set_ylabel("$\\Delta$E (eV)")
+    return fig
