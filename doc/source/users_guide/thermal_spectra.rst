@@ -460,3 +460,43 @@ Co, Ni, Cu, and Zn. An example:
     file for the simulation of thermal spectra, this is not possible for the
     TBabs abundance model used in SOXS--one must instead use one of the
     included options mentioned above. See :ref:`galactic_abs`.
+
+.. _downloading-thermal-tables:
+
+Downloading Thermal Spectra Tables
+----------------------------------
+
+SOXS will download the thermal spectra tables necessary to create spectra
+using the different models, and store them in the location for SOXS data
+specified in the SOXS configuration (see :ref:`config` for more information).
+However, if you would like to download data for a specific model to a
+particular location, SOXS provides the
+:func:`~soxs.thermal_spectra.download_spectrum_tables` function. Specific
+model files can be downloaded using the following syntax:
+
+* ``"apec"``: Downloads the latest version of the APEC tables for
+  :class:`~soxs.thermal_spectra.APECGenerator`. To download a particular
+  version, specify (e.g.) ``"apec_v3.0.9"``, or to download the NEI version
+  of the tables, specify ``"apec_v3.0.9_nei"``.
+* ``"spex"``: Downloads the latest version of the SPEX tables for
+  :class:`~soxs.thermal_spectra.SPEXGenerator`. To download a particular
+  version, specify (e.g.) ``"spex_v3.06.01"``.
+* ``"cie"``: Downloads the latest version of the low-resolution tables for
+  :class:`~soxs.thermal_spectra.CloudyCIEGenerator`. Specify ``"cie_v4_hi"``
+  to get the high-resolution version of the tables.
+* ``"igm"``: Downloads the latest version of the low-resolution tables for
+  :class:`~soxs.thermal_spectra.IGMGenerator`. Specify ``"igm_v4_hi"`` to get
+  the high-resolution version of the tables.
+* ``"mekal"``: Downloads the MeKaL table.
+
+Download files to the current working directory:
+
+.. code-block:: python
+
+    soxs.download_spectrum_tables("mekal")
+
+or to a location ``loc`` of your choice:
+
+.. code-block:: python
+
+    soxs.download_spectrum_tables("cie_v4_hi", loc="/Users/jzuhone/Data")
