@@ -4,6 +4,7 @@
 
 [![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
 [![Build and Test](https://github.com/lynx-x-ray-observatory/soxs/actions/workflows/build-test.yml/badge.svg)](https://github.com/lynx-x-ray-observatory/soxs/actions/workflows/build-test.yml/)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lynx-x-ray-observatory/soxs/main.svg)](https://results.pre-commit.ci/latest/github/lynx-x-ray-observatory/soxs/main)
 
 # What is SOXS?
 
@@ -22,7 +23,7 @@ examples.
 # Installing SOXS
 
 SOXS and its dependencies are installed as a standard Python package, and it is compatible
-with Python 3.x. You may use `pip` to install it (if you do not have pip, check
+with Python 3.9 or later. You may use `pip` to install it (if you do not have pip, check
 that your executable is not named `pip3`, otherwise visit https://pip.pypa.io/ to download
 it):
 
