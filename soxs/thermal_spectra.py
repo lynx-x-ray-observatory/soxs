@@ -1034,6 +1034,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
     set continuum resolution 0.1
     grid range 4.0 to 9.0 in 0.025 dex steps sequential
     stop column density 1.5032e+18 linear
+    iterate to convergence
     save xspec atable reflected spectrum "cie_hi_z1.fits" range 0.05 10.
     #########
 
@@ -1042,8 +1043,12 @@ class CloudyCIEGenerator(Atable1DGenerator):
     tables. For the individual abundances, they are obtained by setting e.g. "element
     neon off" in the run and doing the appropriate arithmetic.
 
-    Two different continuum resolutions are run, 0.1 and 0.025. Switching between
-    these is described below.
+    The energy range of the generated table at a redshift of 0 is 0.05-10.0 keV. The
+    default resolution of Cloudy in this range is dE/E = 0.005 for E < 8.16 keV, and
+    dE/E = 0.03 for higher energies. SOXS provides two different spectral resolutions
+    for the Cloudy CIE tables, the lower of which is 10 times finer than the above
+    and the higher is 40 times finer. Which is used can be controlled by the
+    *model_vers* argument as described below.
 
     Assumes the abundance tables from Feldman 1992.
 
@@ -1107,10 +1112,14 @@ class IGMGenerator(Atable2DGenerator):
     (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov
     et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
 
-    Assumes the abundance tables from Feldman 1992.
+    The energy range of the generated table at a redshift of 0 is 0.05-10.0 keV. The
+    default resolution of Cloudy in this range is dE/E = 0.005 for E < 8.16 keV, and
+    dE/E = 0.03 for higher energies. SOXS provides two different spectral resolutions
+    for the Cloudy CIE tables, the lower of which is 10 times finer than the above
+    and the higher is 40 times finer. Which is used can be controlled by the
+    *model_vers* as described below.
 
-    Energy bins in the table are adaptively spaced
-    between 0.05 and 10.0 keV.
+    Assumes the abundance tables from Feldman 1992.
 
     Parameters
     ----------

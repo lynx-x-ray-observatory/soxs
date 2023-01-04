@@ -148,7 +148,7 @@ as follows:
 .. code-block::
 
     #########
-    title c17.03_cie_tgrid
+    title cie_v4_lo_tgrid
     #
     #database stout level MAX
     database chianti level MAX
@@ -162,8 +162,10 @@ as follows:
     #
     coronal equil 5 vary
     grid range 4.0 to 9.0 in 0.025 dex steps sequential
+    set continuum resolution 0.1
     stop column density 1.5032e+18 linear
-    save xspec atable reflected spectrum "c17.03_cie_tgrid_n1z1.fits" range 0.05 50.
+    iterate to convergence
+    save xspec atable reflected spectrum "cie_v4_lo_tgrid_n1z1.fits" range 0.05 10.
     #########
 
 This sequence of commands is repeated for solar and low abundances so that
@@ -178,9 +180,24 @@ similar to the other generators:
 .. code-block:: python
 
     emin = 0.1
-    emax = 10.0
+    emax = 9.0
     nbins = 3000
     cgen = soxs.CloudyCIEGenerator(emin, emax, nbins, binscale="linear")
+
+The energy range of the generated table at a redshift of 0 is 0.05-10.0 keV. The
+default resolution of Cloudy in this range is dE/E = 0.005 for E < 8.16 keV, and
+dE/E = 0.03 for higher energies. SOXS provides two different spectral resolutions
+for the Cloudy CIE tables, the lower of which (and the default) is 10 times finer
+than the above and the higher is 40 times finer. Which is used can be controlled
+by the *model_vers* argument. To specify the higher resolution table:
+
+.. code-block:: python
+
+    emin = 0.1
+    emax = 9.0
+    nbins = 3000
+    cgen = soxs.CloudyCIEGenerator(emin, emax, nbins, binscale="log",
+                                   model_vers="4_hi")
 
 Note that it is not possible to create Cloudy CIE spectra without lines, and
 thermal broadening is automatically included and cannot be turned off. The
@@ -223,17 +240,26 @@ of 0.5:
 
 .. code-block:: python
 
-Thermal CIE spectra using the Cloudy model can be generated using the
-:class:`~soxs.thermal_spectra.CloudyCIEGenerator` object, in a manner
-similar to the other generators:
-
-.. code-block:: python
-
     emin = 0.1
     emax = 10.0
     nbins = 3000
     igen = soxs.IGMGenerator(emin, emax, nbins, binscale="linear",
                              resonant_scattering=True, cxb_factor=0.3)
+
+The energy range of the generated table at a redshift of 0 is 0.05-10.0 keV. The
+default resolution of Cloudy in this range is dE/E = 0.005 for E < 8.16 keV, and
+dE/E = 0.03 for higher energies. SOXS provides two different spectral resolutions
+for the IGM tables, the lower of which (and the default) is 10 times finer
+than the above and the higher is 40 times finer. Which is used can be controlled
+by the *model_vers* argument. To specify the higher resolution table:
+
+.. code-block:: python
+
+    emin = 0.1
+    emax = 9.0
+    nbins = 3000
+    igen = soxs.IGMGenerator(emin, emax, nbins, binscale="log",
+                             model_vers="4_hi")
 
 Generating Spectra
 ------------------
@@ -260,13 +286,15 @@ and the parameters are:
 * ``velocity``: The (optional) velocity broadening parameter, in units of km/s.
   If not zero, this broadens spectral lines using a Gaussian model assuming the
   ``velocity`` parameter is the velocity dispersion :math:`\sigma_v`. If not set,
-  there is no velocity broadening.
+  there is no velocity broadening. Currently only available for the
+  :class:`~soxs.thermal_spectra.ApecGenerator` and
+  :class:`~soxs.thermal_spectra.SpexGenerator` classes.
 
 A more specific invocation may look like this:
 
 .. code-block:: python
 
-    kT = 6.0 (6.0, "keV")
+    kT = (6.0, "keV")
     abund = 0.3 # solar units
     redshift = 0.05
     norm = 1.0e-3
@@ -281,7 +309,7 @@ like this:
 
 .. code-block:: python
 
-    spec = igen.get_spectrum(kT, nH, abund, redshift, norm, velocity=velocity)
+    spec = igen.get_spectrum(kT, nH, abund, redshift, norm)
 
 Where the ``nH`` parameter is the number density of hydrogen atoms in units
 of :math:`cm^{-3}`.
