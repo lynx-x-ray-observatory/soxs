@@ -48,6 +48,7 @@ class CIEGenerator:
         if model_vers is None:
             model_vers = soxs_cfg.get("soxs", f"{model.lower()}_vers")
         mylog.debug("Using %s version %s.", model, model_vers)
+        self.model_vers = model_vers
         if nei and var_elem is None:
             raise RuntimeError(
                 "For NEI spectra, you must specify which elements "
@@ -78,9 +79,11 @@ class CIEGenerator:
         if model_root is None:
             self.cocofile = get_data_file(cocofile)
             self.linefile = get_data_file(linefile)
+            model_root = soxs_cfg.get("soxs", "soxs_data_dir")
         else:
             self.cocofile = os.path.join(model_root, cocofile)
             self.linefile = os.path.join(model_root, linefile)
+        self.model_root = model_root
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError(
                 f"Cannot find the {model} files!\n {self.cocofile}\n, "
@@ -248,7 +251,7 @@ class CIEGenerator:
             # First do H, He, and trace elements
             for elem in self.cosmic_elem:
                 if self.nei:
-                    # For H, He we assume fully ionized
+                    # For H, He, we assume fully ionized
                     ion = elem
                 else:
                     ion = 0
@@ -1081,8 +1084,16 @@ class CloudyCIEGenerator(Atable1DGenerator):
     """
 
     def __init__(
-        self, emin, emax, nbins, binscale="linear", var_elem=None, model_vers="v4_lo"
+        self,
+        emin,
+        emax,
+        nbins,
+        binscale="linear",
+        var_elem=None,
+        model_vers=None,
     ):
+        if model_vers is None:
+            model_vers = "4_lo"
         cosmic_table = get_data_file(f"cie_v{model_vers}_nome.fits")
         metal_tables = (get_data_file(f"cie_v{model_vers}_mxxx.fits"),)
         var_tables = [
@@ -1163,8 +1174,10 @@ class IGMGenerator(Atable2DGenerator):
         resonant_scattering=False,
         cxb_factor=0.5,
         var_elem=None,
-        model_vers="4_lo",
+        model_vers=None,
     ):
+        if model_vers is None:
+            model_vers = "4_lo"
         vers, res = model_vers.split("_")
         self.resonant_scattering = resonant_scattering
         cosmic_table = get_data_file(f"igm_v{vers}ph_{res}_nome.fits")
