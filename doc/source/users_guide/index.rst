@@ -10,6 +10,7 @@ This section documents the capabilities of SOXS and its Python interface.
 
    general_info
    spectra
+   thermal_spectra
    spatial
    simput
    instrument
