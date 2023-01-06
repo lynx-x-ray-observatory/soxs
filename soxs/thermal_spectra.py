@@ -1094,6 +1094,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
     ):
         if model_vers is None:
             model_vers = "4_lo"
+        self.model_vers = model_vers
         cosmic_table = get_data_file(f"cie_v{model_vers}_nome.fits")
         metal_tables = (get_data_file(f"cie_v{model_vers}_mxxx.fits"),)
         var_tables = [
@@ -1178,6 +1179,7 @@ class IGMGenerator(Atable2DGenerator):
     ):
         if model_vers is None:
             model_vers = "4_lo"
+        self.model_vers = model_vers
         vers, res = model_vers.split("_")
         self.resonant_scattering = resonant_scattering
         cosmic_table = get_data_file(f"igm_v{vers}ph_{res}_nome.fits")
