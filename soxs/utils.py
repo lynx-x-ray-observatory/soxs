@@ -210,7 +210,7 @@ def line_width_equiv(rest):
     return [(u.km / u.s, u.keV, forward, backward)]
 
 
-class DummyPbar(object):
+class DummyPbar:
     def __init__(self):
         pass
 
@@ -294,7 +294,7 @@ class PoochHandle:
             path=cache_dir,
             registry=self._registry,
             env="SOXS_DATA_DIR",
-            base_url="https://hea-www.cfa.harvard.edu/soxs/soxs_responses/",
+            base_url="https://www.jzuhone.com/soxs_data/",
         )
         self.dl = pooch.HTTPDownloader(progressbar=True)
 
@@ -359,7 +359,15 @@ def set_mission_config(mission):
 
 def regrid_spectrum(ebins_new, ebins, spec):
     cspec = np.insert(np.cumsum(spec, axis=-1), 0, 0.0, axis=-1)
-    f = interp1d(ebins, cspec, axis=-1, fill_value=0.0, assume_sorted=True, copy=False)
+    f = interp1d(
+        ebins,
+        cspec,
+        axis=-1,
+        fill_value=0.0,
+        bounds_error=False,
+        assume_sorted=True,
+        copy=False,
+    )
     return np.diff(f(ebins_new), axis=-1)
 
 

@@ -316,16 +316,16 @@ def test_linlog():
 
 
 def test_cloudy_cie(answer_store, answer_dir):
-    cgen = CloudyCIEGenerator(0.5, 10.0, 5000, binscale="log")
+    cgen = CloudyCIEGenerator(0.5, 8.0, 5000, binscale="log")
     cgen_var1 = CloudyCIEGenerator(
-        0.5, 10.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe"]
+        0.5, 8.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe"]
     )
     cgen_var2 = CloudyCIEGenerator(
-        0.5, 10.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"]
+        0.5, 8.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"]
     )
     cgen_var3 = CloudyCIEGenerator(
         0.5,
-        10.0,
+        8.0,
         5000,
         binscale="log",
         var_elem=["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"],

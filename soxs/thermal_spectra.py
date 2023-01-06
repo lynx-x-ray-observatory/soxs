@@ -48,6 +48,7 @@ class CIEGenerator:
         if model_vers is None:
             model_vers = soxs_cfg.get("soxs", f"{model.lower()}_vers")
         mylog.debug("Using %s version %s.", model, model_vers)
+        self.model_vers = model_vers
         if nei and var_elem is None:
             raise RuntimeError(
                 "For NEI spectra, you must specify which elements "
@@ -78,9 +79,11 @@ class CIEGenerator:
         if model_root is None:
             self.cocofile = get_data_file(cocofile)
             self.linefile = get_data_file(linefile)
+            model_root = soxs_cfg.get("soxs", "soxs_data_dir")
         else:
             self.cocofile = os.path.join(model_root, cocofile)
             self.linefile = os.path.join(model_root, linefile)
+        self.model_root = model_root
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
             raise IOError(
                 f"Cannot find the {model} files!\n {self.cocofile}\n, "
@@ -248,7 +251,7 @@ class CIEGenerator:
             # First do H, He, and trace elements
             for elem in self.cosmic_elem:
                 if self.nei:
-                    # For H, He we assume fully ionized
+                    # For H, He, we assume fully ionized
                     ion = elem
                 else:
                     ion = 0
@@ -426,8 +429,8 @@ class ApecGenerator(CIEGenerator):
         set in the SOXS configuration file, the default for which is
         "3.0.9".
     broadening : boolean, optional
-        Whether or not the spectral lines should be
-        thermally and velocity broadened. Default: True
+        Whether the spectral lines should be thermally and velocity
+        broadened. Default: True
     nolines : boolean, optional
         Turn off lines entirely for generating spectra.
         Default: False
@@ -777,6 +780,7 @@ class Atable1DGenerator(AtableGenerator):
                 spec += eabund * (
                     vspec[j, tidx, :] * (1.0 - dT) + vspec[j, tidx + 1, :] * dT
                 )
+        np.clip(spec, 0.0, None, out=spec)
         spec = norm * regrid_spectrum(self.ebins, ebins, spec[0, :]) / self.de
         return Spectrum(self.ebins, spec, binscale=self.binscale)
 
@@ -886,6 +890,7 @@ class Atable2DGenerator(AtableGenerator):
                 spec += eabund * dx2 * vspec[j, idx2, :]
                 spec += eabund * dx3 * vspec[j, idx3, :]
                 spec += eabund * dx4 * vspec[j, idx4, :]
+        np.clip(spec, 0.0, None, out=spec)
         spec = norm * regrid_spectrum(self.ebins, ebins, spec[0, :]) / self.de
         if self._scale_nH:
             spec /= nH
@@ -1013,35 +1018,40 @@ class MekalGenerator(Atable1DGenerator):
 
 
 class CloudyCIEGenerator(Atable1DGenerator):
-    _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
+    _available_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
     """
     Initialize an emission model for a thermal plasma assuming CIE
-    generated from Cloudy v17.03. The sequence of Cloudy commands used
-    to generate the XSPEC atable is as follows:
+    generated from Cloudy. The sequence of Cloudy commands used
+    to generate the XSPEC atable are as follows:
 
     #########
-    title c17.03_cie_tgrid
-    #
-    #database stout level MAX
+    title cie_hi_z1
     database chianti level MAX
     no molecules
     no grain physics
     set phfit 1996
     abundances "./feld.abn"
-    ###
     metals 0.0
     hden 0
-    #
     coronal equil 5 vary
+    set continuum resolution 0.1
     grid range 4.0 to 9.0 in 0.025 dex steps sequential
     stop column density 1.5032e+18 linear
-    save xspec atable reflected spectrum "c17.03_cie_tgrid_n1z1.fits" range 0.05 50.
+    iterate to convergence
+    save xspec atable reflected spectrum "cie_hi_z1.fits" range 0.05 10.
     #########
 
     This sequence of commands is repeated for solar and low abundances so that the
     abundance parameter can be taken into account via a linear combination of two
     tables. For the individual abundances, they are obtained by setting e.g. "element
     neon off" in the run and doing the appropriate arithmetic.
+
+    The energy range of the generated table at a redshift of 0 is 0.05-10.0 keV. The
+    default resolution of Cloudy in this range is dE/E = 0.005 for E < 8.16 keV, and
+    dE/E = 0.03 for higher energies. SOXS provides two different spectral resolutions
+    for the Cloudy CIE tables, the lower of which is 10 times finer than the above
+    and the higher is 40 times finer. Which is used can be controlled by the
+    *model_vers* argument as described below.
 
     Assumes the abundance tables from Feldman 1992.
 
@@ -1060,15 +1070,35 @@ class CloudyCIEGenerator(Atable1DGenerator):
         The names of elements to allow to vary freely from the single
         abundance parameter. These must be strings, like ["C", "N", "O"].
         Variable abundances available for the Cloudy CIE model are
-        ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"].
+        ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"].
         Default: None
+    model_vers : string, optional
+        The version of the Cloudy CIE tables to use in the calculations.
+        Options are:
+        "4_lo": Tables computed from Cloudy using a continuum resolution
+        of 0.1 with a range of 0.05 to 10 keV.
+        "4_hi": Tables computed from Cloudy using enhanced continuum
+        resolution of 0.025 with a range of 0.05 to 10 keV. Excellent
+        energy resolution, but may be expensive to evaluate.
+        Default: "4_lo"
     """
 
-    def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None):
-        cosmic_table = get_data_file("c17.03_cie_nome.fits")
-        metal_tables = (get_data_file("c17.03_cie_mxxx.fits"),)
+    def __init__(
+        self,
+        emin,
+        emax,
+        nbins,
+        binscale="linear",
+        var_elem=None,
+        model_vers=None,
+    ):
+        if model_vers is None:
+            model_vers = "4_lo"
+        self.model_vers = model_vers
+        cosmic_table = get_data_file(f"cie_v{model_vers}_nome.fits")
+        metal_tables = (get_data_file(f"cie_v{model_vers}_mxxx.fits"),)
         var_tables = [
-            (get_data_file(f"c17.03_cie_{metal_tab_names[el]}.fits"),)
+            (get_data_file(f"cie_v{model_vers}_{metal_tab_names[el]}.fits"),)
             for el in self._available_elem
         ]
         super().__init__(
@@ -1086,7 +1116,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
 
 
 class IGMGenerator(Atable2DGenerator):
-    _available_elem = ["C", "N", "O", "Ne", "Fe", "S", "Si", "Ca", "Mg"]
+    _available_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
     """
     Initialize an emission model for a thermal plasma including
     photoionization and resonant scattering from the CXB based on
@@ -1094,13 +1124,14 @@ class IGMGenerator(Atable2DGenerator):
     (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov
     et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
 
+    The energy range of the generated table at a redshift of 0 is 0.05-10.0 keV. The
+    default resolution of Cloudy in this range is dE/E = 0.005 for E < 8.16 keV, and
+    dE/E = 0.03 for higher energies. SOXS provides two different spectral resolutions
+    for the Cloudy CIE tables, the lower of which is 10 times finer than the above
+    and the higher is 40 times finer. Which is used can be controlled by the
+    *model_vers* as described below.
+
     Assumes the abundance tables from Feldman 1992.
-
-    Energy bins in the table are log-spaced between ~0.05 and ~50.0 keV,
-    with dex spacing of ~ 0.00145.
-
-    Table data and README files can be found at
-    https://wwwmpa.mpa-garching.mpg.de/~ildar/igm/v3/.
 
     Parameters
     ----------
@@ -1123,7 +1154,16 @@ class IGMGenerator(Atable2DGenerator):
         The names of elements to allow to vary freely from the single
         abundance parameter. These must be strings like ["C", "N", "O"].
         Variable abundances available for the IGM model are ["C", "N", "O",
-        "Ne", "Fe", "S", "Si", "Ca", "Mg"]. Default: None
+        "Ne", "Mg", "Si", "S", "Ca", "Fe"]. Default: None
+    model_vers : string, optional
+        The version of the IGM tables to use in the calculations.
+        Options are:
+        "4_lo": Tables computed from Cloudy using a continuum resolution
+        of 0.1 with a range of 0.05 to 10 keV.
+        "4_hi": Tables computed from Cloudy using enhanced continuum
+        resolution of 0.025 with a range of 0.05 to 10 keV. Excellent
+        energy resolution, but may be expensive to evaluate.
+        Default: "4_lo"
     """
 
     def __init__(
@@ -1135,25 +1175,30 @@ class IGMGenerator(Atable2DGenerator):
         resonant_scattering=False,
         cxb_factor=0.5,
         var_elem=None,
+        model_vers=None,
     ):
+        if model_vers is None:
+            model_vers = "4_lo"
+        self.model_vers = model_vers
+        vers, res = model_vers.split("_")
         self.resonant_scattering = resonant_scattering
-        cosmic_table = get_data_file("igm_v3ph2_nome.fits")
+        cosmic_table = get_data_file(f"igm_v{vers}ph_{res}_nome.fits")
         if resonant_scattering:
             metal_tables = (
-                get_data_file("igm_v3ph2_mxxx.fits"),
-                get_data_file("igm_v3sc_mxxx.fits"),
+                get_data_file(f"igm_v{vers}ph_{res}_mxxx.fits"),
+                get_data_file(f"igm_v{vers}sc_{res}_mxxx.fits"),
             )
             var_tables = [
                 (
-                    get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),
-                    get_data_file(f"igm_v3sc_{metal_tab_names[el]}.fits"),
+                    get_data_file(f"igm_v{vers}ph_{res}_{metal_tab_names[el]}.fits"),
+                    get_data_file(f"igm_v{vers}sc_{res}_{metal_tab_names[el]}.fits"),
                 )
                 for el in self._available_elem
             ]
         else:
-            metal_tables = (get_data_file("igm_v3ph2_mxxx.fits"),)
+            metal_tables = (get_data_file(f"igm_v{vers}ph_{res}_mxxx.fits"),)
             var_tables = [
-                (get_data_file(f"igm_v3ph2_{metal_tab_names[el]}.fits"),)
+                (get_data_file(f"igm_v{vers}ph_{res}_{metal_tab_names[el]}.fits"),)
                 for el in self._available_elem
             ]
         self.cxb_factor = cxb_factor
@@ -1169,3 +1214,56 @@ class IGMGenerator(Atable2DGenerator):
         )
         self.norm_fac = 5.50964e-5 * np.array([1.0, self.cxb_factor])
         self.atable = abund_tables["feld"].copy()
+
+
+def download_spectrum_tables(model, model_vers=None, loc=None):
+    """
+    Download thermal model spectrum tables used for the various
+    models supported by SOXS.
+
+    Parameters
+    ----------
+    model : string
+        Model string to specify which model files to download.
+        Options are: "cie", "igm", "apec", "spex", "mekal"
+    model_vers : string
+        The version of the model to download. If not specified,
+        the default for the given model will be assumed, which
+        are detailed in the docstrings for the various models.
+    loc : string or Path object, optional
+        The path to download the files to. If not specified,
+        it will download them to the current working directory.
+    """
+    from soxs.utils import PoochHandle
+
+    if loc is None:
+        loc = os.getcwd()
+    elems = list(metal_tab_names.values()) + ["nome", "mxxx"]
+    fns = None
+    try:
+        if model == "cie":
+            if model_vers is None:
+                model_vers = "4_lo"
+            fns = [f"{model}_v{model_vers}_{elem}.fits" for elem in elems]
+        elif model == "igm":
+            if model_vers is None:
+                model_vers = "4_lo"
+            vers, res = model_vers.split("_")
+            fns = [f"{model}_v{vers}ph_{res}_{elem}.fits" for elem in elems] + [
+                f"{model}_v{vers}sc_{res}_{elem}.fits" for elem in elems
+            ]
+        elif model in ["apec", "spex"]:
+            if model_vers is None:
+                model_vers = soxs_cfg.get("soxs", f"{model.lower()}_vers")
+            if model_vers.endswith("_nei"):
+                cfile = f"{model}_v{model_vers}_comp.fits"
+            else:
+                cfile = f"{model}_v{model_vers}_coco.fits"
+            fns = [f"{model}_v{model_vers}_line.fits", cfile]
+        elif model == "mekal":
+            fns = ["mekal.mod"]
+        dog = PoochHandle(cache_dir=loc)
+        for fn in fns:
+            dog.fetch(fn)
+    except ValueError:
+        raise ValueError(f"Invalid model specification '{model}'.")

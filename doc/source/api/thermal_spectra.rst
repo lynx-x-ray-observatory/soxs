@@ -15,3 +15,5 @@ Thermal Spectra API
 
 .. autoclass:: soxs.thermal_spectra.IGMGenerator
     :members:
+
+.. autofunction:: soxs.thermal_spectra.download_spectrum_tables
