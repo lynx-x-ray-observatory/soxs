@@ -45,7 +45,6 @@ from soxs.simput import (
     SimputPhotonList,
     SimputSpectrum,
     make_bkgnd_simput,
-    read_simput_catalog,
     write_photon_list,
 )
 from soxs.spatial import (

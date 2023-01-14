@@ -56,6 +56,7 @@ class LazyReadPyxsimEvents(Sequence):
         import pyxsim
 
         self.events = pyxsim.EventList(source)
+        self.filenames = self.events.filenames
 
     def __getitem__(self, i):
         ra, dec, energy, flux = self.events.get_data(i)
