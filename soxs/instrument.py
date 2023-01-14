@@ -10,7 +10,7 @@ from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from soxs.psf import psf_model_registry
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
-from soxs.simput import SimputCatalog, SimputPhotonList, read_simput_catalog
+from soxs.simput import SimputCatalog, SimputPhotonList, read_catalog
 from soxs.utils import (
     create_region,
     ensure_numpy_array,
@@ -39,25 +39,21 @@ def perform_dither(t, dither_dict):
 def make_source_list(source):
     if source is None:
         source_list = []
-        parameters = {}
     elif isinstance(source, dict):
-        parameters = {}
-        for key in ["flux", "emin", "emax", "src_names"]:
-            parameters[key] = source[key]
         source_list = []
-        for i in range(len(parameters["flux"])):
+        for i in range(len(source["flux"])):
             phlist = SimputPhotonList(
                 source["ra"][i],
                 source["dec"][i],
                 source["energy"][i],
-                parameters["flux"][i],
-                parameters["src_names"][i],
+                source["flux"][i],
+                source["src_names"][i],
             )
             source_list.append(phlist)
     elif isinstance(source, (str, SimputCatalog)):
-        # Assume this is a SIMPUT catalog
-        source_list, parameters = read_simput_catalog(source)
-    return source_list, parameters
+        # Assume this is a SIMPUT or pyXSIM catalog
+        source_list = read_catalog(source)
+    return source_list
 
 
 def generate_events(
@@ -130,7 +126,7 @@ def generate_events(
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
-    source_list, parameters = make_source_list(source)
+    source_list = make_source_list(source)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -213,7 +209,7 @@ def generate_events(
     all_events = defaultdict(list)
 
     for i, src in enumerate(source_list):
-        mylog.info("Detecting events from source %s.", parameters["src_names"][i])
+        mylog.info("Detecting events from source %s.", src.name)
 
         # Step 1: Use ARF to determine which photons are observed
 
@@ -221,10 +217,10 @@ def generate_events(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [parameters["emin"][i], parameters["emax"][i]]
+        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
             events = arf.detect_events_phlist(
-                src.events.copy(), exp_time, parameters["flux"][i], refband, prng=prng
+                src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
@@ -993,7 +989,7 @@ def simple_event_list(
     mylog.info("Making simple observation of source in %s.", out_file)
     exp_time = parse_value(exp_time, "s")
     prng = parse_prng(prng)
-    source_list, parameters = make_source_list(input_events)
+    source_list = make_source_list(input_events)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -1024,17 +1020,17 @@ def simple_event_list(
 
     all_events = defaultdict(list)
 
-    for i, src in enumerate(source_list):
-        mylog.info("Detecting events from source %s.", parameters["src_names"][i])
+    for src in source_list:
+        mylog.info("Detecting events from source %s.", src.name)
 
         mylog.info(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [parameters["emin"][i], parameters["emax"][i]]
+        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
             events = arf.detect_events_phlist(
-                src.events.copy(), exp_time, parameters["flux"][i], refband, prng=prng
+                src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
