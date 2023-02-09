@@ -1055,7 +1055,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
                 np.interp(
                     arf.emid, spectrum.emid.value, spectrum.flux, left=0.0, right=0.0
                 ),
-                "ph/s/cm**2/keV",
+                "cm-2 keV-1 ph s-1",
             )
             rate = u.Quantity(arf.eff_area, "cm**2") * flux
             binscale = "linear"
