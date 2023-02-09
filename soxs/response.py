@@ -421,25 +421,26 @@ class RedistributionMatrixFile:
             self.data["N_GRP"] == 1
         ):
             # We can do things a bit faster if there is only one group each
-            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"]))
+            f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"])) - self.cmin
             n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"]))
             mat = np.nan_to_num(np.float64(self.data["MATRIX"]))
-            mat_size = np.minimum(n_chan, self.n_ch - f_chan)
             for k in range(self.n_e):
                 conv_spec[f_chan[k] : f_chan[k] + n_chan[k]] += (
-                    spec[k] * mat[k, : mat_size[k]]
+                    spec[k] * mat[k, : n_chan[k]]
                 )
                 pbar.update()
         else:
             # Otherwise, we have to go step-by-step
             for k in range(self.n_e):
-                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+                f_chan = (
+                    ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
+                    - self.cmin
+                )
                 n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
                 mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
-                mat_size = np.minimum(n_chan, self.n_ch - f_chan)
                 for i, f in enumerate(f_chan):
                     if n_chan[i] != 0:
-                        conv_spec[f : f + n_chan[i]] += spec[k] * mat[: mat_size[i]]
+                        conv_spec[f : f + n_chan[i]] += spec[k] * mat[: n_chan[i]]
                 pbar.update()
         pbar.close()
         if noisy:
