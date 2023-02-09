@@ -17,3 +17,5 @@ soxs.egg-info
 build
 .pytest_cache
 .idea
+.vscode
+.ipynb_checkpoints
