@@ -1052,8 +1052,10 @@ class ConvolvedSpectrum(CountRateSpectrum):
             arf = AuxiliaryResponseFile(arf)
         if use_arf_energies:
             flux = u.Quantity(
-                np.interp(
-                    arf.emid, spectrum.emid.value, spectrum.flux, left=0.0, right=0.0
+                regrid_spectrum(
+                    arf.ebins,
+                    spectrum.ebins.value,
+                    spectrum.flux.value * spectrum.de.value,
                 ),
                 "cm-2 keV-1 ph s-1",
             )

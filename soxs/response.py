@@ -13,6 +13,7 @@ from soxs.utils import (
     mylog,
     parse_prng,
     parse_value,
+    regrid_spectrum,
 )
 
 
@@ -414,7 +415,7 @@ class RedistributionMatrixFile:
         ):
             spec = counts
         else:
-            spec = np.histogram(cspec.emid.value, self.ebins, weights=counts)[0]
+            spec = regrid_spectrum(self.ebins, cspec.ebins.value, counts)
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
         if not isinstance(self.data["MATRIX"], fits.column._VLF) and np.all(
