@@ -1051,13 +1051,16 @@ class ConvolvedSpectrum(CountRateSpectrum):
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
         if use_arf_energies:
-            flux = u.Quantity(
-                regrid_spectrum(
-                    arf.ebins,
-                    spectrum.ebins.value,
-                    spectrum.flux.value * spectrum.de.value,
-                ),
-                "cm-2 keV-1 ph s-1",
+            flux = (
+                u.Quantity(
+                    regrid_spectrum(
+                        arf.ebins,
+                        spectrum.ebins.value,
+                        spectrum.flux.value * spectrum.de.value,
+                    ),
+                    "cm-2 keV-1 ph s-1",
+                )
+                / arf.de
             )
             rate = u.Quantity(arf.eff_area, "cm**2") * flux
             binscale = "linear"
