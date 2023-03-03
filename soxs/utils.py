@@ -368,7 +368,8 @@ def regrid_spectrum(ebins_new, ebins, spec):
         assume_sorted=True,
         copy=False,
     )
-    return np.diff(f(ebins_new), axis=-1)
+    new_spec = np.clip(np.diff(f(ebins_new), axis=-1), 0.0, None)
+    return new_spec
 
 
 def convert_endian(arr):
