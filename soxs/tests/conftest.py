@@ -17,7 +17,7 @@ def answer_store(request):
     return request.config.getoption("--answer_store")
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def answer_dir(request):
     ad = request.config.getoption("--answer_dir")
     if ad is None:
