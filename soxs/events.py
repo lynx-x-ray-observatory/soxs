@@ -401,20 +401,24 @@ def _region_filter(hdu, region, format="ds9"):
 
     if isinstance(region, str):
         if Path(region).exists():
-            region = Regions.read(region, format=format)[0]
+            region = Regions.read(region, format=format)
         else:
-            region = Regions.parse(region, format=format)[0]
-    elif not isinstance(region, Region):
+            region = Regions.parse(region, format=format)
+    elif not isinstance(region, (Region, Regions)):
         raise RuntimeError("'region' argument is not valid!")
     pixcoords = PixCoord(hdu.data["X"], hdu.data["Y"])
-    if isinstance(region, PixelRegion):
-        evt_mask = region.contains(pixcoords)
-    elif isinstance(region, SkyRegion):
-        w = wcs_from_header(hdu.header)
-        skycoords = pixcoords.to_sky(w, origin=1)
-        evt_mask = region.contains(skycoords, w)
-    else:
-        raise NotImplementedError
+    if isinstance(region, Region):
+        region = [region]
+    evt_mask = False
+    for r in region:
+        if isinstance(r, PixelRegion):
+            evt_mask |= r.contains(pixcoords)
+        elif isinstance(r, SkyRegion):
+            w = wcs_from_header(hdu.header)
+            skycoords = pixcoords.to_sky(w, origin=1)
+            evt_mask |= r.contains(skycoords, w)
+        else:
+            raise NotImplementedError
     return evt_mask
 
 
