@@ -37,6 +37,9 @@ def write_event_file(events, parameters, filename, overwrite=False):
     col_id = fits.Column(
         name="CCD_ID", format="J", unit="pixel", array=events["ccd_id"]
     )
+    col_se = fits.Column(
+        name="SOXS_ENERGY", format="E", unit="eV", array=events["soxs_energy"] * 1000.0
+    )
 
     chantype = parameters["channel_type"].upper()
     if chantype == "PHA":
@@ -47,7 +50,7 @@ def write_event_file(events, parameters, filename, overwrite=False):
 
     col_t = fits.Column(name="TIME", format="1D", unit="s", array=events["time"])
 
-    cols = [col_e, col_x, col_y, col_ch, col_t, col_dx, col_dy, col_id]
+    cols = [col_e, col_x, col_y, col_ch, col_t, col_dx, col_dy, col_id, col_se]
 
     coldefs = fits.ColDefs(cols)
     tbhdu = fits.BinTableHDU.from_columns(coldefs)

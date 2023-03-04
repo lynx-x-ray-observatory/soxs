@@ -97,6 +97,9 @@ def add_background_from_file(events, event_params, bkg_file):
     all_events["energy"] = np.concatenate(
         [events["energy"], hdu.data["ENERGY"][idxs] * 1.0e-3]
     )
+    all_events["soxs_energy"] = np.concatenate(
+        [events["soxs_energy"], hdu.data["SOXS_ENERGY"][idxs] * 1.0e-3]
+    )
 
     f.close()
 

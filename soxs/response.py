@@ -402,6 +402,8 @@ class RedistributionMatrixFile:
         for key in events:
             events[key] = events[key][eidxs]
         events[self.chan_type] = np.concatenate(detected_channels)
+        events["soxs_energy"] = events["energy"].copy()
+        events["energy"] = self.ch_to_eb(events[self.chan_type], prng=prng)
 
         return events
 

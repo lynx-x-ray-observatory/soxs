@@ -242,4 +242,6 @@ def make_diffuse_background(
     bkg_events["xpix"] = pix[0, :] + event_params["pix_center"][0]
     bkg_events["ypix"] = pix[1, :] + event_params["pix_center"][1]
 
+    bkg_events["soxs_energy"] = bkg_events["energy"]
+
     return bkg_events

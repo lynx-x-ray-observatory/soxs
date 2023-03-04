@@ -349,9 +349,7 @@ def generate_events(
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
     if len(all_events["energy"]) == 0:
-        mylog.warning(
-            "No events from any of the sources in " "the catalog were detected!"
-        )
+        mylog.warning("No events from any of the sources in the catalog were detected!")
         for key in [
             "xpix",
             "ypix",
@@ -360,6 +358,7 @@ def generate_events(
             "time",
             "chip_id",
             event_params["channel_type"],
+            "soxs_energy",
         ]:
             all_events[key] = np.array([])
     else:
@@ -589,11 +588,11 @@ def make_background_file(
         Whether to overwrite an existing file with the same name.
         Default: False
     foreground : boolean, optional
-        Whether or not to include the Galactic foreground. Default: True
+        Whether to include the Galactic foreground. Default: True
     instr_bkgnd : boolean, optional
-        Whether or not to include the instrumental background. Default: True
+        Whether to include the instrumental background. Default: True
     ptsrc_bkgnd : boolean, optional
-        Whether or not to include the point-source background. Default: True
+        Whether to include the point-source background. Default: True
     no_dither : boolean, optional
         If True, turn off dithering entirely. Default: False
     dither_params : array-like of floats, optional
@@ -1045,10 +1044,8 @@ def simple_event_list(
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
     if len(all_events["energy"]) == 0:
-        mylog.warning(
-            "No events from any of the sources in " "the catalog were detected!"
-        )
-        for key in ["ra", "dec", "time", event_params["channel_type"]]:
+        mylog.warning("No events from any of the sources in the catalog were detected!")
+        for key in ["ra", "dec", "time", event_params["channel_type"], "soxs_energy"]:
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
@@ -1076,6 +1073,12 @@ def simple_event_list(
     col_e = fits.Column(
         name="ENERGY", format="E", unit="eV", array=all_events["energy"] * 1000.0
     )
+    col_se = fits.Column(
+        name="SOXS_ENERGY",
+        format="E",
+        unit="eV",
+        array=all_events["soxs_energy"] * 1000.0,
+    )
 
     chantype = event_params["channel_type"].upper()
     if chantype == "PHA":
@@ -1088,7 +1091,7 @@ def simple_event_list(
 
     col_t = fits.Column(name="TIME", format="1D", unit="s", array=all_events["time"])
 
-    cols = [col_e, col_ra, col_dec, col_ch, col_t]
+    cols = [col_e, col_ra, col_dec, col_ch, col_t, col_se]
 
     coldefs = fits.ColDefs(cols)
     tbhdu = fits.BinTableHDU.from_columns(coldefs)
