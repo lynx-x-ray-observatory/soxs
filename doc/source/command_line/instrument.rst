@@ -181,7 +181,7 @@ only simulating spectra. Similar to XSPEC's "fakeit".
                              [--random_seed RANDOM_SEED]
                              [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
                              [--instr_bkgnd | --no_instr_bkgnd]
-                             [--foreground | --no_foreground]
+                             [--foreground | --no_foreground] [--no_noise]
                              spec_file instrument exp_time out_file
 
     Convolve a spectrum with an ARF and RMF and produce a PHA or PI spectrum.
@@ -212,6 +212,8 @@ only simulating spectra. Similar to XSPEC's "fakeit".
       --no_instr_bkgnd      Turn the instrumental background off.
       --foreground          Turn the galactic foreground on.
       --no_foreground       Turn the galactic foreground off.
+      --no_noise            If set, no noise will be included in the spectrum. This
+                            cannot be set if backgrounds are included.
 
 Examples
 ++++++++
@@ -234,6 +236,12 @@ Simulate backgrounds only.
 .. code-block:: bash
 
     [~]$ simulate_spectrum None lynx_lxm 300.0,ks plaw_spec.pha --bkgnd_area 2.0 --ptsrc_bkgnd --foreground --instr_bkgnd
+
+Simulate a spectrum without noise:
+
+.. code-block:: bash
+
+    [~]$ simulate_spectrum power_law_spec.dat lynx_lxm 300.0,ks plaw_spec.pha --no_noise
 
 .. _cmd-get-instrument-data:
 

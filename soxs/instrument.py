@@ -812,6 +812,7 @@ def simulate_spectrum(
     foreground=False,
     ptsrc_bkgnd=False,
     bkgnd_area=None,
+    noisy=True,
     overwrite=False,
     prng=None,
     **kwargs,
@@ -847,6 +848,10 @@ def simulate_spectrum(
         The area on the sky for the background components, in square arcminutes.
         Default: None, necessary to specify if any of the background components
         are turned on.
+    noisy : boolean, optional
+        If False, simulate_spectrum will not use counting (Poisson) statistics
+        when creating the spectrum. If any backgrounds are on, this must be
+        set to True. Default: True
     overwrite : boolean, optional
         Whether to overwrite an existing file. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
@@ -872,6 +877,11 @@ def simulate_spectrum(
     from soxs.spectra import ConvolvedSpectrum
     from soxs.utils import soxs_cfg
 
+    if not noisy and any([instr_bkgnd, ptsrc_bkgnd, foreground]):
+        raise NotImplementedError(
+            "Backgrounds cannot be included in "
+            "simulations of non-noisy spectra at this time!"
+        )
     if "nH" in kwargs or "absorb_model" in kwargs:
         warnings.warn(
             "The 'nH' and 'absorb_model' keyword arguments"
@@ -919,7 +929,7 @@ def simulate_spectrum(
 
     if spec is not None:
         cspec = ConvolvedSpectrum.convolve(spec, arf, use_arf_energies=True)
-        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng)
+        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng, noisy=noisy)
 
     fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)
 

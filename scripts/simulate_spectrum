@@ -85,6 +85,10 @@ frgnd_parser.add_argument(
     help="Turn the galactic foreground off.",
 )
 parser.set_defaults(foreground=False, ptsrc_bkgnd=False, instr_bkgnd=False)
+parser.add_argument("--no_noise", action='store_true',
+                    help="If set, no noise will be included in "
+                         "the spectrum. This cannot be set if "
+                         "backgrounds are included.")
 
 args = parser.parse_args()
 
@@ -98,6 +102,8 @@ if args.spec_file == "None":
 else:
     spec = Spectrum.from_file(args.spec_file)
 
+noisy = not args.no_noise
+
 simulate_spectrum(
     spec,
     instrument,
@@ -109,4 +115,5 @@ simulate_spectrum(
     ptsrc_bkgnd=args.ptsrc_bkgnd,
     bkgnd_area=args.bkgnd_area,
     prng=args.random_seed,
+    noisy=noisy,
 )

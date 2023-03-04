@@ -406,6 +406,10 @@ only be used with :func:`~soxs.instrument.simulate_spectrum` and not
 :func:`~soxs.instrument.instrument_simulator`. Currently, this includes grating
 instruments.
 
+Finally, if you want to create a spectrum without counting (Poisson) statistics,
+set `noisy=False` in the call to :func:`~soxs.instrument.simulate_spectrum`. Note
+that this option does not currently work if backgrounds are included.
+
 .. _gratings:
 
 A Note About Simulations with Grating Instruments
