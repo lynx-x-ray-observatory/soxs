@@ -10,7 +10,7 @@ from soxs.spectra import Spectrum
 from soxs.tests.utils import file_answer_testing, spectrum_answer_testing
 
 
-def test_emission_line(answer_store, answer_dir):
+def test_emission_line(answer_store):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -27,7 +27,7 @@ def test_emission_line(answer_store, answer_dir):
     spec = Spectrum.from_constant(const_flux, 1.0, 10.0, 20000)
     spec.add_emission_line(line_pos, line_width, line_amp)
 
-    spectrum_answer_testing(spec, "emission_line_test.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec, "emission_line_test.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models(
@@ -49,14 +49,14 @@ def test_emission_line(answer_store, answer_dir):
 
     write_spectrum("emission_line_evt.fits", "emission_line_evt.pha", overwrite=True)
 
-    file_answer_testing("EVENTS", "emission_line_evt.fits", answer_store, answer_dir)
-    file_answer_testing("SPECTRUM", "emission_line_evt.pha", answer_store, answer_dir)
+    file_answer_testing("EVENTS", "emission_line_evt.fits", answer_store)
+    file_answer_testing("SPECTRUM", "emission_line_evt.pha", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_absorption_line(answer_store, answer_dir):
+def test_absorption_line(answer_store):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -72,13 +72,13 @@ def test_absorption_line(answer_store, answer_dir):
     spec = Spectrum.from_constant(const_flux, 0.1, 3.0, 100000)
     spec.add_absorption_line(line_pos, line_width, line_amp)
 
-    spectrum_answer_testing(spec, "absorption_line_test.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec, "absorption_line_test.h5", answer_store)
 
     simulate_spectrum(
         spec, inst_name, exp_time, "absorption_line_evt.pha", overwrite=True, prng=69
     )
 
-    file_answer_testing("SPECTRUM", "absorption_line_evt.pha", answer_store, answer_dir)
+    file_answer_testing("SPECTRUM", "absorption_line_evt.pha", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

@@ -207,7 +207,7 @@ def test_ptsrc():
     shutil.rmtree(tmpdir)
 
 
-def test_change_bkgnd(answer_store, answer_dir):
+def test_change_bkgnd(answer_store):
     set_soxs_config("frgnd_spec_model", "default")
     lem_arf = AuxiliaryResponseFile("lem_030322a.arf")
     lem_rmf = RedistributionMatrixFile("lem_09ev_030322.rmf")
@@ -215,14 +215,12 @@ def test_change_bkgnd(answer_store, answer_dir):
         make_frgnd_spectrum(lem_arf, lem_rmf),
         "default_frgnd_spectrum.h5",
         answer_store,
-        answer_dir,
     )
     set_soxs_config("frgnd_spec_model", "halosat")
     spectrum_answer_testing(
         make_frgnd_spectrum(lem_arf, lem_rmf),
         "lem_frgnd_spectrum.h5",
         answer_store,
-        answer_dir,
     )
 
 

@@ -17,13 +17,13 @@ make_simple_instrument("lynx_hdxi", "new_hdxi", 20.0, 1024)
 prng = RandomState(69)
 
 
-def test_power_law(answer_store, answer_dir):
-    plaw_fit(1.1, answer_store, answer_dir)
-    plaw_fit(0.8, answer_store, answer_dir)
-    plaw_fit(1.0, answer_store, answer_dir)
+def test_power_law(answer_store):
+    plaw_fit(1.1, answer_store)
+    plaw_fit(0.8, answer_store)
+    plaw_fit(1.0, answer_store)
 
 
-def plaw_fit(alpha_sim, answer_store, answer_dir):
+def plaw_fit(alpha_sim, answer_store):
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
@@ -40,7 +40,7 @@ def plaw_fit(alpha_sim, answer_store, answer_dir):
     spec = Spectrum.from_powerlaw(alpha_sim, redshift, norm_sim, 0.1, 10.0, 20000)
     spec.apply_foreground_absorption(nH_sim, model="tbabs")
 
-    spectrum_answer_testing(spec, f"power_law_{alpha_sim}.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec, f"power_law_{alpha_sim}.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models(
@@ -67,10 +67,14 @@ def plaw_fit(alpha_sim, answer_store, answer_dir):
     )
 
     file_answer_testing(
-        "EVENTS", f"plaw_model_{alpha_sim}_evt.fits", answer_store, answer_dir
+        "EVENTS",
+        f"plaw_model_{alpha_sim}_evt.fits",
+        answer_store,
     )
     file_answer_testing(
-        "SPECTRUM", f"plaw_model_{alpha_sim}_evt.pha", answer_store, answer_dir
+        "SPECTRUM",
+        f"plaw_model_{alpha_sim}_evt.pha",
+        answer_store,
     )
 
     os.chdir(curdir)

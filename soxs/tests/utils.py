@@ -5,8 +5,12 @@ import numpy as np
 from astropy.io import fits
 from numpy.testing import assert_allclose, assert_equal
 
+from soxs.utils import soxs_cfg
 
-def spectrum_answer_testing(spec, filename, answer_store, answer_dir, rtol=1.0e-7):
+answer_dir = soxs_cfg.get("soxs", "soxs_answer_dir")
+
+
+def spectrum_answer_testing(spec, filename, answer_store, rtol=1.0e-7):
     testfile = os.path.join(answer_dir, filename)
     if answer_store:
         spec.write_hdf5_file(testfile, overwrite=True)
@@ -17,7 +21,7 @@ def spectrum_answer_testing(spec, filename, answer_store, answer_dir, rtol=1.0e-
         assert answer_spec.flux.unit == spec.flux.unit
 
 
-def file_answer_testing(hdu, filename, answer_store, answer_dir):
+def file_answer_testing(hdu, filename, answer_store):
     oldf = os.path.join(answer_dir, filename)
     if answer_store:
         shutil.copy(filename, answer_dir)

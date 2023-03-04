@@ -15,6 +15,7 @@ from scipy.interpolate import interp1d
 
 soxs_cfg_defaults = {
     "soxs_data_dir": "/does/not/exist",
+    "soxs_answer_dir": "/does/not/exist",
     "abund_table": "angr",
     "apec_vers": "3.0.9",
     "spex_vers": "3.06.01",

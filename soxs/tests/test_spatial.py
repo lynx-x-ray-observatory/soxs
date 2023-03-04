@@ -79,7 +79,7 @@ def test_point_source():
     shutil.rmtree(tmpdir)
 
 
-def test_annulus(answer_store, answer_dir):
+def test_annulus(answer_store):
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
@@ -120,14 +120,14 @@ def test_annulus(answer_store, answer_dir):
         overwrite=True,
     )
 
-    file_answer_testing("EVENTS", "ann_evt.fits", answer_store, answer_dir)
-    file_answer_testing("PROFILE", "ann_evt_profile.fits", answer_store, answer_dir)
+    file_answer_testing("EVENTS", "ann_evt.fits", answer_store)
+    file_answer_testing("PROFILE", "ann_evt_profile.fits", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_beta_model(answer_store, answer_dir):
+def test_beta_model(answer_store):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -170,14 +170,14 @@ def test_beta_model(answer_store, answer_dir):
         overwrite=True,
     )
 
-    file_answer_testing("EVENTS", "beta_evt.fits", answer_store, answer_dir)
-    file_answer_testing("PROFILE", "beta_evt_profile.fits", answer_store, answer_dir)
+    file_answer_testing("EVENTS", "beta_evt.fits", answer_store)
+    file_answer_testing("PROFILE", "beta_evt_profile.fits", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_double_beta_model(answer_store, answer_dir):
+def test_double_beta_model(answer_store):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -225,16 +225,14 @@ def test_double_beta_model(answer_store, answer_dir):
         overwrite=True,
     )
 
-    file_answer_testing("EVENTS", "double_beta_evt.fits", answer_store, answer_dir)
-    file_answer_testing(
-        "PROFILE", "double_beta_evt_profile.fits", answer_store, answer_dir
-    )
+    file_answer_testing("EVENTS", "double_beta_evt.fits", answer_store)
+    file_answer_testing("PROFILE", "double_beta_evt_profile.fits", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_beta_model_flux(answer_store, answer_dir):
+def test_beta_model_flux(answer_store):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -287,10 +285,8 @@ def test_beta_model_flux(answer_store, answer_dir):
         overwrite=True,
     )
 
-    file_answer_testing("EVENTS", "beta_flux_evt.fits", answer_store, answer_dir)
-    file_answer_testing(
-        "PROFILE", "beta_flux_evt_profile.fits", answer_store, answer_dir
-    )
+    file_answer_testing("EVENTS", "beta_flux_evt.fits", answer_store)
+    file_answer_testing("PROFILE", "beta_flux_evt_profile.fits", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

@@ -84,7 +84,7 @@ spec_nei = agen_nei.get_nei_spectrum(kT_sim, nei_sim, redshift, norm_sim)
 spec_nei.apply_foreground_absorption(nH_sim)
 
 
-def test_thermal(answer_store, answer_dir):
+def test_thermal(answer_store):
 
     prng = RandomState(71)
 
@@ -92,7 +92,7 @@ def test_thermal(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec, "thermal_spec.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec, "thermal_spec.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models(
@@ -114,14 +114,14 @@ def test_thermal(answer_store, answer_dir):
 
     write_spectrum("thermal_model_evt.fits", "thermal_model_evt.pha", overwrite=True)
 
-    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store, answer_dir)
-    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store, answer_dir)
+    file_answer_testing("EVENTS", "thermal_model_evt.fits", answer_store)
+    file_answer_testing("SPECTRUM", "thermal_model_evt.pha", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_thermal_from_spectrum(answer_store, answer_dir):
+def test_thermal_from_spectrum(answer_store):
 
     prng = RandomState(89)
 
@@ -135,9 +135,7 @@ def test_thermal_from_spectrum(answer_store, answer_dir):
         spec, inst["name"], exp_time, "thermal_model_spec_evt.pha", prng=prng
     )
 
-    file_answer_testing(
-        "SPECTRUM", "thermal_model_spec_evt.pha", answer_store, answer_dir
-    )
+    file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -148,7 +146,7 @@ def test_var_thermal():
     assert_allclose(spec.flux, spec_var.flux)
 
 
-def test_nolines_thermal_from_spectrum(answer_store, answer_dir):
+def test_nolines_thermal_from_spectrum(answer_store):
 
     prng = RandomState(101)
 
@@ -163,14 +161,16 @@ def test_nolines_thermal_from_spectrum(answer_store, answer_dir):
     )
 
     file_answer_testing(
-        "SPECTRUM", "nolines_thermal_model_evt.pha", answer_store, answer_dir
+        "SPECTRUM",
+        "nolines_thermal_model_evt.pha",
+        answer_store,
     )
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_thermal_abund_table(answer_store, answer_dir):
+def test_thermal_abund_table(answer_store):
 
     prng = RandomState(72)
 
@@ -178,7 +178,7 @@ def test_thermal_abund_table(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec_aspl, "thermal_aspl_spec.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models(
@@ -203,17 +203,21 @@ def test_thermal_abund_table(answer_store, answer_dir):
     )
 
     file_answer_testing(
-        "EVENTS", "thermal_model_aspl_evt.fits", answer_store, answer_dir
+        "EVENTS",
+        "thermal_model_aspl_evt.fits",
+        answer_store,
     )
     file_answer_testing(
-        "SPECTRUM", "thermal_model_aspl_evt.pha", answer_store, answer_dir
+        "SPECTRUM",
+        "thermal_model_aspl_evt.pha",
+        answer_store,
     )
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_thermal_nei(answer_store, answer_dir):
+def test_thermal_nei(answer_store):
 
     prng = RandomState(71)
 
@@ -221,7 +225,7 @@ def test_thermal_nei(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, answer_dir)
+    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models(
@@ -246,17 +250,21 @@ def test_thermal_nei(answer_store, answer_dir):
     )
 
     file_answer_testing(
-        "EVENTS", "thermal_model_nei_evt.fits", answer_store, answer_dir
+        "EVENTS",
+        "thermal_model_nei_evt.fits",
+        answer_store,
     )
     file_answer_testing(
-        "SPECTRUM", "thermal_model_nei_evt.pha", answer_store, answer_dir
+        "SPECTRUM",
+        "thermal_model_nei_evt.pha",
+        answer_store,
     )
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_spex(answer_store, answer_dir):
+def test_spex(answer_store):
     spex0 = SpexGenerator(0.01, 10.0, 20000, broadening=True)
     spex_var0 = SpexGenerator(0.01, 10.0, 20000, var_elem=["O", "Fe"], broadening=True)
     specx = spex0.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
@@ -274,13 +282,13 @@ def test_spex(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(specx, "spex_spectrum.h5", answer_store, answer_dir)
+    spectrum_answer_testing(specx, "spex_spectrum.h5", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_mekal(answer_store, answer_dir):
+def test_mekal(answer_store):
     mgen = MekalGenerator(0.01, 10.0, 20000)
     mgen_var = MekalGenerator(0.01, 10.0, 20000, var_elem=["O", "Fe"])
     specm = mgen.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
@@ -296,9 +304,7 @@ def test_mekal(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(
-        specm, "mekal_spectrum.h5", answer_store, answer_dir, rtol=1.0e-5
-    )
+    spectrum_answer_testing(specm, "mekal_spectrum.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -315,7 +321,7 @@ def test_linlog():
     )
 
 
-def test_cloudy_cie(answer_store, answer_dir):
+def test_cloudy_cie(answer_store):
     cgen = CloudyCIEGenerator(0.5, 8.0, 5000, binscale="log")
     cgen_var1 = CloudyCIEGenerator(
         0.5, 8.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe"]
@@ -384,13 +390,13 @@ def test_cloudy_cie(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(cspec, "cloudy_spectrum.h5", answer_store, answer_dir)
+    spectrum_answer_testing(cspec, "cloudy_spectrum.h5", answer_store)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
-def test_igm(answer_store, answer_dir):
+def test_igm(answer_store):
     nH_igm = 1.0e-3
     kT_igm = 0.7
 
@@ -541,13 +547,9 @@ def test_igm(answer_store, answer_dir):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(
-        ispec, "igm_spectrum.h5", answer_store, answer_dir, rtol=1.0e-5
-    )
+    spectrum_answer_testing(ispec, "igm_spectrum.h5", answer_store, rtol=1.0e-5)
 
-    spectrum_answer_testing(
-        sispec, "igm_scatt_spectrum.h5", answer_store, answer_dir, rtol=1.0e-5
-    )
+    spectrum_answer_testing(sispec, "igm_scatt_spectrum.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
