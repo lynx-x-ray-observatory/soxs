@@ -14,7 +14,7 @@ defaults:
         shell: bash
 
 env:
-    ANSWER_VER: 11
+    ANSWER_VER: 12
 
 jobs:
     build:
