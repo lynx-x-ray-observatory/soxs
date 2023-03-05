@@ -11,8 +11,8 @@ if [[ ${mode} == "testing" ]]; then
 
   mkdir -p $HOME/.config/soxs
   echo "[soxs]" > $HOME/.config/soxs/soxs.cfg
-  echo "soxs_data_dir = ${PWD}/soxs_data" >> $HOME/.config/soxs/soxs.cfg
-  echo "soxs_answer_dir = ${PWD}/soxs_test_data" >> $HOME/.config/soxs/soxs.cfg
+  echo "soxs_data_dir = ${GITHUB_WORKSPACE}/soxs_data" >> $HOME/.config/soxs/soxs.cfg
+  echo "soxs_answer_dir = ${GITHUB_WORKSPACE}/soxs_test_data" >> $HOME/.config/soxs/soxs.cfg
   cat $HOME/.config/soxs/soxs.cfg
 
 fi
