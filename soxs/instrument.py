@@ -972,6 +972,7 @@ def simulate_spectrum(
         event_params,
         out_file,
         overwrite=overwrite,
+        noisy=noisy,
     )
 
 

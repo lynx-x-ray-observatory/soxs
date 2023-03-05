@@ -359,7 +359,14 @@ def make_exposure_map(
 
 
 def _write_spectrum(
-    bins, spec, exp_time, spectype, parameters, specfile, overwrite=False
+    bins,
+    spec,
+    exp_time,
+    spectype,
+    parameters,
+    specfile,
+    overwrite=False,
+    noisy=True,
 ):
 
     col1 = fits.Column(name="CHANNEL", format="1J", array=bins)
@@ -387,7 +394,7 @@ def _write_spectrum(
     tbhdu.header["CHANTYPE"] = spectype
     tbhdu.header["BACKFILE"] = "none"
     tbhdu.header["CORRFILE"] = "none"
-    tbhdu.header["POISSERR"] = True
+    tbhdu.header["POISSERR"] = noisy
     for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
         tbhdu.header[key] = parameters[key]
     tbhdu.header["AREASCAL"] = 1.0
@@ -866,7 +873,8 @@ def plot_spectrum(
         If set to True, the counts instead of the count rate will
         be plotted. Default: False
     noerr : boolean, optional
-        If True, the spectrum will be plotted without errorbars.
+        If True, the spectrum will be plotted without errorbars. This
+        will always be the case if the spectrum is not noisy.
         Default: False
     plot_used : boolean, optional
         If set to True, only the bins which contain more than 0
@@ -885,6 +893,8 @@ def plot_spectrum(
     hdu = f["SPECTRUM"]
     chantype = hdu.header["CHANTYPE"]
     y = hdu.data["COUNTS"].astype("float64")
+    if not hdu.header["POISSERR"]:
+        noerr = True
     if plot_energy:
         rmf = hdu.header.get("RESPFILE", None)
         if rmf is not None:
