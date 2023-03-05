@@ -25,9 +25,11 @@ soxs_cfg_defaults = {
     "frgnd_velocity": 0.0,
 }
 
-CONFIG_DIR = os.environ.get(
-    "XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config", "soxs")
+config_root = os.environ.get(
+    "XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config")
 )
+CONFIG_DIR = os.path.join(config_root, "soxs")
+
 if not os.path.exists(CONFIG_DIR):
     try:
         os.makedirs(CONFIG_DIR)
