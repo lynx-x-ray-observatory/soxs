@@ -3,6 +3,27 @@
 ChangeLog
 =========
 
+Version 4.4.0
+-------------
+
+This version of SOXS contains critical bugfixes and one new feature.
+
+* There was an `off-by-one` indexing error in the production of energies for diffuse
+  background spectra, as well as any spectra produced with
+  :func:`~soxs.instrument.simulate_spectrum`, which results in a small energy shift
+  (almost always below the energy resolution). This bug has been fixed.
+* The ``"ENERGY"`` column in event files produced by SOXS now represent the energies that
+  are approximated by the instrument response based on their channel. Effectively, this
+  now means that these energies are at the instrument resolution. This is in line with
+  what is present in real data. A new column in the event files, ``"SOXS_ENERGY"``, contains
+  the energies incident on the detector derived from the source, which previously were
+  in the ``"ENERGY"`` column.
+* Region files or expressions with multiple regions inside them are now correctly
+  parsed when using :func:`~soxs.events.filter_events` or :func:`~soxs.events.write_spectrum`.
+* It is now possible to create a spectrum without Poisson noise using
+  :func:`~soxs.instrument.simulate_spectrum` or the ``simulate_spectrum`` command-line
+  script. See :ref:`simulate-spectrum` or :ref:`cmd-simulate-spectrum` for more details.
+
 Version 4.3.0
 -------------
 
