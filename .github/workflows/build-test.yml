@@ -50,4 +50,4 @@ jobs:
                   mode: testing
               run: source ./tests/ci_install.sh
             - name: Run Tests
-              run: py.test -vv -s soxs/tests
+              run: py.test -vv soxs/tests

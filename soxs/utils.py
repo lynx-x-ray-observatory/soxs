@@ -74,7 +74,6 @@ mylog = soxsLogger
 mylog.setLevel("INFO")
 
 if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
-    print("SHOULD NOT BE HERE!!!")
     soxs_data_dir = appdirs.user_cache_dir("soxs")
     mylog.warning(
         "Setting 'soxs_data_dir' to %s for this session. "
