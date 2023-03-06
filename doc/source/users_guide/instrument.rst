@@ -407,7 +407,7 @@ only be used with :func:`~soxs.instrument.simulate_spectrum` and not
 instruments.
 
 Finally, if you want to create a spectrum without counting (Poisson) statistics,
-set `noisy=False` in the call to :func:`~soxs.instrument.simulate_spectrum`. Note
+set ``noisy=False`` in the call to :func:`~soxs.instrument.simulate_spectrum`. Note
 that this option does not currently work if backgrounds are included.
 
 .. _gratings:

@@ -23,6 +23,8 @@ This version of SOXS contains critical bugfixes and one new feature.
 * It is now possible to create a spectrum without Poisson noise using
   :func:`~soxs.instrument.simulate_spectrum` or the ``simulate_spectrum`` command-line
   script. See :ref:`simulate-spectrum` or :ref:`cmd-simulate-spectrum` for more details.
+* The ``"CHANNEL"`` field in the ``"EBOUNDS"`` data in the LEM RMFs was 0-indexed when it
+  should have been 1-indexed. This has been fixed.
 
 Version 4.3.0
 -------------

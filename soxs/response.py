@@ -340,7 +340,8 @@ class RedistributionMatrixFile:
 
     def eb_to_ch(self, energy):
         energy = parse_value(energy, "keV")
-        return np.searchsorted(self.ebounds_data["E_MIN"], energy) - 1
+        idxs = np.searchsorted(self.ebounds_data["E_MIN"], energy) - 1
+        return np.arange(self.n_ch)[idxs] + self.cmin
 
     def ch_to_eb(self, channels, prng=None):
         prng = parse_prng(prng)
