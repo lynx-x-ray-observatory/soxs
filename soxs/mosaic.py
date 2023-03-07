@@ -158,7 +158,7 @@ def make_mosaic_image(
         Supply an integer power of 2 here to make an exposure map
         with a different binning. Default: 1
     use_expmap : boolean, optional
-        Whether or not to use (and potentially generate) an exposure map
+        Whether to use (and potentially generate) an exposure map
         and a flux map. Default: False
     expmap_energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, or NumPy array, optional
         The energy in keV to use when computing the exposure map, or
