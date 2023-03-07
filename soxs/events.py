@@ -1054,3 +1054,143 @@ def plot_image(
         ax.set_facecolor(facecolor)
         plt.colorbar(im)
     return fig, ax
+
+
+def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
+    x = []
+    y = []
+    e = []
+    ch = []
+    t = []
+    se = []
+    chantype = ""
+    for eventfile in eventfiles:
+        with fits.open(eventfile, memmap=True) as f:
+            hdu = f["EVENTS"]
+            wcs_in = wcs_from_header(hdu.header)
+            ra, dec = wcs_in.wcs_pix2world(hdu.data["X"], hdu.data["Y"], 1)
+            xx, yy = wcs_out.wcs_world2pix(ra, dec, 1)
+            x.append(xx)
+            y.append(yy)
+            e.append(hdu.data["ENERGY"])
+            se.append(hdu.data["SOXS_ENERGY"])
+            ch.append(hdu.data[hdu.header["CHANTYPE"]])
+            t.append(hdu.data["TIME"])
+            chantype = hdu.header["CHANTYPE"]
+
+    x = np.concatenate(x)
+    y = np.concatenate(y)
+    e = np.concatenate(e)
+    se = np.concatenate(se)
+    ch = np.concatenate(ch)
+    t = np.concatenate(t)
+
+    if chantype == "PHA":
+        cunit = "adu"
+    elif chantype == "PI":
+        cunit = "Chan"
+
+    col_x = fits.Column(name="X", format="D", unit="pixel", array=x)
+    col_y = fits.Column(name="Y", format="D", unit="pixel", array=y)
+    col_e = fits.Column(name="ENERGY", format="E", unit="eV", array=e)
+    col_ch = fits.Column(name=chantype, format="1J", unit=cunit, array=ch)
+    col_t = fits.Column(name="TIME", format="1D", unit="s", array=t)
+    col_se = fits.Column(name="SOXS_ENERGY", format="E", unit="eV", array=se)
+
+    coldefs = fits.ColDefs([col_e, col_x, col_y, col_ch, col_t, col_se])
+    tbhdu = fits.BinTableHDU.from_columns(coldefs)
+    tbhdu.name = "EVENTS"
+
+    tbhdu.header["HDUVERS"] = "1.1.0"
+    tbhdu.header["RADECSYS"] = "FK5"
+    tbhdu.header["EQUINOX"] = 2000.0
+    tbhdu.header["HDUCLASS"] = "OGIP"
+    tbhdu.header["HDUCLAS1"] = "EVENTS"
+    tbhdu.header["HDUCLAS2"] = "ACCEPTED"
+    tbhdu.header["MTYPE1"] = "sky"
+    tbhdu.header["MFORM1"] = "x,y"
+    tbhdu.header["MTYPE2"] = "EQPOS"
+    tbhdu.header["MFORM2"] = "RA,DEC"
+    tbhdu.header["TCTYP2"] = "RA---TAN"
+    tbhdu.header["TCTYP3"] = "DEC--TAN"
+    tbhdu.header["TCRVL2"] = wcs_out.wcs.crval[0]
+    tbhdu.header["TCRVL3"] = wcs_out.wcs.crval[1]
+    tbhdu.header["TCDLT2"] = wcs_out.wcs.cdelt[0]
+    tbhdu.header["TCDLT3"] = wcs_out.wcs.cdelt[1]
+    tbhdu.header["TCRPX2"] = wcs_out.wcs.crpix[0]
+    tbhdu.header["TCRPX3"] = wcs_out.wcs.crpix[1]
+    tbhdu.header["TCUNI2"] = "deg"
+    tbhdu.header["TCUNI3"] = "deg"
+    tbhdu.header["TLMIN2"] = 0.5
+    tbhdu.header["TLMIN3"] = 0.5
+    tbhdu.header["TLMAX2"] = shape_out[0] + 0.5
+    tbhdu.header["TLMAX3"] = shape_out[1] + 0.5
+    tbhdu.header["CHANTYPE"] = chantype
+
+    with fits.open(eventfiles[0], memmap=True) as f:
+        for key in [
+            "TELESCOP",
+            "INSTRUME",
+            "ANCRFILE",
+            "RESPFILE",
+            "EXPOSURE",
+            "DATE",
+            "DATE-OBS",
+            "DATE-END",
+            "MISSION",
+            "TSTART",
+            "TSTOP",
+            "TLMIN4",
+            "TLMAX4",
+            "PHA_BINS",
+        ]:
+            tbhdu.header[key] = f["EVENTS"].header[key]
+
+    start = fits.Column(name="START", format="1D", unit="s", array=np.array([0.0]))
+    stop = fits.Column(
+        name="STOP", format="1D", unit="s", array=np.array([tbhdu.header["EXPOSURE"]])
+    )
+
+    tbhdu_gti = fits.BinTableHDU.from_columns([start, stop])
+    tbhdu_gti.name = "STDGTI"
+    tbhdu_gti.header["TSTART"] = 0.0
+    tbhdu_gti.header["TSTOP"] = tbhdu.header["EXPOSURE"]
+    tbhdu_gti.header["HDUCLASS"] = "OGIP"
+    tbhdu_gti.header["HDUCLAS1"] = "GTI"
+    tbhdu_gti.header["HDUCLAS2"] = "STANDARD"
+    tbhdu_gti.header["RADECSYS"] = "FK5"
+    tbhdu_gti.header["EQUINOX"] = 2000.0
+    tbhdu_gti.header["DATE"] = tbhdu.header["DATE"]
+    tbhdu_gti.header["DATE-OBS"] = tbhdu.header["DATE-OBS"]
+    tbhdu_gti.header["DATE-END"] = tbhdu.header["DATE-END"]
+
+    hdulist = [fits.PrimaryHDU(), tbhdu, tbhdu_gti]
+
+    fits.HDUList(hdulist).writeto(outfile, overwrite=overwrite)
+
+
+def merge_src_and_bkgnd(src_file, bkg_file, new_file, overwrite=False):
+    """
+    Merge a SOXS-generated source file and a SOXS-generated background file
+    together. The WCS used for the final file will be based on the source file,
+    so the original celestial coordinates for the background file will be
+    discarded.
+
+    Parameters
+    ----------
+    src_file : string
+        The events file containing the source events.
+    bkg_file : string
+        The events file containing the background events.
+    new_file : string
+        The merged events file.
+    overwrite : boolean, optional
+        Whether to overwrite an existing file with
+        the same name. Default: False
+    """
+    with fits.open(src_file, memmap=True) as f:
+        wcs_out = wcs_from_header(f["EVENTS"].header)
+        shape_out = 2.0 * wcs_out - 1
+    _combine_events(
+        [src_file, bkg_file], wcs_out, shape_out, new_file, overwrite=overwrite
+    )
