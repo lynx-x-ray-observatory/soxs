@@ -433,7 +433,15 @@ def _region_filter(hdu, region, format="ds9"):
 
 
 def filter_events(
-    evtfile, newfile, region=None, emin=None, emax=None, format="ds9", overwrite=False
+    evtfile,
+    newfile,
+    region=None,
+    emin=None,
+    emax=None,
+    tmin=None,
+    tmax=None,
+    format="ds9",
+    overwrite=False,
 ):
     r"""
 
@@ -446,13 +454,19 @@ def filter_events(
     region : string or Region, optional
         The region to be used for the filtering. Default: None
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The minimum energy of the events to be binned in keV.
+        The minimum energy of the events to be included, in keV.
         Default is the lowest energy available.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-        The maximum energy of the events to be binned in keV.
+        The maximum energy of the events to be included, in keV.
         Default is the highest energy available.
+    tmin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the events to be included, in seconds.
+        Default is the earliest time available.
+    tmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the events to be included, in seconds.
+        Default is the latest time available.
     format : string, optional
-        The file format specifier for the region. "ds9",
+        The file format specifier for the region, if supplied. "ds9",
         "crtf", "fits", etc. Default: "ds9"
     overwrite : boolean, optional
         Whether to overwrite an existing file with the
@@ -469,6 +483,12 @@ def filter_events(
         if emax is not None:
             emax = parse_value(emax, "keV") * 1000.0
             evt_mask &= hdu.data["ENERGY"] < emax
+        if tmin is not None:
+            tmin = parse_value(emin, "s")
+            evt_mask &= hdu.data["TIME"] > tmin
+        if tmax is not None:
+            tmax = parse_value(emax, "s")
+            evt_mask &= hdu.data["TIME"] < tmax
         hdu.data = hdu.data[evt_mask]
         f.writeto(newfile, overwrite=overwrite)
 
