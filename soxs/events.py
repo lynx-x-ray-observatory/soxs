@@ -1210,7 +1210,7 @@ def merge_src_and_bkgnd(src_file, bkg_file, new_file, overwrite=False):
     """
     with fits.open(src_file, memmap=True) as f:
         wcs_out = wcs_from_header(f["EVENTS"].header)
-        shape_out = 2.0 * wcs_out - 1
+        shape_out = 2.0 * wcs_out.wcs.crpix - 1
     _combine_events(
         [src_file, bkg_file], wcs_out, shape_out, new_file, overwrite=overwrite
     )
