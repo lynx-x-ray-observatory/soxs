@@ -743,7 +743,7 @@ def write_image(
         to get a flux map. Default: None
     reblock : integer, optional
         Change this value to reblock the image to larger
-        pixel sizes (reblock >= 1). Only supported for
+        or small pixel sizes. Only supported for
         sky coordinates. Default: 1
     """
     if emin is None:
@@ -756,30 +756,29 @@ def write_image(
     else:
         emax = parse_value(emax, "keV")
     emax *= 1000.0
-    if coord_type == "det" and reblock > 1:
+    if coord_type == "det" and reblock != 1:
         raise RuntimeError(
-            "Reblocking images is not supported " "for detector coordinates!"
+            "Reblocking images is not supported for detector coordinates!"
         )
-    f = fits.open(evt_file)
-    e = f["EVENTS"].data["ENERGY"]
-    idxs = np.logical_and(e > emin, e < emax)
-    xcoord, ycoord, xcol, ycol = coord_types[coord_type]
-    x = f["EVENTS"].data[xcoord][idxs]
-    y = f["EVENTS"].data[ycoord][idxs]
-    exp_time = f["EVENTS"].header["EXPOSURE"]
-    xmin = f["EVENTS"].header[f"TLMIN{xcol}"]
-    ymin = f["EVENTS"].header[f"TLMIN{ycol}"]
-    xmax = f["EVENTS"].header[f"TLMAX{xcol}"]
-    ymax = f["EVENTS"].header[f"TLMAX{ycol}"]
-    if coord_type == "sky":
-        xctr = f["EVENTS"].header[f"TCRVL{xcol}"]
-        yctr = f["EVENTS"].header[f"TCRVL{ycol}"]
-        xdel = f["EVENTS"].header[f"TCDLT{xcol}"] * reblock
-        ydel = f["EVENTS"].header[f"TCDLT{ycol}"] * reblock
-    f.close()
+    with fits.open(evt_file) as f:
+        e = f["EVENTS"].data["ENERGY"]
+        idxs = np.logical_and(e > emin, e < emax)
+        xcoord, ycoord, xcol, ycol = coord_types[coord_type]
+        x = f["EVENTS"].data[xcoord][idxs]
+        y = f["EVENTS"].data[ycoord][idxs]
+        exp_time = f["EVENTS"].header["EXPOSURE"]
+        xmin = f["EVENTS"].header[f"TLMIN{xcol}"]
+        ymin = f["EVENTS"].header[f"TLMIN{ycol}"]
+        xmax = f["EVENTS"].header[f"TLMAX{xcol}"]
+        ymax = f["EVENTS"].header[f"TLMAX{ycol}"]
+        if coord_type == "sky":
+            xctr = f["EVENTS"].header[f"TCRVL{xcol}"]
+            yctr = f["EVENTS"].header[f"TCRVL{ycol}"]
+            xdel = f["EVENTS"].header[f"TCDLT{xcol}"] * reblock
+            ydel = f["EVENTS"].header[f"TCDLT{ycol}"] * reblock
 
-    nx = int(xmax - xmin) // reblock
-    ny = int(ymax - ymin) // reblock
+    nx = int(int(xmax - xmin) // reblock)
+    ny = int(int(ymax - ymin) // reblock)
 
     xbins = np.linspace(xmin, xmax, nx + 1, endpoint=True)
     ybins = np.linspace(ymin, ymax, ny + 1, endpoint=True)
@@ -792,15 +791,16 @@ def write_image(
                 "Cannot divide by an exposure map for images "
                 "binned in detector coordinates!"
             )
-        f = fits.open(expmap_file)
-        if f["EXPMAP"].shape != (nx, ny):
-            raise RuntimeError("Exposure map and image do not have the same shape!!")
-        with np.errstate(invalid="ignore", divide="ignore"):
-            H /= f["EXPMAP"].data.T
-        H[np.isinf(H)] = 0.0
-        H = np.nan_to_num(H)
-        H[H < 0.0] = 0.0
-        f.close()
+        with fits.open(expmap_file) as f:
+            if f["EXPMAP"].shape != (nx, ny):
+                raise RuntimeError(
+                    "Exposure map and image do not have the same shape!!"
+                )
+            with np.errstate(invalid="ignore", divide="ignore"):
+                H /= f["EXPMAP"].data.T
+            H[np.isinf(H)] = 0.0
+            H = np.nan_to_num(H)
+            H[H < 0.0] = 0.0
 
     hdu = fits.PrimaryHDU(H.T)
 
