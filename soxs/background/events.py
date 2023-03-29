@@ -35,8 +35,8 @@ def add_background_from_file(events, event_params, bkg_file):
     sexp = event_params["exposure_time"]
     bexp = hdu.header["EXPOSURE"]
 
-    if event_params["exposure_time"] > hdu.header["EXPOSURE"]:
-        raise RuntimeError(
+    if sexp > bexp:
+        raise ValueError(
             f"The background file does not have sufficient "
             f"exposure! Source exposure time {sexp}, background "
             f" exposure time {bexp}."
@@ -44,7 +44,7 @@ def add_background_from_file(events, event_params, bkg_file):
 
     for k1, k2 in key_map.items():
         if event_params[k1] != hdu.header[k2]:
-            raise RuntimeError(
+            raise ValueError(
                 f"'{k1}' keyword does not match! "
                 f"{event_params[k1]} vs. {hdu.header[k2]}"
             )
