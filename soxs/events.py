@@ -5,7 +5,7 @@ from pathlib import Path, PurePath
 from tqdm.auto import tqdm
 
 from soxs.instrument_registry import instrument_registry
-from soxs.utils import create_region, get_rot_mat, mylog, parse_value
+from soxs.utils import create_region, ensure_list, get_rot_mat, mylog, parse_value
 
 
 def wcs_from_header(h):
@@ -1089,19 +1089,67 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     t = []
     se = []
     chantype = ""
-    for eventfile in eventfiles:
+    header_dict = {}
+    for i, eventfile in enumerate(eventfiles):
         with fits.open(eventfile, memmap=True) as f:
             hdu = f["EVENTS"]
             wcs_in = wcs_from_header(hdu.header)
-            ra, dec = wcs_in.wcs_pix2world(hdu.data["X"], hdu.data["Y"], 1)
+            if i == 0:
+                chantype = hdu.header["CHANTYPE"]
+                for key in [
+                    "TELESCOP",
+                    "INSTRUME",
+                    "ANCRFILE",
+                    "RESPFILE",
+                    "EXPOSURE",
+                    "DATE",
+                    "DATE-OBS",
+                    "DATE-END",
+                    "MISSION",
+                    "TSTART",
+                    "TSTOP",
+                    "TLMIN4",
+                    "TLMAX4",
+                    "PHA_BINS",
+                ]:
+                    header_dict[key] = hdu.header[key]
+                idxs = ...
+            else:
+                for key in [
+                    "TELESCOP",
+                    "INSTRUME",
+                    "ANCRFILE",
+                    "RESPFILE",
+                    "MISSION",
+                    "TLMIN4",
+                    "TLMAX4",
+                    "PHA_BINS",
+                    "CHANTYPE",
+                ]:
+                    v1 = hdu.header[key]
+                    v2 = header_dict[key]
+                    if v1 != v2:
+                        raise ValueError(
+                            f"'{key}' from {eventfile} "
+                            f"does not match from {eventfiles[0]}! "
+                            f"{v1} != {v2}!"
+                        )
+                if hdu.data["EXPOSURE"] < header_dict["EXPOSURE"]:
+                    raise ValueError(
+                        f"Exposure time for {eventfile} is less than "
+                        f"that for {eventfiles[0]}! {hdu.data['EXPOSURE']} "
+                        f"< {header_dict['EXPOSURE']}!"
+                    )
+                idxs = hdu.data["TIME"] < header_dict["EXPOSURE"]
+
+            ra, dec = wcs_in.wcs_pix2world(hdu.data["X"][idxs], hdu.data["Y"][idxs], 1)
             xx, yy = wcs_out.wcs_world2pix(ra, dec, 1)
             x.append(xx)
             y.append(yy)
-            e.append(hdu.data["ENERGY"])
-            se.append(hdu.data["SOXS_ENERGY"])
-            ch.append(hdu.data[hdu.header["CHANTYPE"]])
-            t.append(hdu.data["TIME"])
-            chantype = hdu.header["CHANTYPE"]
+            e.append(hdu.data["ENERGY"][idxs])
+            se.append(hdu.data["SOXS_ENERGY"][idxs])
+            ch.append(hdu.data[hdu.header["CHANTYPE"][idxs]])
+            t.append(hdu.data["TIME"][idxs])
 
     x = np.concatenate(x)
     y = np.concatenate(y)
@@ -1194,7 +1242,7 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     fits.HDUList(hdulist).writeto(outfile, overwrite=overwrite)
 
 
-def merge_src_and_bkgnd(src_file, bkg_file, new_file, overwrite=False):
+def merge_src_and_bkgnd(src_file, bkg_files, new_file, overwrite=False):
     """
     Merge a SOXS-generated source file and a SOXS-generated background file
     together. The WCS used for the final file will be based on the source file,
@@ -1205,8 +1253,8 @@ def merge_src_and_bkgnd(src_file, bkg_file, new_file, overwrite=False):
     ----------
     src_file : string
         The events file containing the source events.
-    bkg_file : string
-        The events file containing the background events.
+    bkg_files : string or list of strings
+        The events file(s) containing the background events.
     new_file : string
         The merged events file.
     overwrite : boolean, optional
@@ -1216,6 +1264,7 @@ def merge_src_and_bkgnd(src_file, bkg_file, new_file, overwrite=False):
     with fits.open(src_file, memmap=True) as f:
         wcs_out = wcs_from_header(f["EVENTS"].header)
         shape_out = 2.0 * wcs_out.wcs.crpix - 1
+    bkg_files = ensure_list(bkg_files)
     _combine_events(
-        [src_file, bkg_file], wcs_out, shape_out, new_file, overwrite=overwrite
+        [src_file] + bkg_files, wcs_out, shape_out, new_file, overwrite=overwrite
     )
