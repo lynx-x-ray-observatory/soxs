@@ -406,7 +406,7 @@ def _write_spectrum(
     hdulist.writeto(specfile, overwrite=overwrite)
 
 
-def _region_filter(hdu, region, format="ds9"):
+def _region_filter(hdu, region, format="ds9", exclude=False):
     from regions import PixCoord, PixelRegion, Region, Regions, SkyRegion
 
     if isinstance(region, str):
@@ -429,6 +429,8 @@ def _region_filter(hdu, region, format="ds9"):
             evt_mask |= r.contains(skycoords, w)
         else:
             raise NotImplementedError
+    if exclude:
+        evt_mask = ~evt_mask
     return evt_mask
 
 
@@ -441,6 +443,7 @@ def filter_events(
     tmin=None,
     tmax=None,
     format="ds9",
+    exclude=False,
     overwrite=False,
 ):
     r"""
@@ -476,7 +479,7 @@ def filter_events(
         hdu = f["EVENTS"]
         evt_mask = np.ones(hdu.data["ENERGY"].size, dtype="bool")
         if region is not None:
-            evt_mask &= _region_filter(hdu, region, format=format)
+            evt_mask &= _region_filter(hdu, region, format=format, exclude=exclude)
         if emin is not None:
             emin = parse_value(emin, "keV") * 1000.0
             evt_mask &= hdu.data["ENERGY"] > emin
@@ -493,7 +496,9 @@ def filter_events(
         f.writeto(newfile, overwrite=overwrite)
 
 
-def write_spectrum(evtfile, specfile, region=None, format="ds9", overwrite=False):
+def write_spectrum(
+    evtfile, specfile, region=None, format="ds9", exclude=False, overwrite=False
+):
     r"""
     Bin event energies into a spectrum and write it to
     a FITS binary table. Does not do any grouping of
@@ -522,7 +527,7 @@ def write_spectrum(evtfile, specfile, region=None, format="ds9", overwrite=False
             hdu = f["EVENTS"]
             evt_mask = np.ones(hdu.data["ENERGY"].size, dtype="bool")
             if region is not None:
-                evt_mask &= _region_filter(hdu, region, format=format)
+                evt_mask &= _region_filter(hdu, region, format=format, exclude=exclude)
             spectype = hdu.header["CHANTYPE"]
             rmf = hdu.header["RESPFILE"]
             p = hdu.data[spectype][evt_mask]
