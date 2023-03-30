@@ -1102,6 +1102,7 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
                     "ANCRFILE",
                     "RESPFILE",
                     "EXPOSURE",
+                    "CHANTYPE",
                     "DATE",
                     "DATE-OBS",
                     "DATE-END",
@@ -1134,10 +1135,10 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
                             f"does not match from {eventfiles[0]}! "
                             f"{v1} != {v2}!"
                         )
-                if hdu.data["EXPOSURE"] < header_dict["EXPOSURE"]:
+                if hdu.header["EXPOSURE"] < header_dict["EXPOSURE"]:
                     raise ValueError(
                         f"Exposure time for {eventfile} is less than "
-                        f"that for {eventfiles[0]}! {hdu.data['EXPOSURE']} "
+                        f"that for {eventfiles[0]}! {hdu.header['EXPOSURE']} "
                         f"< {header_dict['EXPOSURE']}!"
                     )
                 idxs = hdu.data["TIME"] < header_dict["EXPOSURE"]
@@ -1148,7 +1149,7 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
             y.append(yy)
             e.append(hdu.data["ENERGY"][idxs])
             se.append(hdu.data["SOXS_ENERGY"][idxs])
-            ch.append(hdu.data[hdu.header["CHANTYPE"][idxs]])
+            ch.append(hdu.data[hdu.header["CHANTYPE"]][idxs])
             t.append(hdu.data["TIME"][idxs])
 
     x = np.concatenate(x)
