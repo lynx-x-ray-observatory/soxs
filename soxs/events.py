@@ -487,10 +487,10 @@ def filter_events(
             emax = parse_value(emax, "keV") * 1000.0
             evt_mask &= hdu.data["ENERGY"] < emax
         if tmin is not None:
-            tmin = parse_value(emin, "s")
+            tmin = parse_value(tmin, "s")
             evt_mask &= hdu.data["TIME"] > tmin
         if tmax is not None:
-            tmax = parse_value(emax, "s")
+            tmax = parse_value(tmax, "s")
             evt_mask &= hdu.data["TIME"] < tmax
         hdu.data = hdu.data[evt_mask]
         f.writeto(newfile, overwrite=overwrite)
