@@ -10,7 +10,7 @@ from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from soxs.psf import psf_model_registry
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
-from soxs.simput import SimputPhotonList, read_simput_catalog
+from soxs.simput import SimputCatalog, SimputPhotonList, read_simput_catalog
 from soxs.utils import (
     create_region,
     ensure_numpy_array,
@@ -54,7 +54,7 @@ def make_source_list(source):
                 parameters["src_names"][i],
             )
             source_list.append(phlist)
-    elif isinstance(source, str):
+    elif isinstance(source, (str, SimputCatalog)):
         # Assume this is a SIMPUT catalog
         source_list, parameters = read_simput_catalog(source)
     return source_list, parameters

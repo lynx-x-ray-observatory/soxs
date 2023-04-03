@@ -67,7 +67,10 @@ def read_simput_catalog(simput_file):
        and energies of the events from the sources.
     2. NumPy arrays of the parameters of the sources.
     """
-    sc = SimputCatalog.from_file(simput_file)
+    if isinstance(simput_file, SimputCatalog):
+        sc = simput_file
+    else:
+        sc = SimputCatalog.from_file(simput_file)
     parameters = {
         "emin": sc.emin,
         "emax": sc.emax,
