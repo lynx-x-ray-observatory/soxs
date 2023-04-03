@@ -755,6 +755,8 @@ def write_image(
     coord_type="sky",
     emin=None,
     emax=None,
+    tmin=None,
+    tmax=None,
     overwrite=False,
     expmap_file=None,
     reblock=1,
@@ -776,6 +778,12 @@ def write_image(
         The minimum energy of the photons to put in the image, in keV.
     emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The maximum energy of the photons to put in the image, in keV.
+    tmin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the events to be included, in seconds.
+        Default is the earliest time available.
+    tmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the events to be included, in seconds.
+        Default is the latest time available.
     overwrite : boolean, optional
         Whether to overwrite an existing file with
         the same name. Default: False
@@ -797,13 +805,23 @@ def write_image(
     else:
         emax = parse_value(emax, "keV")
     emax *= 1000.0
+    if tmin is None:
+        tmin = -np.inf
+    else:
+        tmin = parse_value(tmin, "s")
+    if tmax is None:
+        tmax = np.inf
+    else:
+        tmax = parse_value(tmax, "s")
     if coord_type == "det" and reblock != 1:
         raise RuntimeError(
             "Reblocking images is not supported for detector coordinates!"
         )
     with fits.open(evt_file) as f:
         e = f["EVENTS"].data["ENERGY"]
+        t = f["EVENTS"].data["TIME"]
         idxs = np.logical_and(e > emin, e < emax)
+        idxs &= np.logical_and(t > tmin, t < tmax)
         xcoord, ycoord, xcol, ycol = coord_types[coord_type]
         x = f["EVENTS"].data[xcoord][idxs]
         y = f["EVENTS"].data[ycoord][idxs]
