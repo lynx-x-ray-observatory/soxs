@@ -140,6 +140,8 @@ class SimputCatalog:
             The name of the SIMPUT catalog file to read the
             catalog and photon lists from.
         """
+        from astropy.io.fits.column import _VLF
+
         f_simput = fits.open(filename)
         fluxes = f_simput["src_cat"].data["flux"]
         src_names = f_simput["src_cat"].data["src_name"]
@@ -148,8 +150,12 @@ class SimputCatalog:
         ra = f_simput["src_cat"].data["ra"]
         dec = f_simput["src_cat"].data["dec"]
         spectra = f_simput["src_cat"].data["spectrum"]
+        if isinstance(spectra, _VLF):
+            spectra = [s.astype("|S1").tobytes().decode("utf-8") for s in spectra]
         if "IMAGE" in f_simput["src_cat"].columns.names:
             images = f_simput["src_cat"].data["image"]
+            if isinstance(images, _VLF):
+                images = [i.astype("|S1").tobytes().decode("utf-8") for i in images]
         else:
             images = ["NULL"] * len(spectra)
         f_simput.close()
