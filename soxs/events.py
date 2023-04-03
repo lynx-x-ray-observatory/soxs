@@ -497,7 +497,16 @@ def filter_events(
 
 
 def write_spectrum(
-    evtfile, specfile, region=None, format="ds9", exclude=False, overwrite=False
+    evtfile,
+    specfile,
+    region=None,
+    format="ds9",
+    exclude=False,
+    emin=None,
+    emax=None,
+    tmin=None,
+    tmax=None,
+    overwrite=False,
 ):
     r"""
     Bin event energies into a spectrum and write it to
@@ -515,6 +524,21 @@ def write_spectrum(
     format : string, optional
         The file format specifier for the region. "ds9",
         "crtf", "fits", etc. Default: "ds9"
+    exclude : boolean, optional
+        If True, the events in a specified *region* will be excluded
+        instead of included in the spectrum. Default: False
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the events to be included, in keV.
+        Default is the lowest energy available.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the events to be included, in keV.
+        Default is the highest energy available.
+    tmin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the events to be included, in seconds.
+        Default is the earliest time available.
+    tmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the events to be included, in seconds.
+        Default is the latest time available.
     overwrite : boolean, optional
         Whether to overwrite an existing file with
         the same name. Default: False
@@ -528,6 +552,18 @@ def write_spectrum(
             evt_mask = np.ones(hdu.data["ENERGY"].size, dtype="bool")
             if region is not None:
                 evt_mask &= _region_filter(hdu, region, format=format, exclude=exclude)
+            if tmin is not None:
+                tmin = parse_value(tmin, "s")
+                evt_mask &= hdu.data["TIME"] > tmin
+            if tmax is not None:
+                tmax = parse_value(tmax, "s")
+                evt_mask &= hdu.data["TIME"] < tmax
+            if emin is not None:
+                emin = parse_value(emin, "keV") * 1000.0
+                evt_mask &= hdu.data["ENERGY"] > emin
+            if emax is not None:
+                emax = parse_value(emax, "keV") * 1000.0
+                evt_mask &= hdu.data["ENERGY"] < emax
             spectype = hdu.header["CHANTYPE"]
             rmf = hdu.header["RESPFILE"]
             p = hdu.data[spectype][evt_mask]
