@@ -85,7 +85,7 @@ def generate_events(
 
     Parameters
     ----------
-    input_events : string, dict, or None
+    input_events : string, dict, SimputCatalog, or None
         The unconvolved events to be used as input. Can be one of the
         following:
         1. The name of a SIMPUT catalog file.
@@ -94,6 +94,7 @@ def generate_events(
         "dec": A NumPy array of declination values in degrees.
         "energy": A NumPy array of energy values in keV.
         "flux": The flux of the entire source, in units of erg/cm**2/s.
+        3. A SimputCatalog object.
     out_file : string
         The name of the event file to be written.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`

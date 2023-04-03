@@ -5,7 +5,7 @@ from pathlib import Path, PurePath
 from tqdm.auto import tqdm
 
 from soxs.instrument_registry import instrument_registry
-from soxs.utils import create_region, ensure_list, get_rot_mat, mylog, parse_value
+from soxs.utils import create_region, get_rot_mat, mylog, parse_value
 
 
 def wcs_from_header(h):
@@ -471,6 +471,9 @@ def filter_events(
     format : string, optional
         The file format specifier for the region, if supplied. "ds9",
         "crtf", "fits", etc. Default: "ds9"
+    exclude : boolean, optional
+        If True, the events in a specified *region* will be excluded instead of
+        included. Default: False
     overwrite : boolean, optional
         Whether to overwrite an existing file with the
         same name. Default: False
@@ -1297,29 +1300,23 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     fits.HDUList(hdulist).writeto(outfile, overwrite=overwrite)
 
 
-def merge_src_and_bkgnd(src_file, bkg_files, new_file, overwrite=False):
+def merge_event_files(input_files, output_file, overwrite=False):
     """
-    Merge a SOXS-generated source file and a SOXS-generated background file
-    together. The WCS used for the final file will be based on the source file,
-    so the original celestial coordinates for the background file will be
-    discarded.
+    Merge SOXS-generated event files together. The WCS used for the final
+    file will be based on the first source file, so the original celestial
+    coordinates for the other files will be discarded.
 
     Parameters
     ----------
-    src_file : string
-        The events file containing the source events.
-    bkg_files : string or list of strings
+    input_files : list of strings
         The events file(s) containing the background events.
-    new_file : string
+    output_file : string
         The merged events file.
     overwrite : boolean, optional
         Whether to overwrite an existing file with
         the same name. Default: False
     """
-    with fits.open(src_file, memmap=True) as f:
+    with fits.open(input_files[0], memmap=True) as f:
         wcs_out = wcs_from_header(f["EVENTS"].header)
         shape_out = 2.0 * wcs_out.wcs.crpix - 1
-    bkg_files = ensure_list(bkg_files)
-    _combine_events(
-        [src_file] + bkg_files, wcs_out, shape_out, new_file, overwrite=overwrite
-    )
+    _combine_events(input_files, wcs_out, shape_out, output_file, overwrite=overwrite)

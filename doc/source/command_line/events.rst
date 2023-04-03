@@ -113,13 +113,17 @@ Reblock the exposure map by 4.
                             in keV.
       --emax EMAX           The maximum energy of the photons to put in the image,
                             in keV.
+      --tmin TMIN           The minimum time of the photons to put in the image,
+                            in s.
+      --tmax TMAX           The maximum time of the photons to put in the image,
+                            in s.
       --overwrite           Overwrite an existing file with the same name.
       --expmap_file EXPMAP_FILE
                             Supply an exposure map file to divide this image by to
                             get a flux map.
-      --reblock REBLOCK     Change this value to reblock the image to larger pixel
-                            sizes (reblock >= 1). Only supported for sky
-                            coordinates. Default: 1
+      --reblock REBLOCK     Change this value to reblock the image to larger or
+                            smaller pixel sizes. Only supported for sky coordinates.
+                            Default: 1
 
 Examples
 ++++++++

@@ -3,6 +3,24 @@
 ChangeLog
 =========
 
+Version 4.5.0
+-------------
+
+This version of SOXS contains a minor bugfix and a number of small new features.
+
+* More corner cases of SIMPUT catalogs made using the SIMPUT library
+  which caused errors in SOXS are now supported.
+* It is now possible to supply a :class:`soxs.simput.SimputCatalog` instance
+  as the ``input_events`` argument to :func:`~soxs.instrument.instrument_simulator`.
+* It is now possible to specify values of the ``reblock`` parameter that are less
+  than 1 to :func:`soxs.events.write_image`.
+* It is now possible to filter events on time in :func:`soxs.events.filter_events`,
+  :func:`soxs.events.write_image`, and :func:`soxs.events.write_spectrum`.
+* It is now possible to exclude events with region filters in :func:`soxs.events.filter_events`
+  and :func:`soxs.events.write_spectrum`.
+* A new function to merge source and background event files,
+  :func:`soxs.events.merge_event_files`, has been added.
+
 Version 4.4.0
 -------------
 

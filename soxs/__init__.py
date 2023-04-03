@@ -17,7 +17,7 @@ from soxs.cosmology import make_cosmological_sources_file
 from soxs.events import (
     filter_events,
     make_exposure_map,
-    merge_src_and_bkgnd,
+    merge_event_files,
     plot_image,
     plot_spectrum,
     write_image,

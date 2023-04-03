@@ -25,6 +25,12 @@ parser.add_argument(
     "--emax", help="The maximum energy of the photons to put in the image, in keV."
 )
 parser.add_argument(
+    "--tmin", help="The minimum time of the photons to put in the image, in s."
+)
+parser.add_argument(
+    "--tmax", help="The maximum time of the photons to put in the image, in s."
+)
+parser.add_argument(
     "--overwrite",
     action="store_true",
     help="Overwrite an existing file with the same name.",
@@ -51,6 +57,8 @@ write_image(
     coord_type=args.coord_type,
     emin=args.emin,
     emax=args.emax,
+    tmin=args.tmin,
+    tmax=args.tmax,
     overwrite=args.overwrite,
     expmap_file=args.expmap_file,
     reblock=args.reblock,

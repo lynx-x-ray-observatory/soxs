@@ -48,6 +48,13 @@ Energy and region filtering can be combined:
     soxs.filter_events("evt.fits", "evt_circle.fits", region="circle.reg",
                        overwrite=True, emin=0.1, emax=0.5)
 
+To filter on a time range:
+
+.. code-block:: python
+
+    soxs.filter_events("evt.fits", "evt_shorter.fits", emin=0.5, emax=7.0, tmin=0.0,
+                       tmax=(200.0, "ks"))
+
 ``make_exposure_map``
 ---------------------
 
@@ -150,7 +157,7 @@ and *Athena*/XIFU are shown in Figure 1.
 :func:`~soxs.events.write_image` bins up events into an image according to the coordinate
 system inherent in the event file and writes the image to a FITS file. Images of sky, detector,
 or chip coordinates can be written. You can also restrict events within a particular energy range
-to be written to the file.
+or time range to be written to the file.
 
 To write an image in sky coordinates:
 
@@ -164,13 +171,14 @@ Or in detector coordinates:
 
 .. code-block:: python
 
-    write_image("my_evt.fits", "my_sky_img.fits", coord_type='det', emin=0.5, emax=7.0)
+    write_image("my_evt.fits", "my_det_img.fits", coord_type='det', emin=0.5, emax=7.0)
 
-Or in chip coordinates:
+To filter on a time range:
 
 .. code-block:: python
 
-    write_image("my_evt.fits", "my_sky_img.fits", coord_type='sky', emin=0.5, emax=7.0)
+    write_image("my_evt.fits", "my_sky_img.fits", emin=0.5, emax=7.0, tmin=0.0,
+                tmax=(200.0, "ks"))
 
 To supply an exposure map produced by :func:`~soxs.events.make_exposure_map` to make a
 flux image:
@@ -271,6 +279,13 @@ Alternatively, you can use a region string:
     reg = '# Region file format: DS9\nimage\ncircle(147.10,254.17,3.1) # color=green\n'
     write_spectrum("my_evt.fits", "my_spec.pha", region=reg, overwrite=True)
 
+Filtering on a time or energy range is also possible:
+
+.. code-block:: python
+
+    write_spectrum("my_evt.fits", "my_spec.pha", emin=0.5, emax=2.0,
+                   tmin=0.0, tmax=(0.5, "Ms"), overwrite=True)
+
 .. _plot-spectrum:
 
 ``plot_spectrum``
@@ -328,3 +343,15 @@ file. Several examples of this are shown in the following cookbook recipes:
 * `Cosmological Source Catalog <../cookbook/Cosmo_Source_Catalog.ipynb>`_
 
 For the full range of customizations, consult the :func:`~soxs.events.plot_image` API.
+
+``merge_event_files``
+---------------------
+
+:func:`soxs.events.merge_event_files` can be used to merge several event files
+together. This may be useful if you want to merge a source file with a background
+file created later, for example.
+
+.. code-block:: python
+
+    soxs.merge_event_files(["src1_evt.fits", "src2_evt.fits", "bkg_evt.fits"],
+                           "merged_evt.fits", overwrite=True)
