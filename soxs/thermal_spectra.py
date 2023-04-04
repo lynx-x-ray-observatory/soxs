@@ -165,7 +165,6 @@ class CIEGenerator:
     def _make_spectrum(
         self, kT, element, ion, velocity, line_fields, coco_fields, scale_factor
     ):
-
         tmpspec = np.zeros(self.nbins)
 
         if not self.nolines:

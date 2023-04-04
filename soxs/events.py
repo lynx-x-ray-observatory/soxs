@@ -328,9 +328,7 @@ def make_exposure_map(
     map_hdu.writeto(expmap_file, overwrite=overwrite)
 
     if asol_file is not None:
-
         if dither_params["dither_on"]:
-
             det = np.array([x_off, y_off])
 
             pix = np.dot(get_rot_mat(roll).T, det)
@@ -351,7 +349,6 @@ def make_exposure_map(
             fits.HDUList(hdulist).writeto(asol_file, overwrite=overwrite)
 
         else:
-
             mylog.warning(
                 "Refusing to write an aspect solution file because "
                 "there was no dithering."
@@ -368,7 +365,6 @@ def _write_spectrum(
     overwrite=False,
     noisy=True,
 ):
-
     col1 = fits.Column(name="CHANNEL", format="1J", array=bins)
     col2 = fits.Column(name=spectype.upper(), format="1D", array=bins.astype("float64"))
     col3 = fits.Column(name="COUNTS", format="1J", array=spec.astype("int32"))

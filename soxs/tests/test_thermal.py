@@ -85,7 +85,6 @@ spec_nei.apply_foreground_absorption(nH_sim)
 
 
 def test_thermal(answer_store):
-
     prng = RandomState(71)
 
     tmpdir = tempfile.mkdtemp()
@@ -122,7 +121,6 @@ def test_thermal(answer_store):
 
 
 def test_thermal_from_spectrum(answer_store):
-
     prng = RandomState(89)
 
     tmpdir = tempfile.mkdtemp()
@@ -147,7 +145,6 @@ def test_var_thermal():
 
 
 def test_nolines_thermal_from_spectrum(answer_store):
-
     prng = RandomState(101)
 
     tmpdir = tempfile.mkdtemp()
@@ -171,7 +168,6 @@ def test_nolines_thermal_from_spectrum(answer_store):
 
 
 def test_thermal_abund_table(answer_store):
-
     prng = RandomState(72)
 
     tmpdir = tempfile.mkdtemp()
@@ -218,7 +214,6 @@ def test_thermal_abund_table(answer_store):
 
 
 def test_thermal_nei(answer_store):
-
     prng = RandomState(71)
 
     tmpdir = tempfile.mkdtemp()

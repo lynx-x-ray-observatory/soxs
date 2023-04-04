@@ -12,7 +12,6 @@ from soxs.spectra import Spectrum
 
 
 def test_filter():
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
