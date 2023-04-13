@@ -3,6 +3,14 @@
 ChangeLog
 =========
 
+Version 4.5.1
+-------------
+
+This version of SOXS contains a critical bugfix that fixes a downstream bug in pyXSIM,
+where normalizations of X-ray fields, spectra, and mocks that used the IGM model
+were overestimated. Users who need this functionality are also encouraged to upgrade
+to pyXSIM v4.2.0.
+
 Version 4.5.0
 -------------
 
