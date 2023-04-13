@@ -43,7 +43,6 @@ def test_arithmetic():
 
 
 def test_read_write():
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)

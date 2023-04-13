@@ -178,9 +178,7 @@ class RadialFunctionModel(SpatialModel):
 
     def _generate_image(self, width, nx):
         coords = gen_img_coords(width, nx, self.theta)
-        coords[
-            1,
-        ] /= self.ellipticity
+        coords[1,] /= self.ellipticity
         r = np.sqrt((coords**2).sum(axis=0))
         return self.func(r.reshape(nx, nx))
 

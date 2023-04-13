@@ -245,9 +245,7 @@ def make_ptsrc_background(
     detected = []
 
     for i, nph in enumerate(n_photons):
-
         if nph > 0:
-
             # Generate the energies in the source frame
             u = prng.uniform(size=nph)
             if ind[i] == 1.0:

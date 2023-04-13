@@ -80,7 +80,6 @@ def test_point_source():
 
 
 def test_annulus(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)

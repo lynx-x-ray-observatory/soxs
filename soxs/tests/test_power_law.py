@@ -24,7 +24,6 @@ def test_power_law(answer_store):
 
 
 def plaw_fit(alpha_sim, answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)

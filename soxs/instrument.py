@@ -213,7 +213,6 @@ def generate_events(
     all_events = defaultdict(list)
 
     for i, src in enumerate(source_list):
-
         mylog.info("Detecting events from source %s.", parameters["src_names"][i])
 
         # Step 1: Use ARF to determine which photons are observed
@@ -235,7 +234,6 @@ def generate_events(
         if n_evt == 0:
             mylog.warning("No events were observed for this source!!!")
         else:
-
             # Step 2: Assign pixel coordinates to events. Apply dithering and
             # PSF. Clip events that don't fall within the detection region.
 
@@ -301,7 +299,6 @@ def generate_events(
                     "No events are within the field " "of view for this source!!!"
                 )
             else:
-
                 mylog.info("%d events were detected from the source.", n_evt)
 
                 # Keep only those events which fall on a chip
@@ -1028,7 +1025,6 @@ def simple_event_list(
     all_events = defaultdict(list)
 
     for i, src in enumerate(source_list):
-
         mylog.info("Detecting events from source %s.", parameters["src_names"][i])
 
         mylog.info(
