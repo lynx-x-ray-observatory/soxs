@@ -360,7 +360,7 @@ def set_mission_config(mission):
         raise RuntimeError(f"Mission '{mission}' is not implemented!")
 
 
-def regrid_spectrum(ebins_new, ebins, spec):
+def regrid_spectrum(ebins_new, ebins, spec, clip_neg=True):
     cspec = np.insert(np.cumsum(spec, axis=-1), 0, 0.0, axis=-1)
     f = interp1d(
         ebins,
@@ -371,7 +371,9 @@ def regrid_spectrum(ebins_new, ebins, spec):
         assume_sorted=True,
         copy=False,
     )
-    new_spec = np.clip(np.diff(f(ebins_new), axis=-1), 0.0, None)
+    new_spec = np.diff(f(ebins_new), axis=-1)
+    if clip_neg:
+        new_spec.clip(0.0, None, out=new_spec)
     return new_spec
 
 
