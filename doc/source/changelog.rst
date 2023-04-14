@@ -6,10 +6,14 @@ ChangeLog
 Version 4.5.1
 -------------
 
-This version of SOXS contains a critical bugfix that fixes a downstream bug in pyXSIM,
-where normalizations of X-ray fields, spectra, and mocks that used the IGM model
-were overestimated. Users who need this functionality are also encouraged to upgrade
-to pyXSIM v4.2.0.
+This version of SOXS contains two bugfixes:
+
+* A critical downstream bug in pyXSIM has been fixed, where normalizations of X-ray
+  fields, spectra, and mocks that used the IGM thermal spectrum model were overestimated.
+  Users who need this functionality are also encouraged to upgrade to pyXSIM v4.2.0.
+* Inputting a file name as the ``imhdu`` argument to
+  :meth:`~soxs.simuput.SimputSource.from_spectrum` was not working, and has now been
+  fixed.
 
 Version 4.5.0
 -------------
