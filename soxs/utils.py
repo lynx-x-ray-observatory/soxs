@@ -269,7 +269,7 @@ def process_fits_string(fitsstr):
             ext = brackets[0]
             if ext.isdigit():
                 ext = int(ext)
-        imhdu = f[ext]
+        imhdu = f[ext].copy()
     return imhdu
 
 
