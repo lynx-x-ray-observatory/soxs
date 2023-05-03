@@ -246,10 +246,10 @@ class SimputCatalog:
         col4 = fits.Column(name="E_MIN", format="D", array=self.emin)
         col5 = fits.Column(name="E_MAX", format="D", array=self.emax)
         col6 = fits.Column(name="FLUX", format="D", array=self.fluxes)
-        col7 = fits.Column(name="SPECTRUM", format="80A", array=self.spectra)
-        col8 = fits.Column(name="IMAGE", format="80A", array=self.images)
-        col9 = fits.Column(name="TIMING", format="80A", array=self.timing)
-        col10 = fits.Column(name="SRC_NAME", format="80A", array=self.src_names)
+        col7 = fits.Column(name="SPECTRUM", format="512A", array=self.spectra)
+        col8 = fits.Column(name="IMAGE", format="512A", array=self.images)
+        col9 = fits.Column(name="TIMING", format="512A", array=self.timing)
+        col10 = fits.Column(name="SRC_NAME", format="512A", array=self.src_names)
 
         coldefs = fits.ColDefs(
             [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10]
@@ -318,10 +318,7 @@ class SimputCatalog:
 
         extver = _determine_extver(src_filename, source.src_type.upper())
         if src_filename != self.filename:
-            src_fn = os.path.join(
-                os.path.relpath(Path(src_filename).parent, Path(self.filename).parent),
-                os.path.basename(src_filename),
-            )
+            src_fn = src_filename
         else:
             src_fn = ""
         spec = f"{src_fn}[{source.src_type.upper()},{extver}]"
