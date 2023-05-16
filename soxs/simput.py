@@ -156,12 +156,12 @@ class SimputCatalog:
         spectra = f_simput["src_cat"].data["spectrum"]
         if isinstance(spectra, _VLF):
             spectra = [s.astype("|S1").tobytes().decode("utf-8") for s in spectra]
-        spectra = [os.path.join(dname,s) for s in spectra]
+        spectra = [os.path.join(dname, s) for s in spectra]
         if "IMAGE" in f_simput["src_cat"].columns.names:
             images = f_simput["src_cat"].data["image"]
             if isinstance(images, _VLF):
                 images = [i.astype("|S1").tobytes().decode("utf-8") for i in images]
-            images = [os.path.join(dname,i) for i in images]
+            images = [os.path.join(dname, i) for i in images]
         else:
             images = ["NULL"] * len(spectra)
         f_simput.close()
