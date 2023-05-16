@@ -146,6 +146,7 @@ class SimputCatalog:
         from astropy.io.fits.column import _VLF
 
         f_simput = fits.open(filename)
+        dname = os.path.dirname(filename)
         fluxes = f_simput["src_cat"].data["flux"]
         src_names = f_simput["src_cat"].data["src_name"]
         e_min = f_simput["src_cat"].data["e_min"]
@@ -155,10 +156,12 @@ class SimputCatalog:
         spectra = f_simput["src_cat"].data["spectrum"]
         if isinstance(spectra, _VLF):
             spectra = [s.astype("|S1").tobytes().decode("utf-8") for s in spectra]
+        spectra = [os.path.join(dname,s) for s in spectra]
         if "IMAGE" in f_simput["src_cat"].columns.names:
             images = f_simput["src_cat"].data["image"]
             if isinstance(images, _VLF):
                 images = [i.astype("|S1").tobytes().decode("utf-8") for i in images]
+            images = [os.path.join(dname,i) for i in images]
         else:
             images = ["NULL"] * len(spectra)
         f_simput.close()
@@ -318,7 +321,10 @@ class SimputCatalog:
 
         extver = _determine_extver(src_filename, source.src_type.upper())
         if src_filename != self.filename:
-            src_fn = src_filename
+            src_fn = os.path.join(
+                os.path.relpath(Path(src_filename).parent, Path(self.filename).parent),
+                os.path.basename(src_filename),
+            )
         else:
             src_fn = ""
         spec = f"{src_fn}[{source.src_type.upper()},{extver}]"
