@@ -756,6 +756,7 @@ def write_image(
     emax=None,
     tmin=None,
     tmax=None,
+    bands=None,
     overwrite=False,
     expmap_file=None,
     reblock=1,
@@ -783,6 +784,10 @@ def write_image(
     tmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The maximum energy of the events to be included, in seconds.
         Default is the latest time available.
+    bands : list of tuples, optional
+        A list of energy bands to restrict the counts used to make the
+        image, in the form of [(emin1, emax1), (emin2, emax2), ...].
+        Used as an alternative to emin and emax. Default: None
     overwrite : boolean, optional
         Whether to overwrite an existing file with
         the same name. Default: False
@@ -794,16 +799,22 @@ def write_image(
         or small pixel sizes. Only supported for
         sky coordinates. Default: 1
     """
-    if emin is None:
-        emin = 0.0
+    if bands is not None:
+        bands = [
+            (parse_value(b[0], "keV") * 1000.0, parse_value(b[1], "keV") * 1000.0)
+            for b in bands
+        ]
     else:
-        emin = parse_value(emin, "keV")
-    emin *= 1000.0
-    if emax is None:
-        emax = 100.0
-    else:
-        emax = parse_value(emax, "keV")
-    emax *= 1000.0
+        if emin is None:
+            emin = 0.0
+        else:
+            emin = parse_value(emin, "keV")
+        emin *= 1000.0
+        if emax is None:
+            emax = 100.0
+        else:
+            emax = parse_value(emax, "keV")
+        emax *= 1000.0
     if tmin is None:
         tmin = -np.inf
     else:
@@ -819,7 +830,12 @@ def write_image(
     with fits.open(evt_file) as f:
         e = f["EVENTS"].data["ENERGY"]
         t = f["EVENTS"].data["TIME"]
-        idxs = np.logical_and(e > emin, e < emax)
+        if bands is not None:
+            idxs = False
+            for band in bands:
+                idxs |= np.logical_and(e > band[0], e < band[1])
+        else:
+            idxs = np.logical_and(e > emin, e < emax)
         idxs &= np.logical_and(t > tmin, t < tmax)
         xcoord, ycoord, xcol, ycol = coord_types[coord_type]
         x = f["EVENTS"].data[xcoord][idxs]
