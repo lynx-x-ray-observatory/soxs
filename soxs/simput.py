@@ -146,6 +146,7 @@ class SimputCatalog:
         from astropy.io.fits.column import _VLF
 
         f_simput = fits.open(filename)
+        dname = os.path.dirname(filename)
         fluxes = f_simput["src_cat"].data["flux"]
         src_names = f_simput["src_cat"].data["src_name"]
         e_min = f_simput["src_cat"].data["e_min"]
@@ -155,10 +156,12 @@ class SimputCatalog:
         spectra = f_simput["src_cat"].data["spectrum"]
         if isinstance(spectra, _VLF):
             spectra = [s.astype("|S1").tobytes().decode("utf-8") for s in spectra]
+        spectra = [os.path.join(dname, s) for s in spectra]
         if "IMAGE" in f_simput["src_cat"].columns.names:
             images = f_simput["src_cat"].data["image"]
             if isinstance(images, _VLF):
                 images = [i.astype("|S1").tobytes().decode("utf-8") for i in images]
+            images = [os.path.join(dname, i) for i in images]
         else:
             images = ["NULL"] * len(spectra)
         f_simput.close()
@@ -246,10 +249,10 @@ class SimputCatalog:
         col4 = fits.Column(name="E_MIN", format="D", array=self.emin)
         col5 = fits.Column(name="E_MAX", format="D", array=self.emax)
         col6 = fits.Column(name="FLUX", format="D", array=self.fluxes)
-        col7 = fits.Column(name="SPECTRUM", format="80A", array=self.spectra)
-        col8 = fits.Column(name="IMAGE", format="80A", array=self.images)
-        col9 = fits.Column(name="TIMING", format="80A", array=self.timing)
-        col10 = fits.Column(name="SRC_NAME", format="80A", array=self.src_names)
+        col7 = fits.Column(name="SPECTRUM", format="512A", array=self.spectra)
+        col8 = fits.Column(name="IMAGE", format="512A", array=self.images)
+        col9 = fits.Column(name="TIMING", format="512A", array=self.timing)
+        col10 = fits.Column(name="SRC_NAME", format="512A", array=self.src_names)
 
         coldefs = fits.ColDefs(
             [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10]
