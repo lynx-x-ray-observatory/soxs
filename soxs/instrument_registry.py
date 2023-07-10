@@ -612,6 +612,7 @@ def make_simple_instrument(
     sq_inst["chips"] = [["Box", 0, 0, num_pixels, num_pixels]]
     sq_inst["fov"] = parse_value(fov, "arcmin")
     sq_inst["num_pixels"] = num_pixels
+    sq_inst["aimpt_coords"] = [0.0, 0.0]
     if no_bkgnd:
         sq_inst["bkgnd"] = None
     elif base_inst.startswith("aciss"):
