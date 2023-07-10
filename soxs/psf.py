@@ -187,7 +187,7 @@ class ImagePSF(PSF):
         n_evt = x.size
         # This returns image coordinates from the PSF
         # image
-        dx, dy = image_pos(self.imhdu.data, n_evt, self.prng)
+        dx, dy = image_pos(self.imhdu.data.T, n_evt, self.prng)
         dx -= self.imctr[0]
         dy -= self.imctr[1]
         dx *= self.scale[0]
@@ -247,7 +247,7 @@ class MultiImagePSF(PSF):
                 # image
                 idxs = np.where(idx_score == j)[0]
                 n_out += idxs.size
-                dx, dy = image_pos(f[self.img_i[j]].data, idxs.size, self.prng)
+                dx, dy = image_pos(f[self.img_i[j]].data.T, idxs.size, self.prng)
                 dx -= self.img_c[j][0]
                 dy -= self.img_c[j][1]
                 dx *= self.img_s[j][0]
