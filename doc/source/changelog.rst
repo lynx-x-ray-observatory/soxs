@@ -13,7 +13,7 @@ This version of SOXS contains three bugfixes:
   rectangular and asymmetric. This has now been fixed.
 * Default aimpoint coordinates corresponding to the detector center have now been
   added to simple, square-shaped instruments created with
-  :meth:`soxs.instrument_registry.make_simple_instrument`.
+  :meth:`~soxs.instrument_registry.make_simple_instrument`.
 * SIMPUT filenames are now no longer limited to 80 characters inside the SIMPUT
   catalog, and better handling is provided for filenames with relative paths. Thanks
   to Chang-Goo Kim for submitting `PR 19 <https://github.com/lynx-x-ray-observatory/soxs/pull/19>`_ which fixes this.
