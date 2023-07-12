@@ -8,7 +8,7 @@ import astropy.units as u
 import numpy as np
 import regions
 from astropy.units import Quantity
-from numpy.random import RandomState
+from numpy.random import Generator, RandomState, default_rng
 from scipy.interpolate import interp1d
 
 # Configuration
@@ -96,10 +96,10 @@ soxs_files_path = os.path.join(soxs_path, "files")
 
 
 def parse_prng(prng):
-    if isinstance(prng, RandomState):
+    if isinstance(prng, (RandomState, Generator)):
         return prng
     else:
-        return RandomState(prng)
+        return default_rng(seed=prng)
 
 
 def iterable(obj):

@@ -2,6 +2,8 @@ import os
 import shutil
 import tempfile
 
+import numpy as np
+
 from soxs.events import write_spectrum
 from soxs.instrument import instrument_simulator, simulate_spectrum
 from soxs.simput import SimputCatalog, SimputPhotonList
@@ -14,6 +16,8 @@ def test_emission_line(answer_store):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
+
+    prng = np.random.default_rng(69)
 
     const_flux = 1.0e-4
     line_pos = 5.0
@@ -31,7 +35,7 @@ def test_emission_line(answer_store):
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models(
-        "emission_line", spec, pt_src_pos, exp_time, area, prng=69
+        "emission_line", spec, pt_src_pos, exp_time, area, prng=prng
     )
     SimputCatalog.from_source("emission_line_simput.fits", pt_src, overwrite=True)
 
@@ -44,7 +48,7 @@ def test_emission_line(answer_store):
         instr_bkgnd=False,
         ptsrc_bkgnd=False,
         foreground=False,
-        prng=69,
+        prng=prng,
     )
 
     write_spectrum("emission_line_evt.fits", "emission_line_evt.pha", overwrite=True)

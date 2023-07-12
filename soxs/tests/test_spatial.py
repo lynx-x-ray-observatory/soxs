@@ -26,8 +26,6 @@ nH = 0.04
 exp_time = Quantity(20.0, "ks")
 area = Quantity(3.0, "m**2")
 
-prng = 31
-
 agen = ApecGenerator((0.05, "keV"), (12.0, "keV"), 10000, broadening=True)
 spec = agen.get_spectrum(kT, Z, redshift, norm)
 spec.apply_foreground_absorption(nH)
@@ -40,6 +38,8 @@ def test_point_source():
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
+
+    prng = np.random.default_rng(32)
 
     pt_src = SimputSpectrum.from_spectrum("pt_src", spec, ra0, dec0)
     SimputCatalog.from_source("pt_src_simput.fits", pt_src, overwrite=True)
@@ -83,6 +83,8 @@ def test_annulus(answer_store):
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
+
+    prng = np.random.default_rng(32)
 
     r_in = 10.0
     r_out = 30.0
@@ -131,7 +133,7 @@ def test_beta_model(answer_store):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    prng = 32
+    prng = np.random.default_rng(32)
 
     r_c = 20.0
     beta = 1.0
@@ -181,7 +183,7 @@ def test_double_beta_model(answer_store):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    prng = 32
+    prng = np.random.default_rng(32)
 
     r_c1 = 20.0
     beta1 = 1.0
@@ -239,7 +241,7 @@ def test_beta_model_flux(answer_store):
     r_c = 20.0
     beta = 1.0
 
-    prng = 34
+    prng = np.random.default_rng(24)
 
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
     beta_src = SimputPhotonList.from_models(
