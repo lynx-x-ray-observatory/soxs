@@ -3,6 +3,17 @@
 ChangeLog
 =========
 
+Version 4.5.3
+-------------
+
+This version of SOXS contains two bugfixes related to generating mock observations
+from SIMPUT catalogs which use FITS images for modeling photon positions:
+
+* The input image did not have an extension name in the SIMPUT spectrum file, so
+  SOXS was not able to read it. This has been fixed.
+* The input image was not being rotated to the correct orientation. This has been
+  fixed.
+
 Version 4.5.2
 -------------
 
