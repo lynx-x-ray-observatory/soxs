@@ -390,6 +390,7 @@ class SimputSource:
 
         tbhdu.header["EXTVER"] = extver
         if self.imhdu is not None:
+            self.imhdu.header["EXTNAME"] = "IMAGE"
             self.imhdu.header["EXTVER"] = img_extver
 
         if os.path.exists(filename) and not overwrite:

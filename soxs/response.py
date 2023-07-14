@@ -94,7 +94,7 @@ class AuxiliaryResponseFile:
         cumspec /= cumspec[-1]
         energy = np.interp(randvec, cumspec, self.ebins)
         if getattr(src, "imhdu", None):
-            x, y = image_pos(src.imhdu.data, energy.size, prng)
+            x, y = image_pos(src.imhdu.data.T, energy.size, prng)
             w = wcs.WCS(header=src.imhdu.header)
             w.wcs.crval = [src.ra, src.dec]
             ra, dec = w.wcs_pix2world(x, y, 1)
