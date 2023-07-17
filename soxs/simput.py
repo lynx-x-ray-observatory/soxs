@@ -53,9 +53,17 @@ class LazyReadSimputCatalog(Sequence):
 
 class LazyReadPyxsimEvents(Sequence):
     def __init__(self, source):
-        import pyxsim
-
+        impe = ImportError(
+            "You must install pyxsim v4.3.0 or later "
+            "to read from a pyXSIM event file!"
+        )
+        try:
+            import pyxsim
+        except ImportError:
+            raise impe
         self.events = pyxsim.EventList(source)
+        if not hasattr(self.events, "get_data"):
+            raise impe
         self.filenames = self.events.filenames
 
     def __getitem__(self, i):
