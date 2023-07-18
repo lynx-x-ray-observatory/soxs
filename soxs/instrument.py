@@ -292,7 +292,7 @@ def generate_events(
 
             if n_evt == 0:
                 mylog.warning(
-                    "No events are within the field " "of view for this source!!!"
+                    "No events are within the field of view for this source!!!"
                 )
             else:
                 mylog.info("%d events were detected from the source.", n_evt)
