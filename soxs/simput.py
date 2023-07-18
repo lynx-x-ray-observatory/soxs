@@ -579,7 +579,7 @@ class SimputPhotonList(SimputSource):
         return cls(ra, dec, e, e.flux.value, name=name)
 
     def _get_source_hdu(self):
-        col1 = fits.Column(name="ENERGY", format="E", array=np.asarray(self["energy"]))
+        col1 = fits.Column(name="ENERGY", format="D", array=np.asarray(self["energy"]))
         col2 = fits.Column(name="RA", format="D", array=np.asarray(self["ra"]))
         col3 = fits.Column(name="DEC", format="D", array=np.asarray(self["dec"]))
         cols = [col1, col2, col3]
