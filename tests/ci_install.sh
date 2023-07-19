@@ -45,6 +45,6 @@ if [[ ${mode} == "testing" ]]; then
   git clone https://github.com/jzuhone/pyxsim
   cd pyxsim
   git checkout soxs_read
-  python -m pip install -e .
+  pip install .
   cd ..
 fi
