@@ -18,7 +18,7 @@ fi
 
 # Install dependencies using conda and pip
 
-conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs regions
+conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
 # Install pyxsim
 if [[ ${mode} == "testing" ]]; then
