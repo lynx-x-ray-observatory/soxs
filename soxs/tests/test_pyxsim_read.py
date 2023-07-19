@@ -10,7 +10,7 @@ from numpy.random import RandomState
 from numpy.testing import assert_allclose, assert_equal
 
 
-@pytest.mark.skipif(sys.platform == "win32")
+@pytest.mark.skipif(sys.platform == "win32", reason="does not run on windows")
 def test_pyxsim_read():
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
