@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 import tempfile
 
 import numpy as np
@@ -9,6 +10,7 @@ from numpy.random import RandomState
 from numpy.testing import assert_allclose, assert_equal
 
 
+@pytest.mark.skipif(sys.platform == "win32")
 def test_pyxsim_read():
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
