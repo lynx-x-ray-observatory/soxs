@@ -28,7 +28,7 @@ def test_pyxsim_read():
 
     gslr = "GasSloshingLowRes/sloshing_low_res_hdf5_plt_cnt_0300"
 
-    ds = yt.load(gslr, default_species_fields="ionized")
+    ds = yt.load_sample(gslr, default_species_fields="ionized")
 
     sphere = ds.sphere("c", (0.5, "Mpc"))
 
