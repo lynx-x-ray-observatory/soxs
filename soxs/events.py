@@ -1274,7 +1274,8 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
             x.append(xx)
             y.append(yy)
             e.append(hdu.data["ENERGY"][idxs])
-            se.append(hdu.data["SOXS_ENERGY"][idxs])
+            if "SOXS_ENERGY" in hdu.data.dtype.names:
+                se.append(hdu.data["SOXS_ENERGY"][idxs])
             ch.append(hdu.data[hdu.header["CHANTYPE"]][idxs])
             t.append(hdu.data["TIME"][idxs])
 
@@ -1295,9 +1296,11 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     col_e = fits.Column(name="ENERGY", format="E", unit="eV", array=e)
     col_ch = fits.Column(name=chantype, format="1J", unit=cunit, array=ch)
     col_t = fits.Column(name="TIME", format="1D", unit="s", array=t)
-    col_se = fits.Column(name="SOXS_ENERGY", format="E", unit="eV", array=se)
-
-    coldefs = fits.ColDefs([col_e, col_x, col_y, col_ch, col_t, col_se])
+    coldefs = [col_e, col_x, col_y, col_ch, col_t]
+    if len(se) == len(e):
+        col_se = fits.Column(name="SOXS_ENERGY", format="E", unit="eV", array=se)
+        coldefs.append(col_se)
+    coldefs = fits.ColDefs(coldefs)
     tbhdu = fits.BinTableHDU.from_columns(coldefs)
     tbhdu.name = "EVENTS"
 
