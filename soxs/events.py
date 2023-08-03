@@ -748,29 +748,24 @@ def write_radial_profile(
 coord_types = {"sky": ("X", "Y", 2, 3), "det": ("DETX", "DETY", 6, 7)}
 
 
-def write_image(
+def make_image(
     evt_file,
-    out_file,
     coord_type="sky",
     emin=None,
     emax=None,
     tmin=None,
     tmax=None,
     bands=None,
-    overwrite=False,
     expmap_file=None,
     reblock=1,
 ):
     r"""
-    Generate a image by binning X-ray counts and write
-    it to a FITS file.
+    Generate a image by binning X-ray counts.
 
     Parameters
     ----------
     evt_file : string
         The name of the input event file to read.
-    out_file : string
-        The name of the image file to write.
     coord_type : string, optional
         The type of coordinate to bin into an image.
         Can be "sky" or "det". Default: "sky"
@@ -788,9 +783,6 @@ def write_image(
         A list of energy bands to restrict the counts used to make the
         image, in the form of [(emin1, emax1), (emin2, emax2), ...].
         Used as an alternative to emin and emax. Default: None
-    overwrite : boolean, optional
-        Whether to overwrite an existing file with
-        the same name. Default: False
     expmap_file : string, optional
         Supply an exposure map file to divide this image by
         to get a flux map. Default: None
@@ -898,6 +890,71 @@ def write_image(
     hdu.header["EXPOSURE"] = exp_time
     hdu.name = "IMAGE"
 
+    return hdu
+
+
+def write_image(
+    evt_file,
+    out_file,
+    coord_type="sky",
+    emin=None,
+    emax=None,
+    tmin=None,
+    tmax=None,
+    bands=None,
+    overwrite=False,
+    expmap_file=None,
+    reblock=1,
+):
+    r"""
+    Generate a image by binning X-ray counts and write
+    it to a FITS file.
+
+    Parameters
+    ----------
+    evt_file : string
+        The name of the input event file to read.
+    out_file : string
+        The name of the image file to write.
+    coord_type : string, optional
+        The type of coordinate to bin into an image.
+        Can be "sky" or "det". Default: "sky"
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the photons to put in the image, in keV.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the photons to put in the image, in keV.
+    tmin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the events to be included, in seconds.
+        Default is the earliest time available.
+    tmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the events to be included, in seconds.
+        Default is the latest time available.
+    bands : list of tuples, optional
+        A list of energy bands to restrict the counts used to make the
+        image, in the form of [(emin1, emax1), (emin2, emax2), ...].
+        Used as an alternative to emin and emax. Default: None
+    overwrite : boolean, optional
+        Whether to overwrite an existing file with
+        the same name. Default: False
+    expmap_file : string, optional
+        Supply an exposure map file to divide this image by
+        to get a flux map. Default: None
+    reblock : integer, optional
+        Change this value to reblock the image to larger
+        or small pixel sizes. Only supported for
+        sky coordinates. Default: 1
+    """
+    hdu = make_image(
+        evt_file,
+        coord_type=coord_type,
+        emin=emin,
+        emax=emax,
+        tmin=tmin,
+        tmax=tmax,
+        bands=bands,
+        expmap_file=expmap_file,
+        reblock=reblock,
+    )
     hdu.writeto(out_file, overwrite=overwrite)
 
 
