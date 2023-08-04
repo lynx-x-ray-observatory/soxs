@@ -379,6 +379,22 @@ instrument_registry["lem_2eV"] = {
     "grating": False,
 }
 
+instrument_registry["lem_1.2eV"] = {
+    "name": "lem_1.2eV",
+    "arf": "lem_300522.arf",
+    "rmf": "lem_1.2ev_110422.rmf",
+    "bkgnd": ["lem_12eV_171222_fov_bkg.pi", 900.0],
+    "num_pixels": 128,
+    "fov": 32.0,
+    "aimpt_coords": [0.0, 0.0],
+    "chips": [["Box", 0, 0, 128, 128]],
+    "focal_length": 4.0,
+    "dither": True,
+    "psf": ["gaussian", 10.0],
+    "imaging": True,
+    "grating": False,
+}
+
 instrument_registry["lem_0.9eV"] = {
     "name": "lem_0.9eV",
     "arf": "lem_300522.arf",
