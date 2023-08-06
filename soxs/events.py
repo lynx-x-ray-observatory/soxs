@@ -1,3 +1,5 @@
+from numbers import Number
+
 import numpy as np
 from astropy import wcs
 from astropy.io import fits
@@ -450,8 +452,8 @@ def filter_events(
         The input events file to be read in.
     newfile : string
         The new event file that will be written.
-    region : string or Region, optional
-        The region to be used for the filtering. Default: None
+    region : string, Region, or Regions, optional
+        The region(s) to be used for the filtering. Default: None
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The minimum energy of the events to be included, in keV.
         Default is the lowest energy available.
@@ -511,6 +513,8 @@ def write_spectrum(
     Bin event energies into a spectrum and write it to
     a FITS binary table. Does not do any grouping of
     channels, and will automatically determine PI or PHA.
+    Optionally allows filtering based on time, energy, or
+    spatial region.
 
     Parameters
     ----------
@@ -518,8 +522,8 @@ def write_spectrum(
         The name of the event file to read the events from.
     specfile : string
         The name of the spectrum file to be written.
-    region : string or Region, optional
-        The region to be used for the filtering. Default: None
+    region : string, Region, or Regions, optional
+        The region(s) to be used for the filtering. Default: None
     format : string, optional
         The file format specifier for the region. "ds9",
         "crtf", "fits", etc. Default: "ds9"
@@ -956,6 +960,97 @@ def write_image(
         reblock=reblock,
     )
     hdu.writeto(out_file, overwrite=overwrite)
+
+
+def fill_regions(
+    in_img, out_img, src_reg, bkg_val, median=False, overwrite=False, format="ds9"
+):
+    """
+    Fill regions which have been removed from an image (e.g. by
+    wavdetect) with a Poisson distribution of counts, either
+    from a single background region, a number of background regions
+    equal to the number of source regions, or from a single background
+    value.
+
+    Parameters
+    ----------
+    in_img : string
+        The file path to the input image.
+    out_img : string
+        The file path to the image to be written with the filled
+        regions.
+    src_reg : string, Region, or Regions
+        The region(s) which will be filled.
+    bkg_val : float, string, Region, or Regions
+        The background value(s) to use for the Poisson distribution.
+        Can be a single value, a region, or a list of regions.
+    median : boolean
+        If True, then the median value of the counts within the
+        region will be used as the mean of the Poisson distribution
+    overwrite : boolean, optional
+        Whether to overwrite an existing file with
+        the same name. Default: False
+    format : string, optional
+        The file format specifier for the region. "ds9",
+        "crtf", "fits", etc. Default: "ds9"
+    """
+    from regions import PixelRegion, Region, Regions, SkyRegion
+
+    fill_op = np.median if median else np.mean
+    if isinstance(src_reg, str):
+        if Path(src_reg).exists():
+            src_reg = Regions.read(src_reg, format=format)
+        else:
+            src_reg = Regions.parse(src_reg, format=format)
+    elif not isinstance(src_reg, (Region, Regions)):
+        raise RuntimeError("'src_reg' argument is not valid!")
+    if isinstance(src_reg, Region):
+        src_reg = [src_reg]
+    if not isinstance(bkg_val, Number):
+        if isinstance(bkg_val, str):
+            if Path(bkg_val).exists():
+                bkg_val = Regions.read(bkg_val, format=format)
+            else:
+                bkg_val = Regions.parse(bkg_val, format=format)
+        elif not isinstance(bkg_val, (Region, Regions)):
+            raise RuntimeError("'bkg_val' argument is not valid!")
+    if isinstance(bkg_val, (Number, Region)):
+        bkg_val = [bkg_val] * len(src_reg)
+    if len(src_reg) != len(bkg_val):
+        raise ValueError(
+            "The number of background regions must either "
+            "be the same as the number of the source regions, "
+            "or there must be one background region!"
+        )
+    with fits.open(in_img) as f:
+        if f[0].is_image:
+            hdu = f[0]
+        else:
+            hdu = f[1]
+        for src_r, bkg_v in zip(src_reg, bkg_val):
+            if isinstance(src_r, PixelRegion):
+                src_mask = src_r.to_mask(mode="exact").astype("bool")
+            elif isinstance(src_r, SkyRegion):
+                w = wcs.WCS(header=hdu.header)
+                src_mask = src_r.to_pixel(w).to_mask(mode="exact")
+            else:
+                raise NotImplementedError
+            src_mask = src_mask.to_image(hdu.shape).astype("bool")
+            if isinstance(bkg_v, Number):
+                lam = bkg_v
+            else:
+                if isinstance(bkg_v, PixelRegion):
+                    bkg_mask = bkg_v.to_mask().astype("bool")
+                elif isinstance(bkg_v, SkyRegion):
+                    w = wcs.WCS(header=hdu.header)
+                    bkg_mask = bkg_v.to_pixel(w).to_mask()
+                else:
+                    raise NotImplementedError
+                bkg_mask = bkg_mask.to_image(hdu.shape).astype("bool")
+                lam = fill_op(hdu.data[bkg_mask])
+            n_src = src_mask.sum()
+            hdu.data[src_mask] = np.random.poisson(lam=lam, size=n_src)
+        f.writeto(out_img, overwrite=overwrite)
 
 
 def plot_spectrum(
