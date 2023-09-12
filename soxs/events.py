@@ -220,7 +220,7 @@ def make_exposure_map(
     xaim += hdu.header.get("AIMPT_DX", 0.0)
     yaim += hdu.header.get("AIMPT_DY", 0.0)
     roll = hdu.header["ROLL_PNT"]
-    instr = instrument_registry[hdu.header["INSTRUME"].lower()]
+    instr = instrument_registry[hdu.header["INSTRUME"]]
     dither_params = {}
     if "DITHXAMP" in hdu.header:
         dither_params["x_amp"] = hdu.header["DITHXAMP"]
