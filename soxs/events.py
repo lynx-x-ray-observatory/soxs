@@ -764,7 +764,7 @@ def make_image(
     reblock=1,
 ):
     r"""
-    Generate a image by binning X-ray counts.
+    Generate an image by binning X-ray counts.
 
     Parameters
     ----------
