@@ -93,10 +93,9 @@ Reblock the exposure map by 4.
 
 .. code-block:: text
 
-    usage: make_image [-h] [--coord_type COORD_TYPE] [--emin EMIN] [--emax EMAX]
-                      [--overwrite] [--expmap_file EXPMAP_FILE]
-                      [--reblock REBLOCK]
-                      event_file out_file
+    usage: make_image [-h] [--coord_type COORD_TYPE] [--emin EMIN] [--emax EMAX] [--tmin TMIN]
+                      [--tmax TMAX] [--bands BANDS] [--overwrite] [--expmap_file EXPMAP_FILE]
+                      [--reblock REBLOCK] event_file out_file
 
     Make a FITS image from a SOXS event file.
 
@@ -104,26 +103,21 @@ Reblock the exposure map by 4.
       event_file            The event file to use to make the image.
       out_file              The file to write the image to.
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --coord_type COORD_TYPE
-                            The type of coordinate to bin into the image. Can be
-                            'sky' or 'det'. Default: 'sky'
-      --emin EMIN           The minimum energy of the photons to put in the image,
-                            in keV.
-      --emax EMAX           The maximum energy of the photons to put in the image,
-                            in keV.
-      --tmin TMIN           The minimum time of the photons to put in the image,
-                            in s.
-      --tmax TMAX           The maximum time of the photons to put in the image,
-                            in s.
+                            The type of coordinate to bin into the image. Can be 'sky' or 'det'. Default: 'sky'
+      --emin EMIN           The minimum energy of the photons to put in the image, in keV.
+      --emax EMAX           The maximum energy of the photons to put in the image, in keV.
+      --tmin TMIN           The minimum time of the photons to put in the image, in s.
+      --tmax TMAX           The maximum time of the photons to put in the image, in s.
+      --bands BANDS         A list of energy bands to restrict the counts used to make the image, in the form of
+                            emin1,emax1:emin2,emax2... Used as an alternative to emin and emax.
       --overwrite           Overwrite an existing file with the same name.
       --expmap_file EXPMAP_FILE
-                            Supply an exposure map file to divide this image by to
-                            get a flux map.
-      --reblock REBLOCK     Change this value to reblock the image to larger or
-                            smaller pixel sizes. Only supported for sky coordinates.
-                            Default: 1
+                            Supply an exposure map file to divide this image by to get a flux map.
+      --reblock REBLOCK     Change this value to reblock the image to larger or smaller pixel sizes. Only supported for sky
+                            coordinates. Default: 1
 
 Examples
 ++++++++
@@ -139,6 +133,12 @@ The same image, but with a restricted energy band.
 .. code-block:: bash
 
     [~]$ make_image evt.fits img.fits --emin=0.5 --emax=7.0 --overwrite
+
+The same image, but with a set of disconnected bands as energy input.
+
+.. code-block:: bash
+
+    [~]$ make_image evt.fits img.fits --bands=0.2,0.3:0.5,0.6 --overwrite
 
 Make an image in detector coordinates.
 

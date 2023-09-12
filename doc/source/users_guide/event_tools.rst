@@ -151,6 +151,8 @@ and *Athena*/XIFU are shown in Figure 1.
     files produced by SOXS, and this is the only tool that should be used for this purpose
     for event files produced by SOXS.
 
+.. _write-image:
+
 ``write_image``
 ---------------
 
@@ -180,6 +182,14 @@ To filter on a time range:
     write_image("my_evt.fits", "my_sky_img.fits", emin=0.5, emax=7.0, tmin=0.0,
                 tmax=(200.0, "ks"))
 
+To filter on multiple energy bands, use a list of tuples of minimum, maximum energy of
+each band (in keV) supplied to the ``bands`` keyword (this is an alternative to ``emin`` and
+``emax``, and if present will override them:
+
+.. code-block:: python
+
+    write_image("my_evt.fits", "my_sky_img.fits", bands=[(0.5, 2.0), (4.0, 6.0)])
+
 To supply an exposure map produced by :func:`~soxs.events.make_exposure_map` to make a
 flux image:
 
@@ -199,6 +209,19 @@ Note that if you set ``reblock`` and supply an exposure map, it must have been m
 the same value of ``reblock``.
 
 This image can then be viewed in `ds9 <http://ds9.si.edu>`_ or `APLpy <https://aplpy.github.io>`_.
+
+.. _make-image:
+
+``make_image``
+---------------
+
+:func:`~soxs.events.make_image` is almost identical to :func:`~soxs.events.write_image`,
+but it does not request an output filename. Instead, it bins up events into an image
+according to the coordinate system inherent in the event file and returns an
+:class:`~astropy.io.fits.ImageHDU` object. Otherwise, the rest of the arguments to
+:func:`~soxs.events.make_image` are the same as to :func:`~soxs.events.write_image`.
+
+.. _write-radial-profile:
 
 ``write_radial_profile``
 ------------------------
@@ -355,3 +378,47 @@ file created later, for example.
 
     soxs.merge_event_files(["src1_evt.fits", "src2_evt.fits", "bkg_evt.fits"],
                            "merged_evt.fits", overwrite=True)
+
+.. _fill-regions:
+
+``fill_regions``
+----------------
+
+:func:`~soxs.events.fill_regions` can be used to fill in regions with background
+counts in an image which has had bright sources removed by a tool such as
+`wavdetect <https://cxc.cfa.harvard.edu/ciao/ahelp/wavdetect.html>`_. In addition to
+the file containing the image to be filled and the name of the new file to be written,
+the user supplies a region or list of regions to fill in (region strings, ds9 region
+files, :class:`~regions.Region` objects, or a :class:`~regions.Regions` object), and
+``bkg_value``, which is either a single floating-point value for the number of
+background counts, a single region from which to get this number, or a list of regions
+(of the same number as the source list of regions) to obtain this number from. By
+default, ``bkg_value`` number for each region will serve as the mean of a Poisson
+distribution from which random numbers of counts will be drawn for each pixel in
+each region to be filled. If a region or regions are supplied for ``bkg_value``,
+by default the mean number of counts from each region will be used to calculate this
+value, though it is also possible to use the median value.
+
+Here is an example where we want to fill a single region with the counts where the
+mean from is taken another region:
+
+.. code-block:: python
+
+    soxs.fill_regions("holed_img.fits", "filled_img.fits", "src.reg", "bkg.reg",
+                      overwrite=True)
+
+Here is the same example, except that we use the median number of counts within
+``"bkg.reg"`` to determine the mean of the Poisson distribution to fill with:
+
+.. code-block:: python
+
+    soxs.fill_regions("holed_img.fits", "filled_img.fits", "src.reg", "bkg.reg",
+                      median=True, overwrite=True)
+
+Here is an example where we fill the hole supplying a single number for the mean
+of the Poisson distribution:
+
+.. code-block:: python
+
+    soxs.fill_regions("holed_img.fits", "filled_img.fits", "src.reg", 10.0,
+                      overwrite=True)

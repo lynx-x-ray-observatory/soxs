@@ -3,6 +3,26 @@
 ChangeLog
 =========
 
+Version 4.6.0
+-------------
+
+This version of SOXS contains new features and bugfixes.
+
+* It is now possible, in combination with pyXSIM version 4.3.0 or later, to
+  use pyXSIM event lists written to HDF5 files as inputs to
+  :func:`~soxs.instrument.instrument_simulator`. See :ref:`instrument` for
+  details.
+* It is now possible to use multiple, separated energy bands when extracting events for
+  the construction of an image using :func:`~soxs.events.write_image`. See
+  :ref:`write-image` for more details.
+* A bug that prevented the making of exposure maps for *LEM* instruments has been fixed.
+* *LEM* instrument configurations for 2.3 eV and 1.3 eV spectral resolution have been added.
+* The response file used for the ``"chandra_aciss_cy0"`` instrument suffered from the
+  effects of poor calibration due to a high ACIS focal plane temperature. It has been replaced
+  with a new response file that does not suffer from this issue.
+* A new function to fill regions in an image where point sources have been removed,
+  :func:`~soxs.events.fill_regions`, has been added. See :ref:`fill-regions` for more details.
+
 Version 4.5.3
 -------------
 
