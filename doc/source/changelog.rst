@@ -12,11 +12,20 @@ This version of SOXS contains new features and bugfixes.
   use pyXSIM event lists written to HDF5 files as inputs to
   :func:`~soxs.instrument.instrument_simulator`. See :ref:`instrument` for
   details.
+* A new mode for :func:`~soxs.instrument.simulate_spectrum`, which allows for
+  the instrument specification to be a 2 or 3-tuple specifying the ARF, RMF,
+  and particle background, has been added. See :ref:`simulate-spectrum` for
+  more details. This has not yet been enabled in the command-line interface
+  version of ``simulate_spectrum``.
+* It is now possible to include the simulation of the MW foreground and the
+  CXB in :func:`~soxs.instrument.simulate_spectrum` for gratings instruments.
 * It is now possible to use multiple, separated energy bands when extracting events for
   the construction of an image using :func:`~soxs.events.write_image`. See
   :ref:`write-image` for more details.
 * A bug that prevented the making of exposure maps for *LEM* instruments has been fixed.
-* *LEM* instrument configurations for 2.3 eV and 1.3 eV spectral resolution have been added.
+  Thanks to Arash Bodaghee for reporting this bug.
+* *LEM* instrument configurations for 2.3 eV and 1.3 eV spectral resolution have been added,
+  and should be considered the defaults, as these represent the baseline instrument.
 * The response file used for the ``"chandra_aciss_cy0"`` instrument suffered from the
   effects of poor calibration due to a high ACIS focal plane temperature. It has been replaced
   with a new response file that does not suffer from this issue.

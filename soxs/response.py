@@ -233,6 +233,7 @@ class FlatResponse(AuxiliaryResponseFile):
     """
 
     def __init__(self, emin, emax, area, nbins):
+        area = parse_value(area, "cm**2")
         self.filename = "flat_response"
         de = (emax - emin) / nbins
         self.elo = np.arange(nbins) * de + emin

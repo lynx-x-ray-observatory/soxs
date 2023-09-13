@@ -417,9 +417,59 @@ absorption model or the neutral hydrogen column, use the :ref:`config`. Similarl
 the :ref:`config` can be used to change the APEC model version for the foreground.
 
 Instrument specifications with the ``"imaging"`` keyword set to ``False`` can
-only be used with :func:`~soxs.instrument.simulate_spectrum` and not
+only be used with :func:`~soxs.instrument.simulate_spectrum`, and not
 :func:`~soxs.instrument.instrument_simulator`. Currently, this includes grating
 instruments.
+
+It is also possible to specify the instrument to use in the simulation with a
+2 or 3-tuple giving the ARF, RMF, and (optionally) the background specification
+to use. This can be handy if you do not have anything but these files available,
+or if you are prototyping a new instrument specification. An example using the Lynx
+HDXI ARF and RMF:
+
+.. code-block:: python
+
+    instrument = ("xrs_hdxi_3x10.arf", "xrs_hdxi.rmf")
+    "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0],
+    out_file = "hdxi_spec.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      ptsrc_bkgnd=True, foreground=True,
+                      instr_bkgnd=False, overwrite=True,
+                      bkgnd_area=(1.0, "arcmin**2"))
+
+Note that this invocation has ``instr_bkgnd=False``. If you want to include
+a instrumental/particle background, you also need to specify the background
+specifcation in the ``instrument`` tuple, which is a list including the name
+of the background file and the normalization of the background in square
+arcminutes:
+
+.. code-block:: python
+
+    instrument = (
+        "xrs_hdxi_3x10.arf",
+        "xrs_hdxi.rmf",
+        ["lynx_hdxi_particle_bkgnd.pha", 1.0]
+    )
+    out_file = "hdxi_spec.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      ptsrc_bkgnd=True, foreground=True,
+                      instr_bkgnd=True, overwrite=True,
+                      bkgnd_area=(1.0, "arcmin**2"))
+
+This way of using :func:`~soxs.instrument.simulate_spectrum` is also useful
+for creating models of particle backgrounds, if you have a background model and
+would like to convolve it with an RMF. In this case, you can set the first
+tuple element (the ARF) to ``None``:
+
+.. code-block:: python
+
+    instrument = (
+        None,
+        "xrs_hdxi.rmf",
+    )
+    out_file = "hdxi_part_bkg.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      overwrite=True)
 
 Finally, if you want to create a spectrum without counting (Poisson) statistics,
 set ``noisy=False`` in the call to :func:`~soxs.instrument.simulate_spectrum`. Note
@@ -453,9 +503,8 @@ spectrum:
 
 .. image:: ../images/gratings_spectrum.png
 
-Adding backgrounds to grating instrument specifications in
-:func:`~soxs.instrument.simulate_spectrum` is not supported at this time, but
-will be in a future release.
+Adding particle backgrounds to grating instrument specifications in
+:func:`~soxs.instrument.simulate_spectrum` is not supported at this time.
 
 .. _instrument-registry:
 

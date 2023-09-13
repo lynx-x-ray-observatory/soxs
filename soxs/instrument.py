@@ -822,9 +822,17 @@ def simulate_spectrum(
     spec : :class:`~soxs.spectra.Spectrum`
         The spectrum to be convolved. If None is supplied, only backgrounds
         will be simulated (if they are turned on).
-    instrument : string
-        The name of the instrument to use, which picks an instrument
+    instrument : string or tuple
+        Two options:
+        1. The name of the instrument to use, which picks an instrument
         specification from the instrument registry.
+        2. A 2-tuple specifying an ARF, RMF pair, or a 3-tuple specifying
+        an ARF, RMF, and a background spectrum specification, where the
+        latter is a 2-element list giving the name of the background
+        spectrum file and the normalization of the background spectrum in
+        square arcminutes. If the ARF is set to None, a flat ARF will be
+        assumed with a value of 1.0 cm**2. This may be useful for simulating
+        particle backgrounds.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time in seconds.
     out_file : string
@@ -867,11 +875,16 @@ def simulate_spectrum(
     )
     from soxs.background.spectra import BackgroundSpectrum
     from soxs.events import _write_spectrum
-    from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+    from soxs.response import (
+        AuxiliaryResponseFile,
+        FlatResponse,
+        RedistributionMatrixFile,
+    )
     from soxs.spectra import ConvolvedSpectrum
     from soxs.utils import soxs_cfg
 
-    if not noisy and any([instr_bkgnd, ptsrc_bkgnd, foreground]):
+    any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
+    if not noisy and any_bkgnd:
         raise NotImplementedError(
             "Backgrounds cannot be included in "
             "simulations of non-noisy spectra at this time!"
@@ -887,16 +900,31 @@ def simulate_spectrum(
         )
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
-    try:
-        instrument_spec = instrument_registry[instrument]
-    except KeyError:
-        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
-    if foreground or instr_bkgnd or ptsrc_bkgnd:
-        if instrument_spec["grating"]:
-            raise NotImplementedError(
-                "Backgrounds cannot be included in simulations "
-                "of gratings spectra at this time!"
+    bkgnd_spec = None
+    instrument_spec = None
+    if isinstance(instrument, tuple):
+        arf = instrument[0]
+        rmf = instrument[1]
+        rmf = RedistributionMatrixFile(rmf)
+        if isinstance(arf, str):
+            arf = AuxiliaryResponseFile(get_data_file(arf))
+        else:
+            if arf is None:
+                arf = 1.0
+            arf = FlatResponse(rmf.ebins[0], rmf.ebins[-1], arf, rmf.emid.size)
+        if len(instrument) == 3:
+            bkgnd_spec = instrument[2]
+    else:
+        try:
+            instrument_spec = instrument_registry[instrument]
+        except KeyError:
+            raise KeyError(
+                f"Instrument {instrument} is not in the instrument registry!"
             )
+        arf = AuxiliaryResponseFile.from_instrument(instrument)
+        rmf = RedistributionMatrixFile.from_instrument(instrument)
+        bkgnd_spec = instrument_spec["bkgnd"]
+    if any_bkgnd:
         if bkgnd_area is None:
             raise RuntimeError(
                 "The 'bkgnd_area' argument must be set if one wants "
@@ -906,10 +934,6 @@ def simulate_spectrum(
         bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     elif spec is None:
         raise RuntimeError("You have specified no source spectrum and no backgrounds!")
-    arf_file = get_data_file(instrument_spec["arf"])
-    rmf_file = get_data_file(instrument_spec["rmf"])
-    arf = AuxiliaryResponseFile(arf_file)
-    rmf = RedistributionMatrixFile(rmf_file)
 
     event_params = {
         "RESPFILE": os.path.split(rmf.filename)[-1],
@@ -935,12 +959,17 @@ def simulate_spectrum(
         out_spec += generate_channel_spectrum(
             frgnd_spec, exp_time, bkgnd_area, prng=prng
         )
-    if instr_bkgnd and instrument_spec["bkgnd"] is not None:
+    if instr_bkgnd and bkgnd_spec is not None:
+        if instrument_spec:
+            if instrument_spec["grating"]:
+                raise NotImplementedError(
+                    "Backgrounds cannot be included in simulations "
+                    "of gratings spectra at this time!"
+                )
+            # Temporary hack for ACIS-S
+            if "aciss" in instrument_spec["name"]:
+                bkgnd_spec = bkgnd_spec[1]
         mylog.info("Adding in instrumental background.")
-        bkgnd_spec = instrument_spec["bkgnd"]
-        # Temporary hack for ACIS-S
-        if "aciss" in instrument_spec["name"]:
-            bkgnd_spec = bkgnd_spec[1]
         bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
         out_spec += generate_channel_spectrum(
             bkgnd_spec, exp_time, bkgnd_area, prng=prng
