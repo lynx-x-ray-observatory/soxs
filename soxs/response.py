@@ -436,8 +436,10 @@ class RedistributionMatrixFile:
             n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"]))
             mat = np.nan_to_num(np.float64(self.data["MATRIX"]))
             for k in range(self.n_e):
+                weights = mat[k, :]
+                weights /= weights.sum()
                 conv_spec[f_chan[k] : f_chan[k] + n_chan[k]] += (
-                    spec[k] * mat[k, : n_chan[k]]
+                    spec[k] * weights[: n_chan[k]]
                 )
                 pbar.update()
         else:
@@ -448,10 +450,12 @@ class RedistributionMatrixFile:
                     - self.cmin
                 )
                 n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-                mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
-                for i, f in enumerate(f_chan):
-                    if n_chan[i] != 0:
-                        conv_spec[f : f + n_chan[i]] += spec[k] * mat[: n_chan[i]]
+                weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+                weights /= weights.sum()
+                f1 = 0
+                for n, f in zip(n_chan, f_chan):
+                    conv_spec[f : f + n] += spec[k] * weights[f1 : f1 + n]
+                    f1 += n
                 pbar.update()
         pbar.close()
         if noisy:

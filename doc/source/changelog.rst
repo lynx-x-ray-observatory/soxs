@@ -12,6 +12,9 @@ This version of SOXS contains new features and bugfixes.
   use pyXSIM event lists written to HDF5 files as inputs to
   :func:`~soxs.instrument.instrument_simulator`. See :ref:`instrument` for
   details.
+* A bug affecting the convolution of spectra with RMFs with multiple channel
+  groups in the context of :func:`~soxs.instrument.simulate_spectrum` has been
+  fixed.
 * A new mode for :func:`~soxs.instrument.simulate_spectrum`, which allows for
   the instrument specification to be a 2 or 3-tuple specifying the ARF, RMF,
   and particle background, has been added. See :ref:`simulate-spectrum` for
