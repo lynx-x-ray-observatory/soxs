@@ -85,7 +85,7 @@ def test_simulate_bkgnd_spectrum():
     f_sum = foreground.get_flux_in_band(0.5, 2.0)[0] / u.arcmin**2
     i_sum = acisi_particle_bkgnd.get_flux_in_band(0.5, 2.0)[0] * (u.cm / u.arcmin) ** 2
     b_sum = (f_sum + i_sum).to_value("ph/(arcsec**2*s)")
-    assert np.abs(S - b_sum) / b_sum < 0.02
+    assert np.abs(S - b_sum) / b_sum < 0.03
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

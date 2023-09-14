@@ -960,15 +960,11 @@ def simulate_spectrum(
             frgnd_spec, exp_time, bkgnd_area, prng=prng
         )
     if instr_bkgnd and bkgnd_spec is not None:
-        if instrument_spec:
-            if instrument_spec["grating"]:
-                raise NotImplementedError(
-                    "Backgrounds cannot be included in simulations "
-                    "of gratings spectra at this time!"
-                )
-            # Temporary hack for ACIS-S
-            if "aciss" in instrument_spec["name"]:
-                bkgnd_spec = bkgnd_spec[1]
+        if instrument_spec and instrument_spec["grating"]:
+            raise NotImplementedError(
+                "Backgrounds cannot be included in simulations "
+                "of gratings spectra at this time!"
+            )
         mylog.info("Adding in instrumental background.")
         bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
         out_spec += generate_channel_spectrum(

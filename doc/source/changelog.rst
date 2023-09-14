@@ -29,11 +29,15 @@ This version of SOXS contains new features and bugfixes.
   Thanks to Arash Bodaghee for reporting this bug.
 * *LEM* instrument configurations for 2.3 eV and 1.3 eV spectral resolution have been added,
   and should be considered the defaults, as these represent the baseline instrument.
-* The response file used for the ``"chandra_aciss_cy0"`` instrument suffered from the
-  effects of poor calibration due to a high ACIS focal plane temperature. It has been replaced
-  with a new response file that does not suffer from this issue.
+* The response files used for the ``"chandra_acisi_cy0"`` and ``"chandra_aciss_cy0"``
+  instruments suffered from the effects of poor calibration due to a high ACIS focal
+  plane temperature. They have been replaced with response files that do not suffer
+  from this issue.
+* The particle background files for the *Chandra*/ACIS imaging instruments and the
+  *Lynx* imaging instruments have been updated with minor changes.
 * A new function to fill regions in an image where point sources have been removed,
-  :func:`~soxs.events.fill_regions`, has been added. See :ref:`fill-regions` for more details.
+  :func:`~soxs.events.fill_regions`, has been added. See :ref:`fill-regions` for
+  more details.
 
 Version 4.5.3
 -------------

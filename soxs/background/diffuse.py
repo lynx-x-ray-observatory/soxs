@@ -105,9 +105,7 @@ def read_instr_spectrum(filename, ext_area):
         elif "RATE" in hdu.data.names:
             count_rate = hdu.data["RATE"]
         else:
-            raise RuntimeError(
-                "Cannot find a field for either " "counts or count rate!"
-            )
+            raise RuntimeError("Cannot find a field for either counts or count rate!")
         count_rate /= ext_area
     return count_rate
 
