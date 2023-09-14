@@ -57,10 +57,15 @@ def test_simulate_spectrum():
         prng=69,
     )
 
-    with fits.open(out_file1) as f1, fits.open(out_file2) as f2:
-        spec1 = f1["SPECTRUM"].data["COUNTS"]
-        spec2 = f2["SPECTRUM"].data["COUNTS"]
-        assert_allclose(spec1, spec2)
+    f1 = fits.open(out_file1)
+    spec1 = f1["SPECTRUM"].data["COUNTS"]
+    f2 = fits.open(out_file2)
+    spec2 = f2["SPECTRUM"].data["COUNTS"]
+
+    assert_allclose(spec1, spec2)
+
+    f1.close()
+    f2.close()
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
