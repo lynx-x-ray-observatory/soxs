@@ -233,14 +233,20 @@ class FlatResponse(AuxiliaryResponseFile):
     """
 
     def __init__(self, emin, emax, area, nbins):
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
         area = parse_value(area, "cm**2")
         self.filename = "flat_response"
-        de = (emax - emin) / nbins
-        self.elo = np.arange(nbins) * de + emin
-        self.ehi = self.elo + de
+        self.de = (emax - emin) / nbins
+        self.ebins = np.linspace(emin, emax, nbins + 1)
+        self.elo = self.ebins[:-1]
+        self.ehi = self.ebins[1:]
         self.emid = 0.5 * (self.elo + self.ehi)
         self.eff_area = area * np.ones(nbins)
         self.max_area = area
+
+    def interpolate_area(self, energy):
+        return u.Quantity(self.max_area * np.ones_like(energy), "cm**2")
 
 
 class RedistributionMatrixFile:
@@ -273,7 +279,7 @@ class RedistributionMatrixFile:
         self.header = self.handle[self.mat_key].header
         self.num_mat_columns = len(self.handle[self.mat_key].columns)
         self.ebounds_header = self.handle["EBOUNDS"].header
-        self.weights = np.array([w.sum() for w in self.data["MATRIX"]])
+        self.weights = np.array([np.nansum(w) for w in self.data["MATRIX"]])
         self.elo = self.data["ENERG_LO"]
         self.ehi = self.data["ENERG_HI"]
         self.ebins = np.append(self.data["ENERG_LO"], self.data["ENERG_HI"][-1])
