@@ -58,9 +58,9 @@ def test_simulate_spectrum():
     )
 
     f1 = fits.open(out_file1)
-    spec1 = f1["SPECTRUM"].data["COUNTS"]
+    spec1 = f1["SPECTRUM"].data["COUNTS"].copy()
     f2 = fits.open(out_file2)
-    spec2 = f2["SPECTRUM"].data["COUNTS"]
+    spec2 = f2["SPECTRUM"].data["COUNTS"].copy()
 
     assert_allclose(spec1, spec2)
 

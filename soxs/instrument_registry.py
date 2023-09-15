@@ -363,11 +363,11 @@ instrument_registry["star-x"] = {
 
 # LEM
 
-instrument_registry["lem_2.5eV"] = {
-    "name": "lem_2.5eV",
+instrument_registry["lem_outer_array"] = {
+    "name": "lem_outer_array",
     "arf": "lem_300522.arf",
     "rmf": "lem_2.5ev_110422.rmf",
-    "bkgnd": ["lem_12eV_171222_fov_bkg.pi", 900.0],
+    "bkgnd": ["lem_2.5eV_171222_fov_bkg.pi", 900.0],
     "num_pixels": 128,
     "fov": 32.0,
     "aimpt_coords": [0.0, 0.0],
@@ -379,15 +379,15 @@ instrument_registry["lem_2.5eV"] = {
     "grating": False,
 }
 
-instrument_registry["lem_1.3eV"] = {
-    "name": "lem_1.3eV",
+instrument_registry["lem_inner_array"] = {
+    "name": "lem_inner_array",
     "arf": "lem_300522.arf",
-    "rmf": "lem_1.2ev_110422.rmf",
-    "bkgnd": ["lem_12eV_171222_fov_bkg.pi", 900.0],
-    "num_pixels": 128,
-    "fov": 32.0,
+    "rmf": "lem_1.3ev_110422.rmf",
+    "bkgnd": ["lem_1.3eV_171222_fov_bkg.pi", 900.0],
+    "num_pixels": 28,
+    "fov": 7.0,
     "aimpt_coords": [0.0, 0.0],
-    "chips": [["Box", 0, 0, 128, 128]],
+    "chips": [["Box", 0, 0, 28, 28]],
     "focal_length": 4.0,
     "dither": True,
     "psf": ["gaussian", 10.0],

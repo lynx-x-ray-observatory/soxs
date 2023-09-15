@@ -27,8 +27,9 @@ This version of SOXS contains new features and bugfixes.
   :ref:`write-image` for more details.
 * A bug that prevented the making of exposure maps for *LEM* instruments has been fixed.
   Thanks to Arash Bodaghee for reporting this bug.
-* *LEM* instrument configurations for 2.3 eV and 1.3 eV spectral resolution have been added,
-  and should be considered the defaults, as these represent the baseline instrument.
+* *LEM* instrument configurations for 2.5 eV and 1.3 eV spectral resolution have been added,
+  and should be considered the defaults, as these represent the baseline instrument. The
+  old configurations are still present. See :ref:`lem` for more details.
 * The response files used for the ``"chandra_acisi_cy0"`` and ``"chandra_aciss_cy0"``
   instruments suffered from the effects of poor calibration due to a high ACIS focal
   plane temperature. They have been replaced with response files that do not suffer

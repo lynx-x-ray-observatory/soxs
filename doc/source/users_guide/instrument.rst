@@ -155,17 +155,17 @@ HETG
 ####
 
 Eight gratings specifications have been included for ACIS-S and the HETG, for
-both Cycle 0 and Cycle 20. These simulate spectra only for the MEG and HEG, for
+both Cycle 0 and Cycle 22. These simulate spectra only for the MEG and HEG, for
 the :math:`\pm` first order spectra. They are named:
 
 * ``"chandra_aciss_meg_m1_cy0"``
 * ``"chandra_aciss_meg_p1_cy0"``
 * ``"chandra_aciss_heg_m1_cy0"``
 * ``"chandra_aciss_heg_p1_cy0"``
-* ``"chandra_aciss_meg_m1_cy20"``
-* ``"chandra_aciss_meg_p1_cy20"``
-* ``"chandra_aciss_heg_m1_cy20"``
-* ``"chandra_aciss_heg_p1_cy20"``
+* ``"chandra_aciss_meg_m1_cy22"``
+* ``"chandra_aciss_meg_p1_cy22"``
+* ``"chandra_aciss_heg_m1_cy22"``
+* ``"chandra_aciss_heg_p1_cy22"``
 
 .. _xrism:
 
@@ -214,11 +214,14 @@ Currently, no instrumental background is included. The response files for
 Line Emission Mapper (LEM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Two instrument specifications ``"lem_2.3eV"`` and ``"lem_1.3eV"``, are
+Two instrument specifications ``"lem_outer_array"`` and ``"lem_inner_array"``, are
 available for the `Line Emission Mapper (LEM) <https://lem.cfa.harvard.edu>`_.
-This specification has a 32 arcminute field of view, a 4 m focal length,
-an Gaussian PSF with a FWHM of 10 arcseconds. The former has a spectral resolution
-of 2.3 eV and the latter a spectral resolution of 1.3 eV.
+Both have a 4 m focal length and a Gaussian PSF with a FWHM of 10 arcseconds.
+The outer array has a square-shaped 32 arcminute field of view and a spectral
+resolution of 2.5 eV, whereas the inner array has a square-shaped 7 arcminute
+field of view and a spectral resolution of 1.3 eV. The old LEM configurations
+``"lem_2eV"`` and ``"lem_0.9eV"`` are still supported, both with square fields
+of view of 32 arcminutes.
 
 .. _bkgnds:
 
