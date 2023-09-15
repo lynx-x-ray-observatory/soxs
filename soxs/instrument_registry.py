@@ -253,7 +253,7 @@ for cycle in [0, 22]:
     }
 
 
-# Chandra ACIS-S, Cycle 0 and 19 HETG (for spectra only)
+# Chandra ACIS-S, Cycle 0 and 22 HETG (for spectra only)
 
 orders = {"p1": 1, "m1": -1}
 
@@ -363,6 +363,38 @@ instrument_registry["star-x"] = {
 
 # LEM
 
+instrument_registry["lem_outer_array"] = {
+    "name": "lem_outer_array",
+    "arf": "lem_300522.arf",
+    "rmf": "lem_2.5ev_110422.rmf",
+    "bkgnd": ["lem_2.5eV_171222_fov_bkg.pi", 900.0],
+    "num_pixels": 128,
+    "fov": 32.0,
+    "aimpt_coords": [0.0, 0.0],
+    "chips": [["Box", 0, 0, 128, 128]],
+    "focal_length": 4.0,
+    "dither": True,
+    "psf": ["gaussian", 10.0],
+    "imaging": True,
+    "grating": False,
+}
+
+instrument_registry["lem_inner_array"] = {
+    "name": "lem_inner_array",
+    "arf": "lem_300522.arf",
+    "rmf": "lem_1.3ev_110422.rmf",
+    "bkgnd": ["lem_1.3eV_171222_fov_bkg.pi", 900.0],
+    "num_pixels": 28,
+    "fov": 7.0,
+    "aimpt_coords": [0.0, 0.0],
+    "chips": [["Box", 0, 0, 28, 28]],
+    "focal_length": 4.0,
+    "dither": True,
+    "psf": ["gaussian", 10.0],
+    "imaging": True,
+    "grating": False,
+}
+
 instrument_registry["lem_2eV"] = {
     "name": "lem_2eV",
     "arf": "lem_300522.arf",
@@ -394,17 +426,6 @@ instrument_registry["lem_0.9eV"] = {
     "imaging": True,
     "grating": False,
 }
-
-instrument_registry["lem_2eV_0422"] = deepcopy(instrument_registry["lem_2eV"])
-instrument_registry["lem_2eV_0422"]["arf"] = "lem_110422.arf"
-instrument_registry["lem_0.9eV_0422"] = deepcopy(instrument_registry["lem_0.9eV"])
-instrument_registry["lem_0.9eV_0422"]["arf"] = "lem_110422.arf"
-instrument_registry["lem_2eV_0322"] = deepcopy(instrument_registry["lem_2eV"])
-instrument_registry["lem_2eV_0322"]["arf"] = "lem_030322a.arf"
-instrument_registry["lem_2eV_0322"]["rmf"] = "lem_2ev_030322.rmf"
-instrument_registry["lem_0.9eV_0322"] = deepcopy(instrument_registry["lem_0.9eV"])
-instrument_registry["lem_0.9eV_0322"]["arf"] = "lem_030322a.arf"
-instrument_registry["lem_0.9eV_0322"]["rmf"] = "lem_09ev_030322.rmf"
 
 
 def add_instrument_to_registry(inst_spec):

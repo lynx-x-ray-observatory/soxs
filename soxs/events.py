@@ -1,3 +1,5 @@
+from numbers import Number
+
 import numpy as np
 from astropy import wcs
 from astropy.io import fits
@@ -218,7 +220,7 @@ def make_exposure_map(
     xaim += hdu.header.get("AIMPT_DX", 0.0)
     yaim += hdu.header.get("AIMPT_DY", 0.0)
     roll = hdu.header["ROLL_PNT"]
-    instr = instrument_registry[hdu.header["INSTRUME"].lower()]
+    instr = instrument_registry[hdu.header["INSTRUME"]]
     dither_params = {}
     if "DITHXAMP" in hdu.header:
         dither_params["x_amp"] = hdu.header["DITHXAMP"]
@@ -450,8 +452,8 @@ def filter_events(
         The input events file to be read in.
     newfile : string
         The new event file that will be written.
-    region : string or Region, optional
-        The region to be used for the filtering. Default: None
+    region : string, Region, or Regions, optional
+        The region(s) to be used for the filtering. Default: None
     emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The minimum energy of the events to be included, in keV.
         Default is the lowest energy available.
@@ -511,6 +513,8 @@ def write_spectrum(
     Bin event energies into a spectrum and write it to
     a FITS binary table. Does not do any grouping of
     channels, and will automatically determine PI or PHA.
+    Optionally allows filtering based on time, energy, or
+    spatial region.
 
     Parameters
     ----------
@@ -518,8 +522,8 @@ def write_spectrum(
         The name of the event file to read the events from.
     specfile : string
         The name of the spectrum file to be written.
-    region : string or Region, optional
-        The region to be used for the filtering. Default: None
+    region : string, Region, or Regions, optional
+        The region(s) to be used for the filtering. Default: None
     format : string, optional
         The file format specifier for the region. "ds9",
         "crtf", "fits", etc. Default: "ds9"
@@ -748,28 +752,24 @@ def write_radial_profile(
 coord_types = {"sky": ("X", "Y", 2, 3), "det": ("DETX", "DETY", 6, 7)}
 
 
-def write_image(
+def make_image(
     evt_file,
-    out_file,
     coord_type="sky",
     emin=None,
     emax=None,
     tmin=None,
     tmax=None,
-    overwrite=False,
+    bands=None,
     expmap_file=None,
     reblock=1,
 ):
     r"""
-    Generate a image by binning X-ray counts and write
-    it to a FITS file.
+    Generate an image by binning X-ray counts.
 
     Parameters
     ----------
     evt_file : string
         The name of the input event file to read.
-    out_file : string
-        The name of the image file to write.
     coord_type : string, optional
         The type of coordinate to bin into an image.
         Can be "sky" or "det". Default: "sky"
@@ -783,9 +783,10 @@ def write_image(
     tmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
         The maximum energy of the events to be included, in seconds.
         Default is the latest time available.
-    overwrite : boolean, optional
-        Whether to overwrite an existing file with
-        the same name. Default: False
+    bands : list of tuples, optional
+        A list of energy bands to restrict the counts used to make the
+        image, in the form of [(emin1, emax1), (emin2, emax2), ...].
+        Used as an alternative to emin and emax. Default: None
     expmap_file : string, optional
         Supply an exposure map file to divide this image by
         to get a flux map. Default: None
@@ -794,16 +795,22 @@ def write_image(
         or small pixel sizes. Only supported for
         sky coordinates. Default: 1
     """
-    if emin is None:
-        emin = 0.0
+    if bands is not None:
+        bands = [
+            (parse_value(b[0], "keV") * 1000.0, parse_value(b[1], "keV") * 1000.0)
+            for b in bands
+        ]
     else:
-        emin = parse_value(emin, "keV")
-    emin *= 1000.0
-    if emax is None:
-        emax = 100.0
-    else:
-        emax = parse_value(emax, "keV")
-    emax *= 1000.0
+        if emin is None:
+            emin = 0.0
+        else:
+            emin = parse_value(emin, "keV")
+        emin *= 1000.0
+        if emax is None:
+            emax = 100.0
+        else:
+            emax = parse_value(emax, "keV")
+        emax *= 1000.0
     if tmin is None:
         tmin = -np.inf
     else:
@@ -819,7 +826,12 @@ def write_image(
     with fits.open(evt_file) as f:
         e = f["EVENTS"].data["ENERGY"]
         t = f["EVENTS"].data["TIME"]
-        idxs = np.logical_and(e > emin, e < emax)
+        if bands is not None:
+            idxs = False
+            for band in bands:
+                idxs |= np.logical_and(e > band[0], e < band[1])
+        else:
+            idxs = np.logical_and(e > emin, e < emax)
         idxs &= np.logical_and(t > tmin, t < tmax)
         xcoord, ycoord, xcol, ycol = coord_types[coord_type]
         x = f["EVENTS"].data[xcoord][idxs]
@@ -882,7 +894,163 @@ def write_image(
     hdu.header["EXPOSURE"] = exp_time
     hdu.name = "IMAGE"
 
+    return hdu
+
+
+def write_image(
+    evt_file,
+    out_file,
+    coord_type="sky",
+    emin=None,
+    emax=None,
+    tmin=None,
+    tmax=None,
+    bands=None,
+    overwrite=False,
+    expmap_file=None,
+    reblock=1,
+):
+    r"""
+    Generate a image by binning X-ray counts and write
+    it to a FITS file.
+
+    Parameters
+    ----------
+    evt_file : string
+        The name of the input event file to read.
+    out_file : string
+        The name of the image file to write.
+    coord_type : string, optional
+        The type of coordinate to bin into an image.
+        Can be "sky" or "det". Default: "sky"
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the photons to put in the image, in keV.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the photons to put in the image, in keV.
+    tmin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The minimum energy of the events to be included, in seconds.
+        Default is the earliest time available.
+    tmax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        The maximum energy of the events to be included, in seconds.
+        Default is the latest time available.
+    bands : list of tuples, optional
+        A list of energy bands to restrict the counts used to make the
+        image, in the form of [(emin1, emax1), (emin2, emax2), ...].
+        Used as an alternative to emin and emax. Default: None
+    overwrite : boolean, optional
+        Whether to overwrite an existing file with
+        the same name. Default: False
+    expmap_file : string, optional
+        Supply an exposure map file to divide this image by
+        to get a flux map. Default: None
+    reblock : integer, optional
+        Change this value to reblock the image to larger
+        or small pixel sizes. Only supported for
+        sky coordinates. Default: 1
+    """
+    hdu = make_image(
+        evt_file,
+        coord_type=coord_type,
+        emin=emin,
+        emax=emax,
+        tmin=tmin,
+        tmax=tmax,
+        bands=bands,
+        expmap_file=expmap_file,
+        reblock=reblock,
+    )
     hdu.writeto(out_file, overwrite=overwrite)
+
+
+def fill_regions(
+    in_img, out_img, src_reg, bkg_val, median=False, overwrite=False, format="ds9"
+):
+    """
+    Fill regions which have been removed from an image (e.g. by
+    wavdetect) with a Poisson distribution of counts, either
+    from a single background region, a number of background regions
+    equal to the number of source regions, or from a single background
+    value.
+
+    Parameters
+    ----------
+    in_img : string
+        The file path to the input image.
+    out_img : string
+        The file path to the image to be written with the filled
+        regions.
+    src_reg : string, Region, or Regions
+        The region(s) which will be filled.
+    bkg_val : float, string, Region, or Regions
+        The background value(s) to use for the Poisson distribution.
+        Can be a single value, a region, or a list of regions.
+    median : boolean
+        If True, then the median value of the counts within the
+        region will be used as the mean of the Poisson distribution
+    overwrite : boolean, optional
+        Whether to overwrite an existing file with
+        the same name. Default: False
+    format : string, optional
+        The file format specifier for the region. "ds9",
+        "crtf", "fits", etc. Default: "ds9"
+    """
+    from regions import PixelRegion, Region, Regions, SkyRegion
+
+    fill_op = np.median if median else np.mean
+    if isinstance(src_reg, str):
+        if Path(src_reg).exists():
+            src_reg = Regions.read(src_reg, format=format)
+        else:
+            src_reg = Regions.parse(src_reg, format=format)
+    elif not isinstance(src_reg, (Region, Regions)):
+        raise RuntimeError("'src_reg' argument is not valid!")
+    if isinstance(src_reg, Region):
+        src_reg = [src_reg]
+    if not isinstance(bkg_val, Number):
+        if isinstance(bkg_val, str):
+            if Path(bkg_val).exists():
+                bkg_val = Regions.read(bkg_val, format=format)
+            else:
+                bkg_val = Regions.parse(bkg_val, format=format)
+        elif not isinstance(bkg_val, (Region, Regions)):
+            raise RuntimeError("'bkg_val' argument is not valid!")
+    if isinstance(bkg_val, (Number, Region)):
+        bkg_val = [bkg_val] * len(src_reg)
+    if len(src_reg) != len(bkg_val):
+        raise ValueError(
+            "The number of background regions must either "
+            "be the same as the number of the source regions, "
+            "or there must be one background region!"
+        )
+    with fits.open(in_img) as f:
+        if f[0].is_image:
+            hdu = f[0]
+        else:
+            hdu = f[1]
+        for src_r, bkg_v in zip(src_reg, bkg_val):
+            if isinstance(src_r, PixelRegion):
+                src_mask = src_r.to_mask(mode="exact").astype("bool")
+            elif isinstance(src_r, SkyRegion):
+                w = wcs.WCS(header=hdu.header)
+                src_mask = src_r.to_pixel(w).to_mask(mode="exact")
+            else:
+                raise NotImplementedError
+            src_mask = src_mask.to_image(hdu.shape).astype("bool")
+            if isinstance(bkg_v, Number):
+                lam = bkg_v
+            else:
+                if isinstance(bkg_v, PixelRegion):
+                    bkg_mask = bkg_v.to_mask().astype("bool")
+                elif isinstance(bkg_v, SkyRegion):
+                    w = wcs.WCS(header=hdu.header)
+                    bkg_mask = bkg_v.to_pixel(w).to_mask()
+                else:
+                    raise NotImplementedError
+                bkg_mask = bkg_mask.to_image(hdu.shape).astype("bool")
+                lam = fill_op(hdu.data[bkg_mask])
+            n_src = src_mask.sum()
+            hdu.data[src_mask] = np.random.poisson(lam=lam, size=n_src)
+        f.writeto(out_img, overwrite=overwrite)
 
 
 def plot_spectrum(
@@ -1201,7 +1369,8 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
             x.append(xx)
             y.append(yy)
             e.append(hdu.data["ENERGY"][idxs])
-            se.append(hdu.data["SOXS_ENERGY"][idxs])
+            if "SOXS_ENERGY" in hdu.data.dtype.names:
+                se.append(hdu.data["SOXS_ENERGY"][idxs])
             ch.append(hdu.data[hdu.header["CHANTYPE"]][idxs])
             t.append(hdu.data["TIME"][idxs])
 
@@ -1222,9 +1391,11 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
     col_e = fits.Column(name="ENERGY", format="E", unit="eV", array=e)
     col_ch = fits.Column(name=chantype, format="1J", unit=cunit, array=ch)
     col_t = fits.Column(name="TIME", format="1D", unit="s", array=t)
-    col_se = fits.Column(name="SOXS_ENERGY", format="E", unit="eV", array=se)
-
-    coldefs = fits.ColDefs([col_e, col_x, col_y, col_ch, col_t, col_se])
+    coldefs = [col_e, col_x, col_y, col_ch, col_t]
+    if len(se) == len(e):
+        col_se = fits.Column(name="SOXS_ENERGY", format="E", unit="eV", array=se)
+        coldefs.append(col_se)
+    coldefs = fits.ColDefs(coldefs)
     tbhdu = fits.BinTableHDU.from_columns(coldefs)
     tbhdu.name = "EVENTS"
 

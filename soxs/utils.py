@@ -282,7 +282,6 @@ class PoochHandle:
     def __init__(self, cache_dir=None):
         import json
 
-        import pkg_resources
         import pooch
 
         if cache_dir is None:
@@ -290,9 +289,8 @@ class PoochHandle:
                 cache_dir = soxs_cfg.get("soxs", "soxs_data_dir")
             else:
                 cache_dir = pooch.os_cache("soxs")
-        self._registry = json.load(
-            pkg_resources.resource_stream("soxs", "file_hash_registry.json")
-        )
+        with open(os.path.join(soxs_path, "file_hash_registry.json")) as f:
+            self._registry = json.load(f)
         self.pooch_obj = pooch.create(
             path=cache_dir,
             registry=self._registry,

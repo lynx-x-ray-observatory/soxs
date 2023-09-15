@@ -15,8 +15,10 @@ from soxs.background import (
 )
 from soxs.cosmology import make_cosmological_sources_file
 from soxs.events import (
+    fill_regions,
     filter_events,
     make_exposure_map,
+    make_image,
     merge_event_files,
     plot_image,
     plot_spectrum,
@@ -45,7 +47,6 @@ from soxs.simput import (
     SimputPhotonList,
     SimputSpectrum,
     make_bkgnd_simput,
-    read_simput_catalog,
     write_photon_list,
 )
 from soxs.spatial import (

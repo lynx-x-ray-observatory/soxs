@@ -31,6 +31,11 @@ parser.add_argument(
     "--tmax", help="The maximum time of the photons to put in the image, in s."
 )
 parser.add_argument(
+    "--bands", help="A list of energy bands to restrict the counts used to "
+                                  "make the image, in the form of emin1,emax1:emin2,emax2... "
+                                  "Used as an alternative to emin and emax."
+)
+parser.add_argument(
     "--overwrite",
     action="store_true",
     help="Overwrite an existing file with the same name.",
@@ -51,6 +56,15 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+if args.bands is not None:
+    bands = []
+    for band in args.bands.split(":"):
+        emin, emax = band.split(",")
+        bands.append((float(emin), float(emax)))
+else:
+    bands = None
+
+
 write_image(
     args.event_file,
     args.out_file,
@@ -59,6 +73,7 @@ write_image(
     emax=args.emax,
     tmin=args.tmin,
     tmax=args.tmax,
+    bands=bands,
     overwrite=args.overwrite,
     expmap_file=args.expmap_file,
     reblock=args.reblock,

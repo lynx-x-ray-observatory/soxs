@@ -233,13 +233,20 @@ class FlatResponse(AuxiliaryResponseFile):
     """
 
     def __init__(self, emin, emax, area, nbins):
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
+        area = parse_value(area, "cm**2")
         self.filename = "flat_response"
-        de = (emax - emin) / nbins
-        self.elo = np.arange(nbins) * de + emin
-        self.ehi = self.elo + de
+        self.de = (emax - emin) / nbins
+        self.ebins = np.linspace(emin, emax, nbins + 1)
+        self.elo = self.ebins[:-1]
+        self.ehi = self.ebins[1:]
         self.emid = 0.5 * (self.elo + self.ehi)
         self.eff_area = area * np.ones(nbins)
         self.max_area = area
+
+    def interpolate_area(self, energy):
+        return u.Quantity(self.max_area * np.ones_like(energy), "cm**2")
 
 
 class RedistributionMatrixFile:
@@ -272,7 +279,7 @@ class RedistributionMatrixFile:
         self.header = self.handle[self.mat_key].header
         self.num_mat_columns = len(self.handle[self.mat_key].columns)
         self.ebounds_header = self.handle["EBOUNDS"].header
-        self.weights = np.array([w.sum() for w in self.data["MATRIX"]])
+        self.weights = np.array([np.nansum(w) for w in self.data["MATRIX"]])
         self.elo = self.data["ENERG_LO"]
         self.ehi = self.data["ENERG_HI"]
         self.ebins = np.append(self.data["ENERG_LO"], self.data["ENERG_HI"][-1])
@@ -429,8 +436,10 @@ class RedistributionMatrixFile:
             n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"]))
             mat = np.nan_to_num(np.float64(self.data["MATRIX"]))
             for k in range(self.n_e):
+                weights = mat[k, :]
+                weights /= weights.sum()
                 conv_spec[f_chan[k] : f_chan[k] + n_chan[k]] += (
-                    spec[k] * mat[k, : n_chan[k]]
+                    spec[k] * weights[: n_chan[k]]
                 )
                 pbar.update()
         else:
@@ -441,10 +450,12 @@ class RedistributionMatrixFile:
                     - self.cmin
                 )
                 n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-                mat = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
-                for i, f in enumerate(f_chan):
-                    if n_chan[i] != 0:
-                        conv_spec[f : f + n_chan[i]] += spec[k] * mat[: n_chan[i]]
+                weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
+                weights /= weights.sum()
+                f1 = 0
+                for n, f in zip(n_chan, f_chan):
+                    conv_spec[f : f + n] += spec[k] * weights[f1 : f1 + n]
+                    f1 += n
                 pbar.update()
         pbar.close()
         if noisy:

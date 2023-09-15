@@ -10,7 +10,7 @@ from soxs.events import write_event_file
 from soxs.instrument_registry import instrument_registry
 from soxs.psf import psf_model_registry
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
-from soxs.simput import SimputCatalog, SimputPhotonList, read_simput_catalog
+from soxs.simput import SimputCatalog, SimputPhotonList, read_catalog
 from soxs.utils import (
     create_region,
     ensure_numpy_array,
@@ -39,25 +39,21 @@ def perform_dither(t, dither_dict):
 def make_source_list(source):
     if source is None:
         source_list = []
-        parameters = {}
     elif isinstance(source, dict):
-        parameters = {}
-        for key in ["flux", "emin", "emax", "src_names"]:
-            parameters[key] = source[key]
         source_list = []
-        for i in range(len(parameters["flux"])):
+        for i in range(len(source["flux"])):
             phlist = SimputPhotonList(
                 source["ra"][i],
                 source["dec"][i],
                 source["energy"][i],
-                parameters["flux"][i],
-                parameters["src_names"][i],
+                source["flux"][i],
+                source["src_names"][i],
             )
             source_list.append(phlist)
     elif isinstance(source, (str, SimputCatalog)):
-        # Assume this is a SIMPUT catalog
-        source_list, parameters = read_simput_catalog(source)
-    return source_list, parameters
+        # Assume this is a SIMPUT or pyXSIM catalog
+        source_list = read_catalog(source)
+    return source_list
 
 
 def generate_events(
@@ -130,7 +126,7 @@ def generate_events(
     exp_time = parse_value(exp_time, "s")
     roll_angle = parse_value(roll_angle, "deg")
     prng = parse_prng(prng)
-    source_list, parameters = make_source_list(source)
+    source_list = make_source_list(source)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -213,7 +209,7 @@ def generate_events(
     all_events = defaultdict(list)
 
     for i, src in enumerate(source_list):
-        mylog.info("Detecting events from source %s.", parameters["src_names"][i])
+        mylog.info("Detecting events from source %s.", src.name)
 
         # Step 1: Use ARF to determine which photons are observed
 
@@ -221,10 +217,10 @@ def generate_events(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [parameters["emin"][i], parameters["emax"][i]]
+        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
             events = arf.detect_events_phlist(
-                src.events.copy(), exp_time, parameters["flux"][i], refband, prng=prng
+                src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
@@ -296,7 +292,7 @@ def generate_events(
 
             if n_evt == 0:
                 mylog.warning(
-                    "No events are within the field " "of view for this source!!!"
+                    "No events are within the field of view for this source!!!"
                 )
             else:
                 mylog.info("%d events were detected from the source.", n_evt)
@@ -826,9 +822,17 @@ def simulate_spectrum(
     spec : :class:`~soxs.spectra.Spectrum`
         The spectrum to be convolved. If None is supplied, only backgrounds
         will be simulated (if they are turned on).
-    instrument : string
-        The name of the instrument to use, which picks an instrument
+    instrument : string or tuple
+        Two options:
+        1. The name of the instrument to use, which picks an instrument
         specification from the instrument registry.
+        2. A 2-tuple specifying an ARF, RMF pair, or a 3-tuple specifying
+        an ARF, RMF, and a background spectrum specification, where the
+        latter is a 2-element list giving the name of the background
+        spectrum file and the normalization of the background spectrum in
+        square arcminutes. If the ARF is set to None, a flat ARF will be
+        assumed with a value of 1.0 cm**2. This may be useful for simulating
+        particle backgrounds.
     exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The exposure time in seconds.
     out_file : string
@@ -871,11 +875,16 @@ def simulate_spectrum(
     )
     from soxs.background.spectra import BackgroundSpectrum
     from soxs.events import _write_spectrum
-    from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+    from soxs.response import (
+        AuxiliaryResponseFile,
+        FlatResponse,
+        RedistributionMatrixFile,
+    )
     from soxs.spectra import ConvolvedSpectrum
     from soxs.utils import soxs_cfg
 
-    if not noisy and any([instr_bkgnd, ptsrc_bkgnd, foreground]):
+    any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
+    if not noisy and any_bkgnd:
         raise NotImplementedError(
             "Backgrounds cannot be included in "
             "simulations of non-noisy spectra at this time!"
@@ -891,16 +900,31 @@ def simulate_spectrum(
         )
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
-    try:
-        instrument_spec = instrument_registry[instrument]
-    except KeyError:
-        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
-    if foreground or instr_bkgnd or ptsrc_bkgnd:
-        if instrument_spec["grating"]:
-            raise NotImplementedError(
-                "Backgrounds cannot be included in simulations "
-                "of gratings spectra at this time!"
+    bkgnd_spec = None
+    instrument_spec = None
+    if isinstance(instrument, tuple):
+        arf = instrument[0]
+        rmf = instrument[1]
+        rmf = RedistributionMatrixFile(rmf)
+        if isinstance(arf, str):
+            arf = AuxiliaryResponseFile(get_data_file(arf))
+        else:
+            if arf is None:
+                arf = 1.0
+            arf = FlatResponse(rmf.ebins[0], rmf.ebins[-1], arf, rmf.emid.size)
+        if len(instrument) == 3:
+            bkgnd_spec = instrument[2]
+    else:
+        try:
+            instrument_spec = instrument_registry[instrument]
+        except KeyError:
+            raise KeyError(
+                f"Instrument {instrument} is not in the instrument registry!"
             )
+        arf = AuxiliaryResponseFile.from_instrument(instrument)
+        rmf = RedistributionMatrixFile.from_instrument(instrument)
+        bkgnd_spec = instrument_spec["bkgnd"]
+    if any_bkgnd:
         if bkgnd_area is None:
             raise RuntimeError(
                 "The 'bkgnd_area' argument must be set if one wants "
@@ -910,10 +934,6 @@ def simulate_spectrum(
         bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
     elif spec is None:
         raise RuntimeError("You have specified no source spectrum and no backgrounds!")
-    arf_file = get_data_file(instrument_spec["arf"])
-    rmf_file = get_data_file(instrument_spec["rmf"])
-    arf = AuxiliaryResponseFile(arf_file)
-    rmf = RedistributionMatrixFile(rmf_file)
 
     event_params = {
         "RESPFILE": os.path.split(rmf.filename)[-1],
@@ -939,12 +959,17 @@ def simulate_spectrum(
         out_spec += generate_channel_spectrum(
             frgnd_spec, exp_time, bkgnd_area, prng=prng
         )
-    if instr_bkgnd and instrument_spec["bkgnd"] is not None:
+    if instr_bkgnd and bkgnd_spec is not None:
+        if instrument_spec:
+            if instrument_spec["grating"]:
+                raise NotImplementedError(
+                    "Backgrounds cannot be included in simulations "
+                    "of gratings spectra at this time!"
+                )
+            # Temporary hack for ACIS-S
+            if "aciss" in instrument_spec["name"]:
+                bkgnd_spec = bkgnd_spec[1]
         mylog.info("Adding in instrumental background.")
-        bkgnd_spec = instrument_spec["bkgnd"]
-        # Temporary hack for ACIS-S
-        if "aciss" in instrument_spec["name"]:
-            bkgnd_spec = bkgnd_spec[1]
         bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
         out_spec += generate_channel_spectrum(
             bkgnd_spec, exp_time, bkgnd_area, prng=prng
@@ -993,7 +1018,7 @@ def simple_event_list(
     mylog.info("Making simple observation of source in %s.", out_file)
     exp_time = parse_value(exp_time, "s")
     prng = parse_prng(prng)
-    source_list, parameters = make_source_list(input_events)
+    source_list = make_source_list(input_events)
 
     try:
         instrument_spec = instrument_registry[instrument]
@@ -1024,17 +1049,17 @@ def simple_event_list(
 
     all_events = defaultdict(list)
 
-    for i, src in enumerate(source_list):
-        mylog.info("Detecting events from source %s.", parameters["src_names"][i])
+    for src in source_list:
+        mylog.info("Detecting events from source %s.", src.name)
 
         mylog.info(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [parameters["emin"][i], parameters["emax"][i]]
+        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
             events = arf.detect_events_phlist(
-                src.events.copy(), exp_time, parameters["flux"][i], refband, prng=prng
+                src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, refband, prng=prng)

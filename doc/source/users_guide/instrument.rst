@@ -10,8 +10,8 @@ The end product of a mock observation is a "standard" event file which has been
 convolved with a model for the telescope. In SOXS, this is handled by the
 instrument simulator.
 
-:func:`~soxs.instrument.instrument_simulator` reads in a SIMPUT catalog and
-creates a standard event file using the instrument simulator.
+:func:`~soxs.instrument.instrument_simulator` reads in a SIMPUT catalog or
+pyXSIM event list and creates a standard event file using the instrument simulator.
 :func:`~soxs.instrument.instrument_simulator` performs the following actions:
 
 1. Uses the effective area curve to determine which events will actually be
@@ -23,20 +23,35 @@ creates a standard event file using the instrument simulator.
 4. Convolves the event energies with the response matrix to produce channels.
 5. Writes everything to an event file.
 
-All of the photon lists in the SIMPUT catalog will be processed. A typical
-invocation of :func:`~soxs.instrument.instrument_simulator` looks like the
-following:
+If the input events are a SIMPUT catalog, then all of the SIMPUT sources,
+whether spectra or photon lists, will be processed. Alternatively, a pyXSIM
+event list in the HDF5 format can be supplied as a source. A typical
+invocation of :func:`~soxs.instrument.instrument_simulator` using a SIMPUT
+catalog looks like the following:
 
 .. code-block:: python
 
-    from soxs import instrument_simulator
-    simput_file = "snr_simput.fits" # SIMPUT file to be read
+    import soxs
+    source_file = "snr_simput.fits" # SIMPUT file to be read
     out_file = "evt_lxm.fits" # event file to be written
     exp_time = (30.0, "ks") # The exposure time
     instrument = "lynx_lxm" # short name for instrument to be used
     sky_center = [30., 45.] # RA, Dec of pointing in degrees
-    instrument_simulator(simput_file, out_file, exp_time, instrument,
-                         sky_center, overwrite=True)
+    soxs.instrument_simulator(source_file, out_file, exp_time, instrument,
+                              sky_center, overwrite=True)
+
+and in the case of a pyXSIM event file:
+
+.. code-block:: python
+
+    import soxs
+    source_file = "sloshing_photons.h5" # pyXSIM events file to be read
+    out_file = "evt_acis.fits" # event file to be written
+    exp_time = (100.0, "ks") # The exposure time
+    instrument = "chandra_acisi_cy0" # short name for instrument to be used
+    sky_center = [30., 45.] # RA, Dec of pointing in degrees
+    soxs.instrument_simulator(source_file, out_file, exp_time, instrument,
+                              sky_center, overwrite=True)
 
 The ``overwrite`` argument allows an existing file to be overwritten. We now
 describe instrument simulation in more detail.
@@ -140,17 +155,17 @@ HETG
 ####
 
 Eight gratings specifications have been included for ACIS-S and the HETG, for
-both Cycle 0 and Cycle 20. These simulate spectra only for the MEG and HEG, for
+both Cycle 0 and Cycle 22. These simulate spectra only for the MEG and HEG, for
 the :math:`\pm` first order spectra. They are named:
 
 * ``"chandra_aciss_meg_m1_cy0"``
 * ``"chandra_aciss_meg_p1_cy0"``
 * ``"chandra_aciss_heg_m1_cy0"``
 * ``"chandra_aciss_heg_p1_cy0"``
-* ``"chandra_aciss_meg_m1_cy20"``
-* ``"chandra_aciss_meg_p1_cy20"``
-* ``"chandra_aciss_heg_m1_cy20"``
-* ``"chandra_aciss_heg_p1_cy20"``
+* ``"chandra_aciss_meg_m1_cy22"``
+* ``"chandra_aciss_meg_p1_cy22"``
+* ``"chandra_aciss_heg_m1_cy22"``
+* ``"chandra_aciss_heg_p1_cy22"``
 
 .. _xrism:
 
@@ -199,11 +214,14 @@ Currently, no instrumental background is included. The response files for
 Line Emission Mapper (LEM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Two instrument specifications ``"lem_2eV"`` and ``"lem_0.9eV"``, are
+Two instrument specifications ``"lem_outer_array"`` and ``"lem_inner_array"``, are
 available for the `Line Emission Mapper (LEM) <https://lem.cfa.harvard.edu>`_.
-This specification has a 32 arcminute field of view, a 4 m focal length,
-an Gaussian PSF with a FWHM of 10 arcseconds. The former has a spectral resolution
-of 2 eV and the latter a spectral resolution of 0.9 eV.
+Both have a 4 m focal length and a Gaussian PSF with a FWHM of 10 arcseconds.
+The outer array has a square-shaped 32 arcminute field of view and a spectral
+resolution of 2.5 eV, whereas the inner array has a square-shaped 7 arcminute
+field of view and a spectral resolution of 1.3 eV. The old LEM configurations
+``"lem_2eV"`` and ``"lem_0.9eV"`` are still supported, both with square fields
+of view of 32 arcminutes.
 
 .. _bkgnds:
 
@@ -402,9 +420,59 @@ absorption model or the neutral hydrogen column, use the :ref:`config`. Similarl
 the :ref:`config` can be used to change the APEC model version for the foreground.
 
 Instrument specifications with the ``"imaging"`` keyword set to ``False`` can
-only be used with :func:`~soxs.instrument.simulate_spectrum` and not
+only be used with :func:`~soxs.instrument.simulate_spectrum`, and not
 :func:`~soxs.instrument.instrument_simulator`. Currently, this includes grating
 instruments.
+
+It is also possible to specify the instrument to use in the simulation with a
+2 or 3-tuple giving the ARF, RMF, and (optionally) the background specification
+to use. This can be handy if you do not have anything but these files available,
+or if you are prototyping a new instrument specification. An example using the Lynx
+HDXI ARF and RMF:
+
+.. code-block:: python
+
+    instrument = ("xrs_hdxi_3x10.arf", "xrs_hdxi.rmf")
+    "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0],
+    out_file = "hdxi_spec.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      ptsrc_bkgnd=True, foreground=True,
+                      instr_bkgnd=False, overwrite=True,
+                      bkgnd_area=(1.0, "arcmin**2"))
+
+Note that this invocation has ``instr_bkgnd=False``. If you want to include
+a instrumental/particle background, you also need to specify the background
+specifcation in the ``instrument`` tuple, which is a list including the name
+of the background file and the normalization of the background in square
+arcminutes:
+
+.. code-block:: python
+
+    instrument = (
+        "xrs_hdxi_3x10.arf",
+        "xrs_hdxi.rmf",
+        ["lynx_hdxi_particle_bkgnd.pha", 1.0]
+    )
+    out_file = "hdxi_spec.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      ptsrc_bkgnd=True, foreground=True,
+                      instr_bkgnd=True, overwrite=True,
+                      bkgnd_area=(1.0, "arcmin**2"))
+
+This way of using :func:`~soxs.instrument.simulate_spectrum` is also useful
+for creating models of particle backgrounds, if you have a background model and
+would like to convolve it with an RMF. In this case, you can set the first
+tuple element (the ARF) to ``None``:
+
+.. code-block:: python
+
+    instrument = (
+        None,
+        "xrs_hdxi.rmf",
+    )
+    out_file = "hdxi_part_bkg.pha"
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      overwrite=True)
 
 Finally, if you want to create a spectrum without counting (Poisson) statistics,
 set ``noisy=False`` in the call to :func:`~soxs.instrument.simulate_spectrum`. Note
@@ -438,9 +506,8 @@ spectrum:
 
 .. image:: ../images/gratings_spectrum.png
 
-Adding backgrounds to grating instrument specifications in
-:func:`~soxs.instrument.simulate_spectrum` is not supported at this time, but
-will be in a future release.
+Adding particle backgrounds to grating instrument specifications in
+:func:`~soxs.instrument.simulate_spectrum` is not supported at this time.
 
 .. _instrument-registry:
 

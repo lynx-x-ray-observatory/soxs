@@ -51,33 +51,46 @@ class LazyReadSimputCatalog(Sequence):
         return self.src_cat.num_sources
 
 
-def read_simput_catalog(simput_file):
-    r"""
-    Read events from a SIMPUT catalog. This will read
-    all the sources in the catalog.
+class LazyReadPyxsimEvents(Sequence):
+    def __init__(self, source):
+        impe = ImportError(
+            "You must install pyxsim v4.3.0 or later "
+            "to read from a pyXSIM event file!"
+        )
+        try:
+            import pyxsim
+        except ImportError:
+            raise impe
+        self.events = pyxsim.EventList(source)
+        if not hasattr(self.events, "get_data"):
+            raise impe
+        self.filenames = self.events.filenames
 
-    Parameters
-    ----------
-    simput_file : string
-        The SIMPUT file to read from.
+    def __getitem__(self, i):
+        ra, dec, energy, flux = self.events.get_data(i)
+        name = os.path.splitext(self.filenames[i])[0]
+        src = SimputPhotonList(
+            Quantity(ra, "deg"),
+            Quantity(dec, "deg"),
+            Quantity(energy, "keV"),
+            flux,
+            name=name,
+        )
+        return src
 
-    Returns
-    -------
-    1. Lists of dicts of NumPy arrays of the positions
-       and energies of the events from the sources.
-    2. NumPy arrays of the parameters of the sources.
-    """
-    if isinstance(simput_file, SimputCatalog):
-        sc = simput_file
+    def __len__(self):
+        return self.events.num_files
+
+
+def read_catalog(source):
+    if isinstance(source, SimputCatalog):
+        source_list = LazyReadSimputCatalog(source)
+    elif source.endswith("fits") or "simput" in source:
+        sc = SimputCatalog.from_file(source)
+        source_list = LazyReadSimputCatalog(sc)
     else:
-        sc = SimputCatalog.from_file(simput_file)
-    parameters = {
-        "emin": sc.emin,
-        "emax": sc.emax,
-        "src_names": sc.src_names,
-        "flux": sc.fluxes,
-    }
-    return LazyReadSimputCatalog(sc), parameters
+        source_list = LazyReadPyxsimEvents(source)
+    return source_list
 
 
 class SimputCatalog:
@@ -566,7 +579,7 @@ class SimputPhotonList(SimputSource):
         return cls(ra, dec, e, e.flux.value, name=name)
 
     def _get_source_hdu(self):
-        col1 = fits.Column(name="ENERGY", format="E", array=np.asarray(self["energy"]))
+        col1 = fits.Column(name="ENERGY", format="D", array=np.asarray(self["energy"]))
         col2 = fits.Column(name="RA", format="D", array=np.asarray(self["ra"]))
         col3 = fits.Column(name="DEC", format="D", array=np.asarray(self["dec"]))
         cols = [col1, col2, col3]
