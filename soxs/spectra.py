@@ -56,6 +56,7 @@ class Spectrum:
         self.ebins = u.Quantity(ebins, "keV")
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
         self.flux = u.Quantity(flux, self._units)
+        self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
         self.nbins = len(self.emid)
         self.de = np.diff(self.ebins)
         self.binscale = binscale
@@ -63,9 +64,7 @@ class Spectrum:
 
     def _compute_total_flux(self):
         self.total_flux = (self.flux * self.de).sum()
-        self.total_energy_flux = (self.flux * self.emid.to("erg") * self.de).sum() / (
-            1.0 * u.photon
-        )
+        self.total_energy_flux = (self.energy_flux * self.de).sum()
         cumspec = np.cumsum((self.flux * self.de).value)
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
@@ -77,11 +76,83 @@ class Spectrum:
             self.nbins != other.nbins
             or not np.isclose(self.ebins.value, other.ebins.value).all()
         ):
-            raise RuntimeError(
-                "Energy binning for these two " "spectra is not the same!!"
-            )
+            raise RuntimeError("Energy binning for these two spectra is not the same!!")
         if self._units != other._units:
-            raise RuntimeError("The units for these two spectra " "are not the same!")
+            raise RuntimeError("The units for these two spectra are not the same!")
+
+    def _compute_waves(self):
+        self._wvbins = self.ebins.to("angstrom", equivalencies=u.spectral())
+        self._wvmid = 0.5 * (self._wvbins[1:] + self._wvbins[:-1])
+        self._dwv = -np.diff(self._wvbins)
+
+    def _compute_freqs(self):
+        self._fbins = self.ebins.to("Hz", equivalencies=u.spectral())
+        self._fmid = 0.5 * (self._fbins[1:] + self._fbins[:-1])
+        self._df = np.diff(self._fbins)
+
+    _wvbins = None
+
+    @property
+    def wvbins(self):
+        if self._wvbins is None:
+            self._compute_waves()
+        return self._wvbins
+
+    _wvmid = None
+
+    @property
+    def wvmid(self):
+        if self._wvmid is None:
+            self._compute_waves()
+        return self._wvmid
+
+    _dwv = None
+
+    @property
+    def dwv(self):
+        if self._dwv is None:
+            self._compute_waves()
+        return self._dwv
+
+    @property
+    def flux_per_wavelength(self):
+        return self.flux * self.de / self.dwv
+
+    @property
+    def energy_flux_per_wavelength(self):
+        return self.energy_flux * self.de / self.dwv
+
+    _fbins = None
+
+    @property
+    def fbins(self):
+        if self._fbins is None:
+            self._compute_freqs()
+        return self._fbins
+
+    _fmid = None
+
+    @property
+    def fmid(self):
+        if self._fmid is None:
+            self._compute_freqs()
+        return self._fmid
+
+    _df = None
+
+    @property
+    def df(self):
+        if self._df is None:
+            self._compute_freqs()
+        return self._df
+
+    @property
+    def flux_per_frequency(self):
+        return self.flux * self.de / self.df
+
+    @property
+    def energy_flux_per_frequency(self):
+        return self.energy_flux * self.de / self.df
 
     def __add__(self, other):
         self._check_binning_units(other)
