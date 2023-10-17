@@ -1,3 +1,6 @@
+dev/*.log
+dev/*.pha
+dev/*.pi
 doc/build/doctrees
 doc/build/html
 doc/source/files/*.rmf
