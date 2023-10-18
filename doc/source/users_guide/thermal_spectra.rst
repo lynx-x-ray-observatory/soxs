@@ -100,9 +100,7 @@ and ``spex_root``, respectively.
 If you set the ``spex_vers`` parameter but not the ``spex_root`` parameter, the
 AtomDB table files will be looked for in (1) the current working directory and
 (2) the location specified by ``soxs_data_dir`` in the :ref:`config`. The current
-default version of the SPEX thermal model in SOXS is 3.06.01.
-
-The range of temperatures supported by the SPEX model is kT = .
+default version of the SPEX thermal model in SOXS is 3.07.03.
 
 .. _mekal-spectra:
 
