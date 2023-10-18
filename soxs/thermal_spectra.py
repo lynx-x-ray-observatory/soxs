@@ -521,10 +521,10 @@ class SpexGenerator(CIEGenerator):
     spex_vers : string, optional
         The version identifier string for the SPEX files. Default is
         set in the SOXS configuration file, the default for which is
-        "3.06.01".
+        "3.07.03".
     broadening : boolean, optional
-        Whether or not the spectral lines should be
-        thermally and velocity broadened. Default: True
+        Whether the spectral lines should be thermally and velocity
+        broadened. Default: True
     nolines : boolean, optional
         Turn off lines entirely for generating spectra.
         Default: False
