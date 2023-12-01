@@ -188,8 +188,6 @@ class SimputCatalog:
         """
         from astropy.io.fits.column import _VLF
 
-        from .spectra import Spectrum
-
         i = np.where(self.spectra == spec)[0][0]
         src_file, extname, extver, row = _parse_catalog_entry(spec)
         # If no file is specified, assume the catalog and
@@ -219,9 +217,6 @@ class SimputCatalog:
                 emid = emid[row, :]
                 flux = flux[row, :]
             # This assumes linear binning for now!!!
-            de = np.diff(emid)[0]
-            ebins = np.append(emid - 0.5 * de, emid[-1] + 0.5 * de)
-            spec = Spectrum(ebins, flux, binscale="linear")
             if self.images[i].upper() != "NULL":
                 src_file, extname, extver, _ = _parse_catalog_entry(self.images[i])
                 # If no file is specified, assume the catalog and
