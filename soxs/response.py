@@ -319,7 +319,13 @@ class RedistributionMatrixFile:
 
     @property
     def chan_type(self):
-        return self.header["CHANTYPE"].upper()
+        if "CHANTYPE" in self.header:
+            ctype = self.header["CHANTYPE"]
+        elif "CHANTYPE" in self.ebounds_header:
+            ctype = self.ebounds_header["CHANTYPE"]
+        else:
+            raise KeyError("'CHANTYPE' not specified in RMF!!")
+        return ctype.upper()
 
     @property
     def data(self):
