@@ -768,6 +768,7 @@ def make_bkgnd_simput(
     emin = 0.05
     emax = 10.0
     nbins = 10000
+    fov = parse_value(fov, "arcmin")
     if nH is None:
         nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
     else:
@@ -789,6 +790,7 @@ def make_bkgnd_simput(
         absorb_model=absorb_model,
         frgnd_velocity=frgnd_velocity,
         frgnd_spec_model=frgnd_spec_model,
+        sky_area=fov * fov,
     )
     sp = FillFOVModel(sky_center[0], sky_center[1], fov)
     src = SimputSpectrum.from_models("frgnd", spec, sp, fov, 128)
