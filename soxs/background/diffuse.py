@@ -52,17 +52,24 @@ def _make_frgnd_spectrum(
     emin,
     emax,
     nbins,
+    gal_abund=1.0,
     bkgnd_nH=0.018,
     absorb_model="tbabs",
     frgnd_velocity=100.0,
     frgnd_spec_model="default",
+    sky_area=(1.0, "arcmin**2"),
 ):
+    sky_area = parse_value(sky_area, "arcmin**2")
     agen = ApecGenerator(emin, emax, nbins, broadening=True)
-    spec = agen.get_spectrum(0.225, 1.0, 0.0, 7.3e-7, velocity=frgnd_velocity)
+    spec = agen.get_spectrum(
+        0.225, gal_abund, 0.0, 7.3e-7 * sky_area, velocity=frgnd_velocity
+    )
     if frgnd_spec_model == "halosat":
-        spec += agen.get_spectrum(0.7, 1.0, 0.0, 8.76e-8, velocity=frgnd_velocity)
+        spec += agen.get_spectrum(
+            0.7, gal_abund, 0.0, 8.76e-8 * sky_area, velocity=frgnd_velocity
+        )
     spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
-    spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6)
+    spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6 * sky_area)
     return spec
 
 
