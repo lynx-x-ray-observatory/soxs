@@ -56,13 +56,13 @@ class Spectrum:
         self.ebins = u.Quantity(ebins, "keV")
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
         self.flux = u.Quantity(flux, self._units)
-        self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
         self.nbins = len(self.emid)
         self.de = np.diff(self.ebins)
         self.binscale = binscale
         self._compute_total_flux()
 
     def _compute_total_flux(self):
+        self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
         self.total_flux = (self.flux * self.de).sum()
         self.total_energy_flux = (self.energy_flux * self.de).sum()
         cumspec = np.cumsum((self.flux * self.de).value)
@@ -157,11 +157,6 @@ class Spectrum:
     def __add__(self, other):
         self._check_binning_units(other)
         return type(self)(self.ebins, self.flux + other.flux, binscale=self.binscale)
-
-    def __iadd__(self, other):
-        self._check_binning_units(other)
-        self.flux += other.flux
-        return self
 
     def __sub__(self, other):
         self._check_binning_units(other)
