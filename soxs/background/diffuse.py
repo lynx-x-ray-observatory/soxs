@@ -52,7 +52,7 @@ def _make_frgnd_spectrum(
     emin,
     emax,
     nbins,
-    gal_abund=1.0,
+    frgnd_abund=1.0,
     bkgnd_nH=0.018,
     absorb_model="tbabs",
     frgnd_velocity=100.0,
@@ -62,11 +62,11 @@ def _make_frgnd_spectrum(
     sky_area = parse_value(sky_area, "arcmin**2")
     agen = ApecGenerator(emin, emax, nbins, broadening=True)
     spec = agen.get_spectrum(
-        0.225, gal_abund, 0.0, 7.3e-7 * sky_area, velocity=frgnd_velocity
+        0.225, frgnd_abund, 0.0, 7.3e-7 * sky_area, velocity=frgnd_velocity
     )
     if frgnd_spec_model == "halosat":
         spec += agen.get_spectrum(
-            0.7, gal_abund, 0.0, 8.76e-8 * sky_area, velocity=frgnd_velocity
+            0.7, frgnd_abund, 0.0, 8.76e-8 * sky_area, velocity=frgnd_velocity
         )
     spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
     spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6 * sky_area)
@@ -78,11 +78,13 @@ def make_frgnd_spectrum(arf, rmf):
     absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
     frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
     frgnd_velocity = float(soxs_cfg.get("soxs", "frgnd_velocity"))
+    frgnd_abund = float(soxs_cfg.get("soxs", "frgnd_abund"))
     spec = _make_frgnd_spectrum(
         rmf.ebins[0],
         rmf.ebins[-1],
         rmf.n_e,
         bkgnd_nH=bkgnd_nH,
+        frgnd_abund=frgnd_abund,
         absorb_model=absorb_model,
         frgnd_velocity=frgnd_velocity,
         frgnd_spec_model=frgnd_spec_model,

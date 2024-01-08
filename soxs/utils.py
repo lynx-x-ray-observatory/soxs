@@ -23,6 +23,7 @@ soxs_cfg_defaults = {
     "bkgnd_absorb_model": "tbabs",
     "frgnd_spec_model": "default",
     "frgnd_velocity": 0.0,
+    "frgnd_abund": 1.0,
 }
 
 config_root = os.environ.get(
