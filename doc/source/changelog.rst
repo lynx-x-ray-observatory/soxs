@@ -3,6 +3,26 @@
 ChangeLog
 =========
 
+Version 4.7.0
+-------------
+
+This version of SOXS contains new features and bugfixes.
+
+* The foreground model normalization used in :func:`~soxs.simput.make_bkgnd_simput`
+  was not being scaled appropriately by the field of view size. This has been
+  fixed.
+* New useful attributes for :class:`~soxs.spectra.Spectrum` objects have been
+  added. See :ref:`spec-attribs` for more details.
+* The default SPEX version for CIE spectra has been updated to 3.07.03.
+* When loading an RMF, SOXS now checks the ``EBOUNDS`` header for the
+  ``CHANTYPE`` keyword if it is not present in the ``MATRIX`` header.
+  This fixes issues with the new LEM instruments released in version 4.6.0.
+* It is now possible to vary the abundance of the hot halo components of
+  the foreground model. See :ref:`foreground` and :ref:`config` for more
+  details.
+* It is now possible to append the SIMPUT sources produced by
+  :func:`~soxs.simput.make_bkgnd_simput` to an existing SIMPUT catalog.
+
 Version 4.6.0
 -------------
 
