@@ -704,6 +704,7 @@ def make_bkgnd_simput(
     nH=None,
     frgnd_velocity=None,
     frgnd_spec_model=None,
+    frgnd_abund=None,
     overwrite=False,
     input_sources=None,
     output_sources=None,
@@ -743,6 +744,10 @@ def make_bkgnd_simput(
         The model for the Galactic foreground spectrum to use, currently
         either "default" or "halosat". Defaults to the value in the SOXS
         configuration file.
+    frgnd_abund : float, optional
+        The metal abundance to use for the hot halo components of the
+        Galactic foreground spectrum. Defaults to the value in the SOXS
+        configuration file.
     overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
     input_sources : string, optional
@@ -781,6 +786,8 @@ def make_bkgnd_simput(
         frgnd_velocity = parse_value(frgnd_velocity, "km/s")
     if frgnd_spec_model is None:
         frgnd_spec_model = soxs_cfg.get("soxs", "frgnd_spec_model")
+    if frgnd_abund is None:
+        frgnd_abund = float(soxs_cfg.get("soxs", "frgnd_abund"))
     mylog.info("Creating galactic foreground model.")
     spec = _make_frgnd_spectrum(
         emin,
@@ -790,6 +797,7 @@ def make_bkgnd_simput(
         absorb_model=absorb_model,
         frgnd_velocity=frgnd_velocity,
         frgnd_spec_model=frgnd_spec_model,
+        frgnd_abund=frgnd_abund,
         sky_area=fov * fov,
     )
     sp = FillFOVModel(sky_center[0], sky_center[1], fov)
