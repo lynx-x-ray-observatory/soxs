@@ -8,6 +8,7 @@ Version 4.7.0
 
 This version of SOXS contains new features and bugfixes.
 
+* Python 3.12 is now supported.
 * The foreground model normalization used in :func:`~soxs.simput.make_bkgnd_simput`
   was not being scaled appropriately by the field of view size. This has been
   fixed.
