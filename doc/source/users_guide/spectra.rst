@@ -177,6 +177,103 @@ You can also multiply a spectrum by a constant float number or divide it by one:
     spec3 = 6.0*spec2
     spec4 = spec1/4.4
 
+
+.. _spec-attribs:
+
+Attributes of Spectrum Objects
+------------------------------
+
+The :class:`~soxs.spectra.Spectrum` object has a number of unitful attributes
+which may be helpful for the end-user, which are shown here.
+
+.. code-block:: python
+
+    from soxs import Spectrum
+
+    spec = Spectrum.from_powerlaw(1.1, 0.05, 1.0e-9, 0.1, 10.0, 10000)
+
+    print(spec.ebins) # the energy bin edges
+    print()
+    print(spec.emid) # the energy bin centers
+    print()
+    print(spec.de) # the energy bin widths
+    print()
+    print(spec.flux) # the photon flux per energy bin
+    print()
+    print(spec.energy_flux) # the energy flux per energy bin
+    print()
+
+.. code-block:: pycon
+
+    [ 0.1      0.10099  0.10198 ...  9.99802  9.99901 10.     ] keV
+
+    [0.100495 0.101485 0.102475 ... 9.997525 9.998515 9.999505] keV
+
+    [0.00099 0.00099 0.00099 ... 0.00099 0.00099 0.00099] keV
+
+    [1.18667795e-08 1.17395035e-08 1.16148084e-08 ... 7.53026088e-11
+     7.52944072e-11 7.52862073e-11] ph / (keV s cm2)
+
+    [1.91067895e-18 1.90880682e-18 1.90695468e-18 ... 1.20618220e-18
+     1.20617026e-18 1.20615831e-18] erg / (keV s cm2)
+
+There are also a number of per-wavelength or per-frequency versions of the
+above:
+
+.. code-block:: python
+
+    print(spec.wvbins) # the wavelength bin edges
+    print()
+    print(spec.wvmid) # the wavelength bin centers
+    print()
+    print(spec.dwv) # the wavelength bin widths
+    print()
+    print(spec.flux_per_wavelength) # the photon flux per wavelength bin
+    print()
+    print(spec.energy_flux_per_wavelength) # the energy flux per wavelength bin
+    print()
+
+.. code-block:: pycon
+
+    [123.98419843 122.76878744 121.57697434 ...   1.24008752   1.23996474
+     1.23984198] Angstrom
+
+    [123.37649294 122.17288089 120.99252642 ...   1.24014892   1.24002613
+     1.23990336] Angstrom
+
+    [1.21541100e+00 1.19181310e+00 1.16889584e+00 ... 1.22805138e-04
+     1.22780820e-04 1.22756509e-04] Angstrom
+
+.. code-block:: python
+
+    print(spec.fbins) # the frequency bin edges
+    print()
+    print(spec.fmid) # the frequency bin centers
+    print()
+    print(spec.df) # the frequency bin widths
+    print()
+    print(spec.flux_per_frequency) # the photon flux per frequency bin
+    print()
+    print(spec.energy_flux_per_frequency) # the energy flux per frequency bin
+    print()
+
+.. code-block:: pycon
+
+    [2.41798924e+16 2.44192734e+16 2.46586543e+16 ... 2.41751048e+18
+     2.41774986e+18 2.41798924e+18] Hz
+
+    [2.42995829e+16 2.45389638e+16 2.47783448e+16 ... 2.41739079e+18
+     2.41763017e+18 2.41786955e+18] Hz
+
+    [2.39380935e+14 2.39380935e+14 2.39380935e+14 ... 2.39380935e+14
+     2.39380935e+14 2.39380935e+14] Hz
+
+    [4.90770565e-26 4.85506854e-26 4.80349881e-26 ... 3.11426567e-28
+     3.11392648e-28 3.11358735e-28] ph / (Hz s cm2)
+
+    [7.90193322e-36 7.89419073e-36 7.88653087e-36 ... 4.98836876e-36
+     4.98831936e-36 4.98826997e-36] erg / (Hz s cm2)
+
 .. _band-ops:
 
 Getting the Values and Total Flux or Luminosity of a Spectrum Within a Specific Energy Band

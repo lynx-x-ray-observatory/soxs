@@ -59,9 +59,9 @@ based on HaloSat observations:
 
 In either case, the background is diffuse and uniformly fills the entire field of
 view of the instrument you choose to simulate. The absorption model, neutral hydrogen
-column density, or the APEC version for the background can be changed. One can also
-add velocity broadening to the emission lines for the hot halo components. For more
-information, see :ref:`config`.
+column density, the abundance for the hot halo components, or the APEC version for the
+foreground can be changed. One can also add velocity broadening to the emission lines
+for the hot halo components. For more information, see :ref:`config`.
 
 .. note::
 
