@@ -705,7 +705,9 @@ def make_bkgnd_simput(
     frgnd_velocity=None,
     frgnd_spec_model=None,
     frgnd_abund=None,
+    append=False,
     overwrite=False,
+    src_filename=None,
     input_sources=None,
     output_sources=None,
     diffuse_unresolved=True,
@@ -725,7 +727,7 @@ def make_bkgnd_simput(
     area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The effective area in cm**2. If one is creating
         events for a SIMPUT file, a constant should be
-        used and it must be large enough so that a
+        used, and it must be large enough so that a
         sufficiently large sample is drawn for the ARF.
     fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The field of view in arcminutes.
@@ -748,8 +750,15 @@ def make_bkgnd_simput(
         The metal abundance to use for the hot halo components of the
         Galactic foreground spectrum. Defaults to the value in the SOXS
         configuration file.
+    append : boolean, optional
+        If True, the photon list source will be appended to an existing
+        SIMPUT catalog. Default: False
     overwrite : boolean, optional
         Set to True to overwrite previous files. Default: False
+    src_filename : string, optional
+        If set, this will be the filename to write the source
+        to. By default, the source will be written to the same
+        file as the SIMPUT catalog.
     input_sources : string, optional
         If set to a filename, input the source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
@@ -812,7 +821,9 @@ def make_bkgnd_simput(
         absorb_model=absorb_model,
         nH=nH,
         area=area,
+        append=append,
         overwrite=overwrite,
+        src_filename=src_filename,
         input_sources=input_sources,
         output_sources=output_sources,
         diffuse_unresolved=diffuse_unresolved,
