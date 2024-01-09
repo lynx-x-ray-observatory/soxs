@@ -447,6 +447,7 @@ The easiest way to ensure that you always use a particular abundance table
 is to set the ``abund_table`` element in the :ref:`config`, like so:
 
 .. code-block:: parsed-literal
+
     [soxs]
     soxs_data_dir = /Users/jzuhone/Data/soxs
     abund_table = lodd

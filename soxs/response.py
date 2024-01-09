@@ -187,6 +187,8 @@ class AuxiliaryResponseFile:
             The axes to place the plot in. If not supplied,
             one will be created.
 
+        Notes
+        -----
         All other arguments are passed to the call to
         :meth:`~matplotlib.axes.Axes.plot`.
 
