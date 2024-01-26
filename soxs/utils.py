@@ -262,9 +262,7 @@ def process_fits_string(fitsstr):
         if len(brackets) == 0:
             imgs = np.array([hdu.is_image for hdu in f])
             if imgs.sum() > 1:
-                raise IOError(
-                    "Multiple HDUs in this file, " "please specify one to read!"
-                )
+                raise IOError("Multiple HDUs in this file, please specify one to read!")
             ext = np.where(imgs)[0][0]
         else:
             ext = brackets[0]
@@ -308,15 +306,11 @@ finley = PoochHandle()
 
 
 def get_data_file(fn):
-    soxs_data_dir = soxs_cfg.get("soxs", "soxs_data_dir")
-    rel_fn = os.path.split(fn)[-1]
-    data_fn = os.path.join(soxs_data_dir, rel_fn)
     if os.path.exists(fn):
+        mylog.warning("Using local file %s instead of the one from the database.", fn)
         return fn
-    elif os.path.exists(data_fn):
-        return data_fn
     else:
-        return finley.fetch(rel_fn)
+        return finley.fetch(os.path.split(fn)[-1])
 
 
 def image_pos(im, nph, prng):
