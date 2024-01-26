@@ -211,6 +211,12 @@ def generate_events(
     for i, src in enumerate(source_list):
         mylog.info("Detecting events from source %s.", src.name)
 
+        if src.src_type == "phys_coord":
+            raise NotImplementedError(
+                "It is not possible to use pyXSIM event lists "
+                'with physical coordinates as input to "instrument_simulator"!!'
+            )
+
         # Step 1: Use ARF to determine which photons are observed
 
         mylog.info(
@@ -1050,6 +1056,11 @@ def simple_event_list(
     all_events = defaultdict(list)
 
     for src in source_list:
+        if src.src_type == "phys_coord":
+            axes = ["x", "y"]
+        else:
+            axes = ["ra", "dec"]
+
         mylog.info("Detecting events from source %s.", src.name)
 
         mylog.info(
@@ -1078,7 +1089,13 @@ def simple_event_list(
 
     if len(all_events["energy"]) == 0:
         mylog.warning("No events from any of the sources in the catalog were detected!")
-        for key in ["ra", "dec", "time", event_params["channel_type"], "soxs_energy"]:
+        for key in [
+            axes[0],
+            axes[1],
+            "time",
+            event_params["channel_type"],
+            "soxs_energy",
+        ]:
             all_events[key] = np.array([])
     else:
         # Step 4: Scatter energies with RMF
@@ -1091,18 +1108,26 @@ def simple_event_list(
     dt = TimeDelta(event_params["exposure_time"], format="sec")
     t_end = t_begin + dt
 
-    if use_gal_coords:
-        names = ["GLON", "GLAT"]
-        c = SkyCoord(all_events["ra"], all_events["dec"], unit="deg")
-        lon = c.galactic.l
-        lat = c.galactic.b
+    if axes[0] == "x":
+        names = ["X", "Y"]
+        lon = all_events["x"]
+        lat = all_events["y"]
+        unit = "kpc"
     else:
-        names = ["RA", "DEC"]
-        lon = all_events["ra"]
-        lat = all_events["dec"]
+        if use_gal_coords:
+            names = ["GLON", "GLAT"]
+            c = SkyCoord(all_events["ra"], all_events["dec"], unit="deg")
+            lon = c.galactic.l
+            lat = c.galactic.b
+            unit = "deg"
+        else:
+            names = ["RA", "DEC"]
+            lon = all_events["ra"]
+            lat = all_events["dec"]
+            unit = "deg"
 
-    col_ra = fits.Column(name=names[0], format="E", unit="deg", array=lon)
-    col_dec = fits.Column(name=names[1], format="E", unit="deg", array=lat)
+    col_ra = fits.Column(name=names[0], format="E", unit=unit, array=lon)
+    col_dec = fits.Column(name=names[1], format="E", unit=unit, array=lat)
     col_e = fits.Column(
         name="ENERGY", format="E", unit="eV", array=all_events["energy"] * 1000.0
     )
