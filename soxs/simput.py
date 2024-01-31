@@ -692,7 +692,7 @@ class PhysicalCoordsSource(SimputSource):
     def __init__(self, x, y, energy, flux, name=None):
         emin = np.asarray(energy).min()
         emax = np.asarray(energy).max()
-        super(SimputPhotonList, self).__init__(emin, emax, flux, 0.0, 0.0, name=name)
+        super().__init__(emin, emax, flux, 0.0, 0.0, name=name)
         self.events = {"x": x, "y": y, "energy": energy}
         self.num_events = energy.size
 
