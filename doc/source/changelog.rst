@@ -3,6 +3,25 @@
 ChangeLog
 =========
 
+Version 4.7.1
+-------------
+
+This version of SOXS contains a critical bugfix. Occasionally, instrument files
+such as the ARF, RMF, and instrumental background files would be updated to
+improved versions with the same filename (this is particularly the case for the
+ACIS-I/S Cycle 0 files). What this should mean is that if a user had previously
+downloaded the files, they would be updated to the new version. However, the
+code was not checking for the existence of new files with different checksums
+properly. This has now been fixed. Users are encouraged to upgrade, and if they
+have used the ACIS-I/S Cycle 0 files, to check that they have the latest versions.
+The simplest way to do this is to do the following for each instrument of interest:
+
+.. code-block:: python
+
+    import soxs
+    arf = soxs.AuxiliaryResponseFile.from_instrument("chandra_acisi_cy0")
+    rmf = soxs.RedistributionMatrixFile.from_instrument("chandra_acisi_cy0")
+
 Version 4.7.0
 -------------
 
