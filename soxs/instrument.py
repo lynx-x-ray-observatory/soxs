@@ -987,11 +987,12 @@ def simulate_spectrum(
 
     bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
 
+    event_params["EXPOSURE"] = exp_time
+    event_params["CHANTYPE"] = rmf.header["CHANTYPE"]
+
     _write_spectrum(
         bins,
         out_spec,
-        exp_time,
-        rmf.header["CHANTYPE"],
         event_params,
         out_file,
         overwrite=overwrite,

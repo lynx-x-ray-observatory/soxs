@@ -362,13 +362,14 @@ def make_exposure_map(
 def _write_spectrum(
     bins,
     spec,
-    exp_time,
-    spectype,
     parameters,
     specfile,
     overwrite=False,
     noisy=True,
 ):
+    exp_time = parameters["EXPOSURE"]
+    spectype = parameters["CHANTYPE"]
+
     col1 = fits.Column(name="CHANNEL", format="1J", array=bins)
     col2 = fits.Column(name=spectype.upper(), format="1D", array=bins.astype("float64"))
     col3 = fits.Column(name="COUNTS", format="1J", array=spec.astype("int32"))
@@ -499,6 +500,68 @@ def filter_events(
         f.writeto(newfile, overwrite=overwrite)
 
 
+def _make_spectrum(
+    evtfile,
+    region=None,
+    format="ds9",
+    exclude=False,
+    emin=None,
+    emax=None,
+    tmin=None,
+    tmax=None,
+):
+    from soxs.response import RedistributionMatrixFile
+
+    parameters = {}
+    if isinstance(evtfile, str):
+        with fits.open(evtfile) as f:
+            hdu = f["EVENTS"]
+            evt_mask = np.ones(hdu.data["ENERGY"].size, dtype="bool")
+            if region is not None:
+                evt_mask &= _region_filter(hdu, region, format=format, exclude=exclude)
+            if tmin is not None:
+                tmin = parse_value(tmin, "s")
+                evt_mask &= hdu.data["TIME"] > tmin
+            if tmax is not None:
+                tmax = parse_value(tmax, "s")
+                evt_mask &= hdu.data["TIME"] < tmax
+            if emin is not None:
+                emin = parse_value(emin, "keV") * 1000.0
+                evt_mask &= hdu.data["ENERGY"] > emin
+            if emax is not None:
+                emax = parse_value(emax, "keV") * 1000.0
+                evt_mask &= hdu.data["ENERGY"] < emax
+            spectype = hdu.header["CHANTYPE"]
+            rmf = hdu.header["RESPFILE"]
+            p = hdu.data[spectype][evt_mask]
+            exp_time = hdu.header["EXPOSURE"]
+            for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
+                parameters[key] = hdu.header[key]
+    else:
+        rmf = evtfile["rmf"]
+        spectype = evtfile["channel_type"]
+        p = evtfile[spectype]
+        parameters["RESPFILE"] = PurePath(rmf).parts[-1]
+        parameters["ANCRFILE"] = PurePath(evtfile["arf"]).parts[-1]
+        parameters["TELESCOP"] = evtfile["telescope"]
+        parameters["INSTRUME"] = evtfile["instrument"]
+        parameters["MISSION"] = evtfile["mission"]
+        exp_time = evtfile["exposure_time"]
+    parameters["EXPOSURE"] = exp_time
+    parameters["CHANTYPE"] = spectype
+
+    rmf = RedistributionMatrixFile(rmf)
+    minlength = rmf.n_ch
+    if rmf.cmin == 1:
+        minlength += 1
+    spec = np.bincount(p, minlength=minlength)
+    if rmf.cmin == 1:
+        spec = spec[1:]
+    bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
+
+    return bins, spec, parameters
+
+
 def write_spectrum(
     evtfile,
     specfile,
@@ -548,56 +611,18 @@ def write_spectrum(
         Whether to overwrite an existing file with
         the same name. Default: False
     """
-    from soxs.response import RedistributionMatrixFile
 
-    parameters = {}
-    if isinstance(evtfile, str):
-        with fits.open(evtfile) as f:
-            hdu = f["EVENTS"]
-            evt_mask = np.ones(hdu.data["ENERGY"].size, dtype="bool")
-            if region is not None:
-                evt_mask &= _region_filter(hdu, region, format=format, exclude=exclude)
-            if tmin is not None:
-                tmin = parse_value(tmin, "s")
-                evt_mask &= hdu.data["TIME"] > tmin
-            if tmax is not None:
-                tmax = parse_value(tmax, "s")
-                evt_mask &= hdu.data["TIME"] < tmax
-            if emin is not None:
-                emin = parse_value(emin, "keV") * 1000.0
-                evt_mask &= hdu.data["ENERGY"] > emin
-            if emax is not None:
-                emax = parse_value(emax, "keV") * 1000.0
-                evt_mask &= hdu.data["ENERGY"] < emax
-            spectype = hdu.header["CHANTYPE"]
-            rmf = hdu.header["RESPFILE"]
-            p = hdu.data[spectype][evt_mask]
-            exp_time = hdu.header["EXPOSURE"]
-            for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
-                parameters[key] = hdu.header[key]
-    else:
-        rmf = evtfile["rmf"]
-        spectype = evtfile["channel_type"]
-        p = evtfile[spectype]
-        parameters["RESPFILE"] = PurePath(rmf).parts[-1]
-        parameters["ANCRFILE"] = PurePath(evtfile["arf"]).parts[-1]
-        parameters["TELESCOP"] = evtfile["telescope"]
-        parameters["INSTRUME"] = evtfile["instrument"]
-        parameters["MISSION"] = evtfile["mission"]
-        exp_time = evtfile["exposure_time"]
-
-    rmf = RedistributionMatrixFile(rmf)
-    minlength = rmf.n_ch
-    if rmf.cmin == 1:
-        minlength += 1
-    spec = np.bincount(p, minlength=minlength)
-    if rmf.cmin == 1:
-        spec = spec[1:]
-    bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
-
-    _write_spectrum(
-        bins, spec, exp_time, spectype, parameters, specfile, overwrite=overwrite
+    bins, spec, parameters = _make_spectrum(
+        evtfile,
+        region=region,
+        format=format,
+        exclude=exclude,
+        emin=emin,
+        emax=emax,
+        tmin=tmin,
+        tmax=tmax,
     )
+    _write_spectrum(bins, spec, parameters, specfile, overwrite=overwrite)
 
 
 def write_radial_profile(
