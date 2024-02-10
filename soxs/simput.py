@@ -65,7 +65,7 @@ class LazyReadPyxsimEvents(Sequence):
         if not hasattr(self.events, "get_data"):
             raise impe
         self.filenames = self.events.filenames
-        self.phys_coord = bool(self.events.parameters["phys_coord"])
+        self.phys_coord = bool(self.events.parameters.get("phys_coord", 0))
 
     def __getitem__(self, i):
         x, y, energy, flux = self.events.get_data(i)
