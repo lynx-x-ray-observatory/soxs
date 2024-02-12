@@ -10,23 +10,19 @@ cimport numpy as np
 def spectral_cube(
     np.ndarray[np.float64_t, ndim=1] x,
     np.ndarray[np.float64_t, ndim=1] y,
-    np.ndarray[np.int64_t, ndim=1] c,
-    np.ndarray[np.int64_t, ndim=1] cbins,
+    np.ndarray[np.int64_t, ndim=1] cidxs,
     int nx, int ny, int nc, int reblock,
 ):
     cdef double xmin, ymin, dx, dy
-    cdef int i, ix, iy, ic, nnx, nny, nnc
+    cdef int i, ix, iy, ic, nnx, nny
     cdef np.ndarray[np.float64_t, ndim=3] data
     cdef int nevent = x.shape[0]
 
     nnx = int(nx // reblock)
     nny = int(ny // reblock)
-    nnc = cbins.size - 1
-    data = np.zeros((nnc, nny, nnx), dtype=np.float64)
+    data = np.zeros((nc, nny, nnx), dtype=np.float64)
     dx = float(nx) / nnx
     dy = float(ny) / nny
-
-    cidxs = np.searchsorted(cbins, c) - 1
 
     for i in range(nevent):
         ix = int((x[i] - 0.5) / dx)
