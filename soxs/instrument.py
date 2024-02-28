@@ -518,7 +518,7 @@ def make_background(
             "fov": instrument_spec["fov"],
             "num_pixels": nx,
             "pix_center": np.array([0.5 * (2 * nx + 1)] * 2),
-            "channel_type": rmf.header["CHANTYPE"].upper(),
+            "channel_type": rmf.chan_type,
             "sky_center": sky_center,
             "dither_params": dither_dict,
             "plate_scale": plate_scale,
