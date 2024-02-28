@@ -1168,7 +1168,7 @@ def plot_spectrum(
     if not plot_counts:
         y /= hdu.header["EXPOSURE"]
         yerr /= hdu.header["EXPOSURE"]
-    if plot_energy:
+    if plot_energy and not plot_counts:
         yunit = "keV"
         y /= dx
         yerr /= dx
