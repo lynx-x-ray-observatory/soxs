@@ -274,7 +274,29 @@ for energy in ["meg", "heg"]:
 
 # XRISM Resolve
 
-instrument_registry["xrism_resolve"] = {
+for res in ["Hp_5eV", "Mp_6eV", "Hd_7eV"]:
+    for filt in ["", "fwBe_", "fwND_"]:
+        instrument_registry[f"xrism_resolve_{filt}{res}"] = {
+            "name": f"xrism_resolve_{filt}{res}",
+            "arf": f"rsl_pointsource_{filt}GVclosed.arf",
+            "rmf": f"rsl_{res}.rmf",
+            "bkgnd": None,
+            "num_pixels": 6,
+            "fov": 3.0,
+            "aimpt_coords": [0.0, 0.0],
+            "chips": [["Box", 0, 0, 6, 6]],
+            "focal_length": 5.6,
+            "dither": False,
+            "psf": ["multi_image", "sxs_psfimage_20140618.fits"],
+            "imaging": True,
+            "grating": False,
+        }
+
+instrument_registry["xrism_resolve"] = deepcopy(
+    instrument_registry["xrism_resolve_Hp_5eV"]
+)
+
+instrument_registry["xrism_resolve_old"] = {
     "name": "xrism_resolve",
     "arf": "resolve_pnt_heasim_noGV_20190701.arf",
     "rmf": "resolve_h5ev_2019a.rmf",
@@ -290,10 +312,10 @@ instrument_registry["xrism_resolve"] = {
     "grating": False,
 }
 
-instrument_registry["xrism_resolve_withGV"] = deepcopy(
+instrument_registry["xrism_resolve_withGV_old"] = deepcopy(
     instrument_registry["xrism_resolve"]
 )
-instrument_registry["xrism_resolve_withGV"][
+instrument_registry["xrism_resolve_withGV_old"][
     "arf"
 ] = "resolve_pnt_heasim_withGV_20190701.arf"
 
@@ -301,8 +323,8 @@ instrument_registry["xrism_resolve_withGV"][
 
 instrument_registry["xrism_xtend"] = {
     "name": "xrism_xtend",
-    "arf": "sxt-i_140505_ts02um_int01.8r_intall_140618psf.arf",
-    "rmf": "ah_sxi_20120702.rmf",
+    "arf": "xtd_pointsource.arf",
+    "rmf": "xtd_sim_v20201009.rmf",
     "bkgnd": ["ah_sxi_pch_nxb_full_20110530.pi", 1422.6292229683816],
     "num_pixels": 1296,
     "fov": 38.18845555660526,
