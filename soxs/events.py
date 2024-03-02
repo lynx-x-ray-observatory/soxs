@@ -21,10 +21,8 @@ def wcs_from_header(h):
     return w
 
 
-def write_event_file(events, parameters, filename, overwrite=False):
+def make_event_file(events, parameters):
     from astropy.time import Time, TimeDelta
-
-    mylog.info("Writing events to file %s.", filename)
 
     t_begin = Time.now()
     dt = TimeDelta(parameters["exposure_time"], format="sec")
@@ -138,7 +136,7 @@ def write_event_file(events, parameters, filename, overwrite=False):
 
     hdulist = [fits.PrimaryHDU(), tbhdu, tbhdu_gti]
 
-    fits.HDUList(hdulist).writeto(filename, overwrite=overwrite)
+    return fits.HDUList(hdulist)
 
 
 def make_exposure_map(
@@ -796,8 +794,9 @@ def make_image(
 
     Parameters
     ----------
-    evt_file : string
-        The name of the input event file to read.
+    evt_file : string or :class:`~astropy.io.fits.HDUList`
+        The name of the input event file to read, or an HDUList
+        object.
     coord_type : string, optional
         The type of coordinate to bin into an image.
         Can be "sky" or "det". Default: "sky"
@@ -851,29 +850,32 @@ def make_image(
         raise RuntimeError(
             "Reblocking images is not supported for detector coordinates!"
         )
-    with fits.open(evt_file) as f:
-        e = f["EVENTS"].data["ENERGY"]
-        t = f["EVENTS"].data["TIME"]
-        if bands is not None:
-            idxs = False
-            for band in bands:
-                idxs |= np.logical_and(e > band[0], e < band[1])
-        else:
-            idxs = np.logical_and(e > emin, e < emax)
-        idxs &= np.logical_and(t > tmin, t < tmax)
-        xcoord, ycoord, xcol, ycol = coord_types[coord_type]
-        x = f["EVENTS"].data[xcoord][idxs]
-        y = f["EVENTS"].data[ycoord][idxs]
-        exp_time = f["EVENTS"].header["EXPOSURE"]
-        xmin = f["EVENTS"].header[f"TLMIN{xcol}"]
-        ymin = f["EVENTS"].header[f"TLMIN{ycol}"]
-        xmax = f["EVENTS"].header[f"TLMAX{xcol}"]
-        ymax = f["EVENTS"].header[f"TLMAX{ycol}"]
-        if coord_type == "sky":
-            xctr = f["EVENTS"].header[f"TCRVL{xcol}"]
-            yctr = f["EVENTS"].header[f"TCRVL{ycol}"]
-            xdel = f["EVENTS"].header[f"TCDLT{xcol}"] * reblock
-            ydel = f["EVENTS"].header[f"TCDLT{ycol}"] * reblock
+    if isinstance(evt_file, fits.HDUList):
+        ehdu = evt_file["EVENTS"]
+    else:
+        ehdu = fits.open(evt_file)["EVENTS"]
+    e = ehdu.data["ENERGY"]
+    t = ehdu.data["TIME"]
+    if bands is not None:
+        idxs = False
+        for band in bands:
+            idxs |= np.logical_and(e > band[0], e < band[1])
+    else:
+        idxs = np.logical_and(e > emin, e < emax)
+    idxs &= np.logical_and(t > tmin, t < tmax)
+    xcoord, ycoord, xcol, ycol = coord_types[coord_type]
+    x = ehdu.data[xcoord][idxs]
+    y = ehdu.data[ycoord][idxs]
+    exp_time = ehdu.header["EXPOSURE"]
+    xmin = ehdu.header[f"TLMIN{xcol}"]
+    ymin = ehdu.header[f"TLMIN{ycol}"]
+    xmax = ehdu.header[f"TLMAX{xcol}"]
+    ymax = ehdu.header[f"TLMAX{ycol}"]
+    if coord_type == "sky":
+        xctr = ehdu.header[f"TCRVL{xcol}"]
+        yctr = ehdu.header[f"TCRVL{ycol}"]
+        xdel = ehdu.header[f"TCDLT{xcol}"] * reblock
+        ydel = ehdu.header[f"TCDLT{ycol}"] * reblock
 
     nx = int(int(xmax - xmin) // reblock)
     ny = int(int(ymax - ymin) // reblock)

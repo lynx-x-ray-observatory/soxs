@@ -6,7 +6,7 @@ import numpy as np
 from astropy import wcs
 from regions import PixCoord
 
-from soxs.events import write_event_file
+from soxs.events import make_event_file
 from soxs.instrument_registry import instrument_registry
 from soxs.psf import psf_model_registry
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
@@ -638,7 +638,9 @@ def make_background_file(
         input_pt_sources=input_pt_sources,
         prng=prng,
     )
-    write_event_file(events, event_params, out_file, overwrite=overwrite)
+    f = make_event_file(events, event_params)
+    mylog.info("Writing background events to file %s.", out_file)
+    f.writeto(out_file, overwrite=overwrite)
 
 
 def instrument_simulator(
@@ -793,7 +795,9 @@ def instrument_simulator(
             "will not write an event file."
         )
     else:
-        write_event_file(events, event_params, out_file, overwrite=overwrite)
+        f = make_event_file(events, event_params)
+        mylog.info("Writing events to file %s.", out_file)
+        f.writeto(out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
 
 
