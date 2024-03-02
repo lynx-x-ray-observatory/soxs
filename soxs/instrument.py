@@ -643,6 +643,79 @@ def make_background_file(
     f.writeto(out_file, overwrite=overwrite)
 
 
+def _instrument_simulator(
+    input_events,
+    exp_time,
+    instrument,
+    sky_center,
+    instr_bkgnd=True,
+    foreground=True,
+    ptsrc_bkgnd=True,
+    bkgnd_file=None,
+    no_dither=False,
+    dither_params=None,
+    roll_angle=0.0,
+    subpixel_res=False,
+    aimpt_shift=None,
+    input_pt_sources=None,
+    prng=None,
+):
+    from soxs.background import add_background_from_file
+
+    # Make the source first
+    events, event_params = generate_events(
+        input_events,
+        exp_time,
+        instrument,
+        sky_center,
+        no_dither=no_dither,
+        dither_params=dither_params,
+        roll_angle=roll_angle,
+        subpixel_res=subpixel_res,
+        aimpt_shift=aimpt_shift,
+        prng=prng,
+    )
+    # If the user wants backgrounds, either make the background or add an already existing
+    # background event file. It may be necessary to reproject events to a new coordinate system.
+    if bkgnd_file is None:
+        if not instr_bkgnd and not ptsrc_bkgnd and not foreground:
+            mylog.info("No backgrounds will be added to this observation.")
+        else:
+            mylog.info("Adding background events.")
+            bkg_events, _ = make_background(
+                exp_time,
+                instrument,
+                sky_center,
+                foreground=foreground,
+                instr_bkgnd=instr_bkgnd,
+                no_dither=no_dither,
+                dither_params=dither_params,
+                ptsrc_bkgnd=ptsrc_bkgnd,
+                prng=prng,
+                subpixel_res=subpixel_res,
+                roll_angle=roll_angle,
+                aimpt_shift=aimpt_shift,
+                input_pt_sources=input_pt_sources,
+            )
+            for key in events:
+                events[key] = np.concatenate([events[key], bkg_events[key]])
+    else:
+        mylog.info("Adding background events from the file %s.", bkgnd_file)
+        if not os.path.exists(bkgnd_file):
+            raise IOError(f"Cannot find the background event file {bkgnd_file}!")
+        events = add_background_from_file(events, event_params, bkgnd_file)
+    if len(events["energy"]) == 0:
+        mylog.warning(
+            "No events were detected from source or background!! We "
+            "will not write an event file."
+        )
+        f = None
+    else:
+        f = make_event_file(events, event_params)
+        mylog.info("Observation complete.")
+    return f
+
+
 def instrument_simulator(
     input_events,
     out_file,
@@ -742,60 +815,27 @@ def instrument_simulator(
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits",
     ...                      300000.0, "lynx_hdxi", [30., 45.], overwrite=True)
     """
-    from soxs.background import add_background_from_file
-
     if not out_file.endswith(".fits"):
         out_file += ".fits"
     mylog.info("Making observation of source in %s.", out_file)
-    # Make the source first
-    events, event_params = generate_events(
+    f = _instrument_simulator(
         input_events,
         exp_time,
         instrument,
         sky_center,
+        instr_bkgnd=instr_bkgnd,
+        foreground=foreground,
+        ptsrc_bkgnd=ptsrc_bkgnd,
+        bkgnd_file=bkgnd_file,
         no_dither=no_dither,
         dither_params=dither_params,
         roll_angle=roll_angle,
         subpixel_res=subpixel_res,
         aimpt_shift=aimpt_shift,
+        input_pt_sources=input_pt_sources,
         prng=prng,
     )
-    # If the user wants backgrounds, either make the background or add an already existing
-    # background event file. It may be necessary to reproject events to a new coordinate system.
-    if bkgnd_file is None:
-        if not instr_bkgnd and not ptsrc_bkgnd and not foreground:
-            mylog.info("No backgrounds will be added to this observation.")
-        else:
-            mylog.info("Adding background events.")
-            bkg_events, _ = make_background(
-                exp_time,
-                instrument,
-                sky_center,
-                foreground=foreground,
-                instr_bkgnd=instr_bkgnd,
-                no_dither=no_dither,
-                dither_params=dither_params,
-                ptsrc_bkgnd=ptsrc_bkgnd,
-                prng=prng,
-                subpixel_res=subpixel_res,
-                roll_angle=roll_angle,
-                aimpt_shift=aimpt_shift,
-                input_pt_sources=input_pt_sources,
-            )
-            for key in events:
-                events[key] = np.concatenate([events[key], bkg_events[key]])
-    else:
-        mylog.info("Adding background events from the file %s.", bkgnd_file)
-        if not os.path.exists(bkgnd_file):
-            raise IOError(f"Cannot find the background event file {bkgnd_file}!")
-        events = add_background_from_file(events, event_params, bkgnd_file)
-    if len(events["energy"]) == 0:
-        mylog.warning(
-            "No events were detected from source or background!! We "
-            "will not write an event file."
-        )
-    else:
-        f = make_event_file(events, event_params)
+    if f:
         mylog.info("Writing events to file %s.", out_file)
         f.writeto(out_file, overwrite=overwrite)
     mylog.info("Observation complete.")
