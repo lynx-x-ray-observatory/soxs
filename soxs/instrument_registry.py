@@ -274,7 +274,7 @@ for energy in ["meg", "heg"]:
 
 # XRISM Resolve
 
-for res in ["Hp_5eV", "Mp_6eV", "Hd_7eV"]:
+for res in ["Hp_5eV", "Mp_6eV", "Lp_18eV"]:
     for filt in ["", "fwBe_", "fwND_"]:
         instrument_registry[f"xrism_resolve_{filt}{res}"] = {
             "name": f"xrism_resolve_{filt}{res}",
