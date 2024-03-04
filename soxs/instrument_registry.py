@@ -649,7 +649,7 @@ def make_simple_instrument(
     sq_inst = get_instrument_from_registry(base_inst)
     if sq_inst["imaging"] is False:
         raise RuntimeError(
-            "make_simple_instrument only works with " "imaging instruments!"
+            "make_simple_instrument only works with imaging instruments!"
         )
     sq_inst["name"] = new_inst
     sq_inst["chips"] = [["Box", 0, 0, num_pixels, num_pixels]]
