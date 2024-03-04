@@ -325,7 +325,7 @@ instrument_registry["xrism_xtend"] = {
     "name": "xrism_xtend",
     "arf": "xtd_pointsource.arf",
     "rmf": "xtd_sim_v20201009.rmf",
-    "bkgnd": ["ah_sxi_pch_nxb_full_20110530.pi", 1422.6292229683816],
+    "bkgnd": ["xtend_sim_nxb_v20201009_r5arcmin.pha", 78.53981633974483],
     "num_pixels": 1296,
     "fov": 38.18845555660526,
     "aimpt_coords": [-244.0, -244.0],
