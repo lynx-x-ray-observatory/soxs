@@ -172,11 +172,21 @@ the :math:`\pm` first order spectra. They are named:
 XRISM
 ~~~~~
 
-Three instrument specifications are available for *XRISM*. For the *Resolve*
-instrument, the ``"xrism_resolve"`` specification has a ~3 arcminute square FoV
-with 6 pixels on a side. The RMF assumes 5 eV spectral resolution. This instrument
-specification assumes no gate valve. The ``"xrism_resolve_withGV"`` specification
-assumes the presence of gate valve.
+A number of instrument specifications are available for *XRISM*.
+
+All but one of these are for the  *Resolve* instrument. Each *Resolve* specification
+has a ~3 arcminute square FoV with 6 pixels on a side. The differences between the
+specifications depend on the resolution of the RMF and the presence or absence of a
+filter. The three instrument specifications which vary by RMF resolution are:
+
+* ``"xrism_resolve_Hp_5eV"``: High-resolution RMF with 5 eV resolution
+* ``"xrism_resolve_Mp_7eV"``: Medium-resolution RMF with 6 eV resolution
+* ``"xrism_resolve_Lp_18eV"``: Low-resolution RMF with 18 eV resolution
+
+All of these have no filter. For each of these RMF resolution options, there is
+are versions for the Beryllium filter, e.g. ``"xrism_resolve_fwBe_Hp_5eV"``, and for
+the neutral density filter, e.g. ``"xrism_resolve_fwND_Lp_18eV"``. All *Resolve*
+instrument specifications assume the gate valve is closed.
 
 For the *Xtend* instrument, the ``"xrism_xtend"`` specification has 2x2 CCDs laid
 out in a ~38' FoV, with a pixel size of ~1.77".

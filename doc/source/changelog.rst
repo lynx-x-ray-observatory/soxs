@@ -3,6 +3,23 @@
 ChangeLog
 =========
 
+Version 4.8.0
+-------------
+
+This version of SOXS contains a bugfix, a small change in behavior, and new
+response files for the XRISM instrument models.
+
+* A bug that occurred when SOXS was not able to find the location of the
+  ``"CHANTYPE"`` header keyword in RMFs when making backgrounds has now been
+  fixed. Thanks to Charles Romero for pointing this out.
+* When plotting an instrument spectrum using :func:`~soxs.events.plot_spectrum`,
+  if ``plot_counts`` is set to True, the y-axis will now be in units of counts/bin
+  instead of counts/keV regardless of whether ``plot_energy`` is ``True`` or
+  ``False``.
+* New response files for the XRISM instrument models have been added based on
+  those provided for XRISM AO-1, which in turn has resulted in new XRISM
+  instrument models. See :ref:`xrism` for details.
+
 Version 4.7.1
 -------------
 
