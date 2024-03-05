@@ -3,6 +3,12 @@
 ChangeLog
 =========
 
+Version 4.8.1
+-------------
+
+This version of SOXS contains a bugfix, where a spurious warning message about
+using instrument files in the SOXS data directory is removed.
+
 Version 4.8.0
 -------------
 
