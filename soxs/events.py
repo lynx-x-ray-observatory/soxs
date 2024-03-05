@@ -1002,42 +1002,44 @@ def make_cube(
 ):
     from soxs.response import RedistributionMatrixFile
 
-    with fits.open(evtfile) as f:
-        hdu = f["EVENTS"]
-        e = hdu.data["ENERGY"]
-        t = hdu.data["TIME"]
-        if tmin is None:
-            tmin = -np.inf
-        else:
-            tmin = parse_value(tmin, "s")
-        if tmax is None:
-            tmax = np.inf
-        else:
-            tmax = parse_value(tmax, "s")
-        if emin is None:
-            emin = 0.0
-        else:
-            emin = parse_value(emin, "keV")
-        if emax is None:
-            emax = 1000.0
-        else:
-            emax = parse_value(emax, "keV")
-        idxs = np.logical_and(e > emin * 1.0e3, e < emax * 1.0e3)
-        idxs &= np.logical_and(t > tmin, t < tmax)
-        x = hdu.data["X"][idxs].astype("float64")
-        y = hdu.data["Y"][idxs].astype("float64")
-        spectype = hdu.header["CHANTYPE"]
-        rmf = hdu.header["RESPFILE"]
-        c = hdu.data[spectype][idxs]
-        exp_time = hdu.header["EXPOSURE"]
-        xmin = hdu.header["TLMIN2"]
-        ymin = hdu.header["TLMIN3"]
-        xmax = hdu.header["TLMAX2"]
-        ymax = hdu.header["TLMAX3"]
-        xctr = hdu.header["TCRVL2"]
-        yctr = hdu.header["TCRVL3"]
-        xdel = hdu.header["TCDLT2"] * reblock
-        ydel = hdu.header["TCDLT3"] * reblock
+    if isinstance(evtfile, fits.HDUList):
+        hdu = evtfile["EVENTS"]
+    else:
+        hdu = fits.open(evtfile)["EVENTS"]
+    e = hdu.data["ENERGY"]
+    t = hdu.data["TIME"]
+    if tmin is None:
+        tmin = -np.inf
+    else:
+        tmin = parse_value(tmin, "s")
+    if tmax is None:
+        tmax = np.inf
+    else:
+        tmax = parse_value(tmax, "s")
+    if emin is None:
+        emin = 0.0
+    else:
+        emin = parse_value(emin, "keV")
+    if emax is None:
+        emax = 1000.0
+    else:
+        emax = parse_value(emax, "keV")
+    idxs = np.logical_and(e > emin * 1.0e3, e < emax * 1.0e3)
+    idxs &= np.logical_and(t > tmin, t < tmax)
+    x = hdu.data["X"][idxs].astype("float64")
+    y = hdu.data["Y"][idxs].astype("float64")
+    spectype = hdu.header["CHANTYPE"]
+    rmf = hdu.header["RESPFILE"]
+    c = hdu.data[spectype][idxs]
+    exp_time = hdu.header["EXPOSURE"]
+    xmin = hdu.header["TLMIN2"]
+    ymin = hdu.header["TLMIN3"]
+    xmax = hdu.header["TLMAX2"]
+    ymax = hdu.header["TLMAX3"]
+    xctr = hdu.header["TCRVL2"]
+    yctr = hdu.header["TCRVL3"]
+    xdel = hdu.header["TCDLT2"] * reblock
+    ydel = hdu.header["TCDLT3"] * reblock
 
     nx = int(int(xmax - xmin) // reblock)
     ny = int(int(ymax - ymin) // reblock)
