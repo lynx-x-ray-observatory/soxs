@@ -306,11 +306,14 @@ finley = PoochHandle()
 
 
 def get_data_file(fn):
-    if os.path.exists(fn):
-        mylog.warning("Using local file %s instead of the one from the database.", fn)
+    rel_fn = os.path.split(fn)[-1]
+    if os.path.exists(rel_fn):
+        mylog.warning(
+            "Using local file %s instead of the one from the database.", rel_fn
+        )
         return fn
     else:
-        return finley.fetch(os.path.split(fn)[-1])
+        return finley.fetch(rel_fn)
 
 
 def image_pos(im, nph, prng):
