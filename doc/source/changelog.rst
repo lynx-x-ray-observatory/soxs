@@ -3,6 +3,15 @@
 ChangeLog
 =========
 
+Version 4.8.2
+-------------
+
+This version of SOXS:
+
+* Fixes a bug in which it was impossible to create an exposure map for instruments
+  without dither.
+* Drops support for Python 3.8.
+
 Version 4.8.1
 -------------
 
