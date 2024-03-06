@@ -11,6 +11,32 @@ requires = [
     "oldest-supported-numpy",
 ]
 
+[project]
+name = "soxs"
+version = "4.10.dev0"
+requires-python = ">=3.9.2"
+description = "Simulated Observations of X-ray Sources"
+authors = [
+    { name = "John ZuHone", email = "jzuhone@gmail.com" },
+]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = [
+    "numpy",
+    "astropy>=4.0",
+    "tqdm",
+    "pooch",
+    "h5py>=3.0",
+    "scipy",
+    "pyyaml",
+    "regions",
+    "appdirs",
+]
+
 [tool.setuptools_scm]
 
 [tool.black]
