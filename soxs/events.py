@@ -260,6 +260,8 @@ def make_exposure_map(
         y_mid = 0.5 * (y_edges[1:] + y_edges[:-1]) / reblock
     else:
         asphist = exp_time * np.ones((1, 1))
+        x_mid = np.zeros(nhistx)
+        y_mid = np.zeros(nhisty)
 
     # Determine the effective area
     eff_area = arf.interpolate_area(energy).value
