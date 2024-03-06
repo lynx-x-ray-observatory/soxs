@@ -788,6 +788,7 @@ def make_image(
     bands=None,
     expmap_file=None,
     reblock=1,
+    width=None,
 ):
     r"""
     Generate an image by binning X-ray counts.
@@ -874,6 +875,11 @@ def make_image(
     if coord_type == "sky":
         xctr = ehdu.header[f"TCRVL{xcol}"]
         yctr = ehdu.header[f"TCRVL{ycol}"]
+        if width is not None:
+            xmin = 0.5 * (xmin + xmax) - 0.5 * width * (xmax - xmin)
+            xmax = 0.5 * (xmin + xmax) + 0.5 * width * (xmax - xmin)
+            ymin = 0.5 * (ymin + ymax) - 0.5 * width * (ymax - ymin)
+            ymax = 0.5 * (ymin + ymax) + 0.5 * width * (ymax - ymin)
         xdel = ehdu.header[f"TCDLT{xcol}"] * reblock
         ydel = ehdu.header[f"TCDLT{ycol}"] * reblock
 
@@ -999,6 +1005,7 @@ def make_cube(
     tmin=None,
     tmax=None,
     reblock=1,
+    width=None,
 ):
     from soxs.response import RedistributionMatrixFile
 
@@ -1032,12 +1039,17 @@ def make_cube(
     rmf = hdu.header["RESPFILE"]
     c = hdu.data[spectype][idxs]
     exp_time = hdu.header["EXPOSURE"]
+    xctr = hdu.header["TCRVL2"]
+    yctr = hdu.header["TCRVL3"]
     xmin = hdu.header["TLMIN2"]
     ymin = hdu.header["TLMIN3"]
     xmax = hdu.header["TLMAX2"]
     ymax = hdu.header["TLMAX3"]
-    xctr = hdu.header["TCRVL2"]
-    yctr = hdu.header["TCRVL3"]
+    if width is not None:
+        xmin = 0.5 * (xmin + xmax) - 0.5 * width * (xmax - xmin)
+        xmax = 0.5 * (xmin + xmax) + 0.5 * width * (xmax - xmin)
+        ymin = 0.5 * (ymin + ymax) - 0.5 * width * (ymax - ymin)
+        ymax = 0.5 * (ymin + ymax) + 0.5 * width * (ymax - ymin)
     xdel = hdu.header["TCDLT2"] * reblock
     ydel = hdu.header["TCDLT3"] * reblock
 
@@ -1052,7 +1064,7 @@ def make_cube(
     cbins = np.arange(rmf.n_ch) + rmf.cmin - 0.5
     cidxs = np.searchsorted(cbins[eidxs], c) - 1
 
-    cube = spectral_cube(x, y, cidxs, nx, ny, eidxs.sum(), reblock)
+    cube = spectral_cube(x, y, cidxs, nx, ny, eidxs.sum(), reblock, xmin, ymin)
 
     imhdu = fits.PrimaryHDU(cube)
 

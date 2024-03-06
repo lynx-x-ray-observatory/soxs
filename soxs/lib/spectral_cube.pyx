@@ -12,8 +12,9 @@ def spectral_cube(
     np.ndarray[np.float64_t, ndim=1] y,
     np.ndarray[np.int64_t, ndim=1] cidxs,
     int nx, int ny, int nc, int reblock,
+    double xmin, double ymin,
 ):
-    cdef double xmin, ymin, dx, dy
+    cdef double dx, dy
     cdef int i, ix, iy, ic, nnx, nny
     cdef np.ndarray[np.float64_t, ndim=3] data
     cdef int nevent = x.shape[0]
@@ -25,8 +26,8 @@ def spectral_cube(
     dy = float(ny) / nny
 
     for i in range(nevent):
-        ix = int((x[i] - 0.5) / dx)
-        iy = int((y[i] - 0.5) / dy)
+        ix = int((x[i] - xmin) / dx)
+        iy = int((y[i] - ymin) / dy)
         data[cidxs[i],iy,ix] += 1
 
     return data
