@@ -145,7 +145,14 @@ def generate_channel_spectrum(count_rate, t_exp, solid_angle, prng=None):
 
 
 def make_diffuse_background(
-    foreground, instr_bkgnd, inst_spec, event_params, arf, rmf, prng=None
+    foreground,
+    instr_bkgnd,
+    inst_spec,
+    event_params,
+    arf,
+    rmf,
+    prng=None,
+    instr_bkgnd_scale=1.0,
 ):
     from collections import defaultdict
 
@@ -182,6 +189,7 @@ def make_diffuse_background(
         ncts = np.zeros(rmf.n_ch, dtype="int")
         if instr_bkgnd:
             ispec = read_instr_spectrum(bkgnd_spec[i][0], bkgnd_spec[i][1])
+            ispec *= instr_bkgnd_scale
             icts = generate_channel_spectrum(
                 ispec, event_params["exposure_time"], sa, prng=prng
             )

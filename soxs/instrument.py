@@ -377,6 +377,7 @@ def make_background(
     input_pt_sources=None,
     aimpt_shift=None,
     prng=None,
+    instr_bkgnd_scale=1.0,
     **kwargs,
 ):
     """
@@ -541,7 +542,14 @@ def make_background(
 
     if foreground or instr_bkgnd:
         bkg_events = make_diffuse_background(
-            foreground, instr_bkgnd, instrument_spec, event_params, arf, rmf, prng=prng
+            foreground,
+            instr_bkgnd,
+            instrument_spec,
+            event_params,
+            arf,
+            rmf,
+            prng=prng,
+            instr_bkgnd_scale=instr_bkgnd_scale,
         )
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
@@ -659,6 +667,7 @@ def _instrument_simulator(
     aimpt_shift=None,
     input_pt_sources=None,
     prng=None,
+    instr_bkgnd_scale=1.0,
 ):
     from soxs.background import add_background_from_file
 
@@ -696,6 +705,7 @@ def _instrument_simulator(
                 roll_angle=roll_angle,
                 aimpt_shift=aimpt_shift,
                 input_pt_sources=input_pt_sources,
+                instr_bkgnd_scale=instr_bkgnd_scale,
             )
             for key in events:
                 events[key] = np.concatenate([events[key], bkg_events[key]])
