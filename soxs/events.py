@@ -1078,7 +1078,7 @@ def make_cube(
     imhdu.header["CUNIT2"] = "deg"
     imhdu.header["CUNIT3"] = "keV"
     imhdu.header["CDELT1"] = xdel
-    imhdu.header["CDELT3"] = ydel
+    imhdu.header["CDELT2"] = ydel
     imhdu.header["CDELT3"] = de[0]
     imhdu.header["CRPIX1"] = 0.5 * (nx + 1)
     imhdu.header["CRPIX2"] = 0.5 * (ny + 1)
