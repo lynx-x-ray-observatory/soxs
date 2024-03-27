@@ -47,6 +47,7 @@ from soxs.simput import (
     SimputCatalog,
     SimputPhotonList,
     SimputSpectrum,
+    ThermalSimputCatalog,
     make_bkgnd_simput,
     write_photon_list,
 )

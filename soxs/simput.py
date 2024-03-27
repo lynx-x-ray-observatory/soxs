@@ -850,3 +850,71 @@ def make_bkgnd_simput(
     )
     cat.append(src, overwrite=overwrite)
     return cat
+
+
+class ThermalSimputCatalog(SimputCatalog):
+    def __new__(
+        cls,
+        filename,
+        regions,
+        flux_img,
+        kT_img,
+        abund,
+        redshift,
+        nH,
+        emin,
+        emax,
+        sgen,
+        velocity=0.0,
+        overwrite=False,
+        absorb_model="tbabs",
+    ):
+        from astropy.constants import c
+        from astropy.wcs import WCS
+        from regions import Regions
+
+        regions = Regions.read(regions)
+        cat = SimputCatalog.make_empty(filename, overwrite=overwrite)
+        if isinstance(flux_img, str):
+            with fits.open(flux_img) as f:
+                for hdu in f:
+                    if hdu.is_image and hdu.header["NAXIS"] == 2:
+                        flux_img = hdu.copy()
+                        break
+        if isinstance(kT_img, str):
+            with fits.open(kT_img) as f:
+                for hdu in f:
+                    if hdu.is_image and hdu.header["NAXIS"] == 2:
+                        kT_img = hdu.copy()
+                        break
+        nx, ny = flux_img.shape
+        w = WCS(flux_img.header)
+        ra0, dec0 = w.wcs.crval
+        a_is_img = isinstance(abund, fits.ImageHDU)
+        v_is_img = isinstance(velocity, fits.ImageHDU)
+        for i, reg in enumerate(regions):
+            img = (
+                reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny)).astype("bool")
+            )
+            flux = flux_img.data * img
+            imhdu = fits.ImageHDU(data=flux, header=flux_img.header)
+            flux_sum = flux.sum()
+            if flux_sum > 0.0:
+                kT = np.nansum(kT_img.data * flux) / flux_sum
+                if a_is_img:
+                    A = np.nansum(abund.data * flux) / flux_sum
+                else:
+                    A = abund
+                if v_is_img:
+                    v = np.nansum(velocity.data * flux) / flux_sum
+                else:
+                    v = velocity
+                beta = Quantity(v, "km/s") / c.to("km/s")
+                spec = sgen.get_spectrum(kT, A, redshift + beta.value, 1.0)
+                spec.apply_foreground_absorption(nH, model=absorb_model)
+                spec.rescale_flux(flux_sum, emin, emax)
+                src = SimputSpectrum.from_spectrum(
+                    f"reg_{i}", spec, ra0, dec0, imhdu=imhdu
+                )
+                cat.append(src)
+        return cat
