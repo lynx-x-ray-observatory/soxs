@@ -1213,9 +1213,13 @@ def plot_spectrum(
         Whether to plot in energy or channel space. Default is
         to plot in energy, unless the RMF for the spectrum
         cannot be found.
-    ebins : NumPy array, optional
+    ebins : tuple or NumPy array, optional
         If set, these are the energy bin edges in which the spectrum
-        will be binned. If not set, the counts will be binned according
+        will be binned. If a 2-tuple, the first element is the minimum
+        significance (assuming Poisson statistics) of each bin and the
+        second element is the minimum number of channels to be combined
+        in the bin. If a NumPy array, these are the bins that will be
+        used. If not set, the counts will be binned according
         to channel. Default: None
     lw : float, optional
         The width of the lines in the plots. Default: 2.0 px.
@@ -1273,11 +1277,31 @@ def plot_spectrum(
         rmf = hdu.header.get("RESPFILE", None)
         if rmf is not None:
             rmf = RedistributionMatrixFile(rmf)
-            e = 0.5 * (rmf.ebounds_data["E_MIN"] + rmf.ebounds_data["E_MAX"])
+            emin = rmf.ebounds_data["E_MIN"]
+            emax = rmf.ebounds_data["E_MAX"]
+            e = 0.5 * (emin + emax)
             if ebins is None:
                 xmid = e
-                xerr = 0.5 * (rmf.ebounds_data["E_MAX"] - rmf.ebounds_data["E_MIN"])
+                xerr = 0.5 * (emax - emin)
             else:
+                if isinstance(ebins, tuple):
+                    if len(ebins) != 2:
+                        raise RuntimeError(
+                            "If ebins is a tuple, it must have 2 elements!"
+                        )
+                    sigma, max_size = ebins
+                    sigma2 = sigma * sigma
+                    ebins = [emin[0]]
+                    sum = 0.0
+                    max_size = 0
+                    for i in range(y.size):
+                        sum += y[i]
+                        max_size += 1
+                        if sum >= sigma2 or i == y.size - 1:
+                            ebins.append(emax[i])
+                            sum = 0.0
+                            max_size = 0
+                    ebins = np.array(ebins)
                 xmid = 0.5 * (ebins[1:] + ebins[:-1])
                 xerr = 0.5 * np.diff(ebins)
                 y = np.histogram(e, ebins, weights=y)[0].astype("float64")
