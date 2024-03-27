@@ -111,6 +111,29 @@ class SimputCatalog:
         self.timing = np.array(["NULL"] * self.num_sources)
 
     @classmethod
+    def make_empty(cls, filename, overwrite):
+        """
+        Create an empty SIMPUT catalog file.
+
+        Parameters
+        ----------
+        filename : string
+            The name of the SIMPUT catalog file to write.
+        overwrite : boolean, optional
+            Whether to overwrite an existing file with
+            the same name. If src_filename=None and the source is
+            to the written to the SIMPUT catalog file, then this
+            argument is ignored. If src_filename is another value,
+            it exists, and overwrite=False, the source will be
+            appended to the file. Default: False
+        """
+        sc = cls([], [], [], [], [], [], [], [], filename)
+        if os.path.exists(filename) and not overwrite:
+            raise IOError(f"{filename} exists and overwrite=False!")
+        sc._write_catalog(overwrite=overwrite)
+        return sc
+
+    @classmethod
     def from_source(cls, filename, source, src_filename=None, overwrite=False):
         """
         Create a new :class:`~soxs.simput.SimputCatalog`
@@ -135,12 +158,8 @@ class SimputCatalog:
             argument is ignored. If src_filename is another value,
             it exists, and overwrite=False, the source will be
             appended to the file. Default: False
-
         """
-        sc = cls([], [], [], [], [], [], [], [], filename)
-        if os.path.exists(filename) and not overwrite:
-            raise IOError(f"{filename} exists and overwrite=False!")
-        sc._write_catalog(overwrite=overwrite)
+        sc = cls.make_empty(filename, overwrite)
         sc.append(source, src_filename=src_filename, overwrite=overwrite)
         return sc
 
