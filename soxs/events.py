@@ -1326,7 +1326,9 @@ def plot_spectrum(
     if noerr:
         ax.plot(xmid, y, lw=lw, label=label, **kwargs)
     else:
-        ax.errorbar(xmid, y, yerr=yerr, xerr=xerr, lw=lw, label=label, **kwargs)
+        ax.errorbar(
+            xmid, y, yerr=yerr, xerr=xerr, fmt=".", lw=lw, label=label, **kwargs
+        )
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     ax.set_xlim(xmin, xmax)
