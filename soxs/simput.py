@@ -111,7 +111,7 @@ class SimputCatalog:
         self.timing = np.array(["NULL"] * self.num_sources)
 
     @classmethod
-    def make_empty(cls, filename, overwrite):
+    def make_empty(cls, filename, overwrite=False):
         """
         Create an empty SIMPUT catalog file.
 
