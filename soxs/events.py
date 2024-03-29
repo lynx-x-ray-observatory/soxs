@@ -1151,7 +1151,7 @@ def fill_regions(
             "or there must be one background region!"
         )
     with fits.open(in_img) as f:
-        if f[0].is_image:
+        if f[0].is_image and f[0].header["NAXIS"] == 2:
             hdu = f[0]
         else:
             hdu = f[1]

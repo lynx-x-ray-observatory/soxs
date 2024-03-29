@@ -260,7 +260,7 @@ def process_fits_string(fitsstr):
     brackets = re.findall(r"[^[]*\[([^]]*)\]", fitsstr)
     with fits.open(fn) as f:
         if len(brackets) == 0:
-            imgs = np.array([hdu.is_image for hdu in f])
+            imgs = np.array([hdu.is_image and hdu.header["NAXIS"] == 2 for hdu in f])
             if imgs.sum() > 1:
                 raise IOError("Multiple HDUs in this file, please specify one to read!")
             ext = np.where(imgs)[0][0]
