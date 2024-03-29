@@ -1260,8 +1260,9 @@ def plot_spectrum(
 
     Returns
     -------
-    A tuple of the :class:`~matplotlib.figure.Figure` and the
-    :class:`~matplotlib.axes.Axes` objects.
+    A tuple of the :class:`~matplotlib.figure.Figure` object, the
+    :class:`~matplotlib.axes.Axes` object, and the NumPy array of
+    energy bins that are used.
     """
     import matplotlib.pyplot as plt
 
@@ -1363,8 +1364,8 @@ def plot_spectrum(
     else:
         ylabel = "Count Rate (counts/s/{0})"
     ax.set_ylabel(ylabel.format(yunit), fontsize=fontsize)
-    ax.tick_params(axis="both", labelsize=fontsize)
-    return fig, ax
+    ax.tick_params(reset=True, labelsize=fontsize)
+    return fig, ax, ebins
 
 
 def plot_image(
