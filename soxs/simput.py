@@ -858,7 +858,7 @@ class ThermalSimputCatalog(SimputCatalog):
         filename,
         regions,
         flux_img,
-        kT_img,
+        kT,
         abund,
         redshift,
         nH,
@@ -875,21 +875,14 @@ class ThermalSimputCatalog(SimputCatalog):
 
         regions = Regions.read(regions)
         cat = SimputCatalog.make_empty(filename, overwrite=overwrite)
-        if isinstance(flux_img, str):
-            with fits.open(flux_img) as f:
-                for hdu in f:
-                    if hdu.is_image and hdu.header["NAXIS"] == 2:
-                        flux_img = hdu.copy()
-                        break
-        if isinstance(kT_img, str):
-            with fits.open(kT_img) as f:
-                for hdu in f:
-                    if hdu.is_image and hdu.header["NAXIS"] == 2:
-                        kT_img = hdu.copy()
-                        break
+        flux_img = cls._process_quantity(flux_img)
+        kT = cls._process_quantity(kT)
+        abund = cls._process_quantity(abund)
+        velocity = cls._process_quantity(velocity)
         nx, ny = flux_img.shape
         w = WCS(flux_img.header)
         ra0, dec0 = w.wcs.crval
+        T_is_img = isinstance(kT, fits.ImageHDU)
         a_is_img = isinstance(abund, fits.ImageHDU)
         v_is_img = isinstance(velocity, fits.ImageHDU)
         for i, reg in enumerate(regions):
@@ -897,10 +890,14 @@ class ThermalSimputCatalog(SimputCatalog):
                 reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny)).astype("bool")
             )
             flux = flux_img.data * img
+            flux[flux < 0.0] = 0.0
             imhdu = fits.ImageHDU(data=flux, header=flux_img.header)
             flux_sum = flux.sum()
             if flux_sum > 0.0:
-                kT = np.nansum(kT_img.data * flux) / flux_sum
+                if T_is_img:
+                    T = np.nansum(kT.data * flux) / flux_sum
+                else:
+                    T = kT
                 if a_is_img:
                     A = np.nansum(abund.data * flux) / flux_sum
                 else:
@@ -910,7 +907,7 @@ class ThermalSimputCatalog(SimputCatalog):
                 else:
                     v = velocity
                 beta = Quantity(v, "km/s") / c.to("km/s")
-                spec = sgen.get_spectrum(kT, A, redshift + beta.value, 1.0)
+                spec = sgen.get_spectrum(T, A, redshift + beta.value, 1.0)
                 spec.apply_foreground_absorption(nH, model=absorb_model)
                 spec.rescale_flux(flux_sum, emin, emax)
                 src = SimputSpectrum.from_spectrum(
@@ -918,3 +915,13 @@ class ThermalSimputCatalog(SimputCatalog):
                 )
                 cat.append(src)
         return cat
+
+    @staticmethod
+    def _process_quantity(val):
+        if isinstance(val, str):
+            with fits.open(val) as f:
+                for hdu in f:
+                    if hdu.is_image and hdu.header["NAXIS"] == 2:
+                        val = hdu.copy()
+                        break
+        return val
