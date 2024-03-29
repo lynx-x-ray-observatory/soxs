@@ -1234,9 +1234,9 @@ def plot_spectrum(
     ymax : float, optional
         The upper extent of the y-axis. By default it is set automatically.
     xscale : string, optional
-        The scaling of the x-axis of the plot. Default: "log"
+        The scaling of the x-axis of the plot. Default: "linear"
     yscale : string, optional
-        The scaling of the y-axis of the plot. Default: "log"
+        The scaling of the y-axis of the plot. Default: "linear"
     label : string, optional
         The label of the spectrum. Default: None
     fontsize : int
@@ -1331,12 +1331,12 @@ def plot_spectrum(
         fig = plt.figure(figsize=(10, 10))
     if xscale is None:
         if ax is None:
-            xscale = "log"
+            xscale = "linear"
         else:
             xscale = ax.get_xscale()
     if yscale is None:
         if ax is None:
-            yscale = "log"
+            yscale = "linear"
         else:
             yscale = ax.get_yscale()
     if ax is None:
