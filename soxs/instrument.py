@@ -5,6 +5,7 @@ from collections import defaultdict
 import numpy as np
 from astropy import wcs
 from regions import PixCoord
+from tqdm.auto import tqdm
 
 from soxs.events import make_event_file
 from soxs.instrument_registry import instrument_registry
@@ -208,12 +209,26 @@ def generate_events(
 
     all_events = defaultdict(list)
 
+    num_sources = len(source_list)
+
+    mylog.info(
+        "Simulating events from %d sources using instrument %s for %g ks.",
+        num_sources,
+        instrument,
+        exp_time * 1.0e-3,
+    )
+
+    if num_sources > 3:
+        pbar = tqdm(leave=True, total=num_sources, desc="Observing sources: ")
+    else:
+        pbar = None
+
     for i, src in enumerate(source_list):
-        mylog.info("Detecting events from source %s.", src.name)
+        mylog.debug("Detecting events from source %s.", src.name)
 
         # Step 1: Use ARF to determine which photons are observed
 
-        mylog.info(
+        mylog.debug(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
@@ -228,12 +243,12 @@ def generate_events(
         n_evt = events["energy"].size
 
         if n_evt == 0:
-            mylog.warning("No events were observed for this source!!!")
+            mylog.debug("No events were observed for this source!!!")
         else:
             # Step 2: Assign pixel coordinates to events. Apply dithering and
             # PSF. Clip events that don't fall within the detection region.
 
-            mylog.info("Pixeling events.")
+            mylog.debug("Pixeling events.")
 
             # Convert RA, Dec to pixel coordinates
             xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
@@ -266,7 +281,7 @@ def generate_events(
 
             # PSF scattering of detector coordinates
 
-            mylog.info("Scattering events with a %s-based PSF.", psf)
+            mylog.debug("Scattering events with a %s-based PSF.", psf)
             detx, dety = psf.scatter(detx, dety, events["energy"])
 
             # Convert detector coordinates to chip coordinates.
@@ -291,11 +306,9 @@ def generate_events(
             n_evt = keep.sum()
 
             if n_evt == 0:
-                mylog.warning(
-                    "No events are within the field of view for this source!!!"
-                )
+                mylog.debug("No events are within the field of view for this source!!!")
             else:
-                mylog.info("%d events were detected from the source.", n_evt)
+                mylog.debug("%d events were detected from the source.", n_evt)
 
                 # Keep only those events which fall on a chip
 
@@ -342,7 +355,15 @@ def generate_events(
             for key in events:
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
-    if len(all_events["energy"]) == 0:
+        if pbar:
+            pbar.update()
+
+    if pbar:
+        pbar.close()
+
+    n_events_total = len(all_events["energy"])
+
+    if n_events_total == 0:
         mylog.warning("No events from any of the sources in the catalog were detected!")
         for key in [
             "xpix",
@@ -359,6 +380,7 @@ def generate_events(
         # Step 4: Scatter energies with RMF
         mylog.info("Scattering energies with RMF %s.", os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
+        mylog.info("Detected %d events in total.", n_events_total)
 
     return all_events, event_params
 
@@ -827,7 +849,6 @@ def instrument_simulator(
     """
     if not out_file.endswith(".fits"):
         out_file += ".fits"
-    mylog.info("Making observation of source in %s.", out_file)
     f = _instrument_simulator(
         input_events,
         exp_time,
@@ -848,7 +869,6 @@ def instrument_simulator(
     if f:
         mylog.info("Writing events to file %s.", out_file)
         f.writeto(out_file, overwrite=overwrite)
-    mylog.info("Observation complete.")
 
 
 def simulate_spectrum(
