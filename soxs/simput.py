@@ -308,7 +308,7 @@ class SimputCatalog:
             f = [fits.PrimaryHDU(), wrhdu]
             fits.HDUList(f).writeto(self.filename, overwrite=True)
 
-    def append(self, source, src_filename=None, overwrite=False):
+    def append(self, source, src_filename=None, overwrite=False, quiet=False):
         """
         Add a source to this catalog.
 
@@ -327,6 +327,10 @@ class SimputCatalog:
             argument is ignored. If src_filename is another value,
             it exists, and overwrite=False, the source will be
             appended to the file. Default: False
+        quiet : boolean, optional
+            If True, log messages will not be displayed when
+            appending a SIMPUT source. Useful if you have to
+            append many sources at once. Default: False
         """
         self.src_names = np.append(self.src_names, source.name)
         self.ra = np.append(self.ra, source.ra)
@@ -343,7 +347,8 @@ class SimputCatalog:
             # Don't overwrite the SIMPUT catalog file!!
             overwrite = False
         elif overwrite and os.path.exists(src_filename):
-            mylog.warning("Overwriting %s.", src_filename)
+            if not quiet:
+                mylog.warning("Overwriting %s.", src_filename)
             os.remove(src_filename)
 
         extver = _determine_extver(src_filename, source.src_type.upper())
@@ -369,7 +374,11 @@ class SimputCatalog:
 
         self._write_catalog()
         source._write_source(
-            src_filename, extver, img_extver=img_extver, overwrite=overwrite
+            src_filename,
+            extver,
+            img_extver=img_extver,
+            overwrite=overwrite,
+            quiet=quiet,
         )
 
 
@@ -400,7 +409,9 @@ class SimputSource:
     def _get_source_hdu(self):
         return None, None
 
-    def _write_source(self, filename, extver, img_extver=None, overwrite=False):
+    def _write_source(
+        self, filename, extver, img_extver=None, overwrite=False, quiet=False
+    ):
         coldefs, header = self._get_source_hdu()
 
         tbhdu = fits.BinTableHDU.from_columns(coldefs)
@@ -421,7 +432,8 @@ class SimputSource:
             self.imhdu.header["EXTVER"] = img_extver
 
         if os.path.exists(filename) and not overwrite:
-            mylog.info("Appending source '%s' to %s.", self.name, filename)
+            if not quiet:
+                mylog.info("Appending source '%s' to %s.", self.name, filename)
             with fits.open(filename, mode="append") as f:
                 f.append(tbhdu)
                 if self.imhdu is not None:
@@ -429,9 +441,13 @@ class SimputSource:
                 f.flush()
         else:
             if os.path.exists(filename):
-                mylog.warning("Overwriting %s with source '%s'.", filename, self.name)
+                if not quiet:
+                    mylog.warning(
+                        "Overwriting %s with source '%s'.", filename, self.name
+                    )
             else:
-                mylog.info("Writing source '%s' to %s.", self.name, filename)
+                if not quiet:
+                    mylog.info("Writing source '%s' to %s.", self.name, filename)
             f = [fits.PrimaryHDU(), tbhdu]
             if self.imhdu is not None:
                 f.append(self.imhdu)
