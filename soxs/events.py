@@ -927,6 +927,8 @@ def make_image(
         hdu.header["CUNIT1"] = "pixel"
         hdu.header["CUNIT2"] = "pixel"
 
+    hdu.header["ENERGYLO"] = emin
+    hdu.header["ENERGYHI"] = emax
     hdu.header["EXPOSURE"] = exp_time
     hdu.name = "IMAGE"
 

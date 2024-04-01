@@ -5,6 +5,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.units import Quantity
 from pathlib import Path
+from tqdm.auto import tqdm
 
 from soxs.spatial import construct_wcs
 from soxs.utils import (
@@ -877,11 +878,9 @@ class ThermalSimputCatalog(SimputCatalog):
         kT,
         abund,
         redshift,
-        nH,
-        emin,
-        emax,
         sgen,
-        velocity=0.0,
+        nH,
+        bulk_velocity=0.0,
         overwrite=False,
         absorb_model="tbabs",
     ):
@@ -894,13 +893,16 @@ class ThermalSimputCatalog(SimputCatalog):
         flux_img = cls._process_quantity(flux_img)
         kT = cls._process_quantity(kT)
         abund = cls._process_quantity(abund)
-        velocity = cls._process_quantity(velocity)
+        bulk_velocity = cls._process_quantity(bulk_velocity)
         nx, ny = flux_img.shape
         w = WCS(flux_img.header)
+        emin, emax = flux_img.header["ENERGYLO"], flux_img.header["ENERGYHI"]
         ra0, dec0 = w.wcs.crval
         T_is_img = isinstance(kT, fits.ImageHDU)
         a_is_img = isinstance(abund, fits.ImageHDU)
-        v_is_img = isinstance(velocity, fits.ImageHDU)
+        v_is_img = isinstance(bulk_velocity, fits.ImageHDU)
+        num_regions = len(regions)
+        pbar = tqdm(leave=True, total=num_regions, desc="Processing regions: ")
         for i, reg in enumerate(regions):
             img = (
                 reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny)).astype("bool")
@@ -919,9 +921,9 @@ class ThermalSimputCatalog(SimputCatalog):
                 else:
                     A = abund
                 if v_is_img:
-                    v = np.nansum(velocity.data * flux) / flux_sum
+                    v = np.nansum(bulk_velocity.data * flux) / flux_sum
                 else:
-                    v = velocity
+                    v = bulk_velocity
                 beta = Quantity(v, "km/s") / c.to("km/s")
                 spec = sgen.get_spectrum(T, A, redshift + beta.value, 1.0)
                 spec.apply_foreground_absorption(nH, model=absorb_model)
@@ -929,7 +931,9 @@ class ThermalSimputCatalog(SimputCatalog):
                 src = SimputSpectrum.from_spectrum(
                     f"reg_{i}", spec, ra0, dec0, imhdu=imhdu
                 )
-                cat.append(src)
+                cat.append(src, quiet=True)
+            pbar.update()
+        pbar.close()
         return cat
 
     @staticmethod
