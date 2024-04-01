@@ -597,7 +597,7 @@ class Spectrum:
         specfile : string
             The filename to write the file to.
         overwrite : boolean, optional
-            Whether or not to overwrite an existing
+            Whether to overwrite an existing
             file with the same name. Default: False
         """
         t = self._write_fits_or_ascii()
@@ -617,7 +617,7 @@ class Spectrum:
         specfile : string
             The name of the file to write to.
         overwrite : boolean, optional
-            Whether or to overwrite an existing
+            Whether to overwrite an existing
             file with the same name. Default: False
         """
         suffix = PurePath(specfile).suffix.lower()
