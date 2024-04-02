@@ -881,6 +881,7 @@ class ThermalSimputCatalog(SimputCatalog):
         sgen,
         nH,
         bulk_velocity=0.0,
+        turb_velocity=0.0,
         overwrite=False,
         absorb_model="tbabs",
     ):
@@ -894,6 +895,7 @@ class ThermalSimputCatalog(SimputCatalog):
         kT = cls._process_quantity(kT)
         abund = cls._process_quantity(abund)
         bulk_velocity = cls._process_quantity(bulk_velocity)
+        turb_velocity = cls._process_quantity(turb_velocity)
         nx, ny = flux_img.shape
         w = WCS(flux_img.header)
         emin, emax = flux_img.header["ENERGYLO"], flux_img.header["ENERGYHI"]
@@ -901,6 +903,7 @@ class ThermalSimputCatalog(SimputCatalog):
         T_is_img = isinstance(kT, fits.ImageHDU)
         a_is_img = isinstance(abund, fits.ImageHDU)
         v_is_img = isinstance(bulk_velocity, fits.ImageHDU)
+        s_is_img = isinstance(turb_velocity, fits.ImageHDU)
         num_regions = len(regions)
         pbar = tqdm(leave=True, total=num_regions, desc="Processing regions: ")
         for i, reg in enumerate(regions):
@@ -924,8 +927,12 @@ class ThermalSimputCatalog(SimputCatalog):
                     v = np.nansum(bulk_velocity.data * flux) / flux_sum
                 else:
                     v = bulk_velocity
+                if s_is_img:
+                    s = np.sqrt(np.nansum(turb_velocity.data**2 * flux) / flux_sum)
+                else:
+                    s = turb_velocity
                 beta = Quantity(v, "km/s") / c.to("km/s")
-                spec = sgen.get_spectrum(T, A, redshift + beta.value, 1.0)
+                spec = sgen.get_spectrum(T, A, redshift + beta.value, 1.0, velocity=s)
                 spec.apply_foreground_absorption(nH, model=absorb_model)
                 spec.rescale_flux(flux_sum, emin, emax)
                 src = SimputSpectrum.from_spectrum(
