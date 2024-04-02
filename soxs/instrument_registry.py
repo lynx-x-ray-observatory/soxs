@@ -280,7 +280,7 @@ for res in ["Hp_5eV", "Mp_6eV", "Lp_18eV"]:
             "name": f"xrism_resolve_{filt}{res}",
             "arf": f"rsl_pointsource_{filt}GVclosed.arf",
             "rmf": f"rsl_{res}.rmf",
-            "bkgnd": None,
+            "bkgnd": [f"rsl_{res}_bkg.pi", 1.0],
             "num_pixels": 6,
             "fov": 3.0,
             "aimpt_coords": [0.0, 0.0],
@@ -295,6 +295,11 @@ for res in ["Hp_5eV", "Mp_6eV", "Lp_18eV"]:
 instrument_registry["xrism_resolve"] = deepcopy(
     instrument_registry["xrism_resolve_Hp_5eV"]
 )
+
+instrument_registry["xrism_resolve_1arcsec"] = deepcopy(
+    instrument_registry["xrism_resolve"]
+)
+instrument_registry["xrism_resolve_1arcsec"]["psf"] = ["gaussian", 1.0]
 
 instrument_registry["xrism_resolve_old"] = {
     "name": "xrism_resolve",
