@@ -369,9 +369,16 @@ def _write_spectrum(
     exp_time = parameters["EXPOSURE"]
     spectype = parameters["CHANTYPE"]
 
+    if noisy:
+        cnt_fmt = "1J"
+        cnt_type = "int32"
+    else:
+        cnt_fmt = "1D"
+        cnt_type = "float64"
+
     col1 = fits.Column(name="CHANNEL", format="1J", array=bins)
     col2 = fits.Column(name=spectype.upper(), format="1D", array=bins.astype("float64"))
-    col3 = fits.Column(name="COUNTS", format="1J", array=spec.astype("int32"))
+    col3 = fits.Column(name="COUNTS", format=cnt_fmt, array=spec.astype(cnt_type))
     col4 = fits.Column(name="COUNT_RATE", format="1D", array=spec / exp_time)
 
     coldefs = fits.ColDefs([col1, col2, col3, col4])

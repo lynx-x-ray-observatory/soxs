@@ -107,12 +107,12 @@ def read_instr_spectrum(filename, ext_area):
     fn = get_data_file(filename)
     with fits.open(fn) as f:
         hdu = f["SPECTRUM"]
-        if "COUNTS" in hdu.data.names:
-            count_rate = hdu.data["COUNTS"] / hdu.header["EXPOSURE"]
-        elif "COUNT_RATE" in hdu.data.names:
+        if "COUNT_RATE" in hdu.data.names:
             count_rate = hdu.data["COUNT_RATE"]
         elif "RATE" in hdu.data.names:
             count_rate = hdu.data["RATE"]
+        elif "COUNTS" in hdu.data.names:
+            count_rate = hdu.data["COUNTS"] / hdu.header["EXPOSURE"]
         else:
             raise RuntimeError("Cannot find a field for either counts or count rate!")
         count_rate /= ext_area
