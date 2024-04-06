@@ -1003,7 +1003,7 @@ def _simulate_spectrum(
     bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
 
     event_params["EXPOSURE"] = exp_time
-    event_params["CHANTYPE"] = rmf.header["CHANTYPE"]
+    event_params["CHANTYPE"] = rmf.chan_type
 
     return bins, out_spec, event_params
 
