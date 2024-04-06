@@ -871,6 +871,143 @@ def instrument_simulator(
         f.writeto(out_file, overwrite=overwrite)
 
 
+def _simulate_spectrum(
+    spec,
+    instrument,
+    exp_time,
+    instr_bkgnd=False,
+    foreground=False,
+    ptsrc_bkgnd=False,
+    bkgnd_area=None,
+    noisy=True,
+    prng=None,
+    instr_bkgnd_scale=1.0,
+    **kwargs,
+):
+    from soxs.background.diffuse import (
+        generate_channel_spectrum,
+        make_frgnd_spectrum,
+        read_instr_spectrum,
+    )
+    from soxs.background.spectra import BackgroundSpectrum
+    from soxs.response import (
+        AuxiliaryResponseFile,
+        FlatResponse,
+        RedistributionMatrixFile,
+    )
+    from soxs.spectra import ConvolvedSpectrum
+    from soxs.utils import soxs_cfg
+
+    any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
+    if not noisy and any_bkgnd:
+        raise NotImplementedError(
+            "Backgrounds cannot be included in "
+            "simulations of non-noisy spectra at this time!"
+        )
+    if "nH" in kwargs or "absorb_model" in kwargs:
+        warnings.warn(
+            "The 'nH' and 'absorb_model' keyword arguments"
+            "have been omitted. Please set the 'bkgnd_nH' "
+            "and 'bkgnd_absorb_model' values in the SOXS"
+            "configuration file if you want to change these "
+            "values. ",
+            DeprecationWarning,
+        )
+    prng = parse_prng(prng)
+    exp_time = parse_value(exp_time, "s")
+    bkgnd_spec = None
+    instrument_spec = None
+    if isinstance(instrument, tuple):
+        arf = instrument[0]
+        rmf = instrument[1]
+        rmf = RedistributionMatrixFile(rmf)
+        if isinstance(arf, str):
+            arf = AuxiliaryResponseFile(get_data_file(arf))
+        else:
+            if arf is None:
+                arf = 1.0
+            arf = FlatResponse(rmf.ebins[0], rmf.ebins[-1], arf, rmf.emid.size)
+        if len(instrument) == 3:
+            bkgnd_spec = instrument[2]
+    else:
+        try:
+            instrument_spec = instrument_registry[instrument]
+        except KeyError:
+            raise KeyError(
+                f"Instrument {instrument} is not in the instrument registry!"
+            )
+        arf = AuxiliaryResponseFile.from_instrument(instrument)
+        rmf = RedistributionMatrixFile.from_instrument(instrument)
+        bkgnd_spec = instrument_spec["bkgnd"]
+    if any_bkgnd:
+        if bkgnd_area is None:
+            raise RuntimeError(
+                "The 'bkgnd_area' argument must be set if one wants "
+                "to simulate backgrounds! Specify a value in square "
+                "arcminutes."
+            )
+        bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2") * instr_bkgnd_scale)
+    elif spec is None:
+        raise RuntimeError("You have specified no source spectrum and no backgrounds!")
+
+    event_params = {
+        "RESPFILE": os.path.split(rmf.filename)[-1],
+        "ANCRFILE": os.path.split(arf.filename)[-1],
+        "TELESCOP": rmf.header["TELESCOP"],
+        "INSTRUME": rmf.header["INSTRUME"],
+        "MISSION": rmf.header.get("MISSION", ""),
+    }
+
+    out_spec = np.zeros(rmf.n_ch)
+
+    if spec is not None:
+        cspec = ConvolvedSpectrum.convolve(spec, arf, use_arf_energies=True)
+        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng, noisy=noisy)
+
+    fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)
+
+    if foreground:
+        mylog.info("Adding in astrophysical foreground.")
+        frgnd_spec = rmf.convolve_spectrum(
+            make_frgnd_spectrum(arf, rmf), exp_time, noisy=False, rate=True
+        )
+        out_spec += generate_channel_spectrum(
+            frgnd_spec, exp_time, bkgnd_area, prng=prng
+        )
+    if instr_bkgnd and bkgnd_spec is not None:
+        if instrument_spec:
+            if instrument_spec["grating"]:
+                raise NotImplementedError(
+                    "Backgrounds cannot be included in simulations "
+                    "of gratings spectra at this time!"
+                )
+            # Temporary hack for ACIS-S
+            if "aciss" in instrument_spec["name"]:
+                bkgnd_spec = bkgnd_spec[1]
+        mylog.info("Adding in instrumental background.")
+        bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
+        out_spec += generate_channel_spectrum(
+            bkgnd_spec, exp_time, bkgnd_area, prng=prng
+        )
+    if ptsrc_bkgnd:
+        mylog.info("Adding in background from unresolved point-sources.")
+        bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
+        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+        spec_plaw = BackgroundSpectrum.from_powerlaw(
+            1.52, 0.0, 2.0e-7, emin=0.01, emax=10.0, nbins=300000
+        )
+        spec_plaw.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
+        cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
+        out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
+
+    bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
+
+    event_params["EXPOSURE"] = exp_time
+    event_params["CHANTYPE"] = rmf.header["CHANTYPE"]
+
+    return bins, out_spec, event_params
+
+
 def simulate_spectrum(
     spec,
     instrument,
@@ -942,127 +1079,20 @@ def simulate_spectrum(
     >>> soxs.simulate_spectrum(spec, "lynx_lxm", 100000.0,
     ...                        "my_spec.pi", overwrite=True)
     """
-    from soxs.background.diffuse import (
-        generate_channel_spectrum,
-        make_frgnd_spectrum,
-        read_instr_spectrum,
-    )
-    from soxs.background.spectra import BackgroundSpectrum
     from soxs.events import _write_spectrum
-    from soxs.response import (
-        AuxiliaryResponseFile,
-        FlatResponse,
-        RedistributionMatrixFile,
+
+    bins, out_spec, event_params = _simulate_spectrum(
+        spec,
+        instrument,
+        exp_time,
+        instr_bkgnd=instr_bkgnd,
+        foreground=foreground,
+        ptsrc_bkgnd=ptsrc_bkgnd,
+        bkgnd_area=bkgnd_area,
+        noisy=noisy,
+        prng=prng,
+        **kwargs,
     )
-    from soxs.spectra import ConvolvedSpectrum
-    from soxs.utils import soxs_cfg
-
-    any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
-    if not noisy and any_bkgnd:
-        raise NotImplementedError(
-            "Backgrounds cannot be included in "
-            "simulations of non-noisy spectra at this time!"
-        )
-    if "nH" in kwargs or "absorb_model" in kwargs:
-        warnings.warn(
-            "The 'nH' and 'absorb_model' keyword arguments"
-            "have been omitted. Please set the 'bkgnd_nH' "
-            "and 'bkgnd_absorb_model' values in the SOXS"
-            "configuration file if you want to change these "
-            "values. ",
-            DeprecationWarning,
-        )
-    prng = parse_prng(prng)
-    exp_time = parse_value(exp_time, "s")
-    bkgnd_spec = None
-    instrument_spec = None
-    if isinstance(instrument, tuple):
-        arf = instrument[0]
-        rmf = instrument[1]
-        rmf = RedistributionMatrixFile(rmf)
-        if isinstance(arf, str):
-            arf = AuxiliaryResponseFile(get_data_file(arf))
-        else:
-            if arf is None:
-                arf = 1.0
-            arf = FlatResponse(rmf.ebins[0], rmf.ebins[-1], arf, rmf.emid.size)
-        if len(instrument) == 3:
-            bkgnd_spec = instrument[2]
-    else:
-        try:
-            instrument_spec = instrument_registry[instrument]
-        except KeyError:
-            raise KeyError(
-                f"Instrument {instrument} is not in the instrument registry!"
-            )
-        arf = AuxiliaryResponseFile.from_instrument(instrument)
-        rmf = RedistributionMatrixFile.from_instrument(instrument)
-        bkgnd_spec = instrument_spec["bkgnd"]
-    if any_bkgnd:
-        if bkgnd_area is None:
-            raise RuntimeError(
-                "The 'bkgnd_area' argument must be set if one wants "
-                "to simulate backgrounds! Specify a value in square "
-                "arcminutes."
-            )
-        bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
-    elif spec is None:
-        raise RuntimeError("You have specified no source spectrum and no backgrounds!")
-
-    event_params = {
-        "RESPFILE": os.path.split(rmf.filename)[-1],
-        "ANCRFILE": os.path.split(arf.filename)[-1],
-        "TELESCOP": rmf.header["TELESCOP"],
-        "INSTRUME": rmf.header["INSTRUME"],
-        "MISSION": rmf.header.get("MISSION", ""),
-    }
-
-    out_spec = np.zeros(rmf.n_ch)
-
-    if spec is not None:
-        cspec = ConvolvedSpectrum.convolve(spec, arf, use_arf_energies=True)
-        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng, noisy=noisy)
-
-    fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)
-
-    if foreground:
-        mylog.info("Adding in astrophysical foreground.")
-        frgnd_spec = rmf.convolve_spectrum(
-            make_frgnd_spectrum(arf, rmf), exp_time, noisy=False, rate=True
-        )
-        out_spec += generate_channel_spectrum(
-            frgnd_spec, exp_time, bkgnd_area, prng=prng
-        )
-    if instr_bkgnd and bkgnd_spec is not None:
-        if instrument_spec:
-            if instrument_spec["grating"]:
-                raise NotImplementedError(
-                    "Backgrounds cannot be included in simulations "
-                    "of gratings spectra at this time!"
-                )
-            # Temporary hack for ACIS-S
-            if "aciss" in instrument_spec["name"]:
-                bkgnd_spec = bkgnd_spec[1]
-        mylog.info("Adding in instrumental background.")
-        bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
-        out_spec += generate_channel_spectrum(
-            bkgnd_spec, exp_time, bkgnd_area, prng=prng
-        )
-    if ptsrc_bkgnd:
-        mylog.info("Adding in background from unresolved point-sources.")
-        bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
-        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
-        spec_plaw = BackgroundSpectrum.from_powerlaw(
-            1.52, 0.0, 2.0e-7, emin=0.01, emax=10.0, nbins=300000
-        )
-        spec_plaw.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
-        cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
-        out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
-
-    bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
-
-    event_params["EXPOSURE"] = exp_time
-    event_params["CHANTYPE"] = rmf.header["CHANTYPE"]
 
     _write_spectrum(
         bins,
