@@ -961,6 +961,7 @@ def _simulate_spectrum(
     out_spec = np.zeros(rmf.n_ch)
 
     if spec is not None:
+        mylog.info("Simulating a source spectrum.")
         cspec = ConvolvedSpectrum.convolve(spec, arf, use_arf_energies=True)
         out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng, noisy=noisy)
 
