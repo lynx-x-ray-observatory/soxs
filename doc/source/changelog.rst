@@ -3,6 +3,17 @@
 ChangeLog
 =========
 
+Version 4.8.3
+-------------
+
+This version of SOXS fixes three LEM RMFs, corresponding to the 2.5 eV, 1.3 eV, and
+1.2 eV resolution versions. The first two are used in the the ``lem_outer_array``
+and ``lem_inner_array`` instrument specifications, respectively. The problem was that the
+``EBOUNDS`` extension of these RMFs had the ``CHANNEL`` column 0-indexed, when it should
+have been 1-indexed. This does not affect any spectral simulations, but it may affect
+plotting routines in other packages that use spectra produced by SOXS. Thanks to Adam
+Foster for raising this to our attention.
+
 Version 4.8.2
 -------------
 

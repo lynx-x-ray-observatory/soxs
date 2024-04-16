@@ -69,7 +69,7 @@ SOXS is released under a `BSD 3-clause license <https://opensource.org/licenses/
 Current Version
 ---------------
 
-The current stable version is 4.8.2. See the :ref:`changelog` for details on changes
+The current stable version is 4.8.3. See the :ref:`changelog` for details on changes
 from previous versions.
 
 Documentation Contents
