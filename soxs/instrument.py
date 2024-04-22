@@ -931,7 +931,7 @@ def simulate_spectrum(
                 "to simulate backgrounds! Specify a value in square "
                 "arcminutes."
             )
-        bkgnd_area = np.sqrt(parse_value(bkgnd_area, "arcmin**2"))
+        bkgnd_area = parse_value(bkgnd_area, "arcmin**2")
     elif spec is None:
         raise RuntimeError("You have specified no source spectrum and no backgrounds!")
 
