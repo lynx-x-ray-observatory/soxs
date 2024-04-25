@@ -1080,7 +1080,7 @@ def simulate_spectrum(
     >>> soxs.simulate_spectrum(spec, "lynx_lxm", 100000.0,
     ...                        "my_spec.pi", overwrite=True)
     """
-    from soxs.events import _write_spectrum
+    from soxs.events.spectra import _write_spectrum
 
     bins, out_spec, event_params = _simulate_spectrum(
         spec,
