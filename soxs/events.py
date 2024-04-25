@@ -426,16 +426,21 @@ def _region_filter(hdu, region, format="ds9", exclude=False):
     pixcoords = PixCoord(hdu.data["X"], hdu.data["Y"])
     if isinstance(region, Region):
         region = [region]
-    evt_mask = False
+    evt_mask = np.zeros(hdu.data["ENERGY"].size, dtype="bool")
     for r in region:
+        include_this = bool(r.meta.get("include", True))
         if isinstance(r, PixelRegion):
-            evt_mask |= r.contains(pixcoords)
+            this_mask = r.contains(pixcoords)
         elif isinstance(r, SkyRegion):
             w = wcs_from_header(hdu.header)
             skycoords = pixcoords.to_sky(w, origin=1)
-            evt_mask |= r.contains(skycoords, w)
+            this_mask = r.contains(skycoords, w)
         else:
             raise NotImplementedError
+        if include_this:
+            evt_mask |= this_mask
+        else:
+            evt_mask &= this_mask
     if exclude:
         evt_mask = ~evt_mask
     return evt_mask
