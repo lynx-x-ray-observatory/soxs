@@ -426,16 +426,21 @@ class RedistributionMatrixFile:
         return events
 
     def convolve_spectrum(self, cspec, exp_time, noisy=True, prng=None, rate=False):
+        from soxs.spectra import ConvolvedSpectrum
+
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
-        counts = cspec.flux.value * exp_time * cspec.de.value
-        if (
-            len(cspec.emid) == self.n_e
-            and np.isclose(cspec.ebins.value, self.ebins).all()
-        ):
-            spec = counts
+        if isinstance(cspec, ConvolvedSpectrum):
+            counts = cspec.flux.value * exp_time * cspec.de.value
+            if (
+                len(cspec.emid) == self.n_e
+                and np.isclose(cspec.ebins.value, self.ebins).all()
+            ):
+                spec = counts
+            else:
+                spec = regrid_spectrum(self.ebins, cspec.ebins.value, counts)
         else:
-            spec = regrid_spectrum(self.ebins, cspec.ebins.value, counts)
+            spec = np.asarray(cspec) * exp_time
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
         if not isinstance(self.data["MATRIX"], fits.column._VLF) and np.all(

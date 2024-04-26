@@ -1071,10 +1071,14 @@ class CountRateSpectrum(Spectrum):
 
 
 class ConvolvedSpectrum(CountRateSpectrum):
-    def __init__(self, ebins, flux, arf, binscale="linear"):
+    def __init__(self, ebins, flux, arf, rmf=None, binscale="linear"):
         from numbers import Number
 
-        from soxs.response import AuxiliaryResponseFile, FlatResponse
+        from soxs.response import (
+            AuxiliaryResponseFile,
+            FlatResponse,
+            RedistributionMatrixFile,
+        )
 
         super(ConvolvedSpectrum, self).__init__(ebins, flux, binscale=binscale)
         if isinstance(arf, Number):
@@ -1082,6 +1086,8 @@ class ConvolvedSpectrum(CountRateSpectrum):
         elif isinstance(arf, str):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
+        if rmf is not None:
+            self.rmf = RedistributionMatrixFile(rmf)
 
     def __add__(self, other):
         self._check_binning_units(other)
@@ -1096,37 +1102,44 @@ class ConvolvedSpectrum(CountRateSpectrum):
         )
 
     @classmethod
-    def convolve(cls, spectrum, arf, use_arf_energies=False):
+    def convolve(cls, spectrum, arf, use_arf_energies=False, rmf=None):
         """
-        Generate a convolved spectrum by convolving a spectrum with an
-        ARF.
+        Generate a model convolved spectrum by convolving a spectrum with an
+        ARF, and optionally an RMF.
 
         Parameters
         ----------
         spectrum : :class:`~soxs.spectra.Spectrum` object
             The input spectrum to convolve with.
-        arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
+        arf : string or :class:`~soxs.response.AuxiliaryResponseFile`
             The ARF to use in the convolution.
         use_arf_energies : boolean, optional
             If True, use the energy binning of the ARF for
             the convolved spectrum. Default: False, which uses
             the original spectral binning.
+        rmf : string or :class:`~soxs.response.RedistributionMatrixFile`, optional
+            The RMF to use in the convolution if desired. Default is no RMF.
         """
-        from soxs.response import AuxiliaryResponseFile
+        from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
 
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
-        if use_arf_energies:
-            flux = u.Quantity(
+        if rmf is not None and not isinstance(rmf, RedistributionMatrixFile):
+            rmf = RedistributionMatrixFile(rmf)
+        if use_arf_energies or rmf is not None:
+            rate = (
                 regrid_spectrum(
                     arf.ebins,
                     spectrum.ebins.value,
                     spectrum.flux.value * spectrum.de.value,
                 )
-                / arf.de,
-                "cm-2 keV-1 ph s-1",
+                * arf.eff_area
             )
-            rate = u.Quantity(arf.eff_area, "cm**2") * flux
+            if rmf is not None:
+                rate = rmf.convolve_spectrum(
+                    (rate * arf.de).value, 1.0, noisy=False, rate=True
+                )
+            rate = u.Quantity(rate / arf.de, "cm-2 keV-1 ph s-1")
             binscale = "linear"
             ebins = u.Quantity(arf.ebins, "keV")
         else:
@@ -1134,7 +1147,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
             rate = spectrum.flux * earea
             binscale = spectrum.binscale
             ebins = spectrum.ebins
-        return cls(ebins, rate, arf, binscale=binscale)
+        return cls(ebins, rate, arf, binscale=binscale, rmf=rmf)
 
     def new_spec_from_band(self, emin, emax):
         """
@@ -1157,6 +1170,10 @@ class ConvolvedSpectrum(CountRateSpectrum):
         Return the deconvolved :class:`~soxs.spectra.Spectrum`
         object associated with this convolved spectrum.
         """
+        if self.rmf is not None:
+            raise NotImplementedError(
+                "deconvolve is not implemented for ConvolvedSpectra with RMFs!"
+            )
         earea = self.arf.interpolate_area(self.emid)
         flux = self.flux / earea
         flux = np.nan_to_num(flux.value)
@@ -1181,6 +1198,10 @@ class ConvolvedSpectrum(CountRateSpectrum):
             creating energies. Useful if you have to loop over
             a lot of spectra. Default: False
         """
+        if self.rmf is not None:
+            raise NotImplementedError(
+                "generate_energies is not implemented for ConvolvedSpectra with RMFs!"
+            )
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
         rate = self.total_flux.value
