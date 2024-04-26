@@ -1087,7 +1087,9 @@ class ConvolvedSpectrum(CountRateSpectrum):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
         if rmf is not None:
-            self.rmf = RedistributionMatrixFile(rmf)
+            if isinstance(rmf, str):
+                rmf = RedistributionMatrixFile(rmf)
+            self.rmf = rmf
 
     def __add__(self, other):
         self._check_binning_units(other)
