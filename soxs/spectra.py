@@ -1104,6 +1104,34 @@ class ConvolvedSpectrum(CountRateSpectrum):
         )
 
     @classmethod
+    def from_pha_file(cls, specfile):
+        """
+        Create a :class:`~soxs.spectra.ConvolvedSpectrum` object by reading it in
+        from a PHA/PI file.
+
+        Parameters
+        ----------
+        specfile : string
+            The PHA/PI file to be opened.
+        """
+        from astropy.io import fits
+
+        from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+
+        with fits.open(specfile) as f:
+            hdu = f["SPECTRUM"]
+            rate = hdu.data["COUNTS"].astype("float64") * u.photon
+            rate /= hdu.header["EXPOSURE"] * u.s
+            arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
+            rmf = RedistributionMatrixFile(hdu.header["RESPFILE"])
+        ebins = (
+            np.append(rmf.ebounds_data["E_MIN"], rmf.ebounds_data["E_MAX"][-1]) * u.keV
+        )
+        de = np.diff(ebins)
+        rate /= de
+        return cls(ebins, rate, arf, binscale="linear", rmf=rmf)
+
+    @classmethod
     def convolve(cls, spectrum, arf, use_arf_energies=False, rmf=None):
         """
         Generate a model convolved spectrum by convolving a spectrum with an
