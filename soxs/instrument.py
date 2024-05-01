@@ -899,11 +899,6 @@ def _simulate_spectrum(
     from soxs.utils import soxs_cfg
 
     any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
-    if not noisy and any_bkgnd:
-        raise NotImplementedError(
-            "Backgrounds cannot be included in "
-            "simulations of non-noisy spectra at this time!"
-        )
     if "nH" in kwargs or "absorb_model" in kwargs:
         warnings.warn(
             "The 'nH' and 'absorb_model' keyword arguments"
@@ -973,7 +968,7 @@ def _simulate_spectrum(
             make_frgnd_spectrum(arf, rmf), exp_time, noisy=False, rate=True
         )
         out_spec += generate_channel_spectrum(
-            frgnd_spec, exp_time, bkgnd_area, prng=prng
+            frgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng
         )
     if instr_bkgnd and bkgnd_spec is not None:
         if instrument_spec:
@@ -988,7 +983,7 @@ def _simulate_spectrum(
         mylog.info("Adding in instrumental background.")
         bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
         out_spec += generate_channel_spectrum(
-            bkgnd_spec, exp_time, bkgnd_area, prng=prng
+            bkgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng
         )
     if ptsrc_bkgnd:
         mylog.info("Adding in background from unresolved point-sources.")
@@ -999,7 +994,7 @@ def _simulate_spectrum(
         )
         spec_plaw.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
         cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
-        out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
+        out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, noisy=noisy, prng=prng)
 
     bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
 
