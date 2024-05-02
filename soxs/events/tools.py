@@ -68,10 +68,20 @@ def filter_events(
         if tmin is not None:
             tmin = parse_value(tmin, "s")
             evt_mask &= hdu.data["TIME"] > tmin
+        else:
+            tmin = 0.0
         if tmax is not None:
             tmax = parse_value(tmax, "s")
             evt_mask &= hdu.data["TIME"] < tmax
+        else:
+            tmax = hdu.header["EXPOSURE"]
         hdu.data = hdu.data[evt_mask]
+        hdu.header["EXPOSURE"] = tmax - tmin
+        gtihdu = f["STDGTI"]
+        gtihdu.data["START"][0] = tmin
+        gtihdu.data["STOP"][0] = tmax
+        gtihdu.header["TSTART"] = tmin
+        gtihdu.header["TSTOP"] = tmax
         f.writeto(newfile, overwrite=overwrite)
 
 
@@ -244,11 +254,11 @@ def make_cube(
     e = hdu.data["ENERGY"]
     t = hdu.data["TIME"]
     if tmin is None:
-        tmin = -np.inf
+        tmin = 0.0
     else:
         tmin = parse_value(tmin, "s")
     if tmax is None:
-        tmax = np.inf
+        tmax = hdu.header["EXPOSURE"]
     else:
         tmax = parse_value(tmax, "s")
     if emin is None:
@@ -266,7 +276,7 @@ def make_cube(
     spectype = hdu.header["CHANTYPE"]
     rmf = hdu.header["RESPFILE"]
     c = hdu.data[spectype][idxs]
-    exp_time = hdu.header["EXPOSURE"]
+    exp_time = tmax - tmin
     xctr = hdu.header["TCRVL2"]
     yctr = hdu.header["TCRVL3"]
     xmin = hdu.header["TLMIN2"]

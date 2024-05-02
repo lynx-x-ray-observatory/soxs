@@ -83,9 +83,13 @@ def _make_spectrum(
             if tmin is not None:
                 tmin = parse_value(tmin, "s")
                 evt_mask &= hdu.data["TIME"] > tmin
+            else:
+                tmin = 0.0
             if tmax is not None:
                 tmax = parse_value(tmax, "s")
                 evt_mask &= hdu.data["TIME"] < tmax
+            else:
+                tmax = hdu.header["EXPOSURE"]
             if emin is not None:
                 emin = parse_value(emin, "keV") * 1000.0
                 evt_mask &= hdu.data["ENERGY"] > emin
@@ -95,7 +99,7 @@ def _make_spectrum(
             spectype = hdu.header["CHANTYPE"]
             rmf = hdu.header["RESPFILE"]
             p = hdu.data[spectype][evt_mask]
-            exp_time = hdu.header["EXPOSURE"]
+            parameters["EXPOSURE"] = tmax - tmin
             for key in ["RESPFILE", "ANCRFILE", "MISSION", "TELESCOP", "INSTRUME"]:
                 parameters[key] = hdu.header[key]
     else:
@@ -107,8 +111,7 @@ def _make_spectrum(
         parameters["TELESCOP"] = evtfile["telescope"]
         parameters["INSTRUME"] = evtfile["instrument"]
         parameters["MISSION"] = evtfile["mission"]
-        exp_time = evtfile["exposure_time"]
-    parameters["EXPOSURE"] = exp_time
+        parameters["EXPOSURE"] = evtfile["exposure_time"]
     parameters["CHANTYPE"] = spectype
 
     rmf = RedistributionMatrixFile(rmf)

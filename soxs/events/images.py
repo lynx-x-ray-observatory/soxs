@@ -70,14 +70,6 @@ def make_image(
         else:
             emax = parse_value(emax, "keV")
         emax *= 1000.0
-    if tmin is None:
-        tmin = -np.inf
-    else:
-        tmin = parse_value(tmin, "s")
-    if tmax is None:
-        tmax = np.inf
-    else:
-        tmax = parse_value(tmax, "s")
     if coord_type == "det" and reblock != 1:
         raise RuntimeError(
             "Reblocking images is not supported for detector coordinates!"
@@ -88,6 +80,14 @@ def make_image(
         ehdu = fits.open(evt_file)["EVENTS"]
     e = ehdu.data["ENERGY"]
     t = ehdu.data["TIME"]
+    if tmin is None:
+        tmin = 0.0
+    else:
+        tmin = parse_value(tmin, "s")
+    if tmax is None:
+        tmax = ehdu.header["EXPOSURE"]
+    else:
+        tmax = parse_value(tmax, "s")
     if bands is not None:
         idxs = False
         for band in bands:
@@ -98,7 +98,6 @@ def make_image(
     xcoord, ycoord, xcol, ycol = coord_types[coord_type]
     x = ehdu.data[xcoord][idxs]
     y = ehdu.data[ycoord][idxs]
-    exp_time = ehdu.header["EXPOSURE"]
     xmin = ehdu.header[f"TLMIN{xcol}"]
     ymin = ehdu.header[f"TLMIN{ycol}"]
     xmax = ehdu.header[f"TLMAX{xcol}"]
@@ -160,7 +159,7 @@ def make_image(
 
     hdu.header["ENERGYLO"] = emin
     hdu.header["ENERGYHI"] = emax
-    hdu.header["EXPOSURE"] = exp_time
+    hdu.header["EXPOSURE"] = tmax - tmin
     hdu.name = "IMAGE"
 
     return hdu
