@@ -222,9 +222,10 @@ def plot_spectrum(
         Whether to plot in energy or channel space. Default is
         to plot in energy, unless the RMF for the spectrum
         cannot be found.
-    ebins : tuple or NumPy array, optional
+    ebins : integer, tuple, or NumPy array, optional
         If set, these are the energy bin edges in which the spectrum
-        will be binned. If a 2-tuple, the first element is the minimum
+        will be binned. If an integer, the counts spectrum will be reblocked
+        by this number. If a 2-tuple, the first element is the minimum
         significance (assuming Poisson statistics) of each bin and the
         second element is the minimum number of channels to be combined
         in the bin. If a NumPy array, these are the bins that will be
@@ -277,6 +278,7 @@ def plot_spectrum(
     energy bins that are used.
     """
     import matplotlib.pyplot as plt
+    from astropy.nddata import block_reduce
 
     from soxs.instrument import RedistributionMatrixFile
 
@@ -294,8 +296,10 @@ def plot_spectrum(
             emax = rmf.ebounds_data["E_MAX"]
             e = 0.5 * (emin + emax)
             if ebins is None:
-                xmid = e
-                xerr = 0.5 * (emax - emin)
+                ebins = np.append(emin, emax[-1])
+            elif isinstance(ebins, int):
+                y = block_reduce(y, ebins)
+                ebins = np.append(emin[::ebins], emax[-1])
             else:
                 if isinstance(ebins, tuple):
                     if len(ebins) != 2:
@@ -315,10 +319,10 @@ def plot_spectrum(
                             sum = 0.0
                             max_size = 0
                     ebins = np.array(ebins)
-                xmid = 0.5 * (ebins[1:] + ebins[:-1])
-                xerr = 0.5 * np.diff(ebins)
                 y = np.histogram(e, ebins, weights=y)[0].astype("float64")
             xlabel = "Energy (keV)"
+            xmid = 0.5 * (ebins[1:] + ebins[:-1])
+            xerr = 0.5 * np.diff(ebins)
         else:
             raise RuntimeError(
                 "Cannot find the RMF associated with this "
