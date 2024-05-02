@@ -25,7 +25,7 @@ The ``"default"`` galactic foreground component is modeled as a sum of two
 thermal models with thermal broadening of emission lines, one absorbed,
 ``bapec+tbabs*bapec``, with parameters:
 
-``wabs*bapec`` **Model 1, Hot Halo**
+``tbabs*bapec`` **Model 1, Hot Halo**
 
 * ``nH``: :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
 * ``kT``: :math:`\rm{0.225~keV}`
