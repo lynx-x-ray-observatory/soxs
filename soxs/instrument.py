@@ -882,6 +882,7 @@ def _simulate_spectrum(
     noisy=True,
     prng=None,
     instr_bkgnd_scale=1.0,
+    resolved_cxb_frac=0.8,
     **kwargs,
 ):
     from soxs.background.diffuse import (
@@ -897,6 +898,8 @@ def _simulate_spectrum(
     )
     from soxs.spectra import ConvolvedSpectrum
     from soxs.utils import soxs_cfg
+
+    cxb_frac = 1.0 - resolved_cxb_frac
 
     any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
     if "nH" in kwargs or "absorb_model" in kwargs:
@@ -990,7 +993,7 @@ def _simulate_spectrum(
         bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
         absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
         spec_plaw = BackgroundSpectrum.from_powerlaw(
-            1.52, 0.0, 2.0e-7, emin=0.01, emax=10.0, nbins=300000
+            1.52, 0.0, cxb_frac * 1.0e-6, emin=0.01, emax=10.0, nbins=300000
         )
         spec_plaw.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
         cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
@@ -1013,6 +1016,7 @@ def simulate_spectrum(
     foreground=False,
     ptsrc_bkgnd=False,
     bkgnd_area=None,
+    resolved_cxb_frac=0.8,
     noisy=True,
     overwrite=False,
     prng=None,
@@ -1057,6 +1061,10 @@ def simulate_spectrum(
         The area on the sky for the background components, in square arcminutes.
         Default: None, necessary to specify if any of the background components
         are turned on.
+    resolved_cxb_frac : float, optional
+        The fraction of the cosmic X-ray background that is resolved into point
+        sources that we assume have been removed from the spectral analysis. Must
+        be a number between 0 and 1. Default: 0.8
     noisy : boolean, optional
         If False, simulate_spectrum will not use counting (Poisson) statistics
         when creating the spectrum. If any backgrounds are on, this must be
@@ -1085,6 +1093,7 @@ def simulate_spectrum(
         foreground=foreground,
         ptsrc_bkgnd=ptsrc_bkgnd,
         bkgnd_area=bkgnd_area,
+        resolved_cxb_frac=resolved_cxb_frac,
         noisy=noisy,
         prng=prng,
         **kwargs,
