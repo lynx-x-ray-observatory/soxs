@@ -34,8 +34,8 @@ class AuxiliaryResponseFile:
     def __init__(self, filename):
         self.filename = get_data_file(filename)
         with fits.open(self.filename) as f:
-            self.elo = f["SPECRESP"].data.field("ENERG_LO")
-            self.ehi = f["SPECRESP"].data.field("ENERG_HI")
+            self.elo = f["SPECRESP"].data.field("ENERG_LO").copy()
+            self.ehi = f["SPECRESP"].data.field("ENERG_HI").copy()
             self.ebins = np.append(self.elo, self.ehi[-1])
             self.de = np.diff(self.ebins)
             self.emid = 0.5 * (self.elo + self.ehi)
