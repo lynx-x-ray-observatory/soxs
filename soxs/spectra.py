@@ -1104,9 +1104,8 @@ class ConvolvedSpectrum(CountRateSpectrum):
         elif isinstance(arf, str):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
-        if rmf is not None:
-            if isinstance(rmf, str):
-                rmf = RedistributionMatrixFile(rmf)
+        if rmf is not None and isinstance(rmf, str):
+            rmf = RedistributionMatrixFile(rmf)
         self.rmf = rmf
         self.noisy = noisy
         if exp_time is not None:
