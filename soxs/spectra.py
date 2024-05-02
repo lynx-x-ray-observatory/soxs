@@ -1071,7 +1071,9 @@ class CountRateSpectrum(Spectrum):
 
 
 class ConvolvedSpectrum(CountRateSpectrum):
-    def __init__(self, ebins, flux, arf, rmf=None, binscale="linear"):
+    def __init__(
+        self, ebins, flux, arf, rmf=None, binscale="linear", noisy=False, exp_time=None
+    ):
         from numbers import Number
 
         from soxs.response import (
@@ -1089,18 +1091,78 @@ class ConvolvedSpectrum(CountRateSpectrum):
         if rmf is not None:
             if isinstance(rmf, str):
                 rmf = RedistributionMatrixFile(rmf)
-            self.rmf = rmf
+        self.rmf = rmf
+        self.noisy = noisy
+        if exp_time is not None:
+            exp_time = parse_value(exp_time, "s")
+        self.exp_time = exp_time * u.s
+        if self.exp_time is not None and self.noisy:
+            self.flux_err = (
+                np.sqrt(self.flux * self.exp_time * self.de).value
+                * u.photon
+                / (self.exp_time * self.de)
+            )
+        else:
+            self.flux_err = None
+
+    def _check_binning_units(self, other):
+        super()._check_binning_units(other)
+        if self.noisy != other.noisy:
+            raise RuntimeError(
+                "The noisy flags for these two spectra are not the same!"
+            )
+        bad_exp = self.exp_time is None and other.exp_time is not None
+        bad_exp |= self.exp_time is not None and other.exp_time is None
+        if self.exp_time is not None and other.exp_time is not None:
+            bad_exp |= not np.isclose(self.exp_time.value, other.exp_time.value)
+        if bad_exp:
+            raise RuntimeError(
+                "The exposure times for these two spectra are not the same!"
+            )
+        bad_rmf = self.rmf is not None and other.rmf is None
+        bad_rmf |= self.rmf is None and other.rmf is not None
+        bad_rmf |= self.rmf.filename != other.rmf.filename
+        if bad_rmf:
+            raise RuntimeError("The RMF for these two spectra are not the same!")
+        bad_arf = self.arf is not None and other.arf is None
+        bad_arf |= self.arf is None and other.arf is not None
+        bad_arf |= self.arf.filename != other.arf.filename
+        if bad_arf:
+            raise RuntimeError("The ARF for these two spectra are not the same!")
 
     def __add__(self, other):
         self._check_binning_units(other)
         return ConvolvedSpectrum(
-            self.ebins, self.flux + other.flux, self.arf, binscale=self.binscale
+            self.ebins,
+            self.flux + other.flux,
+            self.arf,
+            binscale=self.binscale,
+            rmf=self.rmf,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
         )
 
     def __sub__(self, other):
         self._check_binning_units(other)
         return ConvolvedSpectrum(
-            self.ebins, self.flux - other.flux, self.arf, binscale=self.binscale
+            self.ebins,
+            self.flux - other.flux,
+            self.arf,
+            binscale=self.binscale,
+            rmf=self.rmf,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
+        )
+
+    def __mul__(self, other):
+        return ConvolvedSpectrum(
+            self.ebins,
+            other * self.flux,
+            self.arf,
+            binscale=self.binscale,
+            rmf=self.rmf,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
         )
 
     @classmethod
@@ -1129,7 +1191,51 @@ class ConvolvedSpectrum(CountRateSpectrum):
         )
         de = np.diff(ebins)
         rate /= de
-        return cls(ebins, rate, arf, binscale="linear", rmf=rmf)
+        return cls(
+            ebins,
+            rate,
+            arf,
+            binscale="linear",
+            rmf=rmf,
+            noisy=bool(hdu.header["POISSERR"]),
+            exp_time=hdu.header["EXPOSURE"],
+        )
+
+    def to_pha_file(self, specfile, overwrite=False):
+        """
+        Write a :class:`~soxs.spectra.ConvolvedSpectrum` object to a
+        PHA/PI file.
+
+        Parameters
+        ----------
+        specfile : string
+            The PHA/PI file to be written.
+        overwrite : boolean, optional
+            Whether to overwrite an already existing file. Default: False
+        """
+        from soxs.events.spectra import _write_spectrum
+
+        counts = (self.flux * self.de).value * self.exp_time.value
+        if self.noisy:
+            counts = np.rint(counts).astype("int")
+        event_params = {
+            "RESPFILE": os.path.split(self.rmf.filename)[-1],
+            "ANCRFILE": os.path.split(self.arf.filename)[-1],
+            "TELESCOP": self.rmf.header["TELESCOP"],
+            "INSTRUME": self.rmf.header["INSTRUME"],
+            "MISSION": self.rmf.header.get("MISSION", ""),
+            "EXPOSURE": self.exp_time.value,
+            "CHANTYPE": self.rmf.chan_type,
+        }
+        bins = (np.arange(self.rmf.n_ch) + self.rmf.cmin).astype("int32")
+        _write_spectrum(
+            bins,
+            counts,
+            event_params,
+            specfile,
+            overwrite=overwrite,
+            noisy=self.noisy,
+        )
 
     @classmethod
     def convolve(cls, spectrum, arf, use_arf_energies=False, rmf=None):
@@ -1193,7 +1299,15 @@ class ConvolvedSpectrum(CountRateSpectrum):
             The maximum energy of the band in keV.
         """
         ebins, flux = self._new_spec_from_band(emin, emax)
-        return ConvolvedSpectrum(ebins, flux, self.arf, binscale=self.binscale)
+        return ConvolvedSpectrum(
+            ebins,
+            flux,
+            self.arf,
+            binscale=self.binscale,
+            noisy=self.noisy,
+            rmf=self.rmf,
+            exp_time=self.exp_time,
+        )
 
     def deconvolve(self):
         """
