@@ -1131,6 +1131,14 @@ class ConvolvedSpectrum(CountRateSpectrum):
             self._counts = counts * u.photon
         return self._counts
 
+    _counts_err = None
+
+    @property
+    def counts_err(self):
+        if self._counts_err is None:
+            self._counts_err = np.sqrt(self.counts.value)
+        return self._counts_err
+
     def _check_binning_units(self, other):
         super()._check_binning_units(other)
         if self.noisy != other.noisy:
