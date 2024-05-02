@@ -60,6 +60,9 @@ class Spectrum:
         self.de = np.diff(self.ebins)
         self.binscale = binscale
         self._compute_total_flux()
+        self.noisy = False
+        self.flux_err = None
+        self.exp_time = None
 
     def _compute_total_flux(self):
         self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
@@ -900,7 +903,20 @@ class Spectrum:
                 yscale = ax.get_yscale()
         if ax is None:
             ax = fig.add_subplot(111)
-        ax.plot(self.emid, self.flux, lw=lw, label=label, **kwargs)
+        if self.noisy:
+            ax.errorbar(
+                self.emid,
+                self.flux,
+                xerr=0.5 * self.de,
+                yerr=self.flux_err,
+                fmt=".",
+                lw=lw,
+                ms=lw,
+                label=label,
+                **kwargs,
+            )
+        else:
+            ax.plot(self.emid, self.flux, lw=lw, label=label, **kwargs)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
         ax.set_xlim(xmin, xmax)
@@ -908,7 +924,7 @@ class Spectrum:
         ax.set_xlabel("Energy (keV)", fontsize=fontsize)
         yunit = u.Unit(self._units).to_string("latex").replace("{}^{\\prime}", "arcmin")
         ax.set_ylabel("Spectrum (%s)" % yunit, fontsize=fontsize)
-        ax.tick_params(axis="both", labelsize=fontsize)
+        ax.tick_params(reset=True, axis="both", labelsize=fontsize)
         return fig, ax
 
 
