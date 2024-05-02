@@ -1120,6 +1120,17 @@ class ConvolvedSpectrum(CountRateSpectrum):
         else:
             self.flux_err = None
 
+    _counts = None
+
+    @property
+    def counts(self):
+        if self._counts is None:
+            counts = (self.flux * self.de).value * self.exp_time.value
+            if self.noisy:
+                counts = np.rint(counts).astype("int")
+            self._counts = counts * u.photon
+        return self._counts
+
     def _check_binning_units(self, other):
         super()._check_binning_units(other)
         if self.noisy != other.noisy:
@@ -1230,9 +1241,6 @@ class ConvolvedSpectrum(CountRateSpectrum):
         """
         from soxs.events.spectra import _write_spectrum
 
-        counts = (self.flux * self.de).value * self.exp_time.value
-        if self.noisy:
-            counts = np.rint(counts).astype("int")
         event_params = {
             "RESPFILE": os.path.split(self.rmf.filename)[-1],
             "ANCRFILE": os.path.split(self.arf.filename)[-1],
@@ -1245,7 +1253,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         bins = (np.arange(self.rmf.n_ch) + self.rmf.cmin).astype("int32")
         _write_spectrum(
             bins,
-            counts,
+            self.counts.value,
             event_params,
             specfile,
             overwrite=overwrite,
