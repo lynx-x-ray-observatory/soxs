@@ -1109,8 +1109,8 @@ class ConvolvedSpectrum(CountRateSpectrum):
         self.rmf = rmf
         self.noisy = noisy
         if exp_time is not None:
-            exp_time = parse_value(exp_time, "s")
-        self.exp_time = exp_time * u.s
+            exp_time = parse_value(exp_time, "s") * u.s
+        self.exp_time = exp_time
         if self.exp_time is not None and self.noisy:
             self.flux_err = (
                 np.sqrt(self.flux * self.exp_time * self.de).value
