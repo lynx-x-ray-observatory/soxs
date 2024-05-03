@@ -3,6 +3,26 @@
 ChangeLog
 =========
 
+Version 4.8.4
+-------------
+
+This version of SOXS fixes two bugs and one documentation error.
+
+* Spatial region handling in the context of :func:`~soxs.events.filter_events` and
+  :func:`~soxs.events.write_spectrum` has been fixed for composite regions which
+  mixed regions which include and exclude data.
+* When creating spectra using :func:`~soxs.instrument.simulate_spectrum` and
+  including backgrounds, the square root of the ``bkgnd_area`` parameter was
+  used to normalize the backgrounds instead of the ``bkgnd_area`` parameter itself.
+  This has been fixed. Thanks to `liuguanfu1120 <https://github.com/liuguanfu1120>`_
+  for pointing this out in
+  `Github Issue #36 <https://github.com/lynx-x-ray-observatory/soxs/issues/36>`_.
+* The :ref:`background` page incorrectly reported ``"wabs"`` as the default
+  absorption model for the Milky Way foreground, instead of ``"tbabs"``. This has
+  been corrected. Thanks to `liuguanfu1120 <https://github.com/liuguanfu1120>`_
+  for pointing this out in
+  `Github Issue #35 <https://github.com/lynx-x-ray-observatory/soxs/issues/35>`_.
+
 Version 4.8.3
 -------------
 
