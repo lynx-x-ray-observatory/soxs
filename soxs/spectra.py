@@ -797,7 +797,7 @@ class Spectrum:
             f = Gaussian1D(B, line_center, sigma)
         else:
             raise NotImplementedError(
-                "Line profile type '%s' " % line_type + "not implemented!"
+                f"Line profile type '{line_type}' not implemented!"
             )
         self.flux *= np.exp(-f(self.emid.value))
         self._compute_total_flux()
