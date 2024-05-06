@@ -407,6 +407,51 @@ class Spectrum:
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
+    def from_pyxspec_model(cls, model, spectrum_index=None):
+        """
+        Create a spectrum from a PyXspec model object.
+
+        Parameters
+        ----------
+        model : :class:`~xspec.Model`
+            The PyXspec model object.
+        spectrum_index : integer, optional
+            The index of the spectrum in the model object to
+            use for getting the energies and fluxes. Default: Will
+            use the first valid value of the spectral index, starting
+            from zero.
+        """
+        if spectrum_index is None:
+            spectrum_index = 0
+        try:
+            ebins = model.energies(spectrum_index)
+        except Exception as e:
+            if spectrum_index == 0:
+                spectrum_index = 1
+                ebins = model.energies(spectrum_index)
+            else:
+                raise e
+        ebins = np.array(ebins)
+        de = np.diff(ebins)
+        dloge = np.diff(np.log10(ebins))
+        if cls is Spectrum:
+            flux = model.values(spectrum_index)
+        elif cls is CountRateSpectrum:
+            flux = model.folded(spectrum_index)
+        else:
+            raise NotImplementedError(
+                f"from_pyxspec_model is not implemented for {cls}!"
+            )
+        flux = np.array(flux) / de
+        if np.isclose(de, de[0]).all():
+            binscale = "linear"
+        elif np.isclose(dloge, dloge[0]).all():
+            binscale = "log"
+        else:
+            binscale = "custom"
+        return cls(ebins, flux, binscale=binscale)
+
+    @classmethod
     def from_powerlaw(
         cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"
     ):
