@@ -14,7 +14,6 @@ from scipy.interpolate import interp1d
 from soxs.constants import erg_per_keV, hc, sigma_to_fwhm, sqrt2pi
 from soxs.utils import (
     get_data_file,
-    issue_deprecation_warning,
     line_width_equiv,
     mylog,
     parse_prng,
@@ -63,6 +62,8 @@ class Spectrum:
         self.noisy = False
         self.flux_err = None
         self.exp_time = None
+        self.arf = None
+        self.rmf = None
 
     def _compute_total_flux(self):
         self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
@@ -503,6 +504,9 @@ class Spectrum:
             The path to the file containing the spectrum.
         """
         arf = None
+        rmf = None
+        noisy = False
+        exp_time = None
         try:
             # First try reading the file as HDF5
             with h5py.File(filename, "r") as f:
@@ -517,6 +521,12 @@ class Spectrum:
                     )
                 if "arf" in f.attrs:
                     arf = f.attrs["arf"]
+                if "rmf" in f.attrs:
+                    rmf = f.attrs["rmf"]
+                if "noisy" in f.attrs:
+                    noisy = f.attrs["noisy"]
+                if "exp_time" in f.attrs:
+                    exp_time = f.attrs["exp_time"]
         except OSError:
             # If that fails, try reading the file as ASCII or FITS
             # using AstroPy QTable
@@ -529,8 +539,22 @@ class Spectrum:
             binscale = t.meta.get("binscale", "linear")
             if "arf" in t.meta:
                 arf = t.meta["arf"]
+            if "rmf" in t.meta:
+                rmf = t.meta["rmf"]
+            if "noisy" in t.meta:
+                noisy = t.meta["noisy"]
+            if "exp_time" in t.meta:
+                exp_time = t.meta["exp_time"]
         if arf is not None:
-            return cls(ebins, flux, arf, binscale=binscale)
+            return cls(
+                ebins,
+                flux,
+                arf,
+                binscale=binscale,
+                rmf=rmf,
+                noisy=noisy,
+                exp_time=exp_time,
+            )
         else:
             return cls(ebins, flux, binscale=binscale)
 
@@ -625,9 +649,13 @@ class Spectrum:
         self._compute_total_flux()
 
     def _write_fits_or_ascii(self):
-        meta = {"binscale": self.binscale}
-        if hasattr(self, "arf"):
+        meta = {"binscale": self.binscale, "noisy": self.noisy}
+        if self.arf is not None:
             meta["arf"] = self.arf.filename
+        if self.rmf is not None:
+            meta["rmf"] = self.rmf.filename
+        if self.exp_time is not None:
+            meta["exp_time"] = self.exp_time.value
         t = QTable(
             [self.ebins[:-1], self.ebins[1:], self.flux],
             names=["elo", "ehi", "flux"],
@@ -700,15 +728,13 @@ class Spectrum:
             f.create_dataset("emax", data=self.ebins[-1].value)
             f.create_dataset("spectrum", data=self.flux.value)
             f.attrs["binscale"] = self.binscale
-            if hasattr(self, "arf"):
+            f.attrs["noisy"] = self.noisy
+            if self.arf is not None:
                 f.attrs["arf"] = self.arf.filename
-
-    def write_h5_file(self, specfile, overwrite=False):
-        issue_deprecation_warning(
-            "'Spectrum.write_h5_file' is deprecated and has been "
-            "superseded by 'Spectrum.write_hdf5_file'"
-        )
-        self.write_hdf5_file(specfile, overwrite=overwrite)
+            if self.rmf is not None:
+                f.attrs["rmf"] = self.rmf.filename
+            if self.exp_time is not None:
+                f.attrs["exp_time"] = self.exp_time.value
 
     def write_fits_file(self, specfile, overwrite=False):
         """
