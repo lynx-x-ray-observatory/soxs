@@ -3,8 +3,7 @@ from astropy.io import fits
 from regions import PixCoord
 
 from soxs.instrument import perform_dither
-from soxs.spectra import ConvolvedSpectrum
-from soxs.thermal_spectra import ApecGenerator
+from soxs.spectra import ApecGenerator, ConvolvedSpectrum
 from soxs.utils import (
     create_region,
     get_data_file,

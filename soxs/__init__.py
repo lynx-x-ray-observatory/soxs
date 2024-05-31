@@ -63,12 +63,15 @@ from soxs.spatial import (
     RectangleModel,
     SpatialModel,
 )
-from soxs.spectra import ConvolvedSpectrum, CountRateSpectrum, Spectrum
-from soxs.thermal_spectra import (
+from soxs.spectra import (
     ApecGenerator,
+    ChargeExchangeGenerator,
     CloudyCIEGenerator,
+    ConvolvedSpectrum,
+    CountRateSpectrum,
     IGMGenerator,
     MekalGenerator,
+    Spectrum,
     SpexGenerator,
     download_spectrum_tables,
 )

@@ -154,7 +154,7 @@ class CIEGenerator:
         if not isinstance(abund_table, str):
             if len(abund_table) != 30:
                 raise RuntimeError(
-                    "User-supplied abundance tables " "must be 30 elements long!"
+                    "User-supplied abundance tables must be 30 elements long!"
                 )
             self.atable = np.concatenate([[0.0], np.array(abund_table)])
         else:
@@ -997,7 +997,7 @@ class MekalGenerator(Atable1DGenerator):
             k = 0
             for i in range(14):
                 j = elem_names.index(self._available_elem[i])
-                data = self._atable[j] * f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][
+                data = self._atable[j] * f["SPECTRA"].data[f"ADDSP0{i + 1:02d}"][
                     :, eidxs[0] : eidxs[1]
                 ].astype("float64")
                 if self._available_elem[i] in self.var_elem:
