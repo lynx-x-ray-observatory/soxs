@@ -121,7 +121,7 @@ class ACX2Generator:
 
         # set collision type and units
         if collntype == 1:
-            self.coll_units = "keV/amu"
+            self.coll_units = "keV/u"
             self._cv = np.sqrt(4786031.3 / 25.0)
         else:
             self.coll_units = "km/s"
