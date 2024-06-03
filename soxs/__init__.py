@@ -64,8 +64,8 @@ from soxs.spatial import (
     SpatialModel,
 )
 from soxs.spectra import (
+    ACX2Generator,
     ApecGenerator,
-    ChargeExchangeGenerator,
     CloudyCIEGenerator,
     ConvolvedSpectrum,
     CountRateSpectrum,

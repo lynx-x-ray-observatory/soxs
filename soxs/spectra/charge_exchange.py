@@ -36,7 +36,7 @@ elem_full = [
 ]
 
 
-class ChargeExchangeGenerator:
+class ACX2Generator:
     def __init__(
         self,
         model,
