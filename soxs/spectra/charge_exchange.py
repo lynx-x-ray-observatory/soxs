@@ -147,6 +147,10 @@ class ACX2Generator:
         velocity=0.0,
         tbroad=0.0,
     ):
+        # check velocity and tbroad
+        velocity = parse_value(velocity, "km/s")
+        tbroad = parse_value(tbroad, "keV")
+
         # set the abundances
         if elem_abund is None:
             elem_abund = {}
