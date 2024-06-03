@@ -306,12 +306,16 @@ finley = PoochHandle()
 
 
 def get_data_file(fn):
+    soxs_data_dir = soxs_cfg.get("soxs", "soxs_data_dir")
     rel_fn = os.path.split(fn)[-1]
+    data_fn = os.path.join(soxs_data_dir, rel_fn)
     if os.path.exists(rel_fn):
         mylog.warning(
             "Using local file %s instead of the one from the database.", rel_fn
         )
         return fn
+    elif rel_fn not in finley._registry and os.path.exists(data_fn):
+        return data_fn
     else:
         return finley.fetch(rel_fn)
 
