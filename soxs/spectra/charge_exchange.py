@@ -150,10 +150,8 @@ class ACX2Generator:
         # set the abundances
         if elem_abund is None:
             elem_abund = {}
-        abunds = np.zeros(self.num_elements)
-        if len(elem_abund) == 0:
-            abunds = abund
-        else:
+        abunds = abund * np.ones(self.num_elements)
+        if len(elem_abund) > 0:
             if set(elem_abund.keys()) != set(self.var_elem_names):
                 msg = (
                     "The supplied set of abundances is not the same as "
