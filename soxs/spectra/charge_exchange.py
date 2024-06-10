@@ -1,8 +1,9 @@
 import numpy as np
+from tqdm.auto import tqdm
 
 from soxs.constants import abund_tables, elem_names
 from soxs.spectra import Spectrum
-from soxs.utils import parse_value, soxs_cfg
+from soxs.utils import DummyPbar, parse_value, soxs_cfg
 
 elem_subset = [1, 2, 6, 7, 8, 10, 12, 13, 14, 16, 18, 20, 26, 28]
 elem_full = [
@@ -135,6 +136,40 @@ class ACX2Generator:
         self.collntype = collntype
         self.model.set_collisiontype(collntype, self.coll_units)
 
+    def _get_table(self, kT_vals, coll_vals):
+        n_T = kT_vals.size
+        n_c = coll_vals.size
+        numv = n_T * n_c
+        aspec = np.zeros((numv, self.nbins))
+        vspec = None
+        if self.num_var_elem > 0:
+            vspec = np.zeros((self.num_var_elem, numv, self.nbins))
+        if numv > 2:
+            pbar = tqdm(leave=True, total=numv, desc="Preparing spectrum table ")
+        else:
+            pbar = DummyPbar()
+        aabunds = np.ones(self.num_elements)
+        for k in self.var_elem:
+            aabunds[self.var_elem_idxs[k]] = 0.0
+        vabunds = np.zeros(self.num_elements)
+        for i, kT in enumerate(kT_vals):
+            self.model.set_temperature(kT)
+            for j, cv in enumerate(coll_vals):
+                idx = np.ravel_multi_index((j, i), (n_c, n_T))
+                self.model.set_abund(aabunds, elements=self.elements)
+                aspec[idx, :] = self.model.calc_spectrum(cv) / cv
+                if self.num_var_elem > 0:
+                    for k in self.var_elem:
+                        vabunds[:] = 0.0
+                        vabunds[self.var_elem_idxs[k]] = 1.0
+                        self.model.set_abund(vabunds, elements=self.elements)
+                        vspec[k, idx, :] = self.model.calc_spectrum(cv) / cv
+            pbar.update()
+        pbar.close()
+        aspec /= self._cv
+        vspec /= self._cv
+        return aspec, vspec
+
     def get_spectrum(
         self,
         kT,
@@ -190,6 +225,6 @@ class ACX2Generator:
             cv **= 0.5
         cv *= self._cv
 
-        spec = norm * spec * 1.0e10 / cv / self.de
+        spec = norm * spec / cv / self.de
 
         return Spectrum(self.ebins, spec, binscale=self.binscale)
