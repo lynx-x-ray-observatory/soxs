@@ -10,6 +10,7 @@ from .base import (
 from .charge_exchange import ACX2Generator
 from .thermal_spectra import (
     ApecGenerator,
+    CIEGenerator,
     CloudyCIEGenerator,
     IGMGenerator,
     MekalGenerator,

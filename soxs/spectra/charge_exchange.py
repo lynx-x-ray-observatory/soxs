@@ -56,7 +56,7 @@ class ACX2Generator:
         except ImportError:
             raise ImportError(
                 "You must have the acx2 and pyatomdb packages "
-                "installed to use the ChargeExchangeGenerator class!"
+                "installed to use the ACX2Generator class!"
             )
         if model == "acx2":
             self.model = ACXModel()
@@ -167,7 +167,8 @@ class ACX2Generator:
             pbar.update()
         pbar.close()
         aspec /= self._cv
-        vspec /= self._cv
+        if self.num_var_elem > 0:
+            vspec /= self._cv
         return aspec, vspec
 
     def get_spectrum(
