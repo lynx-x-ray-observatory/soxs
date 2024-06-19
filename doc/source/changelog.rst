@@ -3,6 +3,20 @@
 ChangeLog
 =========
 
+Version 4.8.5
+-------------
+
+This version of SOXS fixes two bugs.
+
+* For certain instruments, in particular the *Lynx* LXM varieties, instrumental
+  background simulations were yielding no events because of how the files were
+  being read. This bug has now been fixed.
+* Custom instrument files that were not part of the official SOXS instrument file
+  registry, but placed in the ``soxs_data_dir`` location, were not being properly
+  detected. This bug has been fixed. Thanks to `xshaokun <https://github.com/xshaokun>`_
+  for pointing this out in
+  `GitHub Issue #38 <https://github.com/lynx-x-ray-observatory/soxs/issues/38>`_.
+
 Version 4.8.4
 -------------
 
@@ -16,7 +30,7 @@ This version of SOXS fixes two bugs and one documentation error.
   used to normalize the backgrounds instead of the ``bkgnd_area`` parameter itself.
   This has been fixed. Thanks to `liuguanfu1120 <https://github.com/liuguanfu1120>`_
   for pointing this out in
-  `Github Issue #36 <https://github.com/lynx-x-ray-observatory/soxs/issues/36>`_.
+  `GitHub Issue #36 <https://github.com/lynx-x-ray-observatory/soxs/issues/36>`_.
 * The :ref:`background` page incorrectly reported ``"wabs"`` as the default
   absorption model for the Milky Way foreground, instead of ``"tbabs"``. This has
   been corrected. Thanks to `liuguanfu1120 <https://github.com/liuguanfu1120>`_
