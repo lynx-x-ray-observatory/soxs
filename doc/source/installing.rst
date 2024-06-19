@@ -40,6 +40,10 @@ code and see them reflected without recompiling (though if you make updates to
 the command-line scripts you will have to run ``pip install -e .``
 again).
 
+.. warning::
+
+    SOXS is not currently compatible with NumPy 2.0, but will be in a future release.
+
 SOXS Dependencies
 =================
 
