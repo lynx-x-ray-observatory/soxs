@@ -24,7 +24,6 @@ conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdi
 if [[ ${mode} == "testing" ]]; then
   git clone https://github.com/jzuhone/pyxsim
   cd pyxsim
-  git checkout soxs_read
   pip install .
   cd ..
 fi
