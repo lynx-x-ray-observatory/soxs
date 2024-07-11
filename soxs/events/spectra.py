@@ -115,12 +115,7 @@ def _make_spectrum(
     parameters["CHANTYPE"] = spectype
 
     rmf = RedistributionMatrixFile(rmf)
-    minlength = rmf.n_ch
-    if rmf.cmin == 1:
-        minlength += 1
-    spec = np.bincount(p, minlength=minlength)
-    if rmf.cmin == 1:
-        spec = spec[1:]
+    spec = np.bincount(p, minlength=rmf.n_ch + rmf.cmin)[rmf.cmin :]
     bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
 
     return bins, spec, parameters
