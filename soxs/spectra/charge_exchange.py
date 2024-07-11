@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm.auto import tqdm
 
 from soxs.constants import abund_tables, elem_names
 from soxs.spectra import Spectrum
@@ -222,6 +223,30 @@ class OneACX2Generator(ACX2Generator):
             var_elem=None,
             abund_table=abund_table,
         )
+
+    def make_table(self, ions, colls, redshift):
+        numc = colls.size
+        numi = ions.size
+        vspec = np.zeros((numi, 2, numc, self.nbins))
+
+        self.model.set_abund(np.ones(self.num_elements), elements=self.elements)
+
+        pbar = tqdm(leave=True, total=numc, desc="Preparing spectrum table ")
+        for i, (Z, ion) in enumerate(ions):
+            # Set the ionization fraction
+            ionfrac = {}
+            for i in self.model.elements:
+                ionfrac[i] = np.zeros(i + 1)
+            ionfrac[Z][ion] = 1.0
+            self.model.set_ionfrac(ionfrac)
+            for j, collnpar in enumerate(colls):
+                spec_H = self._get_spectrum(redshift, 0.0, collnpar)
+                spec_He = self._get_spectrum(redshift, 1.0, collnpar)
+                vspec[i, 0, j, :] = spec_H
+                vspec[i, 1, j, :] = spec_He
+            pbar.update()
+        pbar.close()
+        return vspec
 
     def get_spectrum(
         self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0
