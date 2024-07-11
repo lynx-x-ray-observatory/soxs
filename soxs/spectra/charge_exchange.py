@@ -228,7 +228,10 @@ class OneACX2Generator(ACX2Generator):
     ):
 
         # Get the atomic number
-        Z = elem_names.index(elem)
+        if isinstance(elem, str):
+            Z = elem_names.index(elem)
+        else:
+            Z = elem
 
         # check velocity and tbroad
         velocity = parse_value(velocity, "km/s")
