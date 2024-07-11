@@ -1,9 +1,8 @@
 import numpy as np
-from tqdm.auto import tqdm
 
 from soxs.constants import abund_tables, elem_names
 from soxs.spectra import Spectrum
-from soxs.utils import DummyPbar, parse_value, soxs_cfg
+from soxs.utils import parse_value, soxs_cfg
 
 elem_subset = [1, 2, 6, 7, 8, 10, 12, 13, 14, 16, 18, 20, 26, 28]
 elem_full = [
@@ -38,9 +37,10 @@ elem_full = [
 
 
 class ACX2Generator:
+    _one_ion = False
+
     def __init__(
         self,
-        model,
         emin,
         emax,
         nbins,
@@ -58,10 +58,7 @@ class ACX2Generator:
                 "You must have the acx2 and pyatomdb packages "
                 "installed to use the ACX2Generator class!"
             )
-        if model == "acx2":
-            self.model = ACXModel()
-        else:
-            raise NotImplementedError(f"Model {model} not recognized!")
+        self.model = ACXModel()
         self.binscale = binscale
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
@@ -78,7 +75,7 @@ class ACX2Generator:
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
         if var_elem is None:
             self.var_elem = np.empty(0, dtype="int")
-            self.elements = elem_subset
+            self.elements = elem_full if self._one_ion else elem_subset
         else:
             if len(var_elem) != len(set(var_elem)):
                 raise RuntimeError(
@@ -136,40 +133,27 @@ class ACX2Generator:
         self.collntype = collntype
         self.model.set_collisiontype(collntype, self.coll_units)
 
-    def _get_table(self, kT_vals, coll_vals):
-        n_T = kT_vals.size
-        n_c = coll_vals.size
-        numv = n_T * n_c
-        aspec = np.zeros((numv, self.nbins))
-        vspec = None
-        if self.num_var_elem > 0:
-            vspec = np.zeros((self.num_var_elem, numv, self.nbins))
-        if numv > 2:
-            pbar = tqdm(leave=True, total=numv, desc="Preparing spectrum table ")
-        else:
-            pbar = DummyPbar()
-        aabunds = np.ones(self.num_elements)
-        for k in self.var_elem:
-            aabunds[self.var_elem_idxs[k]] = 0.0
-        vabunds = np.zeros(self.num_elements)
-        for i, kT in enumerate(kT_vals):
-            self.model.set_temperature(kT)
-            for j, cv in enumerate(coll_vals):
-                idx = np.ravel_multi_index((j, i), (n_c, n_T))
-                self.model.set_abund(aabunds, elements=self.elements)
-                aspec[idx, :] = self.model.calc_spectrum(cv) / cv
-                if self.num_var_elem > 0:
-                    for k in self.var_elem:
-                        vabunds[:] = 0.0
-                        vabunds[self.var_elem_idxs[k]] = 1.0
-                        self.model.set_abund(vabunds, elements=self.elements)
-                        vspec[k, idx, :] = self.model.calc_spectrum(cv) / cv
-            pbar.update()
-        pbar.close()
-        aspec /= self._cv
-        if self.num_var_elem > 0:
-            vspec /= self._cv
-        return aspec, vspec
+    def _get_spectrum(self, redshift, He_frac, collnpar, tbroad, velocity):
+
+        # Shift the energy bins to the source frame
+        self.model.set_ebins(self.ebins * (1.0 + redshift))
+
+        # set the H & He fraction from HeFrac for the donors
+        self.model.set_donorabund(["H", "He"], [1 - He_frac, He_frac])
+
+        # collision parameter parsing
+        collnpar = parse_value(collnpar, self.coll_units)
+
+        # calculate the spectrum
+        spec = self.model.calc_spectrum(collnpar, Tbroaden=tbroad, vbroaden=velocity)
+
+        # normalize the spectrum
+        cv = collnpar
+        if self.collntype == 1:
+            cv **= 0.5
+        cv *= self._cv
+
+        return spec / cv
 
     def get_spectrum(
         self,
@@ -208,24 +192,57 @@ class ACX2Generator:
         # set the temperature
         self.model.set_temperature(kT)
 
-        # Shift the energy bins to the source frame
-        self.model.set_ebins(self.ebins * (1.0 + redshift))
+        spec = self._get_spectrum(redshift, He_frac, collnpar, tbroad, velocity)
 
-        # set the H & He fraction from HeFrac for the donors
-        self.model.set_donorabund(["H", "He"], [1 - He_frac, He_frac])
+        return Spectrum(self.ebins, norm * spec / self.de, binscale=self.binscale)
 
-        # collision parameter parsing
-        collnpar = parse_value(collnpar, self.coll_units)
 
-        # calculate the spectrum
-        spec = self.model.calc_spectrum(collnpar, Tbroaden=tbroad, vbroaden=velocity)
+class OneACX2Generator(ACX2Generator):
+    _one_ion = True
 
-        # normalize the spectrum
-        cv = collnpar
-        if self.collntype == 1:
-            cv **= 0.5
-        cv *= self._cv
+    def __init__(
+        self,
+        emin,
+        emax,
+        nbins,
+        collntype=1,
+        acx_model=8,
+        recomb_type=1,
+        binscale="linear",
+        abund_table=None,
+    ):
+        super().__init__(
+            emin,
+            emax,
+            nbins,
+            collntype=collntype,
+            acx_model=acx_model,
+            recomb_type=recomb_type,
+            binscale=binscale,
+            var_elem=None,
+            abund_table=abund_table,
+        )
 
-        spec = norm * spec / cv / self.de
+    def get_spectrum(
+        self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0
+    ):
 
-        return Spectrum(self.ebins, spec, binscale=self.binscale)
+        # Get the atomic number
+        Z = elem_names.index(elem)
+
+        # check velocity and tbroad
+        velocity = parse_value(velocity, "km/s")
+        tbroad = parse_value(tbroad, "keV")
+
+        # Set the ionization fraction
+        ionfrac = {}
+        for i in self.model.elements:
+            ionfrac[i] = np.zeros(i + 1)
+        ionfrac[Z][ion] = 1.0
+        self.model.set_ionfrac(ionfrac)
+
+        self.model.set_abund(np.ones(self.num_elements), elements=self.elements)
+
+        spec = self._get_spectrum(redshift, He_frac, collnpar, tbroad, velocity)
+
+        return Spectrum(self.ebins, norm * spec / self.de, binscale=self.binscale)

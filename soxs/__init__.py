@@ -71,6 +71,7 @@ from soxs.spectra import (
     CountRateSpectrum,
     IGMGenerator,
     MekalGenerator,
+    OneACX2Generator,
     Spectrum,
     SpexGenerator,
     download_spectrum_tables,
