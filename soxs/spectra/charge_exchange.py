@@ -227,7 +227,8 @@ class OneACX2Generator(ACX2Generator):
     def make_table(self, ions, colls, redshift):
         numc = colls.size
         numi = ions.size
-        vspec = np.zeros((numi, 2, numc, self.nbins))
+        h_spec = np.zeros((numi, numc, self.nbins))
+        he_spec = np.zeros((numi, numc, self.nbins))
 
         self.model.set_abund(np.ones(self.num_elements), elements=self.elements)
 
@@ -240,13 +241,11 @@ class OneACX2Generator(ACX2Generator):
             ionfrac[Z][ion] = 1.0
             self.model.set_ionfrac(ionfrac)
             for j, collnpar in enumerate(colls):
-                spec_H = self._get_spectrum(redshift, 0.0, collnpar)
-                spec_He = self._get_spectrum(redshift, 1.0, collnpar)
-                vspec[i, 0, j, :] = spec_H
-                vspec[i, 1, j, :] = spec_He
+                h_spec[i, j, :] = self._get_spectrum(redshift, 0.0, collnpar, 0.0, 0.0)
+                he_spec[i, j, :] = self._get_spectrum(redshift, 1.0, collnpar, 0.0, 0.0)
             pbar.update()
         pbar.close()
-        return vspec
+        return h_spec, he_spec
 
     def get_spectrum(
         self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0
