@@ -53,12 +53,13 @@ class ACX2Generator:
         abund_table=None,
     ):
         try:
-            from acx2 import ACXModel
+            from acx2 import ACXModel, __version__ as model_vers
         except ImportError:
             raise ImportError(
                 "You must have the acx2 and pyatomdb packages "
                 "installed to use the ACX2Generator class!"
             )
+        self.model_vers = model_vers
         self.model = ACXModel()
         self.binscale = binscale
         emin = parse_value(emin, "keV")
