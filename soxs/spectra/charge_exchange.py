@@ -233,6 +233,12 @@ class OneACX2Generator(ACX2Generator):
 
         self.model.set_abund(np.ones(self.num_elements), elements=self.elements)
 
+        # Shift the energy bins to the source frame
+        self.model.set_ebins(self.ebins * (1.0 + redshift))
+
+        # collision parameter parsing
+        colls = parse_value(colls, self.coll_units)
+
         pbar = tqdm(leave=True, total=numc, desc="Preparing spectrum table ")
         for i, (Z, ion) in enumerate(ions):
             # Set the ionization fraction
@@ -241,11 +247,20 @@ class OneACX2Generator(ACX2Generator):
                 ionfrac[i] = np.zeros(i + 1)
             ionfrac[Z][ion] = 1.0
             self.model.set_ionfrac(ionfrac)
-            for j, collnpar in enumerate(colls):
-                h_spec[i, j, :] = self._get_spectrum(redshift, 0.0, collnpar, 0.0, 0.0)
-                he_spec[i, j, :] = self._get_spectrum(redshift, 1.0, collnpar, 0.0, 0.0)
+            for j, coll in enumerate(colls):
+                self.model.set_donorabund(["H", "He"], [1.0, 0.0])
+                h_spec[i, j, :] = self.model.calc_spectrum(coll)
+                self.model.set_donorabund(["H", "He"], [0.0, 1.0])
+                he_spec[i, j, :] = self.model.calc_spectrum(coll)
             pbar.update()
         pbar.close()
+        # normalize the spectra
+        cv = colls
+        if self.collntype == 1:
+            cv **= 0.5
+        cv *= self._cv
+        h_spec /= cv[np.newaxis, :, np.newaxis]
+        he_spec /= cv[np.newaxis, :, np.newaxis]
         return h_spec, he_spec
 
     def get_spectrum(
