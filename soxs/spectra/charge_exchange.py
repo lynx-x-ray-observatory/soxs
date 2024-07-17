@@ -226,8 +226,10 @@ class OneACX2Generator(ACX2Generator):
         )
 
     def make_table(self, ions, colls, redshift):
+        from astropy.units import Quantity
+
         numc = colls.size
-        numi = ions.size
+        numi = len(ions)
         h_spec = np.zeros((numi, numc, self.nbins))
         he_spec = np.zeros((numi, numc, self.nbins))
 
@@ -237,14 +239,16 @@ class OneACX2Generator(ACX2Generator):
         self.model.set_ebins(self.ebins * (1.0 + redshift))
 
         # collision parameter parsing
-        colls = parse_value(colls, self.coll_units)
+        if not hasattr(colls, "unit"):
+            colls = Quantity(colls, self.coll_units)
+        colls = colls.to_value(self.coll_units)
 
         pbar = tqdm(leave=True, total=numc, desc="Preparing spectrum table ")
         for i, (Z, ion) in enumerate(ions):
             # Set the ionization fraction
             ionfrac = {}
-            for i in self.model.elements:
-                ionfrac[i] = np.zeros(i + 1)
+            for e in self.model.elements:
+                ionfrac[e] = np.zeros(e + 1)
             ionfrac[Z][ion] = 1.0
             self.model.set_ionfrac(ionfrac)
             for j, coll in enumerate(colls):
