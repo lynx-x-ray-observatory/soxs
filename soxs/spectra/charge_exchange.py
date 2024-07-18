@@ -3,7 +3,7 @@ from tqdm.auto import tqdm
 
 from soxs.constants import abund_tables, elem_names
 from soxs.spectra import Spectrum
-from soxs.utils import parse_value, soxs_cfg
+from soxs.utils import mylog, parse_value, soxs_cfg
 
 elem_subset = [1, 2, 6, 7, 8, 10, 12, 13, 14, 16, 18, 20, 26, 28]
 elem_full = [
@@ -243,28 +243,22 @@ class OneACX2Generator(ACX2Generator):
             colls = Quantity(colls, self.coll_units)
         colls = colls.to_value(self.coll_units)
 
-        pbar = tqdm(leave=True, total=numc, desc="Preparing spectrum table ")
         for i, (Z, ion) in enumerate(ions):
+            mylog.info("Creating spectrum table for %s %i", elem_names[Z], ion)
             # Set the ionization fraction
             ionfrac = {}
             for e in self.model.elements:
                 ionfrac[e] = np.zeros(e + 1)
             ionfrac[Z][ion] = 1.0
             self.model.set_ionfrac(ionfrac)
+            pbar = tqdm(leave=True, total=numc, desc="Preparing spectrum table ")
             for j, coll in enumerate(colls):
                 self.model.set_donorabund(["H", "He"], [1.0, 0.0])
                 h_spec[i, j, :] = self.model.calc_spectrum(coll)
                 self.model.set_donorabund(["H", "He"], [0.0, 1.0])
                 he_spec[i, j, :] = self.model.calc_spectrum(coll)
-            pbar.update()
-        pbar.close()
-        # normalize the spectra
-        cv = colls
-        if self.collntype == 1:
-            cv **= 0.5
-        cv *= self._cv
-        h_spec /= cv[np.newaxis, :, np.newaxis]
-        he_spec /= cv[np.newaxis, :, np.newaxis]
+                pbar.update()
+            pbar.close()
         return h_spec, he_spec
 
     def get_spectrum(
