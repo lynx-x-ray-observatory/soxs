@@ -122,15 +122,8 @@ class ACX2Generator:
         # set collision type and units
         if collntype == 1:
             self.coll_units = "keV/u"
-            self._cv = np.sqrt(4786031.3 / 25.0)
         else:
             self.coll_units = "km/s"
-            if collntype == 2:
-                self._cv = 1.0
-            elif collntype == 3:
-                self._cv = 1.0 / 13.0
-            elif collntype == 4:
-                self._cv = 12.0 / 13.0
 
         self.collntype = collntype
         self.model.set_collisiontype(collntype, self.coll_units)
@@ -149,13 +142,7 @@ class ACX2Generator:
         # calculate the spectrum
         spec = self.model.calc_spectrum(collnpar, Tbroaden=tbroad, vbroaden=velocity)
 
-        # normalize the spectrum
-        cv = collnpar
-        if self.collntype == 1:
-            cv **= 0.5
-        cv *= self._cv
-
-        return spec / cv
+        return spec
 
     def get_spectrum(
         self,
