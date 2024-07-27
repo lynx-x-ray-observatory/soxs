@@ -11,14 +11,14 @@ from soxs.instrument_registry import get_instrument_from_registry
 from soxs.response import RedistributionMatrixFile
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spatial import PointSourceModel
-from soxs.tests.utils import file_answer_testing, spectrum_answer_testing
-from soxs.thermal_spectra import (
+from soxs.spectra.thermal_spectra import (
     ApecGenerator,
     CloudyCIEGenerator,
     IGMGenerator,
     MekalGenerator,
     SpexGenerator,
 )
+from soxs.tests.utils import file_answer_testing, spectrum_answer_testing
 
 inst_name = "lynx_lxm"
 
