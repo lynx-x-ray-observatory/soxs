@@ -39,6 +39,57 @@ elem_full = [
 
 class ACX2Generator:
     _one_ion = False
+    """
+    Generate charge exchange spectra using the ACX2 model. This
+    class assumes that the balance of ions in the recombining
+    plasma can be determined by an input temperature. To use this
+    model, you must have the acx2 (https://acx2.readthedocs.io/)
+    and pyatomdb (https://atomdb.readthedocs.io/) packages installed.
+
+    Parameters
+    ----------
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The minimum energy for the spectral model.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The maximum energy for the spectral model.
+    nbins : integer
+        The number of bins in the spectral model.
+    collntype : integer, optional
+        The type of collision parameter to use:
+        1 - center of mass energy (kev/u)
+        2 - center of mass velocity (km/s)
+        3 - donor ion velocity (km/s)
+        4 - recombining ion velocity (km/s)
+        Default: 1
+    acx_model : integer, optional
+        ACX model to fall back on, from 1 to 8. Default: 8
+    recomb_type : integer, optional
+        The type of recombination to use: single recombination (1) or
+        all the way to neutral (2). Default: 1
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log".
+        Default: "linear"
+    var_elem : list of strings, optional
+        The names of elements to allow to vary freely from the single
+        abundance parameter. These must be strings like ["O", "N", "He"].
+        Default: None
+    abund_table : string or array_like, optional
+        The abundance table to be used for solar abundances.
+        Either a string corresponding to a built-in table or an array
+        of 30 floats corresponding to the abundances of each element
+        relative to the abundance of H. Default is set in the SOXS
+        configuration file, the default for which is "angr".
+        Built-in options are:
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et
+        Cosmochimica Acta 53, 197)
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott
+        P. (2009, ARAA, 47, 481)
+        "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914
+        except for elements not listed which are given zero abundance)
+        "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+        "cl17.03" : the abundance table used in Cloudy v17.03.
+    """
 
     def __init__(
         self,
@@ -156,6 +207,36 @@ class ACX2Generator:
         velocity=0.0,
         tbroad=0.0,
     ):
+        """
+        Get a charge exchange spectrum, given a temperature that sets the
+        ionization balance of the recombining plasma.
+
+        Parameters
+        ----------
+        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The temperature in keV.
+        collnpar : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The collision parameter. Units are determined by the value of
+            the collntype parameter set in the class constructor.
+        abund : float
+            The metal abundance in solar units.
+        He_frac : float
+            Number fraction of donor which is He (remainder is H).
+        redshift : float
+            The redshift.
+        norm : float
+            The normalization of the model, in units of
+            EM/(4*pi*(1+z)**2*D_A**2), where EM = int N_H^r N_(H+He)^d dV.
+        elem_abund : dict of element name, float pairs, optional
+            A dictionary of elemental abundances in solar
+            units to vary freely of the abund parameter, e.g.
+            {"O": 0.4, "N": 0.3, "He": 0.9}. Default: None
+        velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The velocity broadening parameter, in units of
+            km/s. Default: 0.0
+        tbroad : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The temperature broadening parameter, in units of keV. Default: 0.0
+        """
         # check velocity and tbroad
         velocity = parse_value(velocity, "km/s")
         tbroad = parse_value(tbroad, "keV")
@@ -188,6 +269,52 @@ class ACX2Generator:
 
 class OneACX2Generator(ACX2Generator):
     _one_ion = True
+    """
+    Generate charge exchange spectra using the ACX2 model, for a single
+    recombining ion. To use this model, you must have the acx2
+    (https://acx2.readthedocs.io/) and pyatomdb (https://atomdb.readthedocs.io/)
+    packages installed.
+
+    Parameters
+    ----------
+    emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The minimum energy for the spectral model.
+    emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        The maximum energy for the spectral model.
+    nbins : integer
+        The number of bins in the spectral model.
+    collntype : integer, optional
+        The type of collision parameter to use:
+        1 - center of mass energy (kev/u)
+        2 - center of mass velocity (km/s)
+        3 - donor ion velocity (km/s)
+        4 - recombining ion velocity (km/s)
+        Default: 1
+    acx_model : integer, optional
+        ACX model to fall back on, from 1 to 8. Default: 8
+    recomb_type : integer, optional
+        The type of recombination to use: single recombination (1) or
+        all the way to neutral (2). Default: 1
+    binscale : string, optional
+        The scale of the energy binning: "linear" or "log".
+        Default: "linear"
+    abund_table : string or array_like, optional
+        The abundance table to be used for solar abundances.
+        Either a string corresponding to a built-in table or an array
+        of 30 floats corresponding to the abundances of each element
+        relative to the abundance of H. Default is set in the SOXS
+        configuration file, the default for which is "angr".
+        Built-in options are:
+        "angr" : from Anders E. & Grevesse N. (1989, Geochimica et
+        Cosmochimica Acta 53, 197)
+        "aspl" : from Asplund M., Grevesse N., Sauval A.J. & Scott
+        P. (2009, ARAA, 47, 481)
+        "feld" : from Feldman U. (1992, Physica Scripta, 46, 202)
+        "wilm" : from Wilms, Allen & McCray (2000, ApJ 542, 914
+        except for elements not listed which are given zero abundance)
+        "lodd" : from Lodders, K (2003, ApJ 591, 1220)
+        "cl17.03" : the abundance table used in Cloudy v17.03.
+    """
 
     def __init__(
         self,
@@ -251,7 +378,31 @@ class OneACX2Generator(ACX2Generator):
     def get_spectrum(
         self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0
     ):
+        """
+        Get a charge exchange spectrum for a single recombining ion.
 
+        Parameters
+        ----------
+        elem : string or integer
+            The number or name of the element.
+        ion : integer
+            The ionization state of the element.
+        collnpar : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The collision parameter. Units are determined by the value of
+            the collntype parameter set in the class constructor.
+        He_frac : float
+            Number fraction of donor which is He (remainder is H).
+        redshift : float
+            The redshift.
+        norm : float
+            The normalization of the model, in units of
+            EM/(4*pi*(1+z)**2*D_A**2), where EM = int N_H^r N_(H+He)^d dV.
+        velocity : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The velocity broadening parameter, in units of
+            km/s. Default: 0.0
+        tbroad : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The temperature broadening parameter, in units of keV. Default: 0.0
+        """
         # Get the atomic number
         if isinstance(elem, str):
             Z = elem_names.index(elem)
