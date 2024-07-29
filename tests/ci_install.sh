@@ -16,9 +16,11 @@ if [[ ${mode} == "testing" ]]; then
 
 fi
 
-# Install dependencies using conda and pip
+# Install dependencies using mamba and pip
 
-conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
+mamba activate test_env
+
+mamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
 # Install pyxsim
 if [[ ${mode} == "testing" ]]; then
