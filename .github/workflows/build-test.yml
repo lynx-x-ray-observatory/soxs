@@ -44,9 +44,7 @@ jobs:
             - uses: mamba-org/setup-micromamba@v1
               with:
                 micromamba-version: '1.5.6-0' # any version from https://github.com/mamba-org/micromamba-releases
-                init-shell: >-
-                  bash
-                  powershell
+                init-shell: bash
                 cache-environment: true
                 post-cleanup: 'all'
                 environment-name: test-env
