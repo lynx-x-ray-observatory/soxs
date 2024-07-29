@@ -54,7 +54,7 @@ jobs:
                   python=${{matrix.python-version}}
                   numpy
             - name: Install dependencies and soxs
-              shell: bash
+              shell: bash -el {0}
               env:
                   mode: testing
               run: source ./tests/ci_install.sh
