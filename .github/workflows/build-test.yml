@@ -59,4 +59,5 @@ jobs:
                   mode: testing
               run: source ./tests/ci_install.sh
             - name: Run Tests
+              shell: bash -el {0}
               run: micromamba activate test-env; py.test -vv soxs/tests
