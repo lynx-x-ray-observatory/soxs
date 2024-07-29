@@ -1377,7 +1377,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
                 rate = rmf.convolve_spectrum(
                     (rate * arf.de).value, 1.0, noisy=False, rate=True
                 )
-            rate = u.Quantity(rate / arf.de, "cm-2 keV-1 ph s-1")
+            rate = u.Quantity(rate / arf.de, "keV-1 ph s-1")
             binscale = "linear"
             ebins = u.Quantity(arf.ebins, "keV")
         else:
