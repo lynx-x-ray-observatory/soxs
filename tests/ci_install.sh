@@ -18,6 +18,8 @@ fi
 
 # Install dependencies using mamba and pip
 
+eval "$(micromamba shell hook --shell bash)"
+
 micromamba activate test_env
 
 conda install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
