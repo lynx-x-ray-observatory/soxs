@@ -5,7 +5,6 @@ from soxs.constants import abund_tables, elem_names
 from soxs.spectra import Spectrum
 from soxs.utils import mylog, parse_value, soxs_cfg
 
-elem_subset = [1, 2, 6, 7, 8, 10, 12, 13, 14, 16, 18, 20, 26, 28]
 elem_full = [
     1,
     2,
@@ -126,9 +125,9 @@ class ACX2Generator:
             )
         self.de = np.diff(self.ebins)
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
+        self.elements = elem_full
         if var_elem is None:
             self.var_elem = np.empty(0, dtype="int")
-            self.elements = elem_full if self._one_ion else elem_subset
         else:
             if len(var_elem) != len(set(var_elem)):
                 raise RuntimeError(
@@ -138,7 +137,6 @@ class ACX2Generator:
             self.var_elem.sort()
             self.var_elem = np.array(self.var_elem, dtype="int")
             self.var_elem_names = [elem_names[e] for e in self.var_elem]
-            self.elements = elem_full
             self.var_elem_idxs = np.array(
                 [self.elements.index(e) for e in self.var_elem], dtype="int"
             )
