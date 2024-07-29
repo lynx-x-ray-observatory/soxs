@@ -18,7 +18,7 @@ fi
 
 # Install dependencies using mamba and pip
 
-eval "$(micromamba shell hook --shell bash)"
+#eval "$(micromamba shell hook --shell bash)"
 
 micromamba activate test-env
 
