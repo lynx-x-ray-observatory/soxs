@@ -22,7 +22,7 @@ eval "$(micromamba shell hook --shell bash)"
 micromamba shell init --shell bash --root-prefix=~/micromamba
 micromamba activate test-env
 
-mamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
+micromamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
 # Install pyxsim
 if [[ ${mode} == "testing" ]]; then
