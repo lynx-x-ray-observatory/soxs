@@ -24,14 +24,6 @@ micromamba activate test-env
 
 micromamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
-# Install pyxsim
-if [[ ${mode} == "testing" ]]; then
-  git clone https://github.com/jzuhone/pyxsim
-  cd pyxsim
-  pip install .
-  cd ..
-fi
-
 if [[ ${mode} == "wheels" ]]; then
   conda install --yes wheel setuptools
 fi
