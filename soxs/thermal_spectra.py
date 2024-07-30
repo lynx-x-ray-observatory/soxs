@@ -61,10 +61,10 @@ class CIEGenerator:
         self.emax = emax
         self.nbins = nbins
         if binscale == "linear":
-            self.ebins = np.linspace(self.emin, self.emax, nbins + 1)
+            self.ebins = np.linspace(self.emin, self.emax, nbins + 1, dtype="float64")
         elif binscale == "log":
             self.ebins = np.logspace(
-                np.log10(self.emin), np.log10(self.emax), nbins + 1
+                np.log10(self.emin), np.log10(self.emax), nbins + 1, dtype="float64"
             )
         self.de = np.diff(self.ebins)
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
