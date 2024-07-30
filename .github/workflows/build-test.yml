@@ -22,6 +22,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest]
                 python-version: [ '3.11' ]
+                numpy-version: ['1.26', '2']
                 include:
                     - os: ubuntu-latest
                       python-version: '3.12'
@@ -49,8 +50,8 @@ jobs:
                   post-cleanup: 'all'
                   environment-name: test-env
                   create-args: >-
-                      python=${{matrix.python-version}}
-                      numpy
+                      python=${{ matrix.python-version }}
+                      numpy=${{ matrix.numpy-version }}
             - name: Install dependencies and soxs
               shell: bash -el {0}
               env:
