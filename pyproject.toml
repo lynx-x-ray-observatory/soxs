@@ -26,6 +26,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
+    "numpy",
     "astropy>=4.0",
     "tqdm",
     "pooch",
