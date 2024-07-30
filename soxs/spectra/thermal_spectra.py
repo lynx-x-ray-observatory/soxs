@@ -199,14 +199,22 @@ class CIEGenerator:
         de0 = self.de / scale_factor
 
         n_cont = coco_fields["N_Cont"][ind]
-        e_cont = coco_fields["E_Cont"][ind][:n_cont] * scale_factor
-        continuum = coco_fields["Continuum"][ind][:n_cont] * self._atable[element]
+        e_cont = coco_fields["E_Cont"][ind][:n_cont].astype("float64") * scale_factor
+        continuum = (
+            coco_fields["Continuum"][ind][:n_cont].astype("float64")
+            * self._atable[element]
+        )
 
         tmpspec += np.interp(self.emid, e_cont, continuum) * de0
 
         n_pseudo = coco_fields["N_Pseudo"][ind]
-        e_pseudo = coco_fields["E_Pseudo"][ind][:n_pseudo] * scale_factor
-        pseudo = coco_fields["Pseudo"][ind][:n_pseudo] * self._atable[element]
+        e_pseudo = (
+            coco_fields["E_Pseudo"][ind][:n_pseudo].astype("float64") * scale_factor
+        )
+        pseudo = (
+            coco_fields["Pseudo"][ind][:n_pseudo].astype("float64")
+            * self._atable[element]
+        )
 
         tmpspec += np.interp(self.emid, e_pseudo, pseudo) * de0
 
