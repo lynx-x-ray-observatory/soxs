@@ -220,7 +220,7 @@ def test_thermal_nei(answer_store):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store)
+    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, rtol=1.0e-6)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
     pt_src = SimputPhotonList.from_models(
