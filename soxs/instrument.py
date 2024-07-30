@@ -398,8 +398,8 @@ def make_background(
     subpixel_res=False,
     input_pt_sources=None,
     aimpt_shift=None,
-    prng=None,
     instr_bkgnd_scale=1.0,
+    prng=None,
     **kwargs,
 ):
     """
@@ -441,6 +441,9 @@ def make_background(
         A two-float array-like object which shifts the aimpoint on the
         detector from the nominal position. Units are in arcseconds.
         Default: None, which results in no shift from the nominal aimpoint.
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically this will only
         be specified if you have a reason to generate the same
@@ -592,6 +595,7 @@ def make_background_file(
     dither_params=None,
     subpixel_res=False,
     input_pt_sources=None,
+    instr_bkgnd_scale=1.0,
     prng=None,
     **kwargs,
 ):
@@ -632,6 +636,9 @@ def make_background_file(
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -666,6 +673,7 @@ def make_background_file(
         dither_params=dither_params,
         subpixel_res=subpixel_res,
         input_pt_sources=input_pt_sources,
+        instr_bkgnd_scale=instr_bkgnd_scale,
         prng=prng,
     )
     f = make_event_file(events, event_params)
@@ -765,6 +773,7 @@ def instrument_simulator(
     subpixel_res=False,
     aimpt_shift=None,
     input_pt_sources=None,
+    instr_bkgnd_scale=1.0,
     prng=None,
 ):
     """
@@ -836,6 +845,9 @@ def instrument_simulator(
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -864,6 +876,7 @@ def instrument_simulator(
         subpixel_res=subpixel_res,
         aimpt_shift=aimpt_shift,
         input_pt_sources=input_pt_sources,
+        instr_bkgnd_scale=instr_bkgnd_scale,
         prng=prng,
     )
     if f:
@@ -1017,6 +1030,7 @@ def simulate_spectrum(
     ptsrc_bkgnd=False,
     bkgnd_area=None,
     resolved_cxb_frac=0.8,
+    instr_bkgnd_scale=1.0,
     noisy=True,
     overwrite=False,
     prng=None,
@@ -1065,6 +1079,9 @@ def simulate_spectrum(
         The fraction of the cosmic X-ray background that is resolved into point
         sources that we assume have been removed from the spectral analysis. Must
         be a number between 0 and 1. Default: 0.8
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     noisy : boolean, optional
         If False, simulate_spectrum will not use counting (Poisson) statistics
         when creating the spectrum. If any backgrounds are on, this must be
@@ -1094,6 +1111,7 @@ def simulate_spectrum(
         ptsrc_bkgnd=ptsrc_bkgnd,
         bkgnd_area=bkgnd_area,
         resolved_cxb_frac=resolved_cxb_frac,
+        instr_bkgnd_scale=instr_bkgnd_scale,
         noisy=noisy,
         prng=prng,
         **kwargs,

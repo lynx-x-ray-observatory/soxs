@@ -90,6 +90,13 @@ parser.add_argument("--no_noise", action='store_true',
                          "the spectrum. This cannot be set if "
                          "backgrounds are included.")
 
+parser.add_argument(
+    "--instr_bkgnd_scale",
+    type=float,
+    help="A scaling factor for the instrumental background. "
+    "Default: 1.0.",
+)
+
 args = parser.parse_args()
 
 if args.instrument not in instrument_registry and os.path.exists(args.instrument):
@@ -114,6 +121,7 @@ simulate_spectrum(
     instr_bkgnd=args.instr_bkgnd,
     ptsrc_bkgnd=args.ptsrc_bkgnd,
     bkgnd_area=args.bkgnd_area,
+    instr_bkgnd_scale=args.instr_bkgnd_scale,
     prng=args.random_seed,
     noisy=noisy,
 )

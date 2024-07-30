@@ -488,9 +488,19 @@ tuple element (the ARF) to ``None``:
     simulate_spectrum(spec, instrument, exp_time, out_file,
                       overwrite=True)
 
+You can also adjust the overall normalization of the instrument background by
+adjusting the keyword argument ``instr_bkgnd_scale``, which has a default value of 1:
+
+.. code-block:: python
+
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      ptsrc_bkgnd=True, foreground=True,
+                      instr_bkgnd=True, overwrite=True,
+                      bkgnd_area=(1.0, "arcmin**2"),
+                      instr_bkgnd_scale=0.5)
+
 Finally, if you want to create a spectrum without counting (Poisson) statistics,
-set ``noisy=False`` in the call to :func:`~soxs.instrument.simulate_spectrum`. Note
-that this option does not currently work if backgrounds are included.
+set ``noisy=False`` in the call to :func:`~soxs.instrument.simulate_spectrum`.
 
 .. _gratings:
 
