@@ -61,9 +61,8 @@ describe instrument simulation in more detail.
 The ``instrument`` Argument
 +++++++++++++++++++++++++++
 
-SOXS currently supports instrument configurations for *Lynx*, *Athena*,
-*Chandra*, *XRISM*, *AXIS*, and *STAR-X* "out of the box". Any of these can be
-specified with the ``instrument`` argument:
+SOXS currently supports a number of instrument configurations "out of the box".
+Any of these can be specified with the ``instrument`` argument:
 
 Lynx
 ~~~~
@@ -186,12 +185,17 @@ filter. The three instrument specifications which vary by RMF resolution are:
 All of these have no filter. For each of these RMF resolution options, there is
 are versions for the Beryllium filter, e.g. ``"xrism_resolve_fwBe_Hp_5eV"``, and for
 the neutral density filter, e.g. ``"xrism_resolve_fwND_Lp_18eV"``. All *Resolve*
-instrument specifications assume the gate valve is closed.
+instrument specifications assume the gate valve is closed. These specifications use a
+image-based PSF model with a FWHM of ~1.2" arcminutes.
+
+The ``"xrism_resolve"`` specification is mapped directly to the ``"xrism_resolve_Hp_5eV"``
+specification. An otherwise identical specification, ``"xrism_resolve_1arcsec"``, has
+a Gaussian PSF with 1 arcsecond FWHM.
 
 For the *Xtend* instrument, the ``"xrism_xtend"`` specification has 2x2 CCDs laid
 out in a ~38' FoV, with a pixel size of ~1.77".
 
-The response files, PSF model, and instrumental background model used for
+The response files, PSF models, and instrumental background models used for
 *XRISM* in SOXS were obtained from
 `here <https://heasarc.gsfc.nasa.gov/docs/xrism/proposals/index.html>`_.
 

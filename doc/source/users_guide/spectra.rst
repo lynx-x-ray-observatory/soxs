@@ -82,12 +82,13 @@ You can set up a power-law spectrum like this:
 
 .. _xspec:
 
-Generating a Spectrum from XSPEC
-++++++++++++++++++++++++++++++++
+Generating a Spectrum from XSPEC or pyXspec
++++++++++++++++++++++++++++++++++++++++++++
 
-If you have XSPEC installed on your machine, you can use it with SOXS to create
-any spectral model that XSPEC supports. You can do this in two ways. The first
-is by passing in a model string and a list of parameters to the
+If you have `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_ installed on
+your machine, you can use it with SOXS to create any spectral model that XSPEC
+supports. You can do this in three ways. The first is by passing in a model
+string and a list of parameters to the
 :meth:`~soxs.spectra.Spectrum.from_xspec_model` method:
 
 .. code-block:: python
@@ -141,13 +142,39 @@ create a :class:`~soxs.spectra.Spectrum` like this:
 The parameters ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to
 control the binning.
 
+The third way is to use `pyXspec <https://heasarc.gsfc.nasa.gov/xanadu/xspec/python/html/index.html>`_
+to generate a spectrum. This requires that pyXspec is installed as part of your HEASoft installation
+and is installed into the same Python environment as SOXS. If so, you can create an ``xspec.Model``
+object in the usual way, and then pass it to the :meth:`~soxs.spectra.Spectrum.from_pyxspec_model`
+method:
+
+.. code-block:: python
+
+    import soxs
+    import xspec
+
+    # Set energy binning
+    xspec.AllData.dummyrsp(0.2, 2.0, 6000, "lin")
+
+    # Create a model
+    m = xspec.Model("phabs*(mekal+powerlaw)")
+
+    # Change some parameters
+    m.phabs.nH = 0.02
+    m.mekal.kT = 6.0
+    m.mekal.Abundanc = 0.3
+
+    # Get the spectrum
+    spec = soxs.Spectrum.from_pyxspec_model(m)
+
 .. note::
 
-    Generating spectra from XSPEC requires that the ``HEADAS`` environment variable
-    is defined within your shell before running the Python script, as it would be
-    if you were using XSPEC to fit spectra. For example, for the ``zsh`` shell there
-    should be a line like ``export HEADAS=${HOME}/heasoft-6.29/x86_64-apple-darwin21.1.0/``
-    in your ``.zshrc`` file.
+    Generating spectra from XSPEC or pyXspec requires that the ``HEADAS`` environment
+    variable is defined within your shell before running the Python script or notebook,
+    as it would be if you were using XSPEC/pyXspec to fit spectra. For example, for the
+    ``zsh`` shell there should be a line like
+    ``export HEADAS=${HOME}/heasoft-6.29/x86_64-apple-darwin21.1.0/`` in your ``.zshrc``
+    file.
 
 Math with ``Spectrum`` Objects
 ------------------------------

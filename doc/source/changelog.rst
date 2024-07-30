@@ -3,6 +3,40 @@
 ChangeLog
 =========
 
+Version 5.0.0
+-------------
+
+This is a major version update to SOXS with significant new features and bugfixes.
+
+* Spectral cubes
+* Instrument background scale normalization
+* ThermalSimputCatalog
+* Don't connect lines on spectrum plot
+* Sigma or integer binning for spectrum plot
+* Defaults for spectrum plot are linear
+* Bins are returned for spectrum plot
+* Instrument simulator is much less noisy, debug messages
+* Fix bugs related to spectrum generation for very faint spectra
+* simulate_spectrum can now simulate non-noisy backgrounds
+* Make the resolved CXB fraction a free parameter
+* Add RMF, PI/PHA capability to ConvolvedSpectrum
+
+
+* It is now possible to create a :class:`~soxs.spectra.base.Spectrum` object from
+  a spectral model created with
+  `pyXspec <https://heasarc.gsfc.nasa.gov/docs/xanadu/xspec/python/html/index.html>`_.
+  See :ref:`xspec` for more details.
+* It is now possible to create an empty SIMPUT catalog (to which sources can be
+  added later) using :meth:`~soxs.simput.SimputCatalog.make_empty`. See
+  :ref:`simput` for more details.
+* Particle backgrounds have been implemented for the *XRISM*/Resolve instrument.
+* For comparison purposes, a new instrument specification for the *XRISM*/Resolve
+  instrument with a 1 arcsecond PSF has been added, ``"xrism_resolve_1arcsec"``.
+
+
+
+
+
 Version 4.8.5
 -------------
 
@@ -108,7 +142,7 @@ This version of SOXS contains new features and bugfixes.
 * The foreground model normalization used in :func:`~soxs.simput.make_bkgnd_simput`
   was not being scaled appropriately by the field of view size. This has been
   fixed.
-* New useful attributes for :class:`~soxs.spectra.Spectrum` objects have been
+* New useful attributes for :class:`~soxs.spectra.base.Spectrum` objects have been
   added. See :ref:`spec-attribs` for more details.
 * The default SPEX version for CIE spectra has been updated to 3.07.03.
 * When loading an RMF, SOXS now checks the ``EBOUNDS`` header for the
@@ -243,10 +277,10 @@ Version 4.3.0
 This version of SOXS contains new features.
 
 * A new version of the spectral model used in the
-  :class:`~soxs.thermal_spectra.CloudyCIEGenerator` class has been provided, with
+  :class:`~soxs.spectra.thermal_spectraCloudyCIEGenerator` class has been provided, with
   improved energy resolution. See :ref:`cloudy-spectra` for more details.
 * A new version of the spectral model used in the
-  :class:`~soxs.thermal_spectra.IGMGenerator` class has been provided, with
+  :class:`~soxs.spectra.thermal_spectraIGMGenerator` class has been provided, with
   improved energy resolution. See :ref:`igm-spectra` for more details.
 * A new function to download table files for the thermal spectra models has been
   provided. See :ref:`downloading-thermal-tables` for more details.
@@ -275,7 +309,7 @@ This update to SOXS contains new features and a bugfix.
   more details.
 * The *AXIS* instrument specification has been updated. See :ref:`axis-probe` for
   more details.
-* If one had not binned a :class:`~soxs.spectra.Spectrum` object more finely
+* If one had not binned a :class:`~soxs.spectra.base.Spectrum` object more finely
   than the instrument's ARF/RMF when using :func:`~soxs.instrument.simulate_spectrum`,
   then gaps would appear in the resulting convolved spectrum. This is now
   handled by linearly interpolating the spectral model into the ARF energy
@@ -314,18 +348,18 @@ the generation of spectra.
   and a model for emission from the IGM including photoionization and resonant
   scattering off of the CXB based on Cloudy and provided by Ildar Khabibullin.
   See :ref:`thermal-spectra` for details.
-* The option to create :class:`~soxs.spectra.Spectrum` objects with log-spaced
+* The option to create :class:`~soxs.spectra.base.Spectrum` objects with log-spaced
   energy binning has been added. See :ref:`spectrum-binning` for details.
 * The option to create a new spectrum from an old one by rebinning has been added
-  to the :class:`~soxs.spectra.Spectrum` class. See :ref:`spectrum-binning` for details.
+  to the :class:`~soxs.spectra.base.Spectrum` class. See :ref:`spectrum-binning` for details.
 * It is no longer necessary to source the HEADAS environment before creating a
-  :class:`~soxs.spectra.Spectrum` object using either the
-  :meth:`~soxs.spectra.Spectrum.from_xspec_script` or
-  :meth:`~soxs.spectra.Spectrum.from_xspec_model`. See :ref:`xspec` for more details.
-* Reading and writing of :class:`~soxs.spectra.Spectrum` objects has been refactored,
+  :class:`~soxs.spectra.base.Spectrum` object using either the
+  :meth:`~soxs.spectra.base.Spectrum.from_xspec_script` or
+  :meth:`~soxs.spectra.base.Spectrum.from_xspec_model`. See :ref:`xspec` for more details.
+* Reading and writing of :class:`~soxs.spectra.base.Spectrum` objects has been refactored,
   so that the tables use the min and max of each energy bin instead of the middle
   energy of the bin. This allows for log-spaced energy binning (mentioned above) to
-  be supported. Also, :class:`~soxs.spectra.Spectrum` objects can now be written to
+  be supported. Also, :class:`~soxs.spectra.base.Spectrum` objects can now be written to
   FITS table files as well as ASCII and HDF5. See :ref:`read-spectra` and
   :ref:`write-spectra` for details.
 * An option to create a mosaicked event file in addition to an image file has been
@@ -342,10 +376,10 @@ the generation of spectra.
 * Instrumental background models have been added to the LEM instrument models.
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
   has been added to the options for abundance tables for the
-  :class:`~soxs.thermal_spectra.ApecGenerator` and :class:`~soxs.thermal_spectra.SpexGenerator`.
+  :class:`~soxs.spectra.thermal_spectraApecGenerator` and :class:`~soxs.spectra.thermal_spectraSpexGenerator`.
 * The default abundance table from Cloudy v17.03 has been added to the options for abundance
-  tables for the :class:`~soxs.thermal_spectra.ApecGenerator` and
-  :class:`~soxs.thermal_spectra.SpexGenerator`.
+  tables for the :class:`~soxs.spectra.thermal_spectraApecGenerator` and
+  :class:`~soxs.spectra.thermal_spectraSpexGenerator`.
 * The command-line script ``make_thermal_spectrum`` has been changed to ``make_cie_spectrum`` and
   has many more options for computing CIE spectra. See :ref:`cmd-make-cie-spectrum` for details.
 * The command-line script ``make_igm_spectrum`` has been added for making thermal spectra with
@@ -429,7 +463,7 @@ This version of SOXS contains bug fixes and a minor new feature.
 * A number of problems in parsing instrument specifications have been fixed.
 * A bug which caused a crash when an RMF with ``N_CHAN`` = 0 in columns has
   been fixed.
-* :class:`~soxs.spectra.ConvolvedSpectrum` objects can now be added and
+* :class:`~soxs.spectra.base.ConvolvedSpectrum` objects can now be added and
   subtracted.
 * Doc examples which use pyXSIM now use pyXSIM 3.0.0.
 
@@ -444,7 +478,7 @@ This bugfix update to SOXS contains bug fixes and a minor new feature.
   contain the ``"EXPOSURE"`` keyword in the header has been fixed.
 * :func:`~soxs.instrument_registry.add_instrument_to_registry` now catches
   more errors in the setup of custom instruments and flags them informatively.
-* Subtraction of two :class:`~soxs.spectra.Spectrum` objects is now possible.
+* Subtraction of two :class:`~soxs.spectra.base.Spectrum` objects is now possible.
 
 Version 3.0.0
 -------------
@@ -613,27 +647,27 @@ Most Important New Features and Changes
 Changes to Simulation of Spectra
 ++++++++++++++++++++++++++++++++
 
-* A number of class methods for :class:`~soxs.spectra.Spectrum` and their associated
+* A number of class methods for :class:`~soxs.spectra.base.Spectrum` and their associated
   command-line scripts now have ``emin``, ``emax``, and ``nbins`` as required arguments.
   Previously these were optional arguments. More information can be found at :ref:`spectra`
   and :ref:`cmd-spectra`. These are backwards-incompatible changes.
-* The interpolating spline which allowed :class:`~soxs.spectra.Spectrum` objects to
+* The interpolating spline which allowed :class:`~soxs.spectra.base.Spectrum` objects to
   be called with an energy argument to get the values of the spectrum for arbitrary
   energies was not being regenerated if the spectrum was changed, say by foreground
   absorption. This has been fixed.
-* The ability to apply intrinsic foreground absorption to a :class:`~soxs.spectra.Spectrum`
+* The ability to apply intrinsic foreground absorption to a :class:`~soxs.spectra.base.Spectrum`
   has been added by adding an optional ``redshift`` argument to
-  :meth:`~soxs.spectra.Spectrum.apply_foreground_absorption`.
-* A method to easily plot :class:`~soxs.spectra.Spectrum` objects,
-  :meth:`~soxs.spectra.Spectrum.plot`, has been added. See :ref:`spectra-plots` for details.
-* For APEC spectra created using :class:`~soxs.spectra.ApecGenerator`, it is now possible to
+  :meth:`~soxs.spectra.base.Spectrum.apply_foreground_absorption`.
+* A method to easily plot :class:`~soxs.spectra.base.Spectrum` objects,
+  :meth:`~soxs.spectra.base.Spectrum.plot`, has been added. See :ref:`spectra-plots` for details.
+* For APEC spectra created using :class:`~soxs.spectra.thermal_spectra.ApecGenerator`, it is now possible to
   use Solar abundance tables other than the implicitly assumed Anders & Grevesse 1989. See
   :ref:`solar-abund-tables` and :ref:`cmd-spectra` for details.
 * The accuracy of the ``TBabs`` absorption model interpolation in SOXS has been improved.
-* A method to add individual Gaussian-shaped lines to a :class:`~soxs.spectra.Spectrum`,
-  :meth:`~soxs.spectra.Spectrum.add_emission_line`, has been added.
-* The ability to write :class:`~soxs.spectra.Spectrum` objects to HDF5 files has
-  been added via the :meth:`~soxs.spectra.Spectrum.write_h5_file` method. See
+* A method to add individual Gaussian-shaped lines to a :class:`~soxs.spectra.base.Spectrum`,
+  :meth:`~soxs.spectra.base.Spectrum.add_emission_line`, has been added.
+* The ability to write :class:`~soxs.spectra.base.Spectrum` objects to HDF5 files has
+  been added via the :meth:`~soxs.spectra.base.Spectrum.write_h5_file` method. See
   :ref:`write-spectra` for details.
 
 Changes to Instrument Simulation
@@ -695,17 +729,17 @@ This is a release with important new features and some bugfixes.
 * The "square" and "circle" dither pattern options have been replaced with a single
   option, a Lissajous pattern like that used by *Chandra*. This is a backwards-incompatible
   change.
-* New methods have been added to create :class:`~soxs.spectra.ConvolvedSpectrum` objects
-  and deconvolve them to :class:`~soxs.spectra.Spectrum` objects. See
+* New methods have been added to create :class:`~soxs.spectra.base.ConvolvedSpectrum` objects
+  and deconvolve them to :class:`~soxs.spectra.base.Spectrum` objects. See
   :ref:`convolved-spectra` for more details.
 * A method to extract a subset of a spectrum and create a new one,
-  :meth:`~soxs.spectra.Spectrum.new_spec_from_band`, has been added.
-* :class:`~soxs.spectra.Spectrum` objects are now "callable", taking an energy
+  :meth:`~soxs.spectra.base.Spectrum.new_spec_from_band`, has been added.
+* :class:`~soxs.spectra.base.Spectrum` objects are now "callable", taking an energy
   or an array of energies, at which the flux values will be interpolated.
-* :class:`~soxs.spectra.ApecGenerator` objects can now generate spectra that
+* :class:`~soxs.spectra.thermal_spectra.ApecGenerator` objects can now generate spectra that
   vary the elemental abundances separately. See :ref:`thermal-spectra` and
   :ref:`cmd-make-thermal-spectrum` for more details.
-* :class:`~soxs.spectra.ApecGenerator` objects can now generate spectra without
+* :class:`~soxs.spectra.thermal_spectra.ApecGenerator` objects can now generate spectra without
   line emission. See :ref:`thermal-spectra` and :ref:`cmd-make-thermal-spectrum`
   for more details.
 * A bug that prevented one from adding new instrumental background spectra to the
@@ -727,7 +761,7 @@ fixes to the documentation.
   is still ``"wabs"``.
 * SOXS now bundles only one version of the AtomDB tables, v3.0.8. It is still
   possible to point to your own directory containing a different version.
-* The :meth:`~soxs.spectra.Spectrum.from_file` method now accepts HDF5 files as
+* The :meth:`~soxs.spectra.base.Spectrum.from_file` method now accepts HDF5 files as
   input.
 * Various minor corrections to the documentation were made.
 
@@ -828,12 +862,12 @@ This version contains new features and bugfixes.
 * Fixed a minor bug in the interpolation of APEC tables for thermal spectra. The
   difference in the generated spectra is small, at around the fifth decimal
   place.
-* Added a constant spectrum generator: :meth:`~soxs.spectra.Spectrum.from_constant`.
+* Added a constant spectrum generator: :meth:`~soxs.spectra.base.Spectrum.from_constant`.
 * Added ellipticity and angle parameters to :class:`~soxs.spatial.RadialFunctionModel`
   objects to create models with ellipticity.
 * Added flat-field coordinates to :class:`~soxs.spatial.SpatialModel` objects.
-* Made public subclass of :class:`~soxs.spectra.Spectrum` objects,
-  :class:`~soxs.spectra.ConvolvedSpectrum`, which is a :class:`~soxs.spectra.Spectrum`
+* Made public subclass of :class:`~soxs.spectra.base.Spectrum` objects,
+  :class:`~soxs.spectra.base.ConvolvedSpectrum`, which is a :class:`~soxs.spectra.base.Spectrum`
   convolved with an ARF.
 * Small internal changes designed to provide a more seamless interface to
   `pyXSIM <http://hea-www.cfa.harvard.edu/~jzuhone/pyxsim>`_.
@@ -868,7 +902,7 @@ backwards-compatible.
   :func:`~soxs.instrument.instrument_simulator` for dealing with background have
   been correspondingly modified (see :ref:`instrument` and
   :ref:`cmd-instrument`). This is a backwards-incompatible change.
-* The default version of APEC in :class:`~soxs.spectra.ApecGenerator` is now
+* The default version of APEC in :class:`~soxs.spectra.thermal_spectra.ApecGenerator` is now
   version 2.0.2, to match XSPEC.
 * A new option has been added to the instrument specification to turn dithering
   on and off by default for a given instrument. Please change instrument
@@ -898,12 +932,12 @@ This version contains new features and bugfixes.
   focal length is now an element of the instrument specification.
 * The names of the instruments in the instrument registry were made consistent
   with their associated keys.
-* A convenience function, :meth:`~soxs.spectra.Spectrum.get_flux_in_band`, has
+* A convenience function, :meth:`~soxs.spectra.base.Spectrum.get_flux_in_band`, has
   been added.
 * A new method of generating a spectrum from an XSPEC script,
-  :meth:`~soxs.spectra.Spectrum.from_xspec_script`, has been added.
-* The :meth:`~soxs.spectra.Spectrum.from_xspec` method has been renamed to
-  :meth:`~soxs.spectra.Spectrum.from_xspec_model`.
+  :meth:`~soxs.spectra.base.Spectrum.from_xspec_script`, has been added.
+* The :meth:`~soxs.spectra.base.Spectrum.from_xspec` method has been renamed to
+  :meth:`~soxs.spectra.base.Spectrum.from_xspec_model`.
 * Removed unnecessary commas between coordinate values from the examples in
   :ref:`cmd-spatial`.
 * Added a new capability to create a SIMPUT file from an ASCII table of RA, Dec,
