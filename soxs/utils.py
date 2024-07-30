@@ -382,4 +382,4 @@ def convert_endian(arr):
 
     sys_byteorder = (">", "<")[sys.byteorder == "little"]
     if arr.dtype.byteorder not in ("=", sys_byteorder):
-        return arr.byteswap().newbyteorder(sys_byteorder)
+        return arr.byteswap().view(arr.dtype.newbyteorder(sys_byteorder))
