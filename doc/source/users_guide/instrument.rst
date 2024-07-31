@@ -426,10 +426,15 @@ not resolved for :func:`~soxs.instrument.simulate_spectrum`, and instead is
 modeled using an absorbed power-law with the following parameters:
 
 * Power-law index :math:`\alpha = 1.52`
-* Normalization at 1 keV of :math:`2.0 \times 10^{-7}~\rm{photons~cm^{-2}~keV^{-1}}`
+* Normalization at 1 keV of :math:`f_{\rm CXB} 10^{-6}~\rm{photons~cm^{-2}~keV^{-1}}`,
+  where :math:`f_{\rm CXB}` is the fraction of the CXB that has been assumed to
+  have been resolved into point sources and removed from the analysis. The default
+  value for :math:`f_{\rm CXB} = 0.8`, but this can be changed by providing a
+  different value to the ``resolved_cxb_frac`` parameter in the call to
+  :func:`~soxs.instrument.simulate_spectrum`.
 * Neutral hydrogen column of :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
 
-Here the ``wabs`` model is assumed for the absorption. To change the default
+Here the ``tbabs`` model is assumed for the absorption. To change the default
 absorption model or the neutral hydrogen column, use the :ref:`config`. Similarly,
 the :ref:`config` can be used to change the APEC model version for the foreground.
 

@@ -37,22 +37,32 @@ A couple of new features have been added for SIMPUT catalogs:
   :ref:`simput` for more details.
 * ThermalSimputCatalog
 
-A few changes have been made to :func:`~soxs.instrument.simulate_spectrum`:
+Two changes have been made to :func:`~soxs.instrument.simulate_spectrum`:
 
-* simulate_spectrum can now simulate non-noisy backgrounds
-* Make the resolved CXB fraction a free parameter
-* Fix bugs related to spectrum generation for very faint spectra
+* In the ``noisy=False`` mode of :func:`~soxs.instrument.simulate_spectrum`,
+  backgrounds are now supported.
+* A new parameter, ``resolved_cxb_frac``, has been added to
+  :func:`~soxs.instrument.simulate_spectrum` to allow the user to specify the
+  fraction of the unresolved CXB that is resolved, which changes the normalization
+  of the power-law model for the unresolved CXB. See :ref:`simulate-spectrum`
+  for more details.
 
 Several changes have been made to :func:`~soxs.events.spectra.plot_spectrum`:
 
 * When plotting a counts-based spectrum, the default is now to not connect the
   lines between the points.
 * The default scales for the x and y axes are now linear.
-* Sigma or integer binning for spectrum plot
-* Bins are returned for spectrum plot
+* In addition to the :class:`~matplotlib.figure.Figure` and :class:`~matplotlib.axes.Axes`
+  objects, :func:`~soxs.events.spectra.plot_spectrum` now returns the NumPy array of
+  energy bins that are used. See :ref:`plot-spectrum` for more details.
+* Plotted spectra can now be binned by combining channels together in two different ways:
+  by providing a single integer to to determine how many channels will be binned togehter,
+  or a 2-tuple of integers to bin by a certain significance. See :ref:`plot-spectrum` for
+  more details.
 
 Other various changes are:
 
+* This version supports NumPy 2.
 * A new parameter ``instr_bkgnd_scale`` has been added to
   :func:`~soxs.instrument.instrument_simulator`, :func:`~soxs.instrument.make_background_file`,
   and :func:`~soxs.instrument.simulate_spectrum` (as well as their command-line
