@@ -305,11 +305,11 @@ def plot_spectrum(
                     sigma2 = sigma * sigma
                     ebins = [emin[0]]
                     sum = 0.0
-                    max_size = 0
+                    bin_size = 0
                     for i in range(y.size):
                         sum += y[i]
-                        max_size += 1
-                        if sum >= sigma2 or i == y.size - 1:
+                        bin_size += 1
+                        if sum >= sigma2 or bin_size == max_size or i == y.size - 1:
                             ebins.append(emax[i])
                             sum = 0.0
                             max_size = 0
