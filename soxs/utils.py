@@ -310,9 +310,10 @@ def get_data_file(fn):
     rel_fn = os.path.split(fn)[-1]
     data_fn = os.path.join(soxs_data_dir, rel_fn)
     if os.path.exists(rel_fn):
-        mylog.warning(
-            "Using local file %s instead of the one from the database.", rel_fn
-        )
+        if rel_fn in finley._registry:
+            mylog.warning(
+                "Using local file %s instead of the one from the database.", rel_fn
+            )
         return fn
     elif rel_fn not in finley._registry and os.path.exists(data_fn):
         return data_fn
