@@ -222,7 +222,7 @@ def plot_spectrum(
         will be binned. If an integer, the counts spectrum will be reblocked
         by this number. If a 2-tuple, the first element is the minimum
         significance (assuming Poisson statistics) of each bin and the
-        second element is the minimum number of channels to be combined
+        second element is the maximum number of channels to be combined
         in the bin. If a NumPy array, these are the bins that will be
         used. If not set, the counts will be binned according
         to channel. Default: None
