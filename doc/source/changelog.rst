@@ -9,33 +9,61 @@ Version 5.0.0
 This is a major version update to SOXS with significant new features and bugfixes.
 
 * Spectral cubes
-* Instrument background scale normalization
-* ThermalSimputCatalog
-* Don't connect lines on spectrum plot
-* Sigma or integer binning for spectrum plot
-* Defaults for spectrum plot are linear
-* Bins are returned for spectrum plot
-* Instrument simulator is much less noisy, debug messages
-* Fix bugs related to spectrum generation for very faint spectra
-* simulate_spectrum can now simulate non-noisy backgrounds
-* Make the resolved CXB fraction a free parameter
-* Add RMF, PI/PHA capability to ConvolvedSpectrum
+* Charge exchange
 
+A few changes have been made for :class:`~soxs.spectra.base.Spectrum` objects:
 
+* It is now possible to use the :meth:`~soxs.spectra.base.ConvolvedSpectrum.convolve`
+  method to convolve a spectrum with both an ARF *and* an RMF. This may be useful to
+  take a spectral model and forward-model it using the responses for a specific
+  instrument without the effects of Poisson statistics. Such convolved spectra can be
+  written to a standard PI/PHA file. using the
+  :meth:`~soxs.spectra.base.ConvolvedSpectrum.to_pha_file` method. See
+  :ref:`convolved-spectrum` for more details.
+* Similarly, it is now possible to read in a spectrum from a PI/PHA file produced from
+  SOXS (either from an event file produced with the :func:`~soxs.instrument.instrument_simulator`
+  or a spectrum from :func:`~soxs.instrument.simulate_spectrum`), using the
+  :meth:`~soxs.spectra.base.Spectrum.from_pha_file` method. See :ref:`convolved-spectrum`
+  for more details.
 * It is now possible to create a :class:`~soxs.spectra.base.Spectrum` object from
   a spectral model created with
   `pyXspec <https://heasarc.gsfc.nasa.gov/docs/xanadu/xspec/python/html/index.html>`_.
   See :ref:`xspec` for more details.
+
+A couple of new features have been added for SIMPUT catalogs:
+
 * It is now possible to create an empty SIMPUT catalog (to which sources can be
   added later) using :meth:`~soxs.simput.SimputCatalog.make_empty`. See
   :ref:`simput` for more details.
+* ThermalSimputCatalog
+
+A few changes have been made to :func:`~soxs.instrument.simulate_spectrum`:
+
+* simulate_spectrum can now simulate non-noisy backgrounds
+* Make the resolved CXB fraction a free parameter
+* Fix bugs related to spectrum generation for very faint spectra
+
+Several changes have been made to :func:`~soxs.events.spectra.plot_spectrum`:
+
+* When plotting a counts-based spectrum, the default is now to not connect the
+  lines between the points.
+* The default scales for the x and y axes are now linear.
+* Sigma or integer binning for spectrum plot
+* Bins are returned for spectrum plot
+
+Other various changes are:
+
+* A new parameter ``instr_bkgnd_scale`` has been added to
+  :func:`~soxs.instrument.instrument_simulator`, :func:`~soxs.instrument.make_background_file`,
+  and :func:`~soxs.instrument.simulate_spectrum` (as well as their command-line
+  counterparts), to scale the overall level of the instrumental background up or
+  down by a constant factor. See :ref:`adjust-bkgnd`, :ref:`make-bkgnd`, and
+  :ref:`simulate-spectrum` for more details.
+* The :func:`~soxs.instrument.instrument_simulator` logs less output by default,
+  unless log level is set to ``DEBUG``.
 * Particle backgrounds have been implemented for the *XRISM*/Resolve instrument.
 * For comparison purposes, a new instrument specification for the *XRISM*/Resolve
   instrument with a 1 arcsecond PSF has been added, ``"xrism_resolve_1arcsec"``.
-
-
-
-
 
 Version 4.8.5
 -------------
