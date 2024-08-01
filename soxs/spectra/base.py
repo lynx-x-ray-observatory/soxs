@@ -1143,6 +1143,14 @@ class CountRateSpectrum(Spectrum):
         energies = u.Quantity(energy, "keV")
         return energies
 
+    _rate = None
+
+    @property
+    def rate(self):
+        if self._rate is None:
+            self._rate = self.flux * self.de
+        return self._rate
+
     @classmethod
     def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
@@ -1195,10 +1203,10 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     @property
     def counts(self):
-        if self._counts is None:
-            counts = (self.flux * self.de).value * self.exp_time.value
+        if self._counts is None and self.exp_time is not None:
+            counts = (self.rate * self.exp_time).value
             if self.noisy:
-                counts = np.rint(counts).astype("int")
+                counts = np.rint(counts.value).astype("int")
             self._counts = counts * u.photon
         return self._counts
 
@@ -1206,8 +1214,8 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     @property
     def counts_err(self):
-        if self._counts_err is None:
-            self._counts_err = np.sqrt(self.counts.value)
+        if self._counts_err is None and self.exp_time is not None:
+            self._counts_err = np.sqrt(self.counts.value) * u.photon
         return self._counts_err
 
     def _check_binning_units(self, other):
