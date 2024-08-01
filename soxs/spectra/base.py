@@ -1287,8 +1287,17 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
         with fits.open(specfile) as f:
             hdu = f["SPECTRUM"]
-            rate = hdu.data["COUNTS"].astype("float64") * u.photon
-            rate /= hdu.header["EXPOSURE"] * u.s
+            if "COUNT_RATE" in hdu.data:
+                rate = hdu.data["COUNT_RATE"].astype("float64")
+            elif "RATE" in hdu.data:
+                rate = hdu.data["RATE"].astype("float64")
+            elif "COUNTS" in hdu.data and "EXPOSURE" in hdu.header:
+                rate = hdu.data["COUNTS"].astype("float64") / hdu.header["EXPOSURE"]
+            else:
+                raise RuntimeError(
+                    "Cannot determine count rate from this " "spectrum file!!"
+                )
+            rate *= u.photon / u.s
             arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
             rmf = RedistributionMatrixFile(hdu.header["RESPFILE"])
         ebins = (
@@ -1326,13 +1335,18 @@ class ConvolvedSpectrum(CountRateSpectrum):
             "TELESCOP": self.rmf.header["TELESCOP"],
             "INSTRUME": self.rmf.header["INSTRUME"],
             "MISSION": self.rmf.header.get("MISSION", ""),
-            "EXPOSURE": self.exp_time.value,
             "CHANTYPE": self.rmf.chan_type,
         }
+        if self.exp_time is not None:
+            event_params["EXPOSURE"] = self.exp_time.value
+            spec = self.counts.value
+        else:
+            spec = self.rate.value
+
         bins = (np.arange(self.rmf.n_ch) + self.rmf.cmin).astype("int32")
         _write_spectrum(
             bins,
-            self.counts.value,
+            spec,
             event_params,
             specfile,
             overwrite=overwrite,

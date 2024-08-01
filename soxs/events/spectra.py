@@ -14,7 +14,7 @@ def _write_spectrum(
     overwrite=False,
     noisy=True,
 ):
-    exp_time = parameters["EXPOSURE"]
+    exp_time = parameters.get("EXPOSURE", None)
     spectype = parameters["CHANTYPE"]
 
     if noisy:
@@ -24,12 +24,26 @@ def _write_spectrum(
         cnt_fmt = "1D"
         cnt_type = "float64"
 
-    col1 = fits.Column(name="CHANNEL", format="1J", array=bins)
-    col2 = fits.Column(name=spectype.upper(), format="1D", array=bins.astype("float64"))
-    col3 = fits.Column(name="COUNTS", format=cnt_fmt, array=spec.astype(cnt_type))
-    col4 = fits.Column(name="COUNT_RATE", format="1D", array=spec / exp_time)
+    col_ch = fits.Column(name="CHANNEL", format="1J", array=bins)
+    col_chf = fits.Column(
+        name=spectype.upper(), format="1D", array=bins.astype("float64")
+    )
 
-    coldefs = fits.ColDefs([col1, col2, col3, col4])
+    cols = [col_ch, col_chf]
+
+    if exp_time is None:
+        rate = spec
+    else:
+        rate = spec / exp_time
+        col_cnt = fits.Column(
+            name="COUNTS", format=cnt_fmt, array=spec.astype(cnt_type)
+        )
+        cols.append(col_cnt)
+
+    col_rate = fits.Column(name="COUNT_RATE", format="1D", array=rate)
+    cols.append(col_rate)
+
+    coldefs = fits.ColDefs(cols)
 
     tbhdu = fits.BinTableHDU.from_columns(coldefs)
     tbhdu.name = "SPECTRUM"
