@@ -683,6 +683,33 @@ a :class:`~soxs.spectra.Spectrum` object, simply call
 
     spec_new = cspec.deconvolve()
 
+.. _convolve-arf-rmf:
+
+Including an RMF in the Convolution
++++++++++++++++++++++++++++++++++++
+
+It is also possible to include an RMF in the convolution process. This will take
+the spectrum which has been convolved with the ARF and further convolve it with
+with the response matrix in the RMF. This will produce a spectrum with features
+that have been broadened by the energy resolution of the instrument. This may be
+useful for comparing model :class:`~soxs.spectra.Spectrum` objects to mock observations
+by forward-modeling them through the instrument responses. To do this, simply pass
+the name of the RMF file to :meth:`~soxs.spectra.ConvolvedSpectrum.convolve`:
+
+.. code-block:: python
+
+    from soxs import ConvolvedSpectrum
+    # Assuming one created an ApecGenerator agen...
+    spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
+    cspec = ConvolvedSpectrum.convolve(spec2, "xrs_hdxi_3x10.arf",
+                                       rmf="xrs_hdxi.rmf")
+
+.. note::
+
+    If one uses an RMF to convolve, the methods
+    :meth:`~soxs.spectra.ConvolvedSpectrum.generate_energies` and
+    :meth:`~soxs.spectra.ConvolvedSpectrum.deconvolve` are not available.
+
 .. _spectra-plots:
 
 Plotting Spectra
@@ -770,3 +797,28 @@ in again in, using :meth:`~soxs.spectra.Spectrum.from_file`:
 
     from soxs import Spectrum
     my_spec = Spectrum.from_file("my_spec.ecsv")
+
+.. _special-cspec-io:
+
+Special I/O for Convolved Spectra
+---------------------------------
+
+:class:`~soxs.spectra.ConvolvedSpectrum` objects can be written directly to
+PI/PHA files using the same standard format that is used for real spectra,
+with the :meth:`~soxs.spectra.ConvolvedSpectrum.to_pha_file` method:
+
+.. code-block:: python
+
+    from soxs import ConvolvedSpectrum
+    # Assuming one created an ApecGenerator agen...
+    spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
+    cspec = ConvolvedSpectrum.convolve(spec2, "xrs_hdxi_3x10.arf")
+    cspec.to_pha_file("my_spec.pi", overwrite=True)
+
+Conversely, PI/PHA files produced can be read in as :class:`~soxs.spectra.ConvolvedSpectrum`
+objects:
+
+.. code-block:: python
+
+    import soxs
+    cspec = soxs.ConvolvedSpectrum.from_pha_file("my_spec.pi")

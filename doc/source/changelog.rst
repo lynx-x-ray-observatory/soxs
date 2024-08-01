@@ -8,34 +8,32 @@ Version 5.0.0
 
 This is a major version update to SOXS with significant new features and bugfixes.
 
+Three major new features are included in this release:
+
 * Spectral cubes
 * Charge exchange
+* ThermalSimputCatalog
 
 A few changes have been made for :class:`~soxs.spectra.base.Spectrum` objects:
 
 * It is now possible to use the :meth:`~soxs.spectra.base.ConvolvedSpectrum.convolve`
   method to convolve a spectrum with both an ARF *and* an RMF. This may be useful to
   take a spectral model and forward-model it using the responses for a specific
-  instrument without the effects of Poisson statistics. Such convolved spectra can be
+  instrument without the effects of Poisson statistics. See :ref:`convolve-arf-rmf`
+  for details.
+* Such convolved spectra can be
   written to a standard PI/PHA file. using the
   :meth:`~soxs.spectra.base.ConvolvedSpectrum.to_pha_file` method. See
   :ref:`convolved-spectrum` for more details.
 * Similarly, it is now possible to read in a spectrum from a PI/PHA file produced from
   SOXS (either from an event file produced with the :func:`~soxs.instrument.instrument_simulator`
   or a spectrum from :func:`~soxs.instrument.simulate_spectrum`), using the
-  :meth:`~soxs.spectra.base.Spectrum.from_pha_file` method. See :ref:`convolved-spectrum`
+  :meth:`~soxs.spectra.base.Spectrum.from_pha_file` method. See :ref:`special-cspec-io`
   for more details.
 * It is now possible to create a :class:`~soxs.spectra.base.Spectrum` object from
   a spectral model created with
   `pyXspec <https://heasarc.gsfc.nasa.gov/docs/xanadu/xspec/python/html/index.html>`_.
   See :ref:`xspec` for more details.
-
-A couple of new features have been added for SIMPUT catalogs:
-
-* It is now possible to create an empty SIMPUT catalog (to which sources can be
-  added later) using :meth:`~soxs.simput.SimputCatalog.make_empty`. See
-  :ref:`simput` for more details.
-* ThermalSimputCatalog
 
 Two changes have been made to :func:`~soxs.instrument.simulate_spectrum`:
 
@@ -74,6 +72,9 @@ Other various changes are:
 * Particle backgrounds have been implemented for the *XRISM*/Resolve instrument.
 * For comparison purposes, a new instrument specification for the *XRISM*/Resolve
   instrument with a 1 arcsecond PSF has been added, ``"xrism_resolve_1arcsec"``.
+* It is now possible to create an empty SIMPUT catalog (to which sources can be
+  added later) using :meth:`~soxs.simput.SimputCatalog.make_empty`. See
+  :ref:`simput` for more details.
 
 Version 4.8.5
 -------------
