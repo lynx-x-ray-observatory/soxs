@@ -598,7 +598,7 @@ class Spectrum:
 
     def new_spec_from_band(self, emin, emax):
         """
-        Create a new :class:`~soxs.spectra.Spectrum` object
+        Create a new :class:`~soxs.spectra.base.Spectrum` object
         from a subset of an existing one defined by a particular
         energy band.
 
@@ -1281,7 +1281,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
     @classmethod
     def from_pha_file(cls, specfile):
         """
-        Create a :class:`~soxs.spectra.ConvolvedSpectrum` object by reading it in
+        Create a :class:`~soxs.spectra.base.ConvolvedSpectrum` object by reading it in
         from a PHA/PI file.
 
         Parameters
@@ -1325,7 +1325,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     def to_pha_file(self, specfile, overwrite=False):
         """
-        Write a :class:`~soxs.spectra.ConvolvedSpectrum` object to a
+        Write a :class:`~soxs.spectra.base.ConvolvedSpectrum` object to a
         PHA/PI file.
 
         Parameters
@@ -1369,7 +1369,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
         Parameters
         ----------
-        spectrum : :class:`~soxs.spectra.Spectrum` object
+        spectrum : :class:`~soxs.spectra.base.Spectrum` object
             The input spectrum to convolve with.
         arf : string or :class:`~soxs.response.AuxiliaryResponseFile`
             The ARF to use in the convolution.
@@ -1411,7 +1411,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     def new_spec_from_band(self, emin, emax):
         """
-        Create a new :class:`~soxs.spectra.ConvolvedSpectrum` object
+        Create a new :class:`~soxs.spectra.base.ConvolvedSpectrum` object
         from a subset of an existing one defined by a particular
         energy band.
 
@@ -1435,7 +1435,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     def deconvolve(self):
         """
-        Return the deconvolved :class:`~soxs.spectra.Spectrum`
+        Return the deconvolved :class:`~soxs.spectra.base.Spectrum`
         object associated with this convolved spectrum.
         """
         if self.rmf is not None:
