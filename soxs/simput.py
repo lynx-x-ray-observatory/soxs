@@ -890,11 +890,6 @@ class ThermalSimputCatalog(SimputCatalog):
 
         invc = 1.0 / c.to_value("km/s")
         prefix, suffix = filename.rsplit(".", 1)
-        src_filename = f"{prefix}_src.{suffix}"
-        if os.path.exists(src_filename) and overwrite:
-            os.remove(src_filename)
-        else:
-            raise IOError(f"File {src_filename} already exists!")
 
         regions = Regions.read(regions)
         flux_img = cls._process_quantity(flux_img)
@@ -921,15 +916,8 @@ class ThermalSimputCatalog(SimputCatalog):
         v_is_img = getattr(bulk_velocity, "is_image", False)
         s_is_img = getattr(turb_velocity, "is_image", False)
         pbar = tqdm(leave=True, total=len(regions), desc="Processing regions: ")
-        fsums = []
-        ecol = fits.Column(
-            name="ENERGY",
-            unit="keV",
-            format="1PE()",
-            array=np.array([sgen.emid], dtype=np.object_),
-        )
-        ncol = fits.Column(name="NAME", format="48A", array=np.array([""]))
         next = 1
+        cat = SimputCatalog.make_empty(filename, overwrite=overwrite)
         for reg in regions:
             img = (
                 reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny)).astype("bool")
@@ -938,7 +926,6 @@ class ThermalSimputCatalog(SimputCatalog):
             flux[flux < 0.0] = 0.0
             flux_sum = flux.sum()
             if flux_sum > 0.0:
-                fsums.append(flux_sum)
                 if T_is_img:
                     T = np.nansum(kT.data * flux) / flux_sum
                 else:
@@ -965,45 +952,18 @@ class ThermalSimputCatalog(SimputCatalog):
                 spec.apply_foreground_absorption(nH, model=absorb_model)
                 spec.rescale_flux(flux_sum, emin, emax)
                 imhdu = fits.ImageHDU(data=flux, header=flux_img.header)
-                fcol = fits.Column(
-                    name="FLUXDENSITY",
-                    unit="photons/s/cm**2/keV",
-                    format="1PE()",
-                    array=np.array([spec.flux.value], dtype=np.object_),
+                src = SimputSpectrum.from_spectrum(
+                    f"reg_{next}", spec, ra0, dec0, imhdu=imhdu
                 )
-                coldefs = fits.ColDefs([ecol, fcol, ncol])
-                tbhdu = fits.BinTableHDU.from_columns(coldefs)
-                tbhdu.name = "SPECTRUM"
-                tbhdu.header.update(
-                    {
-                        "HDUCLASS": "HEASARC/SIMPUT",
-                        "HDUCLAS1": "SPECTRUM",
-                        "HDUVERS": "1.1.0",
-                        "EXTVER": next,
-                        "REFRA": ra0,
-                        "REFDEC": dec0,
-                    }
+                cat.append(
+                    src,
+                    src_filename=f"{prefix}_src_{next}.{suffix}",
+                    quiet=True,
+                    overwrite=True,
                 )
-                imhdu.header.update({"EXTNAME": "IMAGE", "EXTVER": next})
                 next += 1
-                with fits.open(src_filename, mode="append") as f:
-                    f.append(tbhdu)
-                    f.append(imhdu)
-                    f.flush()
             pbar.update()
         pbar.close()
-        num_regions = len(fsums)
-        ras = [ra0] * num_regions
-        decs = [dec0] * num_regions
-        names = [f"reg_{i}" for i in range(num_regions)]
-        emins = [emin] * num_regions
-        emaxs = [emax] * num_regions
-        specs = [f'{src_filename}["SPECTRUM",{i + 1}]' for i in range(num_regions)]
-        imgs = [f'{src_filename}["IMAGE",{i + 1}]' for i in range(num_regions)]
-        cat = SimputCatalog(
-            specs, imgs, names, ras, decs, fsums, emins, emaxs, filename
-        )
-        cat._write_catalog(overwrite=overwrite)
         return cat
 
     @staticmethod
