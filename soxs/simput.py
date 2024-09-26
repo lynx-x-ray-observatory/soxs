@@ -919,9 +919,7 @@ class ThermalSimputCatalog(SimputCatalog):
         next = 1
         cat = SimputCatalog.make_empty(filename, overwrite=overwrite)
         for reg in regions:
-            img = (
-                reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny)).astype("bool")
-            )
+            img = reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny))
             if img is None:
                 continue
             flux = flux_img.data * img
