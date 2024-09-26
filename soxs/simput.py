@@ -922,6 +922,8 @@ class ThermalSimputCatalog(SimputCatalog):
             img = (
                 reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny)).astype("bool")
             )
+            if img is None:
+                continue
             flux = flux_img.data * img
             flux[flux < 0.0] = 0.0
             flux_sum = flux.sum()
