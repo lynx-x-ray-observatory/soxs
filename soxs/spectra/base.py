@@ -11,7 +11,7 @@ from astropy.table import QTable
 from pathlib import Path, PurePath
 from scipy.interpolate import interp1d
 
-from soxs.constants import erg_per_keV, hc, sigma_to_fwhm, sqrt2pi
+from soxs.constants import ckms, erg_per_keV, hc, sigma_to_fwhm, sqrt2pi
 from soxs.utils import (
     get_data_file,
     line_width_equiv,
@@ -191,7 +191,9 @@ class Spectrum:
             e = e.to("keV").value
         return u.Quantity(self.func(e), self._units)
 
-    def regrid_spectrum(self, emin, emax, nbins, binscale="linear"):
+    def regrid_spectrum(
+        self, emin, emax, nbins, binscale="linear", vlos=0.0, vtot=None
+    ):
         """
         Regrid an existing spectrum to a new energy binning and
         return a new spectrum.
@@ -210,13 +212,23 @@ class Spectrum:
         """
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
+        vlos = parse_value(vlos, "km/s") / ckms
+        if vtot is None:
+            vtot = vlos
+        else:
+            vtot = parse_value(vtot, "km/s") / ckms
+        shift = np.sqrt(1.0 - vtot**2) / (1.0 + vlos)
         if binscale == "linear":
             ebins = np.linspace(emin, emax, nbins + 1)
         elif binscale == "log":
             ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
         de = np.diff(ebins)
         spec_new = (
-            regrid_spectrum(ebins, self.ebins.value, self.flux.value * self.de.value)
+            shift
+            * shift
+            * regrid_spectrum(
+                ebins / shift, self.ebins.value, self.flux.value * self.de.value
+            )
             / de
         )
         return type(self)(ebins, spec_new, binscale=binscale)
