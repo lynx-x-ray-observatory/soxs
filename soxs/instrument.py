@@ -232,13 +232,13 @@ def generate_events(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
+            refband = [src.emin, src.emax]
             events = arf.detect_events_phlist(
                 src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
-            events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
+            events = arf.detect_events_spec(src, exp_time, prng=prng)
 
         n_evt = events["energy"].size
 
@@ -1184,13 +1184,13 @@ def simple_event_list(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
+            refband = [src.emin, src.emax]
             events = arf.detect_events_phlist(
                 src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
-            events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
+            events = arf.detect_events_spec(src, exp_time, prng=prng)
 
         n_evt = events["energy"].size
 

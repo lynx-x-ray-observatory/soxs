@@ -86,10 +86,7 @@ class AuxiliaryResponseFile:
         ebins = np.append(src.energy - 0.5 * de, src.energy[-1] + 0.5 * de)
         f = regrid_spectrum(self.ebins, ebins, src.fluxdensity * de)
         N = np.cumsum(f * self.eff_area)
-        idxs = np.logical_and(src.energy >= refband[0], src.energy <= refband[1])
-        ref_flux = (src.energy * erg_per_keV * src.fluxdensity * de)[idxs].sum()
-        rate = src.flux * N[-1] / ref_flux
-        n_ph = prng.poisson(lam=rate * exp_time)
+        n_ph = prng.poisson(lam=N[-1] * exp_time)
         randvec = prng.uniform(size=n_ph)
         randvec.sort()
         cumspec = np.insert(N, 0, 0.0)
