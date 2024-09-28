@@ -79,7 +79,7 @@ class AuxiliaryResponseFile:
         )
         return u.Quantity(earea, "cm**2")
 
-    def detect_events_spec(self, src, exp_time, refband, prng=None):
+    def detect_events_spec(self, src, exp_time, prng=None):
         prng = parse_prng(prng)
         # This assumes linear binning for now!
         de = np.diff(src.energy)[0]
