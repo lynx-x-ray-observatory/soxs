@@ -869,6 +869,10 @@ def make_bkgnd_simput(
 
 
 class ThermalSimputCatalog(SimputCatalog):
+    """
+    Create a SIMPUT catalog based on a flux image
+    """
+
     def __new__(
         cls,
         filename,
