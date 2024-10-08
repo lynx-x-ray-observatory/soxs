@@ -146,6 +146,8 @@ The ``"bkgnd"`` entry can also be set to ``None``, which corresponds to no
 particle background. To change the particle background, one would need to
 define a new instrument specification with a different background.
 
+.. _adjust-bkgnd:
+
 Adjusting Background Components
 -------------------------------
 
@@ -200,6 +202,14 @@ using the ``input_pt_sources`` keyword argument:
 
 See :ref:`point-source-list` for more information on this feature.
 
+You can also adjust the overall normalization of the instrument background by
+adjusting the keyword argument ``instr_bkgnd_scale``, which has a default value of 1:
+
+.. code-block:: python
+
+    soxs.make_background_file(out_file, exp_time, instrument, sky_center,
+                              overwrite=True, instr_bkgnd_scale=0.5)
+
 .. _make-bkgnd:
 
 Using a Background From an Event File
@@ -244,6 +254,15 @@ using the ``input_pt_sources`` keyword argument:
 
 See :ref:`point-source-list` for more information on this feature.
 
+You can also adjust the overall normalization of the instrument background by
+adjusting the keyword argument ``instr_bkgnd_scale``, which has a default value of 1:
+
+.. code-block:: python
+
+    soxs.make_background_file(out_file, exp_time, instrument, sky_center,
+                              overwrite=True, instr_bkgnd_scale=0.5)
+
+``bkgnd_norm`` parameter in the call to :func:`~soxs.instrument.make_background_file`:
 :func:`~soxs.instrument.instrument_simulator` can use this background file when
 it is supplied with the ``bkgnd_file`` argument, provided that the same
 instrument is used and the exposure time of the source observation is not longer

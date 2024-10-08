@@ -61,10 +61,10 @@ class CIEGenerator:
         self.emax = emax
         self.nbins = nbins
         if binscale == "linear":
-            self.ebins = np.linspace(self.emin, self.emax, nbins + 1)
+            self.ebins = np.linspace(self.emin, self.emax, nbins + 1, dtype="float64")
         elif binscale == "log":
             self.ebins = np.logspace(
-                np.log10(self.emin), np.log10(self.emax), nbins + 1
+                np.log10(self.emin), np.log10(self.emax), nbins + 1, dtype="float64"
             )
         self.de = np.diff(self.ebins)
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
@@ -154,7 +154,7 @@ class CIEGenerator:
         if not isinstance(abund_table, str):
             if len(abund_table) != 30:
                 raise RuntimeError(
-                    "User-supplied abundance tables " "must be 30 elements long!"
+                    "User-supplied abundance tables must be 30 elements long!"
                 )
             self.atable = np.concatenate([[0.0], np.array(abund_table)])
         else:
@@ -199,14 +199,22 @@ class CIEGenerator:
         de0 = self.de / scale_factor
 
         n_cont = coco_fields["N_Cont"][ind]
-        e_cont = coco_fields["E_Cont"][ind][:n_cont] * scale_factor
-        continuum = coco_fields["Continuum"][ind][:n_cont] * self._atable[element]
+        e_cont = coco_fields["E_Cont"][ind][:n_cont].astype("float64") * scale_factor
+        continuum = (
+            coco_fields["Continuum"][ind][:n_cont].astype("float64")
+            * self._atable[element]
+        )
 
         tmpspec += np.interp(self.emid, e_cont, continuum) * de0
 
         n_pseudo = coco_fields["N_Pseudo"][ind]
-        e_pseudo = coco_fields["E_Pseudo"][ind][:n_pseudo] * scale_factor
-        pseudo = coco_fields["Pseudo"][ind][:n_pseudo] * self._atable[element]
+        e_pseudo = (
+            coco_fields["E_Pseudo"][ind][:n_pseudo].astype("float64") * scale_factor
+        )
+        pseudo = (
+            coco_fields["Pseudo"][ind][:n_pseudo].astype("float64")
+            * self._atable[element]
+        )
 
         tmpspec += np.interp(self.emid, e_pseudo, pseudo) * de0
 
@@ -997,7 +1005,7 @@ class MekalGenerator(Atable1DGenerator):
             k = 0
             for i in range(14):
                 j = elem_names.index(self._available_elem[i])
-                data = self._atable[j] * f["SPECTRA"].data[f"ADDSP0{i+1:02d}"][
+                data = self._atable[j] * f["SPECTRA"].data[f"ADDSP0{i + 1:02d}"][
                     :, eidxs[0] : eidxs[1]
                 ].astype("float64")
                 if self._available_elem[i] in self.var_elem:

@@ -208,6 +208,22 @@ An existing SIMPUT catalog can be read in from disk using
     import soxs
     sim_cat = soxs.SimputCatalog.from_file("my_sources_simput.fits")
 
+An empty SIMPUT catalog with no sources can be created using
+:meth:`~soxs.simput.SimputCatalog.make_empty`, and then you can append sources
+to it in the usual way:
+
+.. code-block:: python
+
+    import soxs
+    sim_cat = soxs.SimputCatalog.make_empty("my_simput.fits")
+
+    # This adds src2 to the catalog in "my_simput.fits" and the same file
+    sim_cat.append(src2)
+
+    # This adds src3 to the catalog in "my_simput.fits" and the file
+    # cluster1.fits
+    sim_cat.append(src3, src_filename="cluster1.fits", overwrite=True)
+
 .. _bkgnd-simput:
 
 Creating Background Model SIMPUT Catalogs
