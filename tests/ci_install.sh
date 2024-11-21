@@ -16,17 +16,13 @@ if [[ ${mode} == "testing" ]]; then
 
 fi
 
-# Install dependencies using conda and pip
+# Install dependencies using mamba and pip
 
-conda install --yes numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
+eval "$(micromamba shell hook --shell bash)"
+micromamba shell init --shell bash --root-prefix=~/micromamba
+micromamba activate test-env
 
-# Install pyxsim
-if [[ ${mode} == "testing" ]]; then
-  git clone https://github.com/jzuhone/pyxsim
-  cd pyxsim
-  pip install .
-  cd ..
-fi
+micromamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
 if [[ ${mode} == "wheels" ]]; then
   conda install --yes wheel setuptools

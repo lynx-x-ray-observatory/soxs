@@ -17,6 +17,7 @@ from soxs.cosmology import make_cosmological_sources_file
 from soxs.events import (
     fill_regions,
     filter_events,
+    make_cube,
     make_exposure_map,
     make_image,
     merge_event_files,
@@ -46,6 +47,7 @@ from soxs.simput import (
     SimputCatalog,
     SimputPhotonList,
     SimputSpectrum,
+    ThermalSimputCatalog,
     make_bkgnd_simput,
     write_photon_list,
 )
@@ -61,12 +63,16 @@ from soxs.spatial import (
     RectangleModel,
     SpatialModel,
 )
-from soxs.spectra import ConvolvedSpectrum, CountRateSpectrum, Spectrum
-from soxs.thermal_spectra import (
+from soxs.spectra import (
+    ACX2Generator,
     ApecGenerator,
     CloudyCIEGenerator,
+    ConvolvedSpectrum,
+    CountRateSpectrum,
     IGMGenerator,
     MekalGenerator,
+    OneACX2Generator,
+    Spectrum,
     SpexGenerator,
     download_spectrum_tables,
 )

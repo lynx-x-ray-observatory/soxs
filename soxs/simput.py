@@ -5,6 +5,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.units import Quantity
 from pathlib import Path
+from tqdm.auto import tqdm
 
 from soxs.spatial import construct_wcs
 from soxs.utils import (
@@ -111,6 +112,29 @@ class SimputCatalog:
         self.timing = np.array(["NULL"] * self.num_sources)
 
     @classmethod
+    def make_empty(cls, filename, overwrite=False):
+        """
+        Create an empty SIMPUT catalog file.
+
+        Parameters
+        ----------
+        filename : string
+            The name of the SIMPUT catalog file to write.
+        overwrite : boolean, optional
+            Whether to overwrite an existing file with
+            the same name. If src_filename=None and the source is
+            to the written to the SIMPUT catalog file, then this
+            argument is ignored. If src_filename is another value,
+            it exists, and overwrite=False, the source will be
+            appended to the file. Default: False
+        """
+        sc = cls([], [], [], [], [], [], [], [], filename)
+        if os.path.exists(filename) and not overwrite:
+            raise IOError(f"{filename} exists and overwrite=False!")
+        sc._write_catalog(overwrite=overwrite)
+        return sc
+
+    @classmethod
     def from_source(cls, filename, source, src_filename=None, overwrite=False):
         """
         Create a new :class:`~soxs.simput.SimputCatalog`
@@ -135,12 +159,8 @@ class SimputCatalog:
             argument is ignored. If src_filename is another value,
             it exists, and overwrite=False, the source will be
             appended to the file. Default: False
-
         """
-        sc = cls([], [], [], [], [], [], [], [], filename)
-        if os.path.exists(filename) and not overwrite:
-            raise IOError(f"{filename} exists and overwrite=False!")
-        sc._write_catalog(overwrite=overwrite)
+        sc = cls.make_empty(filename, overwrite)
         sc.append(source, src_filename=src_filename, overwrite=overwrite)
         return sc
 
@@ -289,7 +309,7 @@ class SimputCatalog:
             f = [fits.PrimaryHDU(), wrhdu]
             fits.HDUList(f).writeto(self.filename, overwrite=True)
 
-    def append(self, source, src_filename=None, overwrite=False):
+    def append(self, source, src_filename=None, overwrite=False, quiet=False):
         """
         Add a source to this catalog.
 
@@ -308,6 +328,10 @@ class SimputCatalog:
             argument is ignored. If src_filename is another value,
             it exists, and overwrite=False, the source will be
             appended to the file. Default: False
+        quiet : boolean, optional
+            If True, log messages will not be displayed when
+            appending a SIMPUT source. Useful if you have to
+            append many sources at once. Default: False
         """
         self.src_names = np.append(self.src_names, source.name)
         self.ra = np.append(self.ra, source.ra)
@@ -324,7 +348,8 @@ class SimputCatalog:
             # Don't overwrite the SIMPUT catalog file!!
             overwrite = False
         elif overwrite and os.path.exists(src_filename):
-            mylog.warning("Overwriting %s.", src_filename)
+            if not quiet:
+                mylog.warning("Overwriting %s.", src_filename)
             os.remove(src_filename)
 
         extver = _determine_extver(src_filename, source.src_type.upper())
@@ -350,7 +375,11 @@ class SimputCatalog:
 
         self._write_catalog()
         source._write_source(
-            src_filename, extver, img_extver=img_extver, overwrite=overwrite
+            src_filename,
+            extver,
+            img_extver=img_extver,
+            overwrite=overwrite,
+            quiet=quiet,
         )
 
 
@@ -381,7 +410,9 @@ class SimputSource:
     def _get_source_hdu(self):
         return None, None
 
-    def _write_source(self, filename, extver, img_extver=None, overwrite=False):
+    def _write_source(
+        self, filename, extver, img_extver=None, overwrite=False, quiet=False
+    ):
         coldefs, header = self._get_source_hdu()
 
         tbhdu = fits.BinTableHDU.from_columns(coldefs)
@@ -402,7 +433,8 @@ class SimputSource:
             self.imhdu.header["EXTVER"] = img_extver
 
         if os.path.exists(filename) and not overwrite:
-            mylog.info("Appending source '%s' to %s.", self.name, filename)
+            if not quiet:
+                mylog.info("Appending source '%s' to %s.", self.name, filename)
             with fits.open(filename, mode="append") as f:
                 f.append(tbhdu)
                 if self.imhdu is not None:
@@ -410,9 +442,13 @@ class SimputSource:
                 f.flush()
         else:
             if os.path.exists(filename):
-                mylog.warning("Overwriting %s with source '%s'.", filename, self.name)
+                if not quiet:
+                    mylog.warning(
+                        "Overwriting %s with source '%s'.", filename, self.name
+                    )
             else:
-                mylog.info("Writing source '%s' to %s.", self.name, filename)
+                if not quiet:
+                    mylog.info("Writing source '%s' to %s.", self.name, filename)
             f = [fits.PrimaryHDU(), tbhdu]
             if self.imhdu is not None:
                 f.append(self.imhdu)
@@ -448,9 +484,8 @@ class SimputSpectrum(SimputSource):
             array=np.array([self.fluxdensity], dtype=np.object_),
         )
         col3 = fits.Column(name="NAME", format="48A", array=np.array([""]))
-        cols = [col1, col2, col3]
 
-        coldefs = fits.ColDefs(cols)
+        coldefs = fits.ColDefs([col1, col2, col3])
 
         header = {"REFRA": self.ra, "REFDEC": self.dec}
 
@@ -558,10 +593,10 @@ class SimputPhotonList(SimputSource):
         area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The effective area in cm**2. If one is creating
             events for a SIMPUT file, a constant should be
-            used and it must be large enough so that a
+            used, and it must be large enough so that a
             sufficiently large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only
+            A pseudo-random number generator. Typically, this will only
             be specified if you have a reason to generate the same
             set of random numbers, such as for a test. Default is None,
             which sets the seed based on the system time.
@@ -831,3 +866,116 @@ def make_bkgnd_simput(
     )
     cat.append(src, overwrite=overwrite)
     return cat
+
+
+class ThermalSimputCatalog(SimputCatalog):
+    """
+    Create a SIMPUT catalog based on a flux image
+    """
+
+    def __new__(
+        cls,
+        filename,
+        regions,
+        flux_img,
+        kT,
+        abund,
+        redshift,
+        sgen,
+        nH,
+        bulk_velocity=0.0,
+        turb_velocity=0.0,
+        overwrite=False,
+        absorb_model="tbabs",
+    ):
+        from astropy.constants import c
+        from astropy.wcs import WCS
+        from regions import Regions
+
+        invc = 1.0 / c.to_value("km/s")
+        prefix, suffix = filename.rsplit(".", 1)
+
+        regions = Regions.read(regions)
+        flux_img = cls._process_quantity(flux_img)
+        kT = cls._process_quantity(kT)
+        abund = cls._process_quantity(abund)
+        bulk_velocity = cls._process_quantity(bulk_velocity)
+        turb_velocity = cls._process_quantity(turb_velocity)
+        nx, ny = flux_img.shape
+        w = WCS(flux_img.header)
+        if "ENERGYLO" in flux_img.header:
+            convert = 1.0
+            names = ["ENERGYLO", "ENERGYHI"]
+        elif "IMG_ELOW" in flux_img.header:
+            convert = 1.0e-3
+            names = ["IMG_ELOW", "IMG_EHI"]
+        else:
+            raise KeyError("Cannot find energy limit keywords in header!")
+        emin, emax = flux_img.header[names[0]], flux_img.header[names[1]]
+        emin *= convert
+        emax *= convert
+        ra0, dec0 = w.wcs.crval
+        T_is_img = getattr(kT, "is_image", False)
+        a_is_img = getattr(abund, "is_image", False)
+        v_is_img = getattr(bulk_velocity, "is_image", False)
+        s_is_img = getattr(turb_velocity, "is_image", False)
+        pbar = tqdm(leave=True, total=len(regions), desc="Processing regions: ")
+        next = 1
+        cat = SimputCatalog.make_empty(filename, overwrite=overwrite)
+        for reg in regions:
+            img = reg.to_pixel(w).to_mask(mode="center").to_image((nx, ny))
+            if img is None:
+                continue
+            flux = flux_img.data * img
+            flux[flux < 0.0] = 0.0
+            flux_sum = flux.sum()
+            if flux_sum > 0.0:
+                if T_is_img:
+                    T = np.nansum(kT.data * flux) / flux_sum
+                else:
+                    T = kT
+                if a_is_img:
+                    A = np.nansum(abund.data * flux) / flux_sum
+                else:
+                    A = abund
+                if v_is_img:
+                    v = np.nansum(bulk_velocity.data * flux) / flux_sum
+                else:
+                    v = bulk_velocity
+                if s_is_img:
+                    if v_is_img:
+                        vv = bulk_velocity.data**2
+                    else:
+                        vv = v * v
+                    s = turb_velocity.data**2 + vv
+                    s = np.sqrt(np.nansum(s * flux) / flux_sum - v * v)
+                else:
+                    s = turb_velocity
+                beta = v * invc
+                spec = sgen.get_spectrum(T, A, redshift + beta, 1.0, velocity=s)
+                spec.apply_foreground_absorption(nH, model=absorb_model)
+                spec.rescale_flux(flux_sum, emin, emax)
+                imhdu = fits.ImageHDU(data=flux, header=flux_img.header)
+                src = SimputSpectrum.from_spectrum(
+                    f"reg_{next}", spec, ra0, dec0, imhdu=imhdu
+                )
+                cat.append(
+                    src,
+                    src_filename=f"{prefix}_src_{next}.{suffix}",
+                    quiet=True,
+                    overwrite=True,
+                )
+                next += 1
+            pbar.update()
+        pbar.close()
+        return cat
+
+    @staticmethod
+    def _process_quantity(val):
+        if isinstance(val, str):
+            with fits.open(val) as f:
+                for hdu in f:
+                    if hdu.is_image and hdu.header["NAXIS"] == 2:
+                        val = hdu.copy()
+                        break
+        return val

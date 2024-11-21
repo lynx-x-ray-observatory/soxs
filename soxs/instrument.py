@@ -5,8 +5,9 @@ from collections import defaultdict
 import numpy as np
 from astropy import wcs
 from regions import PixCoord
+from tqdm.auto import tqdm
 
-from soxs.events import write_event_file
+from soxs.events import make_event_file
 from soxs.instrument_registry import instrument_registry
 from soxs.psf import psf_model_registry
 from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
@@ -208,32 +209,46 @@ def generate_events(
 
     all_events = defaultdict(list)
 
+    num_sources = len(source_list)
+
+    mylog.info(
+        "Simulating events from %d sources using instrument %s for %g ks.",
+        num_sources,
+        instrument,
+        exp_time * 1.0e-3,
+    )
+
+    if num_sources > 3:
+        pbar = tqdm(leave=True, total=num_sources, desc="Observing sources: ")
+    else:
+        pbar = None
+
     for i, src in enumerate(source_list):
-        mylog.info("Detecting events from source %s.", src.name)
+        mylog.debug("Detecting events from source %s.", src.name)
 
         # Step 1: Use ARF to determine which photons are observed
 
-        mylog.info(
+        mylog.debug(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
+            refband = [src.emin, src.emax]
             events = arf.detect_events_phlist(
                 src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
-            events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
+            events = arf.detect_events_spec(src, exp_time, prng=prng)
 
         n_evt = events["energy"].size
 
         if n_evt == 0:
-            mylog.warning("No events were observed for this source!!!")
+            mylog.debug("No events were observed for this source!!!")
         else:
             # Step 2: Assign pixel coordinates to events. Apply dithering and
             # PSF. Clip events that don't fall within the detection region.
 
-            mylog.info("Pixeling events.")
+            mylog.debug("Pixeling events.")
 
             # Convert RA, Dec to pixel coordinates
             xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
@@ -266,7 +281,7 @@ def generate_events(
 
             # PSF scattering of detector coordinates
 
-            mylog.info("Scattering events with a %s-based PSF.", psf)
+            mylog.debug("Scattering events with a %s-based PSF.", psf)
             detx, dety = psf.scatter(detx, dety, events["energy"])
 
             # Convert detector coordinates to chip coordinates.
@@ -291,11 +306,9 @@ def generate_events(
             n_evt = keep.sum()
 
             if n_evt == 0:
-                mylog.warning(
-                    "No events are within the field of view for this source!!!"
-                )
+                mylog.debug("No events are within the field of view for this source!!!")
             else:
-                mylog.info("%d events were detected from the source.", n_evt)
+                mylog.debug("%d events were detected from the source.", n_evt)
 
                 # Keep only those events which fall on a chip
 
@@ -342,7 +355,15 @@ def generate_events(
             for key in events:
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
-    if len(all_events["energy"]) == 0:
+        if pbar:
+            pbar.update()
+
+    if pbar:
+        pbar.close()
+
+    n_events_total = len(all_events["energy"])
+
+    if n_events_total == 0:
         mylog.warning("No events from any of the sources in the catalog were detected!")
         for key in [
             "xpix",
@@ -359,6 +380,7 @@ def generate_events(
         # Step 4: Scatter energies with RMF
         mylog.info("Scattering energies with RMF %s.", os.path.split(rmf.filename)[-1])
         all_events = rmf.scatter_energies(all_events, prng=prng)
+        mylog.info("Detected %d events in total.", n_events_total)
 
     return all_events, event_params
 
@@ -376,6 +398,7 @@ def make_background(
     subpixel_res=False,
     input_pt_sources=None,
     aimpt_shift=None,
+    instr_bkgnd_scale=1.0,
     prng=None,
     **kwargs,
 ):
@@ -418,6 +441,9 @@ def make_background(
         A two-float array-like object which shifts the aimpoint on the
         detector from the nominal position. Units are in arcseconds.
         Default: None, which results in no shift from the nominal aimpoint.
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically this will only
         be specified if you have a reason to generate the same
@@ -462,7 +488,7 @@ def make_background(
         mylog.info("Adding in point-source background.")
         ptsrc_events = make_ptsrc_background(
             exp_time,
-            fov,
+            1.5 * fov,
             sky_center,
             area=1.2 * arf.max_area,
             input_sources=input_pt_sources,
@@ -541,7 +567,14 @@ def make_background(
 
     if foreground or instr_bkgnd:
         bkg_events = make_diffuse_background(
-            foreground, instr_bkgnd, instrument_spec, event_params, arf, rmf, prng=prng
+            foreground,
+            instr_bkgnd,
+            instrument_spec,
+            event_params,
+            arf,
+            rmf,
+            prng=prng,
+            instr_bkgnd_scale=instr_bkgnd_scale,
         )
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
@@ -562,6 +595,7 @@ def make_background_file(
     dither_params=None,
     subpixel_res=False,
     input_pt_sources=None,
+    instr_bkgnd_scale=1.0,
     prng=None,
     **kwargs,
 ):
@@ -602,6 +636,9 @@ def make_background_file(
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -636,9 +673,87 @@ def make_background_file(
         dither_params=dither_params,
         subpixel_res=subpixel_res,
         input_pt_sources=input_pt_sources,
+        instr_bkgnd_scale=instr_bkgnd_scale,
         prng=prng,
     )
-    write_event_file(events, event_params, out_file, overwrite=overwrite)
+    f = make_event_file(events, event_params)
+    mylog.info("Writing background events to file %s.", out_file)
+    f.writeto(out_file, overwrite=overwrite)
+
+
+def _instrument_simulator(
+    input_events,
+    exp_time,
+    instrument,
+    sky_center,
+    instr_bkgnd=True,
+    foreground=True,
+    ptsrc_bkgnd=True,
+    bkgnd_file=None,
+    no_dither=False,
+    dither_params=None,
+    roll_angle=0.0,
+    subpixel_res=False,
+    aimpt_shift=None,
+    input_pt_sources=None,
+    prng=None,
+    instr_bkgnd_scale=1.0,
+):
+    from soxs.background import add_background_from_file
+
+    # Make the source first
+    events, event_params = generate_events(
+        input_events,
+        exp_time,
+        instrument,
+        sky_center,
+        no_dither=no_dither,
+        dither_params=dither_params,
+        roll_angle=roll_angle,
+        subpixel_res=subpixel_res,
+        aimpt_shift=aimpt_shift,
+        prng=prng,
+    )
+    # If the user wants backgrounds, either make the background or add an already existing
+    # background event file. It may be necessary to reproject events to a new coordinate system.
+    if bkgnd_file is None:
+        if not instr_bkgnd and not ptsrc_bkgnd and not foreground:
+            mylog.info("No backgrounds will be added to this observation.")
+        else:
+            mylog.info("Adding background events.")
+            bkg_events, _ = make_background(
+                exp_time,
+                instrument,
+                sky_center,
+                foreground=foreground,
+                instr_bkgnd=instr_bkgnd,
+                no_dither=no_dither,
+                dither_params=dither_params,
+                ptsrc_bkgnd=ptsrc_bkgnd,
+                prng=prng,
+                subpixel_res=subpixel_res,
+                roll_angle=roll_angle,
+                aimpt_shift=aimpt_shift,
+                input_pt_sources=input_pt_sources,
+                instr_bkgnd_scale=instr_bkgnd_scale,
+            )
+            for key in events:
+                events[key] = np.concatenate([events[key], bkg_events[key]])
+    else:
+        mylog.info("Adding background events from the file %s.", bkgnd_file)
+        if not os.path.exists(bkgnd_file):
+            raise IOError(f"Cannot find the background event file {bkgnd_file}!")
+        events = add_background_from_file(events, event_params, bkgnd_file)
+    if len(events["energy"]) == 0:
+        mylog.warning(
+            "No events were detected from source or background!! We "
+            "will not write an event file."
+        )
+        f = None
+    else:
+        f = make_event_file(events, event_params)
+        mylog.info("Observation complete.")
+    return f
 
 
 def instrument_simulator(
@@ -658,6 +773,7 @@ def instrument_simulator(
     subpixel_res=False,
     aimpt_shift=None,
     input_pt_sources=None,
+    instr_bkgnd_scale=1.0,
     prng=None,
 ):
     """
@@ -729,6 +845,9 @@ def instrument_simulator(
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -740,61 +859,165 @@ def instrument_simulator(
     >>> instrument_simulator("sloshing_simput.fits", "sloshing_evt.fits",
     ...                      300000.0, "lynx_hdxi", [30., 45.], overwrite=True)
     """
-    from soxs.background import add_background_from_file
-
     if not out_file.endswith(".fits"):
         out_file += ".fits"
-    mylog.info("Making observation of source in %s.", out_file)
-    # Make the source first
-    events, event_params = generate_events(
+    f = _instrument_simulator(
         input_events,
         exp_time,
         instrument,
         sky_center,
+        instr_bkgnd=instr_bkgnd,
+        foreground=foreground,
+        ptsrc_bkgnd=ptsrc_bkgnd,
+        bkgnd_file=bkgnd_file,
         no_dither=no_dither,
         dither_params=dither_params,
         roll_angle=roll_angle,
         subpixel_res=subpixel_res,
         aimpt_shift=aimpt_shift,
+        input_pt_sources=input_pt_sources,
+        instr_bkgnd_scale=instr_bkgnd_scale,
         prng=prng,
     )
-    # If the user wants backgrounds, either make the background or add an already existing
-    # background event file. It may be necessary to reproject events to a new coordinate system.
-    if bkgnd_file is None:
-        if not instr_bkgnd and not ptsrc_bkgnd and not foreground:
-            mylog.info("No backgrounds will be added to this observation.")
-        else:
-            mylog.info("Adding background events.")
-            bkg_events, _ = make_background(
-                exp_time,
-                instrument,
-                sky_center,
-                foreground=foreground,
-                instr_bkgnd=instr_bkgnd,
-                no_dither=no_dither,
-                dither_params=dither_params,
-                ptsrc_bkgnd=ptsrc_bkgnd,
-                prng=prng,
-                subpixel_res=subpixel_res,
-                roll_angle=roll_angle,
-                aimpt_shift=aimpt_shift,
-                input_pt_sources=input_pt_sources,
-            )
-            for key in events:
-                events[key] = np.concatenate([events[key], bkg_events[key]])
-    else:
-        mylog.info("Adding background events from the file %s.", bkgnd_file)
-        if not os.path.exists(bkgnd_file):
-            raise IOError(f"Cannot find the background event file {bkgnd_file}!")
-        events = add_background_from_file(events, event_params, bkgnd_file)
-    if len(events["energy"]) == 0:
-        mylog.warning(
-            "No events were detected from source or background!! We "
-            "will not write an event file."
+    if f:
+        mylog.info("Writing events to file %s.", out_file)
+        f.writeto(out_file, overwrite=overwrite)
+
+
+def _simulate_spectrum(
+    spec,
+    instrument,
+    exp_time,
+    instr_bkgnd=False,
+    foreground=False,
+    ptsrc_bkgnd=False,
+    bkgnd_area=None,
+    noisy=True,
+    prng=None,
+    instr_bkgnd_scale=1.0,
+    resolved_cxb_frac=0.8,
+    **kwargs,
+):
+    from soxs.background.diffuse import (
+        generate_channel_spectrum,
+        make_frgnd_spectrum,
+        read_instr_spectrum,
+    )
+    from soxs.background.spectra import BackgroundSpectrum
+    from soxs.response import (
+        AuxiliaryResponseFile,
+        FlatResponse,
+        RedistributionMatrixFile,
+    )
+    from soxs.spectra import ConvolvedSpectrum
+    from soxs.utils import soxs_cfg
+
+    cxb_frac = 1.0 - resolved_cxb_frac
+
+    any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
+    if "nH" in kwargs or "absorb_model" in kwargs:
+        warnings.warn(
+            "The 'nH' and 'absorb_model' keyword arguments"
+            "have been omitted. Please set the 'bkgnd_nH' "
+            "and 'bkgnd_absorb_model' values in the SOXS"
+            "configuration file if you want to change these "
+            "values. ",
+            DeprecationWarning,
         )
+    prng = parse_prng(prng)
+    exp_time = parse_value(exp_time, "s")
+    bkgnd_spec = None
+    instrument_spec = None
+    if isinstance(instrument, tuple):
+        arf = instrument[0]
+        rmf = instrument[1]
+        rmf = RedistributionMatrixFile(rmf)
+        if isinstance(arf, str):
+            arf = AuxiliaryResponseFile(get_data_file(arf))
+        else:
+            if arf is None:
+                arf = 1.0
+            arf = FlatResponse(rmf.ebins[0], rmf.ebins[-1], arf, rmf.emid.size)
+        if len(instrument) == 3:
+            bkgnd_spec = instrument[2]
     else:
-        write_event_file(events, event_params, out_file, overwrite=overwrite)
-    mylog.info("Observation complete.")
+        try:
+            instrument_spec = instrument_registry[instrument]
+        except KeyError:
+            raise KeyError(
+                f"Instrument {instrument} is not in the instrument registry!"
+            )
+        arf = AuxiliaryResponseFile.from_instrument(instrument)
+        rmf = RedistributionMatrixFile.from_instrument(instrument)
+        bkgnd_spec = instrument_spec["bkgnd"]
+    if any_bkgnd:
+        if bkgnd_area is None:
+            raise RuntimeError(
+                "The 'bkgnd_area' argument must be set if one wants "
+                "to simulate backgrounds! Specify a value in square "
+                "arcminutes."
+            )
+        bkgnd_area = parse_value(bkgnd_area, "arcmin**2") * instr_bkgnd_scale
+    elif spec is None:
+        raise RuntimeError("You have specified no source spectrum and no backgrounds!")
+
+    event_params = {
+        "RESPFILE": os.path.split(rmf.filename)[-1],
+        "ANCRFILE": os.path.split(arf.filename)[-1],
+        "TELESCOP": rmf.header["TELESCOP"],
+        "INSTRUME": rmf.header["INSTRUME"],
+        "MISSION": rmf.header.get("MISSION", ""),
+    }
+
+    out_spec = np.zeros(rmf.n_ch)
+
+    if spec is not None:
+        mylog.info("Simulating a source spectrum.")
+        cspec = ConvolvedSpectrum.convolve(spec, arf, use_arf_energies=True)
+        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng, noisy=noisy)
+
+    fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)
+
+    if foreground:
+        mylog.info("Adding in astrophysical foreground.")
+        frgnd_spec = rmf.convolve_spectrum(
+            make_frgnd_spectrum(arf, rmf), exp_time, noisy=False, rate=True
+        )
+        out_spec += generate_channel_spectrum(
+            frgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng
+        )
+    if instr_bkgnd and bkgnd_spec is not None:
+        if instrument_spec:
+            if instrument_spec["grating"]:
+                raise NotImplementedError(
+                    "Backgrounds cannot be included in simulations "
+                    "of gratings spectra at this time!"
+                )
+            # Temporary hack for ACIS-S
+            if "aciss" in instrument_spec["name"]:
+                bkgnd_spec = bkgnd_spec[1]
+        mylog.info("Adding in instrumental background.")
+        bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
+        out_spec += generate_channel_spectrum(
+            bkgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng
+        )
+    if ptsrc_bkgnd:
+        mylog.info("Adding in background from unresolved point-sources.")
+        bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
+        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
+        spec_plaw = BackgroundSpectrum.from_powerlaw(
+            1.52, 0.0, cxb_frac * 1.0e-6, emin=0.01, emax=10.0, nbins=300000
+        )
+        spec_plaw.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
+        cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
+        out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, noisy=noisy, prng=prng)
+
+    bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
+
+    event_params["EXPOSURE"] = exp_time
+    event_params["CHANTYPE"] = rmf.chan_type
+
+    return bins, out_spec, event_params
 
 
 def simulate_spectrum(
@@ -806,6 +1029,8 @@ def simulate_spectrum(
     foreground=False,
     ptsrc_bkgnd=False,
     bkgnd_area=None,
+    resolved_cxb_frac=0.8,
+    instr_bkgnd_scale=1.0,
     noisy=True,
     overwrite=False,
     prng=None,
@@ -850,6 +1075,13 @@ def simulate_spectrum(
         The area on the sky for the background components, in square arcminutes.
         Default: None, necessary to specify if any of the background components
         are turned on.
+    resolved_cxb_frac : float, optional
+        The fraction of the cosmic X-ray background that is resolved into point
+        sources that we assume have been removed from the spectral analysis. Must
+        be a number between 0 and 1. Default: 0.8
+    instr_bkgnd_scale : float, optional
+        A constant factor by which to scale the instrumental background
+        spectrum up or down. Default: 1, which means no scaling.
     noisy : boolean, optional
         If False, simulate_spectrum will not use counting (Poisson) statistics
         when creating the spectrum. If any backgrounds are on, this must be
@@ -868,130 +1100,26 @@ def simulate_spectrum(
     >>> soxs.simulate_spectrum(spec, "lynx_lxm", 100000.0,
     ...                        "my_spec.pi", overwrite=True)
     """
-    from soxs.background.diffuse import (
-        generate_channel_spectrum,
-        make_frgnd_spectrum,
-        read_instr_spectrum,
+    from soxs.events.spectra import _write_spectrum
+
+    bins, out_spec, event_params = _simulate_spectrum(
+        spec,
+        instrument,
+        exp_time,
+        instr_bkgnd=instr_bkgnd,
+        foreground=foreground,
+        ptsrc_bkgnd=ptsrc_bkgnd,
+        bkgnd_area=bkgnd_area,
+        resolved_cxb_frac=resolved_cxb_frac,
+        instr_bkgnd_scale=instr_bkgnd_scale,
+        noisy=noisy,
+        prng=prng,
+        **kwargs,
     )
-    from soxs.background.spectra import BackgroundSpectrum
-    from soxs.events import _write_spectrum
-    from soxs.response import (
-        AuxiliaryResponseFile,
-        FlatResponse,
-        RedistributionMatrixFile,
-    )
-    from soxs.spectra import ConvolvedSpectrum
-    from soxs.utils import soxs_cfg
-
-    any_bkgnd = instr_bkgnd | ptsrc_bkgnd | foreground
-    if not noisy and any_bkgnd:
-        raise NotImplementedError(
-            "Backgrounds cannot be included in "
-            "simulations of non-noisy spectra at this time!"
-        )
-    if "nH" in kwargs or "absorb_model" in kwargs:
-        warnings.warn(
-            "The 'nH' and 'absorb_model' keyword arguments"
-            "have been omitted. Please set the 'bkgnd_nH' "
-            "and 'bkgnd_absorb_model' values in the SOXS"
-            "configuration file if you want to change these "
-            "values. ",
-            DeprecationWarning,
-        )
-    prng = parse_prng(prng)
-    exp_time = parse_value(exp_time, "s")
-    bkgnd_spec = None
-    instrument_spec = None
-    if isinstance(instrument, tuple):
-        arf = instrument[0]
-        rmf = instrument[1]
-        rmf = RedistributionMatrixFile(rmf)
-        if isinstance(arf, str):
-            arf = AuxiliaryResponseFile(get_data_file(arf))
-        else:
-            if arf is None:
-                arf = 1.0
-            arf = FlatResponse(rmf.ebins[0], rmf.ebins[-1], arf, rmf.emid.size)
-        if len(instrument) == 3:
-            bkgnd_spec = instrument[2]
-    else:
-        try:
-            instrument_spec = instrument_registry[instrument]
-        except KeyError:
-            raise KeyError(
-                f"Instrument {instrument} is not in the instrument registry!"
-            )
-        arf = AuxiliaryResponseFile.from_instrument(instrument)
-        rmf = RedistributionMatrixFile.from_instrument(instrument)
-        bkgnd_spec = instrument_spec["bkgnd"]
-    if any_bkgnd:
-        if bkgnd_area is None:
-            raise RuntimeError(
-                "The 'bkgnd_area' argument must be set if one wants "
-                "to simulate backgrounds! Specify a value in square "
-                "arcminutes."
-            )
-        bkgnd_area = parse_value(bkgnd_area, "arcmin**2")
-    elif spec is None:
-        raise RuntimeError("You have specified no source spectrum and no backgrounds!")
-
-    event_params = {
-        "RESPFILE": os.path.split(rmf.filename)[-1],
-        "ANCRFILE": os.path.split(arf.filename)[-1],
-        "TELESCOP": rmf.header["TELESCOP"],
-        "INSTRUME": rmf.header["INSTRUME"],
-        "MISSION": rmf.header.get("MISSION", ""),
-    }
-
-    out_spec = np.zeros(rmf.n_ch)
-
-    if spec is not None:
-        cspec = ConvolvedSpectrum.convolve(spec, arf, use_arf_energies=True)
-        out_spec += rmf.convolve_spectrum(cspec, exp_time, prng=prng, noisy=noisy)
-
-    fov = None if bkgnd_area is None else np.sqrt(bkgnd_area)
-
-    if foreground:
-        mylog.info("Adding in astrophysical foreground.")
-        frgnd_spec = rmf.convolve_spectrum(
-            make_frgnd_spectrum(arf, rmf), exp_time, noisy=False, rate=True
-        )
-        out_spec += generate_channel_spectrum(
-            frgnd_spec, exp_time, bkgnd_area, prng=prng
-        )
-    if instr_bkgnd and bkgnd_spec is not None:
-        if instrument_spec:
-            if instrument_spec["grating"]:
-                raise NotImplementedError(
-                    "Backgrounds cannot be included in simulations "
-                    "of gratings spectra at this time!"
-                )
-            # Temporary hack for ACIS-S
-            if "aciss" in instrument_spec["name"]:
-                bkgnd_spec = bkgnd_spec[1]
-        mylog.info("Adding in instrumental background.")
-        bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
-        out_spec += generate_channel_spectrum(
-            bkgnd_spec, exp_time, bkgnd_area, prng=prng
-        )
-    if ptsrc_bkgnd:
-        mylog.info("Adding in background from unresolved point-sources.")
-        bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
-        absorb_model = soxs_cfg.get("soxs", "bkgnd_absorb_model")
-        spec_plaw = BackgroundSpectrum.from_powerlaw(
-            1.52, 0.0, 2.0e-7, emin=0.01, emax=10.0, nbins=300000
-        )
-        spec_plaw.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
-        cspec_plaw = ConvolvedSpectrum.convolve(spec_plaw.to_spectrum(fov), arf)
-        out_spec += rmf.convolve_spectrum(cspec_plaw, exp_time, prng=prng)
-
-    bins = (np.arange(rmf.n_ch) + rmf.cmin).astype("int32")
 
     _write_spectrum(
         bins,
         out_spec,
-        exp_time,
-        rmf.header["CHANTYPE"],
         event_params,
         out_file,
         overwrite=overwrite,
@@ -1056,13 +1184,13 @@ def simple_event_list(
             "Applying energy-dependent effective area from %s.",
             os.path.split(arf.filename)[-1],
         )
-        refband = [src.emin, src.emax]
         if src.src_type == "phlist":
+            refband = [src.emin, src.emax]
             events = arf.detect_events_phlist(
                 src.events.copy(), exp_time, src.flux, refband, prng=prng
             )
         elif src.src_type.endswith("spectrum"):
-            events = arf.detect_events_spec(src, exp_time, refband, prng=prng)
+            events = arf.detect_events_spec(src, exp_time, prng=prng)
 
         n_evt = events["energy"].size
 

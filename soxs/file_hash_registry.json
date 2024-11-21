@@ -168,6 +168,9 @@
     "rsl_pointsource_GVclosed.arf": "f4e94f5eb987a0c39a22489ce7d9cc83f84cb3e94e8c58a4c62f787d200f418a",
     "rsl_pointsource_fwBe_GVclosed.arf": "22fcd53023870f45e338ec03eaa08a26f782be3530137e8a13bcd0714c59a159",
     "rsl_pointsource_fwND_GVclosed.arf": "c96a3928f004ead4ee63cf626d236f0ec4c75af249085d000c63844ad7af5a4f",
+    "rsl_Hp_5eV_bkg.pi": "a29cbf375b6458b2a7e3d52ca691ad07de48599cc0d864331eb5b7f777eba8a0",
+    "rsl_Mp_6eV_bkg.pi": "6628b8e9fbd9b1ad18f215a1c9e0c42342bd65cd67c0a70de20f303c942f7b53",
+    "rsl_Lp_18eV_bkg.pi": "cc132f1df26a71615bf7abad93d8ef47aceb4976587c080ecdc4b74430f50b27",
     "xtd_pointsource.arf": "d4876f8491280ead3247f0da236ff9a3e149cfa93e39ea10bbea03293e74c819",
     "xtd_sim_v20201009.rmf": "d2a27f03e124a954bbc0405ed52676afe50273b13f5f34377a579a018fcf4535",
     "xtend_sim_nxb_v20201009_r5arcmin.pha": "9fdfd88bc4275e4cdcb2d1f2d551b37967217259797c4791c4d91f6339e1c5fa"

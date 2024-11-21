@@ -2,7 +2,8 @@ import numpy as np
 from astropy.io import ascii, fits
 from astropy.table import Table
 
-from soxs.events import _combine_events, make_exposure_map, write_image
+from soxs.events import make_exposure_map, write_image
+from soxs.events.utils import _combine_events
 from soxs.instrument import instrument_simulator
 from soxs.utils import mylog
 

@@ -16,7 +16,7 @@ def spectrum_answer_testing(spec, filename, answer_store, rtol=1.0e-7):
         spec.write_hdf5_file(testfile, overwrite=True)
     else:
         answer_spec = type(spec).from_file(testfile)
-        assert_allclose(answer_spec.emid.value, spec.emid.value)
+        assert_allclose(answer_spec.emid.value, spec.emid.value, rtol=rtol)
         assert_allclose(answer_spec.flux.value, spec.flux.value, rtol=rtol)
         assert answer_spec.flux.unit == spec.flux.unit
 
