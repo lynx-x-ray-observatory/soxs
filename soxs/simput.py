@@ -66,13 +66,20 @@ class LazyReadPyxsimEvents(Sequence):
         if not hasattr(self.events, "get_data"):
             raise impe
         self.filenames = self.events.filenames
+        self.phys_coord = bool(self.events.parameters.get("phys_coord", 0))
 
     def __getitem__(self, i):
-        ra, dec, energy, flux = self.events.get_data(i)
+        x, y, energy, flux = self.events.get_data(i)
         name = os.path.splitext(self.filenames[i])[0]
-        src = SimputPhotonList(
-            Quantity(ra, "deg"),
-            Quantity(dec, "deg"),
+        if self.phys_coord:
+            src_cls = PhysicalCoordsSource
+            unit = "kpc"
+        else:
+            src_cls = SimputPhotonList
+            unit = "deg"
+        src = src_cls(
+            Quantity(x, unit),
+            Quantity(y, unit),
             Quantity(energy, "keV"),
             flux,
             name=name,
@@ -712,6 +719,30 @@ class SimputPhotonList(SimputSource):
         ax.set_ylabel("Dec")
         ax.tick_params(axis="both", labelsize=fontsize)
         return fig, ax
+
+
+class PhysicalCoordsSource(SimputSource):
+    src_type = "phys_coord"
+
+    def __init__(self, x, y, energy, flux, name=None):
+        emin = np.asarray(energy).min()
+        emax = np.asarray(energy).max()
+        super().__init__(emin, emax, flux, 0.0, 0.0, name=name)
+        self.events = {"x": x, "y": y, "energy": energy}
+        self.num_events = energy.size
+
+    def __getitem__(self, item):
+        return self.events[item]
+
+    def __contains__(self, item):
+        return item in self.events
+
+    def __iter__(self):
+        for key in self.events:
+            yield key
+
+    def _write_source(self, filename, extver, img_extver=None, overwrite=False):
+        raise NotImplementedError
 
 
 def write_photon_list(
