@@ -397,6 +397,7 @@ def make_background(
     roll_angle=0.0,
     subpixel_res=False,
     input_pt_sources=None,
+    diffuse_unresolved=True,
     aimpt_shift=None,
     instr_bkgnd_scale=1.0,
     prng=None,
@@ -492,6 +493,7 @@ def make_background(
             sky_center,
             area=1.2 * arf.max_area,
             input_sources=input_pt_sources,
+            diffuse_unresolved=diffuse_unresolved,
             prng=prng,
         )
         for key in ["ra", "dec", "energy"]:
@@ -595,6 +597,7 @@ def make_background_file(
     dither_params=None,
     subpixel_res=False,
     input_pt_sources=None,
+    diffuse_unresolved=True,
     instr_bkgnd_scale=1.0,
     prng=None,
     **kwargs,
@@ -674,6 +677,7 @@ def make_background_file(
         subpixel_res=subpixel_res,
         input_pt_sources=input_pt_sources,
         instr_bkgnd_scale=instr_bkgnd_scale,
+        diffuse_unresolved=diffuse_unresolved,
         prng=prng,
     )
     f = make_event_file(events, event_params)
@@ -696,6 +700,7 @@ def _instrument_simulator(
     subpixel_res=False,
     aimpt_shift=None,
     input_pt_sources=None,
+    diffuse_unresolved=True,
     prng=None,
     instr_bkgnd_scale=1.0,
 ):
@@ -735,6 +740,7 @@ def _instrument_simulator(
                 roll_angle=roll_angle,
                 aimpt_shift=aimpt_shift,
                 input_pt_sources=input_pt_sources,
+                diffuse_unresolved=diffuse_unresolved,
                 instr_bkgnd_scale=instr_bkgnd_scale,
             )
             for key in events:
@@ -773,6 +779,7 @@ def instrument_simulator(
     subpixel_res=False,
     aimpt_shift=None,
     input_pt_sources=None,
+    diffuse_unresolved=True,
     instr_bkgnd_scale=1.0,
     prng=None,
 ):
@@ -876,6 +883,7 @@ def instrument_simulator(
         subpixel_res=subpixel_res,
         aimpt_shift=aimpt_shift,
         input_pt_sources=input_pt_sources,
+        diffuse_unresolved=diffuse_unresolved,
         instr_bkgnd_scale=instr_bkgnd_scale,
         prng=prng,
     )
