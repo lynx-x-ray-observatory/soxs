@@ -66,6 +66,7 @@ from soxs.spectra import (
     ACX2Generator,
     ApecGenerator,
     CloudyCIEGenerator,
+    CloudyPionGenerator,
     ConvolvedSpectrum,
     CountRateSpectrum,
     IGMGenerator,

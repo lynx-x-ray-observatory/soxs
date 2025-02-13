@@ -74,6 +74,10 @@ Other various changes are:
 * It is now possible to create an empty SIMPUT catalog (to which sources can be
   added later) using :meth:`~soxs.simput.SimputCatalog.make_empty`. See
   :ref:`simput` for more details.
+* The ``IGMGenerator`` class has been renamed to
+  :class:`~soxs.spectra.thermal_spectra.CloudyPionGenerator`. An alias to the old class
+  name is retained for backwards-compatibility. The corresponding command-line script
+  has been renamed to ``make_pion_spectrum``. See :ref:`pion-spectra` for more details.
 
 Version 4.8.5
 -------------
@@ -315,10 +319,10 @@ Version 4.3.0
 This version of SOXS contains new features.
 
 * A new version of the spectral model used in the
-  :class:`~soxs.spectra.thermal_spectraCloudyCIEGenerator` class has been provided, with
+  :class:`~soxs.spectra.thermal_spectra.CloudyCIEGenerator` class has been provided, with
   improved energy resolution. See :ref:`cloudy-spectra` for more details.
 * A new version of the spectral model used in the
-  :class:`~soxs.spectra.thermal_spectraIGMGenerator` class has been provided, with
+  :class:`~soxs.spectra.thermal_spectra.IGMGenerator` class has been provided, with
   improved energy resolution. See :ref:`igm-spectra` for more details.
 * A new function to download table files for the thermal spectra models has been
   provided. See :ref:`downloading-thermal-tables` for more details.
@@ -414,10 +418,10 @@ the generation of spectra.
 * Instrumental background models have been added to the LEM instrument models.
 * The abundance table from `Feldman (1992) <https://ui.adsabs.harvard.edu/abs/1992PhyS...46..202F>`_
   has been added to the options for abundance tables for the
-  :class:`~soxs.spectra.thermal_spectraApecGenerator` and :class:`~soxs.spectra.thermal_spectraSpexGenerator`.
+  :class:`~soxs.spectra.thermal_spectra.ApecGenerator` and :class:`~soxs.spectra.thermal_spectra.SpexGenerator`.
 * The default abundance table from Cloudy v17.03 has been added to the options for abundance
-  tables for the :class:`~soxs.spectra.thermal_spectraApecGenerator` and
-  :class:`~soxs.spectra.thermal_spectraSpexGenerator`.
+  tables for the :class:`~soxs.spectra.thermal_spectra.ApecGenerator` and
+  :class:`~soxs.spectra.thermal_spectra.SpexGenerator`.
 * The command-line script ``make_thermal_spectrum`` has been changed to ``make_cie_spectrum`` and
   has many more options for computing CIE spectra. See :ref:`cmd-make-cie-spectrum` for details.
 * The command-line script ``make_igm_spectrum`` has been added for making thermal spectra with

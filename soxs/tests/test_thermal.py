@@ -14,7 +14,7 @@ from soxs.spatial import PointSourceModel
 from soxs.spectra.thermal_spectra import (
     ApecGenerator,
     CloudyCIEGenerator,
-    IGMGenerator,
+    CloudyPionGenerator,
     MekalGenerator,
     SpexGenerator,
 )
@@ -396,12 +396,14 @@ def test_igm(answer_store):
     nH_igm = 1.0e-3
     kT_igm = 0.7
 
-    igen = IGMGenerator(0.2, 5.0, 1000, binscale="log")
-    igen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe"])
-    igen_var2 = IGMGenerator(
+    igen = CloudyPionGenerator(0.2, 5.0, 1000, binscale="log")
+    igen_var1 = CloudyPionGenerator(
+        0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe"]
+    )
+    igen_var2 = CloudyPionGenerator(
         0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"]
     )
-    igen_var3 = IGMGenerator(
+    igen_var3 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,
@@ -461,8 +463,10 @@ def test_igm(answer_store):
     assert_allclose(ispec.ebins, ispec_var3.ebins)
     assert_allclose(ispec.flux, ispec_var3.flux, rtol=1.0e-5)
 
-    sigen = IGMGenerator(0.2, 5.0, 1000, binscale="log", resonant_scattering=True)
-    sigen_var1 = IGMGenerator(
+    sigen = CloudyPionGenerator(
+        0.2, 5.0, 1000, binscale="log", resonant_scattering=True
+    )
+    sigen_var1 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,
@@ -470,7 +474,7 @@ def test_igm(answer_store):
         var_elem=["O", "Ne", "Fe"],
         resonant_scattering=True,
     )
-    sigen_var2 = IGMGenerator(
+    sigen_var2 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,
@@ -478,7 +482,7 @@ def test_igm(answer_store):
         var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"],
         resonant_scattering=True,
     )
-    sigen_var3 = IGMGenerator(
+    sigen_var3 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,

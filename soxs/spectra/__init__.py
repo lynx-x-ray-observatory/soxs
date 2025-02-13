@@ -12,6 +12,7 @@ from .thermal_spectra import (
     ApecGenerator,
     CIEGenerator,
     CloudyCIEGenerator,
+    CloudyPionGenerator,
     IGMGenerator,
     MekalGenerator,
     SpexGenerator,

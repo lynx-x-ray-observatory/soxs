@@ -1122,11 +1122,11 @@ class CloudyCIEGenerator(Atable1DGenerator):
         self.atable = abund_tables["feld"].copy()
 
 
-class IGMGenerator(Atable2DGenerator):
+class CloudyPionGenerator(Atable2DGenerator):
     _available_elem = ["C", "N", "O", "Ne", "Mg", "Si", "S", "Ca", "Fe"]
     """
     Initialize an emission model for a thermal plasma including
-    photoionization and resonant scattering from the CXB based on
+    photoionization and (optionally) resonant scattering from the CXB based on
     Khabibullin & Churazov 2019
     (https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/) and Churazov
     et al. 2001 (https://ui.adsabs.harvard.edu/abs/2001MNRAS.323...93C/).
@@ -1160,10 +1160,10 @@ class IGMGenerator(Atable2DGenerator):
     var_elem : list of strings, optional
         The names of elements to allow to vary freely from the single
         abundance parameter. These must be strings like ["C", "N", "O"].
-        Variable abundances available for the IGM model are ["C", "N", "O",
+        Variable abundances available for this model are ["C", "N", "O",
         "Ne", "Mg", "Si", "S", "Ca", "Fe"]. Default: None
     model_vers : string, optional
-        The version of the IGM tables to use in the calculations.
+        The version of the tables to use in the calculations.
         Options are:
         "4_lo": Tables computed from Cloudy using a continuum resolution
         of 0.1 with a range of 0.05 to 10 keV.
@@ -1223,6 +1223,10 @@ class IGMGenerator(Atable2DGenerator):
         self.atable = abund_tables["feld"].copy()
 
 
+class IGMGenerator(CloudyPionGenerator):
+    pass
+
+
 def download_spectrum_tables(model, model_vers=None, loc=None):
     """
     Download thermal model spectrum tables used for the various
@@ -1232,7 +1236,7 @@ def download_spectrum_tables(model, model_vers=None, loc=None):
     ----------
     model : string
         Model string to specify which model files to download.
-        Options are: "cie", "igm", "apec", "spex", "mekal"
+        Options are: "cie", "pion", "apec", "spex", "mekal"
     model_vers : string
         The version of the model to download. If not specified,
         the default for the given model will be assumed, which
@@ -1252,12 +1256,12 @@ def download_spectrum_tables(model, model_vers=None, loc=None):
             if model_vers is None:
                 model_vers = "4_lo"
             fns = [f"{model}_v{model_vers}_{elem}.fits" for elem in elems]
-        elif model == "igm":
+        elif model == "pion":
             if model_vers is None:
                 model_vers = "4_lo"
             vers, res = model_vers.split("_")
-            fns = [f"{model}_v{vers}ph_{res}_{elem}.fits" for elem in elems] + [
-                f"{model}_v{vers}sc_{res}_{elem}.fits" for elem in elems
+            fns = [f"igm_v{vers}ph_{res}_{elem}.fits" for elem in elems] + [
+                f"igm_v{vers}sc_{res}_{elem}.fits" for elem in elems
             ]
         elif model in ["apec", "spex"]:
             if model_vers is None:
