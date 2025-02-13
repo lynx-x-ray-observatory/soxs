@@ -219,7 +219,42 @@ def test_thermal_nei(answer_store):
     curdir = os.getcwd()
     os.chdir(tmpdir)
 
-    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, rtol=1.0e-3)
+    prng = 24
+
+    spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, rtol=1.0e-6)
+
+    pt_src_pos = PointSourceModel(30.0, 45.0)
+    pt_src = SimputPhotonList.from_models(
+        "thermal_model_nei", spec_nei, pt_src_pos, exp_time, area, prng=prng
+    )
+    SimputCatalog.from_source("thermal_model_nei_simput.fits", pt_src, overwrite=True)
+
+    instrument_simulator(
+        "thermal_model_nei_simput.fits",
+        "thermal_model_nei_evt.fits",
+        exp_time,
+        inst_name,
+        [30.0, 45.0],
+        ptsrc_bkgnd=False,
+        foreground=False,
+        instr_bkgnd=False,
+        prng=prng,
+    )
+
+    write_spectrum(
+        "thermal_model_nei_evt.fits", "thermal_model_nei_evt.pha", overwrite=True
+    )
+
+    file_answer_testing(
+        "EVENTS",
+        "thermal_model_nei_evt.fits",
+        answer_store,
+    )
+    file_answer_testing(
+        "SPECTRUM",
+        "thermal_model_nei_evt.pha",
+        answer_store,
+    )
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
