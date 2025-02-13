@@ -60,6 +60,7 @@ Several changes have been made to :func:`~soxs.events.spectra.plot_spectrum`:
 Other various changes are:
 
 * This version supports NumPy 2.
+* Support for Python 3.13 has been added. Support for Python 3.9 has been dropped.
 * A new parameter ``instr_bkgnd_scale`` has been added to
   :func:`~soxs.instrument.instrument_simulator`, :func:`~soxs.instrument.make_background_file`,
   and :func:`~soxs.instrument.simulate_spectrum` (as well as their command-line
