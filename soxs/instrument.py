@@ -223,7 +223,7 @@ def generate_events(
     else:
         pbar = None
 
-    for _i, src in enumerate(source_list):
+    for src in source_list:
         mylog.debug("Detecting events from source %s.", src.name)
 
         if src.src_type == "phys_coord":
@@ -256,7 +256,8 @@ def generate_events(
     if pbar:
         pbar.close()
 
-    n_evt = all_events["energy"].size
+    n_evt = 0 if not source_list else all_events["energy"].size
+
     if n_evt == 0:
         mylog.debug("No events were observed for these sources!!!")
     else:
