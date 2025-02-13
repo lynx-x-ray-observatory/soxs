@@ -6,7 +6,6 @@ from astropy.io import fits
 from pathlib import Path
 
 from soxs.events.utils import _combine_events, _region_filter, wcs_from_header
-from soxs.lib.spectral_cube import spectral_cube
 from soxs.utils import parse_value
 
 
@@ -234,98 +233,6 @@ def write_radial_profile(
     hdulist = fits.HDUList([fits.PrimaryHDU(), tbhdu])
 
     hdulist.writeto(out_file, overwrite=overwrite)
-
-
-def make_cube(
-    evtfile,
-    emin=None,
-    emax=None,
-    tmin=None,
-    tmax=None,
-    reblock=1,
-    width=None,
-):
-    from soxs.response import RedistributionMatrixFile
-
-    if isinstance(evtfile, fits.HDUList):
-        hdu = evtfile["EVENTS"]
-    else:
-        hdu = fits.open(evtfile)["EVENTS"]
-    e = hdu.data["ENERGY"]
-    t = hdu.data["TIME"]
-    if tmin is None:
-        tmin = 0.0
-    else:
-        tmin = parse_value(tmin, "s")
-    if tmax is None:
-        tmax = hdu.header["EXPOSURE"]
-    else:
-        tmax = parse_value(tmax, "s")
-    if emin is None:
-        emin = 0.0
-    else:
-        emin = parse_value(emin, "keV")
-    if emax is None:
-        emax = 1000.0
-    else:
-        emax = parse_value(emax, "keV")
-    idxs = np.logical_and(e > emin * 1.0e3, e < emax * 1.0e3)
-    idxs &= np.logical_and(t > tmin, t < tmax)
-    x = hdu.data["X"][idxs].astype("float64")
-    y = hdu.data["Y"][idxs].astype("float64")
-    spectype = hdu.header["CHANTYPE"]
-    rmf = hdu.header["RESPFILE"]
-    c = hdu.data[spectype][idxs]
-    exp_time = tmax - tmin
-    xctr = hdu.header["TCRVL2"]
-    yctr = hdu.header["TCRVL3"]
-    xmin = hdu.header["TLMIN2"]
-    ymin = hdu.header["TLMIN3"]
-    xmax = hdu.header["TLMAX2"]
-    ymax = hdu.header["TLMAX3"]
-    if width is not None:
-        xmin = 0.5 * (xmin + xmax) - 0.5 * width * (xmax - xmin)
-        xmax = 0.5 * (xmin + xmax) + 0.5 * width * (xmax - xmin)
-        ymin = 0.5 * (ymin + ymax) - 0.5 * width * (ymax - ymin)
-        ymax = 0.5 * (ymin + ymax) + 0.5 * width * (ymax - ymin)
-    xdel = hdu.header["TCDLT2"] * reblock
-    ydel = hdu.header["TCDLT3"] * reblock
-
-    nx = int(int(xmax - xmin) // reblock)
-    ny = int(int(ymax - ymin) // reblock)
-
-    rmf = RedistributionMatrixFile(rmf)
-
-    eidxs = (rmf.ebounds_data["E_MIN"] > emin) & (rmf.ebounds_data["E_MAX"] < emax)
-    de = (rmf.ebounds_data["E_MAX"] - rmf.ebounds_data["E_MIN"])[eidxs]
-    emid = 0.5 * (rmf.ebounds_data["E_MAX"] + rmf.ebounds_data["E_MIN"])[eidxs]
-    cbins = np.arange(rmf.n_ch) + rmf.cmin - 0.5
-    cidxs = np.searchsorted(cbins[eidxs], c) - 1
-
-    cube = spectral_cube(x, y, cidxs, nx, ny, eidxs.sum(), reblock, xmin, ymin)
-
-    imhdu = fits.PrimaryHDU(cube)
-
-    imhdu.header["CTYPE1"] = "RA---TAN"
-    imhdu.header["CTYPE2"] = "DEC--TAN"
-    imhdu.header["CTYPE3"] = "ENER"
-    imhdu.header["CRVAL1"] = xctr
-    imhdu.header["CRVAL2"] = yctr
-    imhdu.header["CRVAL3"] = emid[0]
-    imhdu.header["CUNIT1"] = "deg"
-    imhdu.header["CUNIT2"] = "deg"
-    imhdu.header["CUNIT3"] = "keV"
-    imhdu.header["CDELT1"] = xdel
-    imhdu.header["CDELT2"] = ydel
-    imhdu.header["CDELT3"] = de[0]
-    imhdu.header["CRPIX1"] = 0.5 * (nx + 1)
-    imhdu.header["CRPIX2"] = 0.5 * (ny + 1)
-    imhdu.header["CRPIX3"] = 1
-
-    imhdu.header["EXPOSURE"] = exp_time
-    imhdu.name = "FLUX"
-
-    return imhdu
 
 
 def fill_regions(

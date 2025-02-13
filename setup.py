@@ -28,13 +28,6 @@ cython_extensions = [
         libraries=std_libs,
         include_dirs=[np.get_include()],
     ),
-    Extension(
-        "soxs.lib.spectral_cube",
-        ["soxs/lib/spectral_cube.pyx"],
-        language="c",
-        libraries=std_libs,
-        include_dirs=[np.get_include()],
-    ),
 ]
 
 setup(

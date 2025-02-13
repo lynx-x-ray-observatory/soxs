@@ -8,9 +8,8 @@ Version 5.0.0
 
 This is a major version update to SOXS with significant new features and bugfixes.
 
-Two major new features are included in this release:
+One major new feature is included in this release:
 
-* Spectral cubes
 * Charge exchange
 
 A few changes have been made for :class:`~soxs.spectra.base.Spectrum` objects:
