@@ -223,7 +223,7 @@ def generate_events(
     else:
         pbar = None
 
-    for i, src in enumerate(source_list):
+    for _i, src in enumerate(source_list):
         mylog.debug("Detecting events from source %s.", src.name)
 
         if src.src_type == "phys_coord":
@@ -246,118 +246,7 @@ def generate_events(
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, prng=prng)
 
-        n_evt = events["energy"].size
-
-        if n_evt == 0:
-            mylog.debug("No events were observed for this source!!!")
-        else:
-            # Step 2: Assign pixel coordinates to events. Apply dithering and
-            # PSF. Clip events that don't fall within the detection region.
-
-            mylog.debug("Pixeling events.")
-
-            # Convert RA, Dec to pixel coordinates
-            xpix, ypix = w.wcs_world2pix(events["ra"], events["dec"], 1)
-
-            xpix -= event_params["pix_center"][0]
-            ypix -= event_params["pix_center"][1]
-
-            events.pop("ra")
-            events.pop("dec")
-
-            n_evt = xpix.size
-
-            # Rotate physical coordinates to detector coordinates
-
-            det = np.dot(rot_mat, np.array([xpix, ypix]))
-            detx = det[0, :] + event_params["aimpt_coords"][0] + aimpt_shift[0]
-            dety = det[1, :] + event_params["aimpt_coords"][1] + aimpt_shift[1]
-
-            # Add times to events
-            events["time"] = prng.uniform(
-                size=n_evt, low=0.0, high=event_params["exposure_time"]
-            )
-
-            # Apply dithering
-
-            x_offset, y_offset = perform_dither(events["time"], dither_dict)
-
-            detx -= x_offset
-            dety -= y_offset
-
-            # PSF scattering of detector coordinates
-
-            mylog.debug("Scattering events with a %s-based PSF.", psf)
-            detx, dety = psf.scatter(detx, dety, events["energy"])
-
-            # Convert detector coordinates to chip coordinates.
-            # Throw out events that don't fall on any chip.
-
-            cx = np.trunc(detx) + 0.5 * np.sign(detx)
-            cy = np.trunc(dety) + 0.5 * np.sign(dety)
-
-            events["chip_id"] = -np.ones(n_evt, dtype="int")
-            for i, chip in enumerate(event_params["chips"]):
-                rtype = chip[0]
-                args = chip[1:]
-                r, _ = create_region(rtype, args, 0.0, 0.0)
-                inside = r.contains(PixCoord(cx, cy))
-                events["chip_id"][inside] = i
-            keep = events["chip_id"] > -1
-
-            mylog.debug(
-                "%d events were rejected because they do not fall on any CCD.",
-                n_evt - keep.sum(),
-            )
-            n_evt = keep.sum()
-
-            if n_evt == 0:
-                mylog.debug("No events are within the field of view for this source!!!")
-            else:
-                mylog.debug("%d events were detected from the source.", n_evt)
-
-                # Keep only those events which fall on a chip
-
-                for key in events:
-                    events[key] = events[key][keep]
-
-                # Convert chip coordinates back to detector coordinates,
-                # unless the user has specified that they want subpixel
-                # resolution
-
-                if subpixel_res:
-                    events["detx"] = detx[keep]
-                    events["dety"] = dety[keep]
-                else:
-                    events["detx"] = cx[keep] + prng.uniform(
-                        low=-0.5, high=0.5, size=n_evt
-                    )
-                    events["dety"] = cy[keep] + prng.uniform(
-                        low=-0.5, high=0.5, size=n_evt
-                    )
-
-                # Convert detector coordinates back to pixel coordinates by
-                # adding the dither offsets back in and applying the rotation
-                # matrix again
-
-                det = np.array(
-                    [
-                        events["detx"]
-                        + x_offset[keep]
-                        - event_params["aimpt_coords"][0]
-                        - aimpt_shift[0],
-                        events["dety"]
-                        + y_offset[keep]
-                        - event_params["aimpt_coords"][1]
-                        - aimpt_shift[1],
-                    ]
-                )
-                pix = np.dot(rot_mat.T, det)
-
-                events["xpix"] = pix[0, :] + event_params["pix_center"][0]
-                events["ypix"] = pix[1, :] + event_params["pix_center"][1]
-
-        if n_evt > 0:
+        if events["energy"].size > 0:
             for key in events:
                 all_events[key] = np.concatenate([all_events[key], events[key]])
 
@@ -366,6 +255,116 @@ def generate_events(
 
     if pbar:
         pbar.close()
+
+    n_evt = all_events["energy"].size
+    if n_evt == 0:
+        mylog.debug("No events were observed for these sources!!!")
+    else:
+        # Step 2: Assign pixel coordinates to events. Apply dithering and
+        # PSF. Clip events that don't fall within the detection region.
+
+        mylog.debug("Pixeling events.")
+
+        # Convert RA, Dec to pixel coordinates
+        xpix, ypix = w.wcs_world2pix(all_events["ra"], all_events["dec"], 1)
+
+        xpix -= event_params["pix_center"][0]
+        ypix -= event_params["pix_center"][1]
+
+        events.pop("ra")
+        events.pop("dec")
+
+        n_evt = xpix.size
+
+        # Rotate physical coordinates to detector coordinates
+
+        det = np.dot(rot_mat, np.array([xpix, ypix]))
+        detx = det[0, :] + event_params["aimpt_coords"][0] + aimpt_shift[0]
+        dety = det[1, :] + event_params["aimpt_coords"][1] + aimpt_shift[1]
+
+        # Add times to events
+        all_events["time"] = prng.uniform(
+            size=n_evt, low=0.0, high=event_params["exposure_time"]
+        )
+
+        # Apply dithering
+
+        x_offset, y_offset = perform_dither(all_events["time"], dither_dict)
+
+        detx -= x_offset
+        dety -= y_offset
+
+        # PSF scattering of detector coordinates
+
+        mylog.debug("Scattering events with a %s-based PSF.", psf)
+        detx, dety = psf.scatter(detx, dety, events["energy"])
+
+        # Convert detector coordinates to chip coordinates.
+        # Throw out events that don't fall on any chip.
+
+        cx = np.trunc(detx) + 0.5 * np.sign(detx)
+        cy = np.trunc(dety) + 0.5 * np.sign(dety)
+
+        all_events["chip_id"] = -np.ones(n_evt, dtype="int")
+        for i, chip in enumerate(event_params["chips"]):
+            rtype = chip[0]
+            args = chip[1:]
+            r, _ = create_region(rtype, args, 0.0, 0.0)
+            inside = r.contains(PixCoord(cx, cy))
+            all_events["chip_id"][inside] = i
+        keep = all_events["chip_id"] > -1
+
+        mylog.debug(
+            "%d events were rejected because they do not fall on any CCD.",
+            n_evt - keep.sum(),
+        )
+        n_evt = keep.sum()
+
+        if n_evt == 0:
+            mylog.debug("No events are within the field of view for this source!!!")
+        else:
+            mylog.debug("%d events were detected from the source.", n_evt)
+
+            # Keep only those events which fall on a chip
+
+            for key in all_events:
+                all_events[key] = all_events[key][keep]
+
+            # Convert chip coordinates back to detector coordinates,
+            # unless the user has specified that they want subpixel
+            # resolution
+
+            if subpixel_res:
+                all_events["detx"] = detx[keep]
+                all_events["dety"] = dety[keep]
+            else:
+                all_events["detx"] = cx[keep] + prng.uniform(
+                    low=-0.5, high=0.5, size=n_evt
+                )
+                all_events["dety"] = cy[keep] + prng.uniform(
+                    low=-0.5, high=0.5, size=n_evt
+                )
+
+            # Convert detector coordinates back to pixel coordinates by
+            # adding the dither offsets back in and applying the rotation
+            # matrix again
+
+            det = np.array(
+                [
+                    all_events["detx"]
+                    + x_offset[keep]
+                    - event_params["aimpt_coords"][0]
+                    - aimpt_shift[0],
+                    all_events["dety"]
+                    + y_offset[keep]
+                    - event_params["aimpt_coords"][1]
+                    - aimpt_shift[1],
+                ]
+            )
+            pix = np.dot(rot_mat.T, det)
+
+            all_events["xpix"] = pix[0, :] + event_params["pix_center"][0]
+            all_events["ypix"] = pix[1, :] + event_params["pix_center"][1]
 
     n_events_total = len(all_events["energy"])
 
