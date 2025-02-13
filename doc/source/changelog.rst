@@ -8,11 +8,10 @@ Version 5.0.0
 
 This is a major version update to SOXS with significant new features and bugfixes.
 
-Three major new features are included in this release:
+Two major new features are included in this release:
 
 * Spectral cubes
 * Charge exchange
-* ThermalSimputCatalog
 
 A few changes have been made for :class:`~soxs.spectra.base.Spectrum` objects:
 
