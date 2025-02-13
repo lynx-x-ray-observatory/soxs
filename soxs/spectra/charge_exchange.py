@@ -63,8 +63,11 @@ class ACX2Generator:
     acx_model : integer, optional
         ACX model to fall back on, from 1 to 8. Default: 8
     recomb_type : integer, optional
-        The type of recombination to use: single recombination (1) or
-        all the way to neutral (2). Default: 1
+        The type of recombination to use:
+        1 - single recombination
+        2 - full recombination
+        3 - full renormalized recombination
+        Default: 1
     binscale : string, optional
         The scale of the energy binning: "linear" or "log".
         Default: "linear"
@@ -291,8 +294,11 @@ class OneACX2Generator(ACX2Generator):
     acx_model : integer, optional
         ACX model to fall back on, from 1 to 8. Default: 8
     recomb_type : integer, optional
-        The type of recombination to use: single recombination (1) or
-        all the way to neutral (2). Default: 1
+        The type of recombination to use:
+        1 - single recombination
+        2 - full recombination
+        3 - full renormalized recombination
+        Default: 1
     binscale : string, optional
         The scale of the energy binning: "linear" or "log".
         Default: "linear"
