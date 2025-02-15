@@ -62,6 +62,7 @@ Other various changes are:
 * Support for Python 3.13 has been added. Support for Python 3.9 has been dropped.
 * To support SIXTE version 3.x and higher, the ``SRC_ID`` column in SIMPUT files
   now begins at 1 instead of 0. This is a change from previous versions of SOXS.
+* The AXIS response, PSF, and particle background files have been updated.
 * A new parameter ``instr_bkgnd_scale`` has been added to
   :func:`~soxs.instrument.instrument_simulator`, :func:`~soxs.instrument.make_background_file`,
   and :func:`~soxs.instrument.simulate_spectrum` (as well as their command-line
@@ -80,6 +81,14 @@ Other various changes are:
   :class:`~soxs.spectra.thermal_spectra.CloudyPionGenerator`. An alias to the old class
   name is retained for backwards-compatibility. The corresponding command-line script
   has been renamed to ``make_pion_spectrum``. See :ref:`pion-spectra` for more details.
+* The ``diffuse_unresolved`` option for the point-source background has been exposed in
+  :func:`~soxs.instrument.make_background_file` and :func:`~soxs.instrument.instrument_simulator`
+  (as well as their command-line counterparts).
+* A new option to drop some of the brightest sources from the point-source background
+  has been added to :func:`~soxs.background.make_point_source_list`,
+  :func:`~soxs.background.make_point_sources_file`, :func:`~soxs.instrument.make_background_file` and
+  :func:`~soxs.instrument.instrument_simulator` (as well as their command-line
+  counterparts). See :ref:`point-source-catalog` for more details.
 
 Version 4.8.5
 -------------

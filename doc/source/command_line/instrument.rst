@@ -16,59 +16,69 @@ processed by standard tools such as CIAO, HEATOOLS, XSPEC, etc.
 .. code-block:: text
 
     usage: instrument_simulator [-h] [--overwrite] [--roll_angle ROLL_ANGLE]
-                                [--bkgnd_file BKGND_FILE] [--subpixel_res]
-                                [--no_dither] [--dither_params DITHER_PARAMS]
+                                [--bkgnd_file BKGND_FILE] [--subpixel_res] [--no_dither]
+                                [--dither_params DITHER_PARAMS]
                                 [--aimpt_shift AIMPT_SHIFT]
-                                [--random_seed RANDOM_SEED]
-                                [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
-                                [--instr_bkgnd | --no_instr_bkgnd]
+                                [--input_pt_sources INPUT_PT_SOURCES]
+                                [--no_diffuse_unresolved]
+                                [--drop_brightest DROP_BRIGHTEST]
+                                [--random_seed RANDOM_SEED] [--ptsrc_bkgnd |
+                                --no_ptsrc_bkgnd] [--instr_bkgnd | --no_instr_bkgnd]
                                 [--foreground | --no_foreground]
-                                simput_file out_file exp_time instrument
-                                sky_center
+                                [--instr_bkgnd_scale INSTR_BKGND_SCALE]
+                                simput_file out_file exp_time instrument sky_center
 
     Run the instrument simulator and produce a simulated event file.
 
     positional arguments:
-      simput_file           The SIMPUT file to be used as input, or "None" if you
-                            only want to simulate backgrounds.
+      simput_file           The SIMPUT file to be used as input, or "None" if you only
+                            want to simulate backgrounds.
       out_file              The name of the event file to be written.
       exp_time              The exposure time to use, in seconds.
-      instrument            The name of the instrument to use, or alternatively
-                            the name of a JSON file which contains an instrument
-                            specification.
-      sky_center            The center RA, Dec coordinates of the observation, in
-                            degrees, comma-separated
+      instrument            The name of the instrument to use, or alternatively the name
+                            of a JSON file which contains an instrument specification.
+      sky_center            The center RA, Dec coordinates of the observation, in degrees,
+                            comma-separated
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
       --roll_angle ROLL_ANGLE
                             The roll angle in degrees. Default: 0.0
       --bkgnd_file BKGND_FILE
-                            Use background stored in a file instead of generating
-                            one.
-      --subpixel_res        Don't uniformly distribute event positions within
-                            pixels.
+                            Use background stored in a file instead of generating one.
+      --subpixel_res        Don't uniformly distribute event positions within pixels.
       --no_dither           Turn dithering off entirely.
       --dither_params DITHER_PARAMS
-                            The parameters controlling the size and period of
-                            dither. Four floats joined by commas, in the form of
-                            x_amp,y_amp,x_period,y_period. The first two numbers
-                            are in arcseconds and the second are in seconds.
-                            Default: 8.0,8.0,1000.0,707.0
+                            The parameters controlling the size and period of dither. Four
+                            floats joined by commas, in the form of
+                            x_amp,y_amp,x_period,y_period. The first two numbers are in
+                            arcseconds and the second are in seconds. Default:
+                            8.0,8.0,1000.0,707.0
       --aimpt_shift AIMPT_SHIFT
-                            The shift of the aimpoint on the detector in both
-                            directions from the nominal aimpoint in arcseconds.
-                            Default: [0.0, 0.0]
+                            The shift of the aimpoint on the detector in both directions
+                            from the nominal aimpoint in arcseconds. Default: [0.0, 0.0]
+      --input_pt_sources INPUT_PT_SOURCES
+                            Use a previously written table of point sources as input for
+                            the background instead of generating them.
+      --no_diffuse_unresolved
+                            If set, the diffuse component across the entire field of view
+                            to represent the unresolved flux from sources at very small
+                            fluxes will be turned off.
+      --drop_brightest DROP_BRIGHTEST
+                            This many brightest sources will be dropped from the point
+                            sources.
       --random_seed RANDOM_SEED
-                            A constant integer random seed to produce a consistent
-                            set of random numbers.
+                            A constant integer random seed to produce a consistent set of
+                            random numbers.
       --ptsrc_bkgnd         Turn the point-source background on.
       --no_ptsrc_bkgnd      Turn the point-source background off.
       --instr_bkgnd         Turn the instrumental background on.
       --no_instr_bkgnd      Turn the instrumental background off.
       --foreground          Turn the galactic foreground on.
       --no_foreground       Turn the galactic foreground off.
+      --instr_bkgnd_scale INSTR_BKGND_SCALE
+                            A scaling factor for the instrumental background. Default: 1.0.
 
 Examples
 ++++++++
@@ -151,6 +161,18 @@ Turn off the point-source background:
 
 Any combination of these may be used to turn multiple components off or all
 of them.
+
+Turn off the diffuse unresolved CXB:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --no_diffuse_unresolved --overwrite
+
+Drop the 50 brightest point sources:
+
+.. code-block:: bash
+
+    [~]$ instrument_simulator sloshing_simput.fits evt.fits 50.0,ks hdxi 30.,45. --drop_brightest=50 --overwrite
 
 To use a background stored in an event file:
 

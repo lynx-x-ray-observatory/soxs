@@ -431,7 +431,12 @@ def make_point_sources_file(
 
 
 def make_point_source_list(
-    output_file, fov, sky_center, drop_brightest=None, prng=None
+    output_file,
+    fov,
+    sky_center,
+    drop_brightest=None,
+    prng=None,
+    overwrite=False,
 ):
     r"""
     Make a list of point source properties and write it to an ASCII
@@ -450,6 +455,8 @@ def make_point_source_list(
         from the list. This is a poor-person's way of mimicking the
         by-hand removal of point sources via wavdetect or some other
         technique. Default: None
+    overwrite : boolean, optional
+        Set to True to overwrite previous files. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -473,4 +480,4 @@ def make_point_source_list(
     t["Dec"].unit = "deg"
     t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
     t["index"].unit = ""
-    t.write(output_file, format="ascii.ecsv", overwrite=True)
+    t.write(output_file, format="ascii.ecsv", overwrite=overwrite)

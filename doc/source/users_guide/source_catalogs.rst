@@ -217,3 +217,21 @@ Which ensures that one would have the same set of point sources every time it is
 run. You can also pass this file to the ``input_pt_sources`` keyword argument of
 :func:`~soxs.instrument.instrument_simulator` or
 :func:`~soxs.instrument.make_background_file`.
+
+Both of the functions :func:`~soxs.background.point_sources.make_point_sources_file`
+and :func:`~soxs.background.point_sources.make_point_source_list` also take the
+``drop_brightest`` option, which if set to an integer will drop the specified
+number of brightest sources from the list (this is a poor-person's version of
+removing point sources from observations):
+
+.. code-block:: python
+
+    filename = "pt_src.simput"
+    name = "my_point_sources"
+    exp_time = (500.0, "ks")
+    fov = 20.0 # arcmin
+    sky_center = [30.0, 45.0] # RA, Dec in degrees
+
+    # drop the 50 brightest sources
+    soxs.make_point_sources_file(filename, name, exp_time, fov,
+                                 sky_center, drop_brightest=50)

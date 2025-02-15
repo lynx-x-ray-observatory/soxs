@@ -106,37 +106,54 @@ the sources:
 
 .. code-block:: text
 
-    usage: make_point_sources [-h] [--absorb_model ABSORB_MODEL] [--nh NH] [--area AREA] [--src_filename SRC_FILENAME] [--append]
-                              [--overwrite] [--input_sources INPUT_SOURCES] [--output_sources OUTPUT_SOURCES] [--random_seed RANDOM_SEED]
+    usage: make_point_sources [-h] [--absorb_model ABSORB_MODEL] [--nh NH] [--area AREA]
+                              [--src_filename SRC_FILENAME] [--append] [--overwrite]
+                              [--input_sources INPUT_SOURCES]
+                              [--output_sources OUTPUT_SOURCES] [--no_diffuse_unresolved]
+                              [--drop_brightest DROP_BRIGHTEST]
+                              [--random_seed RANDOM_SEED]
                               filename name exp_time fov sky_center
 
     Create a SIMPUT photon list catalog of a point-source background.
 
     positional arguments:
-      filename              The filename of the SIMPUT catalog to be used as the root of the catalog. If it does not exist, it will be
-                            created.
+      filename              The filename of the SIMPUT catalog to be used as the root of
+                            the catalog. If it does not exist, it will be created.
       name                  The name of the source in the SIMPUT catalog.
       exp_time              The exposure time to use, in seconds.
       fov                   The field of view on a side in arcminutes.
-      sky_center            The center RA, Dec coordinates of the observation, in degrees, comma-separated.
+      sky_center            The center RA, Dec coordinates of the observation, in degrees,
+                            comma-separated.
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --absorb_model ABSORB_MODEL
-                            The absorption model to use for foreground galactic absorption. Default: 'wabs'
-      --nh NH               The galactic hydrogen column in units of 10**22 atoms/cm**2. Default: 0.05
+                            The absorption model to use for foreground galactic
+                            absorption. Defaults to the value in the SOXS configuration
+                            file.
+      --nh NH               The galactic hydrogen column in units of 10**22 atoms/cm**2.
+                            Defaults to the value in the SOXS configuration file.
       --area AREA           The collecting area to use, in cm^2. Default: 30000.0
       --src_filename SRC_FILENAME
-                            An optional filename to store the source instead of the SIMPUT catalog file.
+                            An optional filename to store the source instead of the SIMPUT
+                            catalog file.
       --append              If set, append a new source an existing SIMPUT catalog.
       --overwrite           Overwrite an existing file with the same name.
       --input_sources INPUT_SOURCES
-                            Use a previously written table of sources as input instead of generating them.
+                            Use a previously written table of sources as input instead of
+                            generating them.
       --output_sources OUTPUT_SOURCES
                             Output the source properties to the specified file.
+      --no_diffuse_unresolved
+                            If set, the diffuse component across the entire field of view
+                            to represent the unresolved flux from sources at very small
+                            fluxes will be turned off.
+      --drop_brightest DROP_BRIGHTEST
+                            This many brightest sources will be dropped from the point
+                            sources.
       --random_seed RANDOM_SEED
-                            A constant integer random seed to produce a consistent set of random numbers.
-
+                            A constant integer random seed to produce a consistent set of
+                            random numbers.
 Examples
 ++++++++
 
@@ -179,6 +196,18 @@ Use a previously written ASCII text file of point source properties as input:
 
     [~]$ make_point_sources pt_src.simput pt_src 75.0,ks 5.0 90.0,-10.0 --input_sources=my_ptsrc.txt --overwrite
 
+Turn off the diffuse unresolved CXB:
+
+.. code-block:: bash
+
+    [~]$ make_point_sources pt_src.simput pt_src 75.0,ks 5.0 90.0,-10.0 --no_diffuse_unresolved --overwrite
+
+Drop the 50 brightest point sources:
+
+.. code-block:: bash
+
+    [~]$ make_point_sources pt_src.simput pt_src 75.0,ks 5.0 90.0,-10.0 --drop_brightest=50 --overwrite
+
 .. _cmd-make-point-source-list:
 
 ``make_point_source_list``
@@ -186,20 +215,27 @@ Use a previously written ASCII text file of point source properties as input:
 
 .. code-block:: text
 
-    usage: make_point_source_list [-h] [--random_seed RANDOM_SEED] output_file fov sky_center
+    usage: make_point_source_list [-h] [--overwrite] [--drop_brightest DROP_BRIGHTEST]
+                                  [--random_seed RANDOM_SEED]
+                                  output_file fov sky_center
 
     Make a list of point source properties and write it to an ASCII table file.
 
     positional arguments:
       output_file           The ASCII table file to write the source properties to.
       fov                   The field of view on a side in arcminutes.
-      sky_center            The center RA, Dec coordinates of the observation, in degrees, comma-separated.
+      sky_center            The center RA, Dec coordinates of the observation, in degrees,
+                            comma-separated.
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
+      --overwrite           Overwrite an existing file with the same name.
+      --drop_brightest DROP_BRIGHTEST
+                            This many brightest sources will be dropped from the point
+                            sources.
       --random_seed RANDOM_SEED
-                            A constant integer random seed to produce a consistent set of random numbers.
-
+                            A constant integer random seed to produce a consistent set of
+                            random numbers.
 Examples
 ++++++++
 
@@ -208,4 +244,10 @@ of view of 30 arcminutes:
 
 .. code-block:: bash
 
-    [~]$ make_point_source_list my_ptsrc_list.dat 30.0 90.0,-10.0
+    [~]$ make_point_source_list my_ptsrc_list.dat 30.0 90.0,-10.0 --overwrite
+
+Drop the 50 brightest point sources:
+
+.. code-block:: bash
+
+    [~]$ make_point_source_list my_ptsrc_list.dat 30.0 90.0,-10.0 --drop_brightest=50 --overwrite
