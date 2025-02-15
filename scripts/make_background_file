@@ -38,6 +38,17 @@ parser.add_argument(
     help="Use a previously written table of point sources as input instead of generating them.",
 )
 parser.add_argument(
+    "--diffuse_unresolved",
+    action="store_true",
+    help="If set, a diffuse component across the entire field of view to represent "
+         "the unresolved flux from sources at very small fluxes will be added.",
+)
+parser.add_argument(
+    "--drop_brightest",
+    type=int,
+    help="This many brightest sources will be dropped from the point sources.",
+)
+parser.add_argument(
     "--subpixel_res",
     action="store_true",
     help="Don't uniformly distribute event positions within pixels.",
@@ -133,6 +144,8 @@ make_background_file(
     subpixel_res=args.subpixel_res,
     prng=args.random_seed,
     input_pt_sources=args.input_pt_sources,
+    diffuse_unresolved=args.diffuse_unresolved,
+    drop_brightest=args.drop_brightest,
     no_dither=args.no_dither,
     dither_params=dither_params,
     instr_bkgnd_scale=args.instr_bkgnd_scale,

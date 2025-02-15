@@ -23,6 +23,11 @@ parser.add_argument(
     "observation, in degrees, comma-separated.",
 )
 parser.add_argument(
+    "--drop_brightest",
+    type=int,
+    help="This many brightest sources will be dropped from the point sources.",
+)
+parser.add_argument(
     "--random_seed",
     type=int,
     help="A constant integer random seed to produce a "
@@ -33,4 +38,4 @@ args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(",")).astype("float64")
 
-make_point_source_list(args.output_file, args.fov, sky_center, prng=args.random_seed)
+make_point_source_list(args.output_file, args.fov, sky_center, drop_brightest=args.drop_brightest, prng=args.random_seed)

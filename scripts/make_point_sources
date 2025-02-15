@@ -71,6 +71,17 @@ parser.add_argument(
     help="Output the source properties to the specified file.",
 )
 parser.add_argument(
+    "--diffuse_unresolved",
+    action="store_true",
+    help="If set, a diffuse component across the entire field of view to represent "
+         "the unresolved flux from sources at very small fluxes will be added.",
+)
+parser.add_argument(
+    "--drop_brightest",
+    type=int,
+    help="This many brightest sources will be dropped from the point sources.",
+)
+parser.add_argument(
     "--random_seed",
     type=int,
     help="A constant integer random seed to produce a consistent set of random numbers.",
@@ -94,5 +105,7 @@ make_point_sources_file(
     overwrite=args.overwrite,
     output_sources=args.output_sources,
     input_sources=args.input_sources,
+    diffuse_unresolved=args.diffuse_unresolved,
+    drop_brightest=args.drop_brightest,
     prng=args.random_seed,
 )
