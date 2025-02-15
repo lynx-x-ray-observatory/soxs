@@ -351,9 +351,9 @@ instrument_registry["xrism_xtend"] = {
 
 instrument_registry["axis"] = {
     "name": "axis",
-    "arf": "axis_onaxis_20221116.arf",
+    "arf": "axis_onaxis_20230701.arf",
     "rmf": "axis_ccd_20221101.rmf",
-    "bkgnd": ["axis_nxb_FOV_10Msec_20221215.pha", 697.06],
+    "bkgnd": ["axis_nxb_FOV_10Msec_20250210.pha", 697.06],
     "num_pixels": 2952,
     "fov": 27.06194257961904,
     "aimpt_coords": [-109, 109],
@@ -364,8 +364,8 @@ instrument_registry["axis"] = {
         ["Box", 756, 756, 1440, 1440],
     ],
     "focal_length": 9.0,
-    "dither": False,
-    "psf": ["multi_eef", "AXIS_EEF_2022-02-16.fits", 2],
+    "dither": True,
+    "psf": ["multi_eef", "AXIS_EEF_2023-07-01.fits", 2],
     "imaging": True,
     "grating": False,
 }
