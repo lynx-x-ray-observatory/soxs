@@ -2,6 +2,7 @@ import os
 import shutil
 
 import numpy as np
+import pytest
 from astropy.io import fits
 from numpy.testing import assert_allclose, assert_equal
 
@@ -55,3 +56,9 @@ def file_answer_testing(hdu, filename, answer_store):
                     )
         f_old.close()
         f_new.close()
+
+
+min_numpy_vers = pytest.mark.skipif(
+    np.lib.NumpyVersion(np.__version__) < np.lib.NumpyVersion("2.0.0"),
+    reason="Requires NumPy >= 2.0.0",
+)

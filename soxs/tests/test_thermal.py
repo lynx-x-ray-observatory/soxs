@@ -18,7 +18,11 @@ from soxs.spectra.thermal_spectra import (
     MekalGenerator,
     SpexGenerator,
 )
-from soxs.tests.utils import file_answer_testing, spectrum_answer_testing
+from soxs.tests.utils import (
+    file_answer_testing,
+    min_numpy_vers,
+    spectrum_answer_testing,
+)
 
 inst_name = "lynx_lxm"
 
@@ -213,6 +217,7 @@ def test_thermal_abund_table(answer_store):
     shutil.rmtree(tmpdir)
 
 
+@min_numpy_vers
 def test_thermal_nei(answer_store):
 
     tmpdir = tempfile.mkdtemp()
