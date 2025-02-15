@@ -276,7 +276,7 @@ class SimputCatalog:
         """
         Write the SIMPUT catalog to disk.
         """
-        src_id = np.arange(self.num_sources)
+        src_id = np.arange(self.num_sources) + 1
         col1 = fits.Column(name="SRC_ID", format="J", array=src_id)
         col2 = fits.Column(name="RA", format="D", array=self.ra)
         col3 = fits.Column(name="DEC", format="D", array=self.dec)
