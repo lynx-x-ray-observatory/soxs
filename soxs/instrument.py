@@ -404,6 +404,7 @@ def make_background(
     subpixel_res=False,
     input_pt_sources=None,
     diffuse_unresolved=True,
+    drop_brightest=None,
     aimpt_shift=None,
     instr_bkgnd_scale=1.0,
     prng=None,
@@ -444,6 +445,14 @@ def make_background(
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    diffuse_unresolved : boolean, optional
+        Add a diffuse component across the entire field of view to represent
+        the unresolved flux from sources at very small fluxes. Default: True
+    drop_brightest : integer, optional
+        If set to an integer, drop the brightest *drop_brightest* sources
+        from the list. This is a poor-person's way of mimicking the
+        by-hand removal of point sources via wavdetect or some other
+        technique. Default: None
     aimpt_shift : array-like, optional
         A two-float array-like object which shifts the aimpoint on the
         detector from the nominal position. Units are in arcseconds.
@@ -500,6 +509,7 @@ def make_background(
             area=1.2 * arf.max_area,
             input_sources=input_pt_sources,
             diffuse_unresolved=diffuse_unresolved,
+            drop_brightest=drop_brightest,
             prng=prng,
         )
         for key in ["ra", "dec", "energy"]:
@@ -604,6 +614,7 @@ def make_background_file(
     subpixel_res=False,
     input_pt_sources=None,
     diffuse_unresolved=True,
+    drop_brightest=None,
     instr_bkgnd_scale=1.0,
     prng=None,
     **kwargs,
@@ -645,6 +656,14 @@ def make_background_file(
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    diffuse_unresolved : boolean, optional
+        Add a diffuse component across the entire field of view to represent
+        the unresolved flux from sources at very small fluxes. Default: True
+    drop_brightest : integer, optional
+        If set to an integer, drop the brightest *drop_brightest* sources
+        from the list. This is a poor-person's way of mimicking the
+        by-hand removal of point sources via wavdetect or some other
+        technique. Default: None
     instr_bkgnd_scale : float, optional
         A constant factor by which to scale the instrumental background
         spectrum up or down. Default: 1, which means no scaling.
@@ -684,6 +703,7 @@ def make_background_file(
         input_pt_sources=input_pt_sources,
         instr_bkgnd_scale=instr_bkgnd_scale,
         diffuse_unresolved=diffuse_unresolved,
+        drop_brightest=drop_brightest,
         prng=prng,
     )
     f = make_event_file(events, event_params)
@@ -707,6 +727,7 @@ def _instrument_simulator(
     aimpt_shift=None,
     input_pt_sources=None,
     diffuse_unresolved=True,
+    drop_brightest=None,
     prng=None,
     instr_bkgnd_scale=1.0,
 ):
@@ -747,6 +768,7 @@ def _instrument_simulator(
                 aimpt_shift=aimpt_shift,
                 input_pt_sources=input_pt_sources,
                 diffuse_unresolved=diffuse_unresolved,
+                drop_brightest=drop_brightest,
                 instr_bkgnd_scale=instr_bkgnd_scale,
             )
             for key in events:
@@ -786,6 +808,7 @@ def instrument_simulator(
     aimpt_shift=None,
     input_pt_sources=None,
     diffuse_unresolved=True,
+    drop_brightest=None,
     instr_bkgnd_scale=1.0,
     prng=None,
 ):
@@ -858,6 +881,14 @@ def instrument_simulator(
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
         them. Default: None
+    diffuse_unresolved : boolean, optional
+        Add a diffuse component across the entire field of view to represent
+        the unresolved flux from sources at very small fluxes. Default: True
+    drop_brightest : integer, optional
+        If set to an integer, drop the brightest *drop_brightest* sources
+        from the list. This is a poor-person's way of mimicking the
+        by-hand removal of point sources via wavdetect or some other
+        technique. Default: None
     instr_bkgnd_scale : float, optional
         A constant factor by which to scale the instrumental background
         spectrum up or down. Default: 1, which means no scaling.
@@ -890,6 +921,7 @@ def instrument_simulator(
         aimpt_shift=aimpt_shift,
         input_pt_sources=input_pt_sources,
         diffuse_unresolved=diffuse_unresolved,
+        drop_brightest=drop_brightest,
         instr_bkgnd_scale=instr_bkgnd_scale,
         prng=prng,
     )
