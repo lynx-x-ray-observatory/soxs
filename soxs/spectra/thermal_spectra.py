@@ -97,7 +97,9 @@ class CIEGenerator:
         self.line_handle = fits.open(self.linefile)
         self.coco_handle = fits.open(self.cocofile)
         self.nT = self.line_handle[1].data.shape[0]
-        self.Tvals = convert_endian(self.line_handle[1].data.field("kT"))
+        self.Tvals = convert_endian(self.line_handle[1].data.field("kT")).astype(
+            "float64"
+        )
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
@@ -818,9 +820,13 @@ class Atable2DGenerator(AtableGenerator):
         )
         with fits.open(self.cosmic_table) as f:
             self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
-            self.Dvals = convert_endian(f["PARAMETERS"].data["VALUE"][0][: self.n_D])
+            self.Dvals = convert_endian(
+                f["PARAMETERS"].data["VALUE"][0][: self.n_D]
+            ).astype("float64")
             self.n_T = f["PARAMETERS"].data["NUMBVALS"][1]
-            self.Tvals = convert_endian(f["PARAMETERS"].data["VALUE"][1][: self.n_T])
+            self.Tvals = convert_endian(
+                f["PARAMETERS"].data["VALUE"][1][: self.n_T]
+            ).astype("float64")
         self.dDvals = np.diff(self.Dvals)
         self.dTvals = np.diff(self.Tvals)
         self.norm_fac = np.ones(len(metal_tables))
