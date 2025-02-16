@@ -503,8 +503,8 @@ model files can be downloaded using the following syntax:
 
 * ``"apec"``: Downloads the latest version of the APEC tables for
   :class:`~soxs.spectra.thermal_spectra.APECGenerator`. To download a particular
-  version, specify (e.g.) ``"apec_v3.0.9"``, or to download the NEI version
-  of the tables, specify ``"apec_v3.0.9_nei"``.
+  version, specify (e.g.) ``"apec_v3.1.2"``, or to download the NEI version
+  of the tables, specify ``"apec_v3.1.2_nei"``.
 * ``"spex"``: Downloads the latest version of the SPEX tables for
   :class:`~soxs.spectra.thermal_spectra.SPEXGenerator`. To download a particular
   version, specify (e.g.) ``"spex_v3.06.01"``.

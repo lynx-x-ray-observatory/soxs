@@ -16,7 +16,7 @@ customization in the configuration file:
     [soxs]
     soxs_data_dir = /does/not/exist # The path to instrument files and APEC tables
     abund_table = angr # The abundance table to use for APEC thermal spectra
-    apec_vers = 3.0.9 # The default version of APEC to use
+    apec_vers = 3.1.2 # The default version of APEC to use
     spex_vers = 3.07.03 # The default version of SPEX to use
     bkgnd_nH = 0.018 # neutral hydrogen column for backgrounds, units of 1e22 cm**-2
     bkgnd_absorb_model = tbabs # absorption model, currently either wabs or tbabs
