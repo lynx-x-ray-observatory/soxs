@@ -142,6 +142,24 @@ create a :class:`~soxs.spectra.Spectrum` like this:
 The parameters ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to
 control the binning.
 
+For either :meth:`~soxs.spectra.Spectrum.from_xspec_model` or
+:meth:`~soxs.spectra.Spectrum.from_xspec_script`, you can pass a dictionary ``xspec_settings`` which
+will apply a number of XSPEC settings before generating the spectral models. For example, you can
+set the ``APECROOT`` and the ``APECTHERMAL`` variables in this way:
+
+.. code-block:: python
+
+    xspec_settings = {
+        "APECROOT": "/path/to/apec",
+        "APECTHERMAL": "",
+    }
+
+    spec = Spectrum.from_xspec_model(model_string, params, emin, emax, nbins,
+                                     binscale="log", xspec_settings=xspec_settings)
+
+Note that for settings that do not require values, one simply sets ``""`` as the value in the
+dictionary.
+
 The third way is to use `pyXspec <https://heasarc.gsfc.nasa.gov/xanadu/xspec/python/html/index.html>`_
 to generate a spectrum. This requires that pyXspec is installed as part of your HEASoft installation
 and is installed into the same Python environment as SOXS. If so, you can create an ``xspec.Model``

@@ -12,7 +12,8 @@ One major new feature is included in this release:
 
 * Charge exchange
 
-A few changes have been made for :class:`~soxs.spectra.base.Spectrum` objects:
+Many small but hopefully useful changes have been made for
+:class:`~soxs.spectra.base.Spectrum` objects:
 
 * It is now possible to use the :meth:`~soxs.spectra.base.ConvolvedSpectrum.convolve`
   method to convolve a spectrum with both an ARF *and* an RMF. This may be useful to
@@ -32,6 +33,11 @@ A few changes have been made for :class:`~soxs.spectra.base.Spectrum` objects:
   a spectral model created with
   `pyXspec <https://heasarc.gsfc.nasa.gov/docs/xanadu/xspec/python/html/index.html>`_.
   See :ref:`xspec` for more details.
+* It is now possible to pass ``xspec_settings`` to either the
+:meth:`~soxs.spectra.base.Spectrum.from_xspec_script` or
+:meth:`~soxs.spectra.base.Spectrum.from_xspec_model` methods to set the
+  XSPEC settings for the model in the same way one would using ``xset`` from the
+XSPEC command-line prompt. See :ref:`xspec` for more details.
 
 Two changes have been made to :func:`~soxs.instrument.simulate_spectrum`:
 

@@ -318,7 +318,9 @@ class Spectrum:
         return plum, elum
 
     @classmethod
-    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear"):
+    def from_xspec_script(
+        cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None
+    ):
         """
         Create a model spectrum using a script file as
         input to XSPEC.
@@ -336,14 +338,32 @@ class Spectrum:
         binscale : string, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
+        xspec_settings : dict, optional
+            A dictionary of XSPEC settings to set before running the
+            model, each of which will be run as (e.g.) "xset {key} {value}".
+            Default: None.
         """
         with open(infile, "r") as f:
             xspec_in = f.readlines()
-        return cls._from_xspec(xspec_in, emin, emax, nbins, binscale=binscale)
+        return cls._from_xspec(
+            xspec_in,
+            emin,
+            emax,
+            nbins,
+            binscale=binscale,
+            xspec_settings=xspec_settings,
+        )
 
     @classmethod
     def from_xspec_model(
-        cls, model_string, params, emin, emax, nbins, binscale="linear"
+        cls,
+        model_string,
+        params,
+        emin,
+        emax,
+        nbins,
+        binscale="linear",
+        xspec_settings=None,
     ):
         """
         Create a model spectrum using a model string and parameters
@@ -366,6 +386,10 @@ class Spectrum:
         binscale : string, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
+        xspec_settings : dict, optional
+            A dictionary of XSPEC settings to set before running the
+            model, each of which will be run as (e.g.) "xset {key} {value}".
+            Default: None.
         """
         xspec_in = []
         model_str = "%s &" % model_string
@@ -373,16 +397,30 @@ class Spectrum:
             model_str += " %g &" % param
         model_str += " /*"
         xspec_in.append("model %s\n" % model_str)
-        return cls._from_xspec(xspec_in, emin, emax, nbins, binscale=binscale)
+        return cls._from_xspec(
+            xspec_in,
+            emin,
+            emax,
+            nbins,
+            binscale=binscale,
+            xspec_settings=xspec_settings,
+        )
 
     @classmethod
-    def _from_xspec(cls, xspec_in, emin, emax, nbins, binscale="linear"):
+    def _from_xspec(
+        cls, xspec_in, emin, emax, nbins, binscale="linear", xspec_settings=None
+    ):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         tmpdir = Path(tempfile.mkdtemp())
         curdir = Path.cwd()
-        xspec_in.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
-        xspec_in += [
+        outscript = []
+        if xspec_settings is not None:
+            for key, value in xspec_settings.items():
+                outscript.append(f"xset {key} {value}\n")
+        outscript.extend(xspec_in)
+        outscript.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
+        outscript += [
             f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
             "tclout energies\n",
             "puts $fp $xspec_tclout\n",
@@ -392,7 +430,7 @@ class Spectrum:
             "quit\n",
         ]
         with open(tmpdir / "xspec.in", "w") as f_xin:
-            f_xin.writelines(xspec_in)
+            f_xin.writelines(outscript)
         logfile = curdir / "xspec.log"
         if os.environ["SHELL"] in ["tcsh", "csh"]:
             init_suffix = "csh"
