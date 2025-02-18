@@ -154,6 +154,7 @@ the sources:
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent set of
                             random numbers.
+
 Examples
 ++++++++
 
@@ -236,6 +237,7 @@ Drop the 50 brightest point sources:
       --random_seed RANDOM_SEED
                             A constant integer random seed to produce a consistent set of
                             random numbers.
+
 Examples
 ++++++++
 

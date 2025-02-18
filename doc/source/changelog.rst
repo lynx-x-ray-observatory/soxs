@@ -8,9 +8,10 @@ Version 5.0.0
 
 This is a major version update to SOXS with significant new features and bugfixes.
 
-One major new feature is included in this release:
-
-* Charge exchange
+One major new feature is included in this release: it is now possible to create
+:class:`~soxs.spectra.base.Spectrum` objects from models of charge exchange created
+with the `AtomDB ACX2 model <https://acx2.readthedocs.io>`_. See :ref:`charge-exchange`
+for more details. Thanks to Adam Foster at the CfA for all the help in setting it up.
 
 Many small but hopefully useful changes have been made for
 :class:`~soxs.spectra.base.Spectrum` objects:
@@ -23,7 +24,7 @@ Many small but hopefully useful changes have been made for
 * Such convolved spectra can be
   written to a standard PI/PHA file. using the
   :meth:`~soxs.spectra.base.ConvolvedSpectrum.to_pha_file` method. See
-  :ref:`convolved-spectrum` for more details.
+  :ref:`convolved-spectra` for more details.
 * Similarly, it is now possible to read in a spectrum from a PI/PHA file produced from
   SOXS (either from an event file produced with the :func:`~soxs.instrument.instrument_simulator`
   or a spectrum from :func:`~soxs.instrument.simulate_spectrum`), using the
@@ -34,10 +35,10 @@ Many small but hopefully useful changes have been made for
   `pyXspec <https://heasarc.gsfc.nasa.gov/docs/xanadu/xspec/python/html/index.html>`_.
   See :ref:`xspec` for more details.
 * It is now possible to pass ``xspec_settings`` to either the
-:meth:`~soxs.spectra.base.Spectrum.from_xspec_script` or
-:meth:`~soxs.spectra.base.Spectrum.from_xspec_model` methods to set the
+  :meth:`~soxs.spectra.base.Spectrum.from_xspec_script` or
+  :meth:`~soxs.spectra.base.Spectrum.from_xspec_model` methods to set the
   XSPEC settings for the model in the same way one would using ``xset`` from the
-XSPEC command-line prompt. See :ref:`xspec` for more details.
+  XSPEC command-line prompt. See :ref:`xspec` for more details.
 
 Two changes have been made to :func:`~soxs.instrument.simulate_spectrum`:
 

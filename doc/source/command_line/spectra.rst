@@ -141,7 +141,7 @@ The same spectrum, but using the SPEX model instead of APEC.
 .. _cmd-make-igm-spectrum:
 
 ``make_pion_spectrum``
----------------------
+----------------------
 
 This script creates an ASCII table of an optionally absorbed thermal spectrum
 using the SOXS Cloudy-based photoionization model. For more details on what's
