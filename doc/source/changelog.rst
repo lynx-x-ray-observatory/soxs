@@ -66,7 +66,7 @@ Several changes have been made to :func:`~soxs.events.spectra.plot_spectrum`:
 Other various changes are:
 
 * This version supports NumPy 2.
-* Support for Python 3.13 has been added. Support for Python 3.9 has been dropped.
+* Support for Python 3.13 has been added. Support for Python 3.9 and 3.10 has been dropped.
 * To support SIXTE version 3.x and higher, the ``SRC_ID`` column in SIMPUT files
   now begins at 1 instead of 0. This is a change from previous versions of SOXS.
 * The default AtomDB/APEC version provided with SOXS is now v3.1.2.
