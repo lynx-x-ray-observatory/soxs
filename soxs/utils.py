@@ -17,7 +17,7 @@ soxs_cfg_defaults = {
     "soxs_data_dir": "/does/not/exist",
     "soxs_answer_dir": "/does/not/exist",
     "abund_table": "angr",
-    "apec_vers": "3.0.9",
+    "apec_vers": "3.1.2",
     "spex_vers": "3.07.03",
     "bkgnd_nH": 0.018,
     "bkgnd_absorb_model": "tbabs",
@@ -260,7 +260,7 @@ def process_fits_string(fitsstr):
     brackets = re.findall(r"[^[]*\[([^]]*)\]", fitsstr)
     with fits.open(fn) as f:
         if len(brackets) == 0:
-            imgs = np.array([hdu.is_image for hdu in f])
+            imgs = np.array([hdu.is_image and hdu.header["NAXIS"] == 2 for hdu in f])
             if imgs.sum() > 1:
                 raise IOError("Multiple HDUs in this file, please specify one to read!")
             ext = np.where(imgs)[0][0]
@@ -310,9 +310,10 @@ def get_data_file(fn):
     rel_fn = os.path.split(fn)[-1]
     data_fn = os.path.join(soxs_data_dir, rel_fn)
     if os.path.exists(rel_fn):
-        mylog.warning(
-            "Using local file %s instead of the one from the database.", rel_fn
-        )
+        if rel_fn in finley._registry:
+            mylog.warning(
+                "Using local file %s instead of the one from the database.", rel_fn
+            )
         return fn
     elif rel_fn not in finley._registry and os.path.exists(data_fn):
         return data_fn

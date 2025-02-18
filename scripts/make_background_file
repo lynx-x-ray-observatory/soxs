@@ -38,6 +38,17 @@ parser.add_argument(
     help="Use a previously written table of point sources as input instead of generating them.",
 )
 parser.add_argument(
+    "--no_diffuse_unresolved",
+    action="store_true",
+    help="If set, the diffuse component across the entire field of view to represent "
+         "the unresolved flux from sources at very small fluxes will be turned off.",
+)
+parser.add_argument(
+    "--drop_brightest",
+    type=int,
+    help="This many brightest sources will be dropped from the point sources.",
+)
+parser.add_argument(
     "--subpixel_res",
     action="store_true",
     help="Don't uniformly distribute event positions within pixels.",
@@ -99,6 +110,13 @@ frgnd_parser.add_argument(
 )
 parser.set_defaults(foreground=True, ptsrc_bkgnd=True, instr_bkgnd=True)
 
+parser.add_argument(
+    "--instr_bkgnd_scale",
+    type=float,
+    help="A scaling factor for the instrumental background. "
+    "Default: 1.0.",
+)
+
 args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(",")).astype("float64")
@@ -126,6 +144,9 @@ make_background_file(
     subpixel_res=args.subpixel_res,
     prng=args.random_seed,
     input_pt_sources=args.input_pt_sources,
+    diffuse_unresolved=not args.no_diffuse_unresolved,
+    drop_brightest=args.drop_brightest,
     no_dither=args.no_dither,
     dither_params=dither_params,
+    instr_bkgnd_scale=args.instr_bkgnd_scale,
 )

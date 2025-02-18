@@ -9,6 +9,8 @@ This section details the API of the various Python functions and classes in SOXS
     :maxdepth: 1
 
     spectra
+    thermal_spectra
+    charge_exchange
     spatial
     simput
     instrument

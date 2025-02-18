@@ -280,7 +280,7 @@ for res in ["Hp_5eV", "Mp_6eV", "Lp_18eV"]:
             "name": f"xrism_resolve_{filt}{res}",
             "arf": f"rsl_pointsource_{filt}GVclosed.arf",
             "rmf": f"rsl_{res}.rmf",
-            "bkgnd": None,
+            "bkgnd": [f"rsl_{res}_bkg.pi", 1.0],
             "num_pixels": 6,
             "fov": 3.0,
             "aimpt_coords": [0.0, 0.0],
@@ -295,6 +295,11 @@ for res in ["Hp_5eV", "Mp_6eV", "Lp_18eV"]:
 instrument_registry["xrism_resolve"] = deepcopy(
     instrument_registry["xrism_resolve_Hp_5eV"]
 )
+
+instrument_registry["xrism_resolve_1arcsec"] = deepcopy(
+    instrument_registry["xrism_resolve"]
+)
+instrument_registry["xrism_resolve_1arcsec"]["psf"] = ["gaussian", 1.0]
 
 instrument_registry["xrism_resolve_old"] = {
     "name": "xrism_resolve",
@@ -346,9 +351,9 @@ instrument_registry["xrism_xtend"] = {
 
 instrument_registry["axis"] = {
     "name": "axis",
-    "arf": "axis_onaxis_20221116.arf",
+    "arf": "axis_onaxis_20230701.arf",
     "rmf": "axis_ccd_20221101.rmf",
-    "bkgnd": ["axis_nxb_FOV_10Msec_20221215.pha", 697.06],
+    "bkgnd": ["axis_nxb_FOV_10Msec_20250210.pha", 697.06],
     "num_pixels": 2952,
     "fov": 27.06194257961904,
     "aimpt_coords": [-109, 109],
@@ -359,8 +364,8 @@ instrument_registry["axis"] = {
         ["Box", 756, 756, 1440, 1440],
     ],
     "focal_length": 9.0,
-    "dither": False,
-    "psf": ["multi_eef", "AXIS_EEF_2022-02-16.fits", 2],
+    "dither": True,
+    "psf": ["multi_eef", "AXIS_EEF_2023-07-01.fits", 2],
     "imaging": True,
     "grating": False,
 }

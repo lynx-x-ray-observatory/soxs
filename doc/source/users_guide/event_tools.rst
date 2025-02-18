@@ -317,14 +317,17 @@ Filtering on a time or energy range is also possible:
 :func:`~soxs.events.plot_spectrum` reads a spectrum stored in a FITS table file and makes
 a `Matplotlib <http://www.matplotlib.org>`_ plot. There are a number of options for
 customizing the plot in the call to :func:`~soxs.events.plot_spectrum`, but the method
-also returns a tuple of the :class:`~matplotlib.figure.Figure` and the
-:class:`~matplotlib.axes.Axes` objects to allow for further customization. This example
-opens up a spectrum file and plots it between 0.5 and 7.0 keV:
+also returns the :class:`~matplotlib.figure.Figure` and the :class:`~matplotlib.axes.Axes`
+objects to allow for further customization. This example opens up a spectrum file and plots
+it between 0.5 and 7.0 keV:
 
 .. code-block:: python
 
     from soxs import plot_spectrum
-    plot_spectrum("evt.pha", xmin=0.5, xmax=7.0)
+    fig, ax, ebins = plot_spectrum("evt.pha", xmin=0.5, xmax=7.0)
+
+Note that in addition to the :class:`~matplotlib.figure.Figure` and :class:`~matplotlib.axes.Axes`
+objects, the energy bin edges are also returned.
 
 .. image:: ../images/mucal_plot.png
 
@@ -334,22 +337,45 @@ would set ``plot_energy=False``:
 .. code-block:: python
 
     from soxs import plot_spectrum
-    plot_spectrum("evt.pha", plot_energy=False, xmin=300, xmax=7000)
+    fig, ax, ebins = plot_spectrum("evt.pha", plot_energy=False, xmin=300, xmax=7000)
 
 .. image:: ../images/mucal_plot_channel.png
 
 where in that case the x-axis is now in channel space, so ``xmin`` and ``xmax`` had to
 be set accordingly.
 
-To bin the spectrum in energy bins of your choice, generate a set of bin edges and pass
-them to :func:`~soxs.events.plot_spectrum` using the ``ebins`` argument:
+By default, the energy bins of the plot correspond to the bin edges of the channels.
+It is also possible to customize the energy binning of the plot in three different
+ways, via the ``ebins`` keyword argument. The first way is to simply provide a
+NumPy array of energy bin edges that you constructed:
 
 .. code-block:: python
 
     from soxs import plot_spectrum
     import numpy as np
     ebins = np.linspace(0.5, 7.0, 101)
-    plot_spectrum("evt.pha", ebins=ebins, xmin=0.5, xmax=7.0)
+    fig, ax, ebins_out = plot_spectrum("evt.pha", ebins=ebins, xmin=0.5, xmax=7.0)
+
+Another way to set the energy bins is to set ``ebins`` to an integer, which will
+cause the spectrum to be reblocked by that factor:
+
+.. code-block:: python
+
+    from soxs import plot_spectrum
+    import numpy as np
+    ebins = 4 # energy bins contain 4 channels each
+    fig, ax, ebins_out = plot_spectrum("evt.pha", ebins=ebins, xmin=0.5, xmax=7.0)
+
+The third way to set the energy bins is to provide a 2-tuple to ``ebins``, where the
+first element is the minimum significance (assuming Poisson statistics) of each bin
+and the second element is the maximum number of channels to be combined in the bin:
+
+.. code-block:: python
+
+    from soxs import plot_spectrum
+    import numpy as np
+    ebins = (3.0, 4) # bins have 3-sigma significance and contain no more than 4 channels
+    fig, ax, ebins_out = plot_spectrum("evt.pha", ebins=ebins, xmin=0.5, xmax=7.0)
 
 For other customizations, consult the :func:`~soxs.events.plot_spectrum` API.
 

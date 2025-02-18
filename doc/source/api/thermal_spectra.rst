@@ -1,19 +1,19 @@
 Thermal Spectra API
 ===================
 
-.. autoclass:: soxs.thermal_spectra.ApecGenerator
+.. autoclass:: soxs.spectra.thermal_spectra.ApecGenerator
     :members:
 
-.. autoclass:: soxs.thermal_spectra.SpexGenerator
+.. autoclass:: soxs.spectra.thermal_spectra.SpexGenerator
     :members:
 
-.. autoclass:: soxs.thermal_spectra.MekalGenerator
+.. autoclass:: soxs.spectra.thermal_spectra.MekalGenerator
     :members:
 
-.. autoclass:: soxs.thermal_spectra.CloudyCIEGenerator
+.. autoclass:: soxs.spectra.thermal_spectra.CloudyCIEGenerator
     :members:
 
-.. autoclass:: soxs.thermal_spectra.IGMGenerator
+.. autoclass:: soxs.spectra.thermal_spectra.CloudyPionGenerator
     :members:
 
-.. autofunction:: soxs.thermal_spectra.download_spectrum_tables
+.. autofunction:: soxs.spectra.thermal_spectra.download_spectrum_tables

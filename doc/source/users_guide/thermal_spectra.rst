@@ -11,12 +11,12 @@ collisional ionization equilibrium (CIE), non-equilibrium ionization (NEI), or
 a combination of collisional and photoionization processes. The various thermal
 spectrum generators available in SOXS are:
 
-* :class:`~soxs.thermal_spectra.ApecGenerator`: APEC CIE and NEI spectra
-* :class:`~soxs.thermal_spectra.SpexGenerator`: SPEX CIE spectra
-* :class:`~soxs.thermal_spectra.MekalGenerator`: MeKaL CIE spectra
-* :class:`~soxs.thermal_spectra.CloudyCIEGenerator`: Cloudy-based CIE spectra
-* :class:`~soxs.thermal_spectra.IGMGenerator`: Cloudy-based collisional+photoionization
-  spectra with optional resonant scattering from the CXB
+* :class:`~soxs.spectra.thermal_spectra.ApecGenerator`: APEC CIE and NEI spectra
+* :class:`~soxs.spectra.thermal_spectra.SpexGenerator`: SPEX CIE spectra
+* :class:`~soxs.spectra.thermal_spectra.MekalGenerator`: MeKaL CIE spectra
+* :class:`~soxs.spectra.thermal_spectra.CloudyCIEGenerator`: Cloudy-based CIE spectra
+* :class:`~soxs.spectra.thermal_spectra.CloudyPionGenerator`: Cloudy-based
+  collisional+photoionization spectra with optional resonant scattering from the CXB
 
 Each of these are essentially "factory" classes which generate new
 :class:`~soxs.spectra.Spectrum` objects.
@@ -28,7 +28,7 @@ APEC Spectrum Generators
 
 APEC CIE and NEI thermal spectra are generated in SOXS using the
 `AtomDB tables <http://www.atomdb.org>`_, using the
-:class:`~soxs.thermal_spectra.ApecGenerator` object:
+:class:`~soxs.spectra.thermal_spectra.ApecGenerator` object:
 
 .. code-block:: python
 
@@ -69,7 +69,7 @@ APEC Spectra Without Lines
 
 There is also an option to generate continuum spectra without line emission.
 This is done by setting ``nolines=True`` in the constructor for
-:class:`~soxs.thermal_spectra.ApecGenerator`:
+:class:`~soxs.spectra.thermal_spectra.ApecGenerator`:
 
 .. code-block:: python
 
@@ -83,11 +83,11 @@ SPEX Spectrum Generators
 Thermal spectra using the
 `CIE emission model <https://spex-xray.github.io/spex-help/models/cie.html>`_
 provided in `SPEX <https://www.sron.nl/astrophysics-spex>`_ can be generated
-using the :class:`~soxs.thermal_spectra.SpexGenerator` class. The same
+using the :class:`~soxs.spectra.thermal_spectra.SpexGenerator` class. The same
 underlying machinery as the APEC model is used, as the SPEX model has been
 converted to the APEC table format using the code at
 https://github.com/jeremysanders/spex_to_xspec. As such, this class takes the
-same arguments as :class:`~soxs.thermal_spectra.ApecGenerator`, with the
+same arguments as :class:`~soxs.spectra.thermal_spectra.ApecGenerator`, with the
 exception that the version and file location arguments are named ``spex_vers``
 and ``spex_root``, respectively.
 
@@ -116,7 +116,7 @@ by Liedahl. Relevant references are:
 * https://ui.adsabs.harvard.edu/abs/1995ApJ...438L.115L
 
 Thermal CIE spectra using the MeKaL model can be generated using the
-:class:`~soxs.thermal_spectra.MekalGenerator` object, in a manner
+:class:`~soxs.spectra.thermal_spectra.MekalGenerator` object, in a manner
 similar to the APEC and SPEX generators:
 
 .. code-block:: python
@@ -135,7 +135,7 @@ MeKaL model is kT = .
 Cloudy CIE Spectrum Generators
 ------------------------------
 
-The :class:`~soxs.thermal_spectra.CloudyCIEGenerator` generates CIE
+The :class:`~soxs.spectra.thermal_spectra.CloudyCIEGenerator` generates CIE
 thermal spectra using the emission model from
 `Cloudy <https://gitlab.nublado.org/cloudy/cloudy/-/wikis/home>`_, which
 are interpolated from an
@@ -172,7 +172,7 @@ two tables. For the individual abundances, they are obtained by setting e.g.
 "element neon off" in the run and doing the appropriate arithmetic.
 
 Thermal CIE spectra using the Cloudy model can be generated using the
-:class:`~soxs.thermal_spectra.CloudyCIEGenerator` object, in a manner
+:class:`~soxs.spectra.thermal_spectra.CloudyCIEGenerator` object, in a manner
 similar to the other generators:
 
 .. code-block:: python
@@ -201,12 +201,12 @@ Note that it is not possible to create Cloudy CIE spectra without lines, and
 thermal broadening is automatically included and cannot be turned off. The
 range of temperatures supported by the Cloudy CIE model is :math:`T = 10^4-10^9` K.
 
-.. _igm-spectra:
+.. _pion-spectra:
 
-IGM Spectrum Generators
------------------------
+Photoionization Spectrum Generators
+-----------------------------------
 
-The :class:`~soxs.thermal_spectra.IGMGenerator` generates thermal
+The :class:`~soxs.spectra.thermal_spectra.CloudyPionGenerator` generates thermal
 X-ray emission spectra from a photoionized and collisionally ionized
 plasma, as well as resonant scattering by the CXB, based on
 `Khabibullin & Churazov 2019 <https://ui.adsabs.harvard.edu/abs/2019MNRAS.482.4972K/>`_
@@ -219,8 +219,8 @@ parts of the circumgalactic medium (CGM). For resonant scattering, it is assumed
 that a fraction of CXB photons are scattering off of heavy ions, enhancing line
 emission.
 
-IGM spectra using the Cloudy model can be generated using the
-:class:`~soxs.thermal_spectra.IGMGenerator` object, in a manner
+Photoionized spectra using the Cloudy model can be generated using the
+:class:`~soxs.spectra.thermal_spectra.CloudyPionGenerator` object, in a manner
 similar to the other generators:
 
 .. code-block:: python
@@ -228,7 +228,7 @@ similar to the other generators:
     emin = 0.1
     emax = 5.0
     nbins = 3000
-    igen = soxs.IGMGenerator(emin, emax, nbins, binscale="log")
+    igen = soxs.CloudyPionGenerator(emin, emax, nbins, binscale="log")
 
 If you want to include the effects of resonant scattering off of CXB photons,
 you must set ``resonant_scattering=True``. Optionally, you may also
@@ -241,23 +241,23 @@ of 0.5:
     emin = 0.1
     emax = 10.0
     nbins = 3000
-    igen = soxs.IGMGenerator(emin, emax, nbins, binscale="linear",
-                             resonant_scattering=True, cxb_factor=0.3)
+    igen = soxs.CloudyPionGenerator(emin, emax, nbins, binscale="linear",
+                                    resonant_scattering=True, cxb_factor=0.3)
 
 The energy range of the generated table at a redshift of 0 is 0.05-10.0 keV. The
 default resolution of Cloudy in this range is dE/E = 0.005 for E < 8.16 keV, and
 dE/E = 0.03 for higher energies. SOXS provides two different spectral resolutions
-for the IGM tables, the lower of which (and the default) is 10 times finer
-than the above and the higher is 40 times finer. Which is used can be controlled
-by the *model_vers* argument. To specify the higher resolution table:
+for the Cloudy photoionization spectral tables, the lower of which (and the default)
+is 10 times finer than the above and the higher is 40 times finer. Which is used can
+be controlled by the *model_vers* argument. To specify the higher resolution table:
 
 .. code-block:: python
 
     emin = 0.1
     emax = 9.0
     nbins = 3000
-    igen = soxs.IGMGenerator(emin, emax, nbins, binscale="log",
-                             model_vers="4_hi")
+    igen = soxs.CloudyPionGenerator(emin, emax, nbins, binscale="log",
+                                    model_vers="4_hi")
 
 Generating Spectra
 ------------------
@@ -285,8 +285,8 @@ and the parameters are:
   If not zero, this broadens spectral lines using a Gaussian model assuming the
   ``velocity`` parameter is the velocity dispersion :math:`\sigma_v`. If not set,
   there is no velocity broadening. Currently only available for the
-  :class:`~soxs.thermal_spectra.ApecGenerator` and
-  :class:`~soxs.thermal_spectra.SpexGenerator` classes.
+  :class:`~soxs.spectra.thermal_spectra.ApecGenerator` and
+  :class:`~soxs.spectra.thermal_spectra.SpexGenerator` classes.
 
 A more specific invocation may look like this:
 
@@ -301,9 +301,9 @@ A more specific invocation may look like this:
 
 ``spec1`` is just a standard :class:`~soxs.spectra.Spectrum` object.
 
-For the IGM generator, because it includes the effects of photoionization,
-it also depends on the hydrogen number density, and the signature looks
-like this:
+For the Cloudy-based photoionization generator, because it includes the
+effects of photoionization, it also depends on the hydrogen number density,
+and the signature looks like this:
 
 .. code-block:: python
 
@@ -326,7 +326,7 @@ Exactly what abundances are set by this parameter depends on the model used:
   V, Cr, Mn, Co, Cu, Zn fixed at solar).
 * MeKaL: Includes C, N, O, Ne, Na, Mg, Al, Si, S, Ar, Ca, Fe, Ni (He
   fixed at abundance table value, other elements not modeled)
-* Cloudy CIE and IGM: He fixed at abundance table value, all higher
+* Cloudy CIE and Pion: He fixed at abundance table value, all higher
   elements up Zn to included.
 
 More fine-grained control of individual elements is possible. All of the
@@ -345,7 +345,7 @@ parameter.
 .. note::
 
     For the APEC, SPEX, and MeKaL models, any of the elements listed above
-    can be specified as variable. For the Cloudy CIE and IGM models, only
+    can be specified as variable. For the Cloudy CIE and Pion models, only
     the elements C, N, O, Ne, Fe, S, Si, Ca, and Mg can be variable.
 
 Now, spectra which are created from this generator object using its
@@ -381,7 +381,7 @@ contribute to the spectrum must be put in by hand, with the exception of H and
 He, which may be specified, but if they are not they are assumed to be fully
 ionized at their Solar abundances.
 
-To create an :class:`~soxs.thermal_spectra.ApecGenerator` object which produces
+To create an :class:`~soxs.spectra.thermal_spectra.ApecGenerator` object which produces
 NEI spectra, one must specify not only the elements one wants but also their
 ionization states. The notation is to represent an ion by the element first,
 followed by the ``^`` symbol, followed by its ionization state. So for oxygen,
@@ -395,7 +395,7 @@ nitrogen ions is shown below:
     agen = ApecGenerator(0.05, 10.0, 10000, var_elem=var_elem, nei=True)
 
 Once this has been created, we use a special method for NEI spectra,
-:meth:`~soxs.thermal_spectra.ApecGenerator.get_nei_spectrum`
+:meth:`~soxs.spectra.thermal_spectra.ApecGenerator.get_nei_spectrum`
 
 .. code-block:: python
 
@@ -410,7 +410,7 @@ Once this has been created, we use a special method for NEI spectra,
 
     SOXS does not make any assumptions about the correctness of the
     relative ion abundances which you input into
-    :meth:`~soxs.thermal_spectra.ApecGenerator.get_nei_spectrum`. It
+    :meth:`~soxs.spectra.thermal_spectra.ApecGenerator.get_nei_spectrum`. It
     assumes you have run a NEI code to determine the correct abundances,
     and only computes the spectrum.
 
@@ -430,9 +430,9 @@ are the values of the Solar abundances themselves. By default, SOXS uses the
 abundance table from
 `Anders & Grevesse 1989 <http://adsabs.harvard.edu/abs/1989GeCoA..53..197A>`_.
 However, it is possible to change the Solar abundance table in SOXS for the
-:class:`~soxs.thermal_spectra.ApecGenerator`,
-:class:`~soxs.thermal_spectra.SpexGenerator`,
-and :class:`~soxs.thermal_spectra.MekalGenerator` classes.
+:class:`~soxs.spectra.thermal_spectra.ApecGenerator`,
+:class:`~soxs.spectra.thermal_spectra.SpexGenerator`,
+and :class:`~soxs.spectra.thermal_spectra.MekalGenerator` classes.
 
 The abundance tables included with SOXS are:
 
@@ -446,7 +446,7 @@ The abundance tables included with SOXS are:
 The easiest way to ensure that you always use a particular abundance table
 is to set the ``abund_table`` element in the :ref:`config`, like so:
 
-.. code-block:: parsed-literal
+.. code-block:: text
 
     [soxs]
     soxs_data_dir = /Users/jzuhone/Data/soxs
@@ -479,7 +479,7 @@ Co, Ni, Cu, and Zn. An example:
 .. warning::
 
     It is currently not possible to change the abundance table for either the
-    Cloudy CIE or IGM models, as they always use ``"feld"``.
+    Cloudy CIE or Pion models, as they always use ``"feld"``.
 
 .. warning::
 
@@ -498,21 +498,21 @@ using the different models, and store them in the location for SOXS data
 specified in the SOXS configuration (see :ref:`config` for more information).
 However, if you would like to download data for a specific model to a
 particular location, SOXS provides the
-:func:`~soxs.thermal_spectra.download_spectrum_tables` function. Specific
+:func:`~soxs.spectra.thermal_spectra.download_spectrum_tables` function. Specific
 model files can be downloaded using the following syntax:
 
 * ``"apec"``: Downloads the latest version of the APEC tables for
-  :class:`~soxs.thermal_spectra.APECGenerator`. To download a particular
-  version, specify (e.g.) ``"apec_v3.0.9"``, or to download the NEI version
-  of the tables, specify ``"apec_v3.0.9_nei"``.
+  :class:`~soxs.spectra.thermal_spectra.APECGenerator`. To download a particular
+  version, specify (e.g.) ``"apec_v3.1.2"``, or to download the NEI version
+  of the tables, specify ``"apec_v3.1.2_nei"``.
 * ``"spex"``: Downloads the latest version of the SPEX tables for
-  :class:`~soxs.thermal_spectra.SPEXGenerator`. To download a particular
+  :class:`~soxs.spectra.thermal_spectra.SPEXGenerator`. To download a particular
   version, specify (e.g.) ``"spex_v3.06.01"``.
 * ``"cie"``: Downloads the latest version of the low-resolution tables for
-  :class:`~soxs.thermal_spectra.CloudyCIEGenerator`. Specify ``"cie_v4_hi"``
+  :class:`~soxs.spectra.thermal_spectra.CloudyCIEGenerator`. Specify ``"cie_v4_hi"``
   to get the high-resolution version of the tables.
-* ``"igm"``: Downloads the latest version of the low-resolution tables for
-  :class:`~soxs.thermal_spectra.IGMGenerator`. Specify ``"igm_v4_hi"`` to get
+* ``"pion"``: Downloads the latest version of the low-resolution tables for
+  :class:`~soxs.spectra.thermal_spectra.CloudyPionGenerator`. Specify ``"pion_v4_hi"`` to get
   the high-resolution version of the tables.
 * ``"mekal"``: Downloads the MeKaL table.
 

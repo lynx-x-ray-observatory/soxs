@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 
-from soxs.thermal_spectra import CIEGenerator, CloudyCIEGenerator, MekalGenerator
+from soxs.spectra import CIEGenerator, CloudyCIEGenerator, MekalGenerator
 
 parser = argparse.ArgumentParser(
     description="Create a thermal CIE spectrum and write it to a file. "

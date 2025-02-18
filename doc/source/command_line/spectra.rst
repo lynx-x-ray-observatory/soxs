@@ -140,24 +140,24 @@ The same spectrum, but using the SPEX model instead of APEC.
 
 .. _cmd-make-igm-spectrum:
 
-``make_igm_spectrum``
----------------------
+``make_pion_spectrum``
+----------------------
 
 This script creates an ASCII table of an optionally absorbed thermal spectrum
-using the SOXS IGM model. For more details on what's going on under the hood,
-see :ref:`igm-spectra`.
+using the SOXS Cloudy-based photoionization model. For more details on what's
+going on under the hood, see :ref:`pion-spectra`.
 
 .. code-block:: text
 
-    usage: make_igm_spectrum [-h] [--binscale BINSCALE] [--resonant_scattering]
-                             [--cxb_factor CXB_FACTOR]
-                             [--absorb_model ABSORB_MODEL] [--nH_abs NH_ABS]
-                             [--overwrite]
-                             kT nH abund redshift norm specfile emin emax nbins
+    usage: make_pion_spectrum [-h] [--binscale BINSCALE] [--resonant_scattering]
+                              [--cxb_factor CXB_FACTOR]
+                              [--absorb_model ABSORB_MODEL] [--nH_abs NH_ABS]
+                              [--overwrite]
+                              kT nH abund redshift norm specfile emin emax nbins
 
-    Create a thermal spectrum using the SOXS IGM model and write it to a file. The
-    abundances of individual elements can be set by supplying optional arguments in the
-    form of --O=0.5, --Mg=0.6, etc.
+    Create a thermal spectrum using the SOXS Cloudy-based photoionization model and write
+    it to a file. The abundances of individual elements can be set by supplying optional
+    arguments in the form of --O=0.5, --Mg=0.6, etc.
 
     positional arguments:
       kT                    The temperature in keV.
@@ -189,42 +189,42 @@ see :ref:`igm-spectra`.
 Examples
 ++++++++
 
-Make a basic IGM spectrum for a thermal plasma.
+Make a basic photoionization spectrum for a thermal plasma.
 
 .. code-block:: bash
 
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --overwrite
+    [~]$ make_pion_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --overwrite
 
 The same spectrum, but with foreground galactic absorption using the "tbabs" model
 with :math:`N_H = 0.04~\times~10^{22}~\rm{atoms~cm^{-2}}`.
 
 .. code-block:: bash
 
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --absorb_model="tbbs" --nH_abs 0.04 --overwrite
+    [~]$ make_pion_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --absorb_model="tbbs" --nH_abs 0.04 --overwrite
 
 The same spectrum, but with log-spaced binning.
 
 .. code-block:: bash
 
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite
+    [~]$ make_pion_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --binscale=log --overwrite
 
 The same spectrum, but with resonant scattering.
 
 .. code-block:: bash
 
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --resonant_scattering --overwrite
+    [~]$ make_pion_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --resonant_scattering --overwrite
 
 The same spectrum, but with resonant scattering and only 0.3 of the CXB scattered.
 
 .. code-block:: bash
 
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --cxb_factor=0.3 --resonant_scattering --overwrite
+    [~]$ make_pion_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --cxb_factor=0.3 --resonant_scattering --overwrite
 
 The same spectrum, but with abundances of O, Ne, and Fe specified.
 
 .. code-block:: bash
 
-    [~]$ make_igm_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --O=0.7 --Ne=0.6 --Fe=0.8 --overwrite
+    [~]$ make_pion_spectrum 6.0 1.0e-3 0.3 0.05 1.0e-4 my_thermal_spectrum.dat 0.1 10.0 10000 --O=0.7 --Ne=0.6 --Fe=0.8 --overwrite
 
 ``make_powerlaw_spectrum``
 --------------------------

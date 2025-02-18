@@ -11,13 +11,17 @@ from soxs.instrument_registry import get_instrument_from_registry
 from soxs.response import RedistributionMatrixFile
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spatial import PointSourceModel
-from soxs.tests.utils import file_answer_testing, spectrum_answer_testing
-from soxs.thermal_spectra import (
+from soxs.spectra.thermal_spectra import (
     ApecGenerator,
     CloudyCIEGenerator,
-    IGMGenerator,
+    CloudyPionGenerator,
     MekalGenerator,
     SpexGenerator,
+)
+from soxs.tests.utils import (
+    file_answer_testing,
+    min_numpy_vers,
+    spectrum_answer_testing,
 )
 
 inst_name = "lynx_lxm"
@@ -213,12 +217,14 @@ def test_thermal_abund_table(answer_store):
     shutil.rmtree(tmpdir)
 
 
+@min_numpy_vers
 def test_thermal_nei(answer_store):
-    prng = RandomState(71)
 
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
+
+    prng = 24
 
     spectrum_answer_testing(spec_nei, "thermal_spec_nei.h5", answer_store, rtol=1.0e-6)
 
@@ -395,12 +401,14 @@ def test_igm(answer_store):
     nH_igm = 1.0e-3
     kT_igm = 0.7
 
-    igen = IGMGenerator(0.2, 5.0, 1000, binscale="log")
-    igen_var1 = IGMGenerator(0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe"])
-    igen_var2 = IGMGenerator(
+    igen = CloudyPionGenerator(0.2, 5.0, 1000, binscale="log")
+    igen_var1 = CloudyPionGenerator(
+        0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe"]
+    )
+    igen_var2 = CloudyPionGenerator(
         0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"]
     )
-    igen_var3 = IGMGenerator(
+    igen_var3 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,
@@ -460,8 +468,10 @@ def test_igm(answer_store):
     assert_allclose(ispec.ebins, ispec_var3.ebins)
     assert_allclose(ispec.flux, ispec_var3.flux, rtol=1.0e-5)
 
-    sigen = IGMGenerator(0.2, 5.0, 1000, binscale="log", resonant_scattering=True)
-    sigen_var1 = IGMGenerator(
+    sigen = CloudyPionGenerator(
+        0.2, 5.0, 1000, binscale="log", resonant_scattering=True
+    )
+    sigen_var1 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,
@@ -469,7 +479,7 @@ def test_igm(answer_store):
         var_elem=["O", "Ne", "Fe"],
         resonant_scattering=True,
     )
-    sigen_var2 = IGMGenerator(
+    sigen_var2 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,
@@ -477,7 +487,7 @@ def test_igm(answer_store):
         var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"],
         resonant_scattering=True,
     )
-    sigen_var3 = IGMGenerator(
+    sigen_var3 = CloudyPionGenerator(
         0.2,
         5.0,
         1000,

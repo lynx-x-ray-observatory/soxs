@@ -61,9 +61,8 @@ describe instrument simulation in more detail.
 The ``instrument`` Argument
 +++++++++++++++++++++++++++
 
-SOXS currently supports instrument configurations for *Lynx*, *Athena*,
-*Chandra*, *XRISM*, *AXIS*, and *STAR-X* "out of the box". Any of these can be
-specified with the ``instrument`` argument:
+SOXS currently supports a number of instrument configurations "out of the box".
+Any of these can be specified with the ``instrument`` argument:
 
 Lynx
 ~~~~
@@ -186,12 +185,17 @@ filter. The three instrument specifications which vary by RMF resolution are:
 All of these have no filter. For each of these RMF resolution options, there is
 are versions for the Beryllium filter, e.g. ``"xrism_resolve_fwBe_Hp_5eV"``, and for
 the neutral density filter, e.g. ``"xrism_resolve_fwND_Lp_18eV"``. All *Resolve*
-instrument specifications assume the gate valve is closed.
+instrument specifications assume the gate valve is closed. These specifications use a
+image-based PSF model with a FWHM of ~1.2" arcminutes.
+
+The ``"xrism_resolve"`` specification is mapped directly to the ``"xrism_resolve_Hp_5eV"``
+specification. An otherwise identical specification, ``"xrism_resolve_1arcsec"``, has
+a Gaussian PSF with 1 arcsecond FWHM.
 
 For the *Xtend* instrument, the ``"xrism_xtend"`` specification has 2x2 CCDs laid
 out in a ~38' FoV, with a pixel size of ~1.77".
 
-The response files, PSF model, and instrumental background model used for
+The response files, PSF models, and instrumental background models used for
 *XRISM* in SOXS were obtained from
 `here <https://heasarc.gsfc.nasa.gov/docs/xrism/proposals/index.html>`_.
 
@@ -422,10 +426,15 @@ not resolved for :func:`~soxs.instrument.simulate_spectrum`, and instead is
 modeled using an absorbed power-law with the following parameters:
 
 * Power-law index :math:`\alpha = 1.52`
-* Normalization at 1 keV of :math:`2.0 \times 10^{-7}~\rm{photons~cm^{-2}~keV^{-1}}`
+* Normalization at 1 keV of :math:`f_{\rm CXB} 10^{-6}~\rm{photons~cm^{-2}~keV^{-1}}`,
+  where :math:`f_{\rm CXB}` is the fraction of the CXB that has been assumed to
+  have been resolved into point sources and removed from the analysis. The default
+  value for :math:`f_{\rm CXB} = 0.8`, but this can be changed by providing a
+  different value to the ``resolved_cxb_frac`` parameter in the call to
+  :func:`~soxs.instrument.simulate_spectrum`.
 * Neutral hydrogen column of :math:`0.018 \times 10^{22}~\rm{cm}^{-2}`
 
-Here the ``wabs`` model is assumed for the absorption. To change the default
+Here the ``tbabs`` model is assumed for the absorption. To change the default
 absorption model or the neutral hydrogen column, use the :ref:`config`. Similarly,
 the :ref:`config` can be used to change the APEC model version for the foreground.
 
@@ -484,9 +493,19 @@ tuple element (the ARF) to ``None``:
     simulate_spectrum(spec, instrument, exp_time, out_file,
                       overwrite=True)
 
+You can also adjust the overall normalization of the instrument background by
+adjusting the keyword argument ``instr_bkgnd_scale``, which has a default value of 1:
+
+.. code-block:: python
+
+    simulate_spectrum(spec, instrument, exp_time, out_file,
+                      ptsrc_bkgnd=True, foreground=True,
+                      instr_bkgnd=True, overwrite=True,
+                      bkgnd_area=(1.0, "arcmin**2"),
+                      instr_bkgnd_scale=0.5)
+
 Finally, if you want to create a spectrum without counting (Poisson) statistics,
-set ``noisy=False`` in the call to :func:`~soxs.instrument.simulate_spectrum`. Note
-that this option does not currently work if backgrounds are included.
+set ``noisy=False`` in the call to :func:`~soxs.instrument.simulate_spectrum`.
 
 .. _gratings:
 
@@ -1008,9 +1027,9 @@ instrument specification, which uses the second type of EEF file.
 
     instrument_registry["axis"] = {
         "name": "axis",
-        "arf": "axis_onaxis_20221116.arf",
+        "arf": "axis_onaxis_20230701.arf",
         "rmf": "axis_ccd_20221101.rmf",
-        "bkgnd": ["axis_nxb_FOV_10Msec_20221215.pha", 697.06],
+        "bkgnd": ["axis_nxb_FOV_10Msec_20250210.pha", 697.06],
         "num_pixels": 2952,
         "fov": 27.06194257961904,
         "aimpt_coords": [-109, 109],
@@ -1021,8 +1040,8 @@ instrument specification, which uses the second type of EEF file.
             ["Box", 756, 756, 1440, 1440],
         ],
         "focal_length": 9.0,
-        "dither": False,
-        "psf": ["multi_eef", "AXIS_EEF_2022-02-16.fits", 2],
+        "dither": True,
+        "psf": ["multi_eef", "AXIS_EEF_2023-07-01.fits", 2],
         "imaging": True,
         "grating": False,
     }

@@ -15,13 +15,14 @@ etc.
 
 .. code-block:: text
 
-    usage: make_background_file [-h] [--overwrite] [--dither_shape DITHER_SHAPE]
-                                [--dither_size DITHER_SIZE]
-                                [--input_sources INPUT_SOURCES] [--subpixel_res]
-                                [--random_seed RANDOM_SEED]
-                                [--ptsrc_bkgnd | --no_ptsrc_bkgnd]
-                                [--instr_bkgnd | --no_instr_bkgnd]
+    usage: make_background_file [-h] [--overwrite] [--input_pt_sources INPUT_PT_SOURCES]
+                                [--no_diffuse_unresolved]
+                                [--drop_brightest DROP_BRIGHTEST] [--subpixel_res]
+                                [--no_dither] [--dither_params DITHER_PARAMS]
+                                [--random_seed RANDOM_SEED] [--ptsrc_bkgnd |
+                                --no_ptsrc_bkgnd] [--instr_bkgnd | --no_instr_bkgnd]
                                 [--foreground | --no_foreground]
+                                [--instr_bkgnd_scale INSTR_BKGND_SCALE]
                                 out_file exp_time instrument sky_center
 
     Run the instrument simulator and produce a simulated background event file.
@@ -29,36 +30,43 @@ etc.
     positional arguments:
       out_file              The name of the event file to be written.
       exp_time              The exposure time to use, in seconds.
-      instrument            The name of the instrument to use, or alternatively
-                            the name of a JSON file which contains an instrument
-                            specification.
-      sky_center            The center RA, Dec coordinates of the observation, in
-                            degrees, comma-separated
+      instrument            The name of the instrument to use, or alternatively the name
+                            of a JSON file which contains an instrument specification.
+      sky_center            The center RA, Dec coordinates of the observation, in degrees,
+                            comma-separated
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       --overwrite           Overwrite an existing file with the same name.
-      --input_sources INPUT_SOURCES
-                            Use a previously written table of point sources as
-                            input instead of generating them.
-      --subpixel_res        Don't uniformly distribute event positions within
-                            pixels.
+      --input_pt_sources INPUT_PT_SOURCES
+                            Use a previously written table of point sources as input
+                            instead of generating them.
+      --no_diffuse_unresolved
+                            If set, the diffuse component across the entire field of view
+                            to represent the unresolved flux from sources at very small
+                            fluxes will be turned off.
+      --drop_brightest DROP_BRIGHTEST
+                            This many brightest sources will be dropped from the point
+                            sources.
+      --subpixel_res        Don't uniformly distribute event positions within pixels.
       --no_dither           Turn dithering off entirely.
       --dither_params DITHER_PARAMS
-                            The parameters controlling the size and period of
-                            dither. Four floats joined by commas, in the form of
-                            x_amp,y_amp,x_period,y_period. The first two numbers
-                            are in arcseconds and the second are in seconds.
-                            Default: 8.0,8.0,1000.0,707.0
+                            The parameters controlling the size and period of dither. Four
+                            floats joined by commas, in the form of
+                            x_amp,y_amp,x_period,y_period. The first two numbers are in
+                            arcseconds and the second are in seconds. Default:
+                            8.0,8.0,1000.0,707.0
       --random_seed RANDOM_SEED
-                            A constant integer random seed to produce a consistent
-                            set of random numbers.
+                            A constant integer random seed to produce a consistent set of
+                            random numbers.
       --ptsrc_bkgnd         Turn the point-source background on.
       --no_ptsrc_bkgnd      Turn the point-source background off.
       --instr_bkgnd         Turn the instrumental background on.
       --no_instr_bkgnd      Turn the instrumental background off.
       --foreground          Turn the galactic foreground on.
       --no_foreground       Turn the galactic foreground off.
+      --instr_bkgnd_scale INSTR_BKGND_SCALE
+                            A scaling factor for the instrumental background. Default: 1.0.
 
 Examples
 ++++++++
@@ -133,3 +141,15 @@ Use a pre-made ASCII table of point-source properties to generate the point-sour
 .. code-block:: bash
 
     [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --input_sources=my_ptsrc.dat --overwrite
+
+Turn off the diffuse unresolved CXB:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --no_diffuse_unresolved --overwrite
+
+Drop the 50 brightest point sources:
+
+.. code-block:: bash
+
+    [~]$ make_background_file bkg_evt.fits 50.0,ks hdxi 30.,45. --drop_brightest=50 --overwrite

@@ -77,6 +77,17 @@ parser.add_argument(
     "for the background instead of generating them.",
 )
 parser.add_argument(
+    "--no_diffuse_unresolved",
+    action="store_true",
+    help="If set, the diffuse component across the entire field of view to represent "
+         "the unresolved flux from sources at very small fluxes will be turned off.",
+)
+parser.add_argument(
+    "--drop_brightest",
+    type=int,
+    help="This many brightest sources will be dropped from the point sources.",
+)
+parser.add_argument(
     "--random_seed",
     type=int,
     help="A constant integer random seed to produce a consistent set of random numbers.",
@@ -122,6 +133,13 @@ frgnd_parser.add_argument(
 )
 parser.set_defaults(foreground=True, ptsrc_bkgnd=True, instr_bkgnd=True)
 
+parser.add_argument(
+    "--instr_bkgnd_scale",
+    type=float,
+    help="A scaling factor for the instrumental background. "
+    "Default: 1.0.",
+)
+
 args = parser.parse_args()
 
 sky_center = np.array(args.sky_center.split(",")).astype("float64")
@@ -158,5 +176,8 @@ instrument_simulator(
     subpixel_res=args.subpixel_res,
     aimpt_shift=aimpt_shift,
     input_pt_sources=args.input_pt_sources,
+    instr_bkgnd_scale=args.instr_bkgnd_scale,
+    diffuse_unresolved=not args.no_diffuse_unresolved,
+    drop_brightest=args.drop_brightest,
     prng=args.random_seed,
 )

@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 import argparse
-import os
 
-import numpy as np
 
-from soxs.thermal_spectra import IGMGenerator
+from soxs import CloudyPionGenerator
 
 parser = argparse.ArgumentParser(
-    description="Create a thermal spectrum using the SOXS IGM model "
+    description="Create a thermal spectrum using the SOXS Cloudy-based photoionization model "
     "and write it to a file. The abundances of individual "
     "elements can be set by supplying optional arguments "
     "in the form of --O=0.5, --Mg=0.6, etc."
@@ -73,7 +71,7 @@ if len(unknown) > 0:
         var_elem.append(key)
         elem_abund[key] = float(value)
 
-igen = IGMGenerator(
+igen = CloudyPionGenerator(
     args.emin,
     args.emax,
     args.nbins,

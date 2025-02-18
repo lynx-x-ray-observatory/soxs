@@ -14,24 +14,21 @@ defaults:
         shell: bash
 
 env:
-    ANSWER_VER: 15
+    ANSWER_VER: 16
 
 jobs:
     build:
         strategy:
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest]
-                python-version: [ '3.11' ]
+                python-version: [ '3.12' ]
                 numpy-version: ['1', '2']
                 include:
                     - os: ubuntu-latest
-                      python-version: '3.12'
-                      numpy-version: '1'
+                      python-version: '3.13'
+                      numpy-version: '2'
                     - os: ubuntu-latest
-                      python-version: '3.10'
-                      numpy-version: '1'
-                    - os: ubuntu-latest
-                      python-version: 3.9
+                      python-version: '3.11'
                       numpy-version: '1'
             fail-fast: false
         runs-on: ${{ matrix.os }}
@@ -44,16 +41,22 @@ jobs:
               with:
                   submodules: recursive
                   fetch-depth: 0
-            - uses: s-weigand/setup-conda@v1
+
+            - uses: mamba-org/setup-micromamba@v2
               with:
-                  update-conda: true
-                  conda-channels: conda-forge
-                  activate-conda: true
-                  python-version: ${{matrix.python-version}}
+                  micromamba-version: '2.0.5-0' # any version from https://github.com/mamba-org/micromamba-releases
+                  init-shell: bash
+                  cache-environment: true
+                  post-cleanup: 'all'
+                  environment-name: test-env
+                  create-args: >-
+                      python=${{ matrix.python-version }}
+                      numpy=${{ matrix.numpy-version }}
             - name: Install dependencies and soxs
-              shell: bash
+              shell: bash -el {0}
               env:
                   mode: testing
               run: source ./tests/ci_install.sh
             - name: Run Tests
-              run: py.test -vv soxs/tests
+              shell: bash -el {0}
+              run: micromamba activate test-env; python -m pytest -vv soxs/tests

@@ -82,12 +82,13 @@ You can set up a power-law spectrum like this:
 
 .. _xspec:
 
-Generating a Spectrum from XSPEC
-++++++++++++++++++++++++++++++++
+Generating a Spectrum from XSPEC or pyXspec
++++++++++++++++++++++++++++++++++++++++++++
 
-If you have XSPEC installed on your machine, you can use it with SOXS to create
-any spectral model that XSPEC supports. You can do this in two ways. The first
-is by passing in a model string and a list of parameters to the
+If you have `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_ installed on
+your machine, you can use it with SOXS to create any spectral model that XSPEC
+supports. You can do this in three ways. The first is by passing in a model
+string and a list of parameters to the
 :meth:`~soxs.spectra.Spectrum.from_xspec_model` method:
 
 .. code-block:: python
@@ -141,13 +142,57 @@ create a :class:`~soxs.spectra.Spectrum` like this:
 The parameters ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to
 control the binning.
 
+For either :meth:`~soxs.spectra.Spectrum.from_xspec_model` or
+:meth:`~soxs.spectra.Spectrum.from_xspec_script`, you can pass a dictionary ``xspec_settings`` which
+will apply a number of XSPEC settings before generating the spectral models. For example, you can
+set the ``APECROOT`` and the ``APECTHERMAL`` variables in this way:
+
+.. code-block:: python
+
+    xspec_settings = {
+        "APECROOT": "/path/to/apec",
+        "APECTHERMAL": "",
+    }
+
+    spec = Spectrum.from_xspec_model(model_string, params, emin, emax, nbins,
+                                     binscale="log", xspec_settings=xspec_settings)
+
+Note that for settings that do not require values, one simply sets ``""`` as the value in the
+dictionary.
+
+The third way is to use `pyXspec <https://heasarc.gsfc.nasa.gov/xanadu/xspec/python/html/index.html>`_
+to generate a spectrum. This requires that pyXspec is installed as part of your HEASoft installation
+and is installed into the same Python environment as SOXS. If so, you can create an ``xspec.Model``
+object in the usual way, and then pass it to the :meth:`~soxs.spectra.Spectrum.from_pyxspec_model`
+method:
+
+.. code-block:: python
+
+    import soxs
+    import xspec
+
+    # Set energy binning
+    xspec.AllData.dummyrsp(0.2, 2.0, 6000, "lin")
+
+    # Create a model
+    m = xspec.Model("phabs*(mekal+powerlaw)")
+
+    # Change some parameters
+    m.phabs.nH = 0.02
+    m.mekal.kT = 6.0
+    m.mekal.Abundanc = 0.3
+
+    # Get the spectrum
+    spec = soxs.Spectrum.from_pyxspec_model(m)
+
 .. note::
 
-    Generating spectra from XSPEC requires that the ``HEADAS`` environment variable
-    is defined within your shell before running the Python script, as it would be
-    if you were using XSPEC to fit spectra. For example, for the ``zsh`` shell there
-    should be a line like ``export HEADAS=${HOME}/heasoft-6.29/x86_64-apple-darwin21.1.0/``
-    in your ``.zshrc`` file.
+    Generating spectra from XSPEC or pyXspec requires that the ``HEADAS`` environment
+    variable is defined within your shell before running the Python script or notebook,
+    as it would be if you were using XSPEC/pyXspec to fit spectra. For example, for the
+    ``zsh`` shell there should be a line like
+    ``export HEADAS=${HOME}/heasoft-6.29/x86_64-apple-darwin21.1.0/`` in your ``.zshrc``
+    file.
 
 Math with ``Spectrum`` Objects
 ------------------------------
@@ -656,6 +701,33 @@ a :class:`~soxs.spectra.Spectrum` object, simply call
 
     spec_new = cspec.deconvolve()
 
+.. _convolve-arf-rmf:
+
+Including an RMF in the Convolution
++++++++++++++++++++++++++++++++++++
+
+It is also possible to include an RMF in the convolution process. This will take
+the spectrum which has been convolved with the ARF and further convolve it with
+with the response matrix in the RMF. This will produce a spectrum with features
+that have been broadened by the energy resolution of the instrument. This may be
+useful for comparing model :class:`~soxs.spectra.Spectrum` objects to mock observations
+by forward-modeling them through the instrument responses. To do this, simply pass
+the name of the RMF file to :meth:`~soxs.spectra.ConvolvedSpectrum.convolve`:
+
+.. code-block:: python
+
+    from soxs import ConvolvedSpectrum
+    # Assuming one created an ApecGenerator agen...
+    spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
+    cspec = ConvolvedSpectrum.convolve(spec2, "xrs_hdxi_3x10.arf",
+                                       rmf="xrs_hdxi.rmf")
+
+.. note::
+
+    If one uses an RMF to convolve, the methods
+    :meth:`~soxs.spectra.ConvolvedSpectrum.generate_energies` and
+    :meth:`~soxs.spectra.ConvolvedSpectrum.deconvolve` are not available.
+
 .. _spectra-plots:
 
 Plotting Spectra
@@ -743,3 +815,28 @@ in again in, using :meth:`~soxs.spectra.Spectrum.from_file`:
 
     from soxs import Spectrum
     my_spec = Spectrum.from_file("my_spec.ecsv")
+
+.. _special-cspec-io:
+
+Special I/O for Convolved Spectra
+---------------------------------
+
+:class:`~soxs.spectra.ConvolvedSpectrum` objects can be written directly to
+PI/PHA files using the same standard format that is used for real spectra,
+with the :meth:`~soxs.spectra.ConvolvedSpectrum.to_pha_file` method:
+
+.. code-block:: python
+
+    from soxs import ConvolvedSpectrum
+    # Assuming one created an ApecGenerator agen...
+    spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
+    cspec = ConvolvedSpectrum.convolve(spec2, "xrs_hdxi_3x10.arf")
+    cspec.to_pha_file("my_spec.pi", overwrite=True)
+
+Conversely, PI/PHA files produced can be read in as :class:`~soxs.spectra.ConvolvedSpectrum`
+objects:
+
+.. code-block:: python
+
+    import soxs
+    cspec = soxs.ConvolvedSpectrum.from_pha_file("my_spec.pi")

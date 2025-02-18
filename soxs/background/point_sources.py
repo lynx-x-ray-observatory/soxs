@@ -137,6 +137,7 @@ def make_ptsrc_background(
     output_sources=None,
     dump_fluxes_band=None,
     diffuse_unresolved=True,
+    drop_brightest=None,
     prng=None,
 ):
     r"""
@@ -170,6 +171,11 @@ def make_ptsrc_background(
     diffuse_unresolved : boolean, optional
         Add a diffuse component across the entire field of view to represent
         the unresolved flux from sources at very small fluxes. Default: True
+    drop_brightest : integer, optional
+        If set to an integer, drop the brightest *drop_brightest* sources
+        from the list. This is a poor-person's way of mimicking the
+        by-hand removal of point sources via wavdetect or some other
+        technique. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -192,6 +198,15 @@ def make_ptsrc_background(
         dec0 = t["Dec"].data
         fluxes = t["flux_0.5_2.0_keV"].data
         ind = t["index"].data
+
+    if drop_brightest is not None and drop_brightest > 0:
+        mylog.info("Dropping %d brightest sources.", drop_brightest)
+        idx = np.argsort(fluxes)[drop_brightest:]
+        ra0 = ra0[idx]
+        dec0 = dec0[idx]
+        fluxes = fluxes[idx]
+        ind = ind[idx]
+
     num_sources = fluxes.size
 
     mylog.debug("Generating spectra from %d sources.", num_sources)
@@ -330,6 +345,7 @@ def make_point_sources_file(
     input_sources=None,
     output_sources=None,
     diffuse_unresolved=True,
+    drop_brightest=None,
     prng=None,
 ):
     """
@@ -377,6 +393,11 @@ def make_point_sources_file(
     diffuse_unresolved : boolean, optional
         Add a diffuse component across the entire field of view to represent
         the unresolved flux from sources at very small fluxes. Default: True
+    drop_brightest : integer, optional
+        If set to an integer, drop the brightest *drop_brightest* sources
+        from the list. This is a poor-person's way of mimicking the
+        by-hand removal of point sources via wavdetect or some other
+        technique. Default: None
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -394,6 +415,7 @@ def make_point_sources_file(
         output_sources=output_sources,
         prng=prng,
         diffuse_unresolved=diffuse_unresolved,
+        drop_brightest=drop_brightest,
     )
     phlist = SimputPhotonList(
         events["ra"], events["dec"], events["energy"], events["flux"], name=name
@@ -408,7 +430,14 @@ def make_point_sources_file(
     return cat
 
 
-def make_point_source_list(output_file, fov, sky_center, prng=None):
+def make_point_source_list(
+    output_file,
+    fov,
+    sky_center,
+    drop_brightest=None,
+    prng=None,
+    overwrite=False,
+):
     r"""
     Make a list of point source properties and write it to an ASCII
     table file.
@@ -421,6 +450,13 @@ def make_point_source_list(output_file, fov, sky_center, prng=None):
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
+    drop_brightest : integer, optional
+        If set to an integer, drop the brightest *drop_brightest* sources
+        from the list. This is a poor-person's way of mimicking the
+        by-hand removal of point sources via wavdetect or some other
+        technique. Default: None
+    overwrite : boolean, optional
+        Set to True to overwrite previous files. Default: False
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -429,6 +465,14 @@ def make_point_source_list(output_file, fov, sky_center, prng=None):
     """
     ra0, dec0, fluxes, ind = generate_sources(fov, sky_center, prng=prng)
 
+    if drop_brightest is not None and drop_brightest > 0:
+        mylog.info("Dropping %d brightest sources.", drop_brightest)
+        idx = np.argsort(fluxes)[drop_brightest:]
+        ra0 = ra0[idx]
+        dec0 = dec0[idx]
+        fluxes = fluxes[idx]
+        ind = ind[idx]
+
     t = Table(
         [ra0, dec0, fluxes, ind], names=("RA", "Dec", "flux_0.5_2.0_keV", "index")
     )
@@ -436,4 +480,4 @@ def make_point_source_list(output_file, fov, sky_center, prng=None):
     t["Dec"].unit = "deg"
     t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
     t["index"].unit = ""
-    t.write(output_file, format="ascii.ecsv", overwrite=True)
+    t.write(output_file, format="ascii.ecsv", overwrite=overwrite)

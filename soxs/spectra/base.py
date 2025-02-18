@@ -14,7 +14,6 @@ from scipy.interpolate import interp1d
 from soxs.constants import ckms, erg_per_keV, hc, sigma_to_fwhm, sqrt2pi
 from soxs.utils import (
     get_data_file,
-    issue_deprecation_warning,
     line_width_equiv,
     mylog,
     parse_prng,
@@ -60,6 +59,11 @@ class Spectrum:
         self.de = np.diff(self.ebins)
         self.binscale = binscale
         self._compute_total_flux()
+        self.noisy = False
+        self.flux_err = None
+        self.exp_time = None
+        self.arf = None
+        self.rmf = None
 
     def _compute_total_flux(self):
         self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
@@ -314,7 +318,9 @@ class Spectrum:
         return plum, elum
 
     @classmethod
-    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear"):
+    def from_xspec_script(
+        cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None
+    ):
         """
         Create a model spectrum using a script file as
         input to XSPEC.
@@ -332,14 +338,32 @@ class Spectrum:
         binscale : string, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
+        xspec_settings : dict, optional
+            A dictionary of XSPEC settings to set before running the
+            model, each of which will be run as (e.g.) "xset {key} {value}".
+            Default: None.
         """
         with open(infile, "r") as f:
             xspec_in = f.readlines()
-        return cls._from_xspec(xspec_in, emin, emax, nbins, binscale=binscale)
+        return cls._from_xspec(
+            xspec_in,
+            emin,
+            emax,
+            nbins,
+            binscale=binscale,
+            xspec_settings=xspec_settings,
+        )
 
     @classmethod
     def from_xspec_model(
-        cls, model_string, params, emin, emax, nbins, binscale="linear"
+        cls,
+        model_string,
+        params,
+        emin,
+        emax,
+        nbins,
+        binscale="linear",
+        xspec_settings=None,
     ):
         """
         Create a model spectrum using a model string and parameters
@@ -362,6 +386,10 @@ class Spectrum:
         binscale : string, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
+        xspec_settings : dict, optional
+            A dictionary of XSPEC settings to set before running the
+            model, each of which will be run as (e.g.) "xset {key} {value}".
+            Default: None.
         """
         xspec_in = []
         model_str = "%s &" % model_string
@@ -369,16 +397,30 @@ class Spectrum:
             model_str += " %g &" % param
         model_str += " /*"
         xspec_in.append("model %s\n" % model_str)
-        return cls._from_xspec(xspec_in, emin, emax, nbins, binscale=binscale)
+        return cls._from_xspec(
+            xspec_in,
+            emin,
+            emax,
+            nbins,
+            binscale=binscale,
+            xspec_settings=xspec_settings,
+        )
 
     @classmethod
-    def _from_xspec(cls, xspec_in, emin, emax, nbins, binscale="linear"):
+    def _from_xspec(
+        cls, xspec_in, emin, emax, nbins, binscale="linear", xspec_settings=None
+    ):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         tmpdir = Path(tempfile.mkdtemp())
         curdir = Path.cwd()
-        xspec_in.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
-        xspec_in += [
+        outscript = []
+        if xspec_settings is not None:
+            for key, value in xspec_settings.items():
+                outscript.append(f"xset {key} {value}\n")
+        outscript.extend(xspec_in)
+        outscript.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
+        outscript += [
             f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
             "tclout energies\n",
             "puts $fp $xspec_tclout\n",
@@ -388,7 +430,7 @@ class Spectrum:
             "quit\n",
         ]
         with open(tmpdir / "xspec.in", "w") as f_xin:
-            f_xin.writelines(xspec_in)
+            f_xin.writelines(outscript)
         logfile = curdir / "xspec.log"
         if os.environ["SHELL"] in ["tcsh", "csh"]:
             init_suffix = "csh"
@@ -413,6 +455,51 @@ class Spectrum:
         de = np.diff(ebins)
         flux = np.array(lines[1].split()).astype("float64") / de
         shutil.rmtree(str(tmpdir))
+        return cls(ebins, flux, binscale=binscale)
+
+    @classmethod
+    def from_pyxspec_model(cls, model, spectrum_index=None):
+        """
+        Create a spectrum from a PyXspec model object.
+
+        Parameters
+        ----------
+        model : :class:`~xspec.Model`
+            The PyXspec model object.
+        spectrum_index : integer, optional
+            The index of the spectrum in the model object to
+            use for getting the energies and fluxes. Default: Will
+            use the first valid value of the spectral index, starting
+            from zero.
+        """
+        if spectrum_index is None:
+            spectrum_index = 0
+        try:
+            ebins = model.energies(spectrum_index)
+        except Exception as e:
+            if spectrum_index == 0:
+                spectrum_index = 1
+                ebins = model.energies(spectrum_index)
+            else:
+                raise e
+        ebins = np.array(ebins)
+        de = np.diff(ebins)
+        dloge = np.diff(np.log10(ebins))
+        if cls is Spectrum:
+            flux = model.values(spectrum_index)
+        elif cls is CountRateSpectrum:
+            flux = model.folded(spectrum_index)
+        else:
+            raise NotImplementedError(
+                f"from_pyxspec_model is not implemented for {cls}!"
+            )
+        flux = np.array(flux) / de
+        if np.isclose(de, de[0]).all():
+            binscale = "linear"
+        elif np.isclose(dloge, dloge[0]).all():
+            binscale = "log"
+        else:
+            binscale = "custom"
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
@@ -467,6 +554,9 @@ class Spectrum:
             The path to the file containing the spectrum.
         """
         arf = None
+        rmf = None
+        noisy = False
+        exp_time = None
         try:
             # First try reading the file as HDF5
             with h5py.File(filename, "r") as f:
@@ -481,6 +571,12 @@ class Spectrum:
                     )
                 if "arf" in f.attrs:
                     arf = f.attrs["arf"]
+                if "rmf" in f.attrs:
+                    rmf = f.attrs["rmf"]
+                if "noisy" in f.attrs:
+                    noisy = f.attrs["noisy"]
+                if "exp_time" in f.attrs:
+                    exp_time = f.attrs["exp_time"]
         except OSError:
             # If that fails, try reading the file as ASCII or FITS
             # using AstroPy QTable
@@ -493,8 +589,22 @@ class Spectrum:
             binscale = t.meta.get("binscale", "linear")
             if "arf" in t.meta:
                 arf = t.meta["arf"]
+            if "rmf" in t.meta:
+                rmf = t.meta["rmf"]
+            if "noisy" in t.meta:
+                noisy = t.meta["noisy"]
+            if "exp_time" in t.meta:
+                exp_time = t.meta["exp_time"]
         if arf is not None:
-            return cls(ebins, flux, arf, binscale=binscale)
+            return cls(
+                ebins,
+                flux,
+                arf,
+                binscale=binscale,
+                rmf=rmf,
+                noisy=noisy,
+                exp_time=exp_time,
+            )
         else:
             return cls(ebins, flux, binscale=binscale)
 
@@ -538,7 +648,7 @@ class Spectrum:
 
     def new_spec_from_band(self, emin, emax):
         """
-        Create a new :class:`~soxs.spectra.Spectrum` object
+        Create a new :class:`~soxs.spectra.base.Spectrum` object
         from a subset of an existing one defined by a particular
         energy band.
 
@@ -589,9 +699,13 @@ class Spectrum:
         self._compute_total_flux()
 
     def _write_fits_or_ascii(self):
-        meta = {"binscale": self.binscale}
-        if hasattr(self, "arf"):
+        meta = {"binscale": self.binscale, "noisy": self.noisy}
+        if self.arf is not None:
             meta["arf"] = self.arf.filename
+        if self.rmf is not None:
+            meta["rmf"] = self.rmf.filename
+        if self.exp_time is not None:
+            meta["exp_time"] = self.exp_time.value
         t = QTable(
             [self.ebins[:-1], self.ebins[1:], self.flux],
             names=["elo", "ehi", "flux"],
@@ -609,7 +723,7 @@ class Spectrum:
         specfile : string
             The filename to write the file to.
         overwrite : boolean, optional
-            Whether or not to overwrite an existing
+            Whether to overwrite an existing
             file with the same name. Default: False
         """
         t = self._write_fits_or_ascii()
@@ -629,7 +743,7 @@ class Spectrum:
         specfile : string
             The name of the file to write to.
         overwrite : boolean, optional
-            Whether or to overwrite an existing
+            Whether to overwrite an existing
             file with the same name. Default: False
         """
         suffix = PurePath(specfile).suffix.lower()
@@ -664,15 +778,13 @@ class Spectrum:
             f.create_dataset("emax", data=self.ebins[-1].value)
             f.create_dataset("spectrum", data=self.flux.value)
             f.attrs["binscale"] = self.binscale
-            if hasattr(self, "arf"):
+            f.attrs["noisy"] = self.noisy
+            if self.arf is not None:
                 f.attrs["arf"] = self.arf.filename
-
-    def write_h5_file(self, specfile, overwrite=False):
-        issue_deprecation_warning(
-            "'Spectrum.write_h5_file' is deprecated and has been "
-            "superseded by 'Spectrum.write_hdf5_file'"
-        )
-        self.write_hdf5_file(specfile, overwrite=overwrite)
+            if self.rmf is not None:
+                f.attrs["rmf"] = self.rmf.filename
+            if self.exp_time is not None:
+                f.attrs["exp_time"] = self.exp_time.value
 
     def write_fits_file(self, specfile, overwrite=False):
         """
@@ -806,7 +918,7 @@ class Spectrum:
             f = Gaussian1D(B, line_center, sigma)
         else:
             raise NotImplementedError(
-                "Line profile type '%s' " % line_type + "not implemented!"
+                f"Line profile type '{line_type}' not implemented!"
             )
         self.flux *= np.exp(-f(self.emid.value))
         self._compute_total_flux()
@@ -912,7 +1024,20 @@ class Spectrum:
                 yscale = ax.get_yscale()
         if ax is None:
             ax = fig.add_subplot(111)
-        ax.plot(self.emid, self.flux, lw=lw, label=label, **kwargs)
+        if self.noisy:
+            ax.errorbar(
+                self.emid,
+                self.flux,
+                xerr=0.5 * self.de,
+                yerr=self.flux_err,
+                fmt=".",
+                lw=lw,
+                ms=lw,
+                label=label,
+                **kwargs,
+            )
+        else:
+            ax.plot(self.emid, self.flux, lw=lw, label=label, **kwargs)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
         ax.set_xlim(xmin, xmax)
@@ -920,7 +1045,7 @@ class Spectrum:
         ax.set_xlabel("Energy (keV)", fontsize=fontsize)
         yunit = u.Unit(self._units).to_string("latex").replace("{}^{\\prime}", "arcmin")
         ax.set_ylabel("Spectrum (%s)" % yunit, fontsize=fontsize)
-        ax.tick_params(axis="both", labelsize=fontsize)
+        ax.tick_params(reset=True, axis="both", labelsize=fontsize)
         return fig, ax
 
 
@@ -1068,6 +1193,14 @@ class CountRateSpectrum(Spectrum):
         energies = u.Quantity(energy, "keV")
         return energies
 
+    _rate = None
+
+    @property
+    def rate(self):
+        if self._rate is None:
+            self._rate = self.flux * self.de
+        return self._rate
+
     @classmethod
     def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
@@ -1083,10 +1216,16 @@ class CountRateSpectrum(Spectrum):
 
 
 class ConvolvedSpectrum(CountRateSpectrum):
-    def __init__(self, ebins, flux, arf, binscale="linear"):
+    def __init__(
+        self, ebins, flux, arf, rmf=None, binscale="linear", noisy=False, exp_time=None
+    ):
         from numbers import Number
 
-        from soxs.response import AuxiliaryResponseFile, FlatResponse
+        from soxs.response import (
+            AuxiliaryResponseFile,
+            FlatResponse,
+            RedistributionMatrixFile,
+        )
 
         super(ConvolvedSpectrum, self).__init__(ebins, flux, binscale=binscale)
         if isinstance(arf, Number):
@@ -1094,51 +1233,223 @@ class ConvolvedSpectrum(CountRateSpectrum):
         elif isinstance(arf, str):
             arf = AuxiliaryResponseFile(arf)
         self.arf = arf
+        if rmf is not None and isinstance(rmf, str):
+            rmf = RedistributionMatrixFile(rmf)
+        self.rmf = rmf
+        self.noisy = noisy
+        if exp_time is not None:
+            exp_time = parse_value(exp_time, "s") * u.s
+        self.exp_time = exp_time
+        if self.exp_time is not None and self.noisy:
+            self.flux_err = (
+                np.sqrt(self.flux * self.exp_time * self.de).value
+                * u.photon
+                / (self.exp_time * self.de)
+            )
+        else:
+            self.flux_err = None
+
+    _counts = None
+
+    @property
+    def counts(self):
+        if self._counts is None and self.exp_time is not None:
+            counts = (self.rate * self.exp_time).value
+            if self.noisy:
+                counts = np.rint(counts.value).astype("int")
+            self._counts = counts * u.photon
+        return self._counts
+
+    _counts_err = None
+
+    @property
+    def counts_err(self):
+        if self._counts_err is None and self.exp_time is not None:
+            self._counts_err = np.sqrt(self.counts.value) * u.photon
+        return self._counts_err
+
+    def _check_binning_units(self, other):
+        super()._check_binning_units(other)
+        if self.noisy != other.noisy:
+            raise RuntimeError(
+                "The noisy flags for these two spectra are not the same!"
+            )
+        bad_exp = self.exp_time is None and other.exp_time is not None
+        bad_exp |= self.exp_time is not None and other.exp_time is None
+        if self.exp_time is not None and other.exp_time is not None:
+            bad_exp |= not np.isclose(self.exp_time.value, other.exp_time.value)
+        if bad_exp:
+            raise RuntimeError(
+                "The exposure times for these two spectra are not the same!"
+            )
+        bad_rmf = self.rmf is not None and other.rmf is None
+        bad_rmf |= self.rmf is None and other.rmf is not None
+        bad_rmf |= self.rmf.filename != other.rmf.filename
+        if bad_rmf:
+            raise RuntimeError("The RMF for these two spectra are not the same!")
+        bad_arf = self.arf is not None and other.arf is None
+        bad_arf |= self.arf is None and other.arf is not None
+        bad_arf |= self.arf.filename != other.arf.filename
+        if bad_arf:
+            raise RuntimeError("The ARF for these two spectra are not the same!")
 
     def __add__(self, other):
         self._check_binning_units(other)
         return ConvolvedSpectrum(
-            self.ebins, self.flux + other.flux, self.arf, binscale=self.binscale
+            self.ebins,
+            self.flux + other.flux,
+            self.arf,
+            binscale=self.binscale,
+            rmf=self.rmf,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
         )
 
     def __sub__(self, other):
         self._check_binning_units(other)
         return ConvolvedSpectrum(
-            self.ebins, self.flux - other.flux, self.arf, binscale=self.binscale
+            self.ebins,
+            self.flux - other.flux,
+            self.arf,
+            binscale=self.binscale,
+            rmf=self.rmf,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
+        )
+
+    def __mul__(self, other):
+        return ConvolvedSpectrum(
+            self.ebins,
+            other * self.flux,
+            self.arf,
+            binscale=self.binscale,
+            rmf=self.rmf,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
         )
 
     @classmethod
-    def convolve(cls, spectrum, arf, use_arf_energies=False):
+    def from_pha_file(cls, specfile):
         """
-        Generate a convolved spectrum by convolving a spectrum with an
-        ARF.
+        Create a :class:`~soxs.spectra.base.ConvolvedSpectrum` object by reading it in
+        from a PHA/PI file.
 
         Parameters
         ----------
-        spectrum : :class:`~soxs.spectra.Spectrum` object
+        specfile : string
+            The PHA/PI file to be opened.
+        """
+        from astropy.io import fits
+
+        from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+
+        with fits.open(specfile) as f:
+            hdu = f["SPECTRUM"]
+            if "COUNT_RATE" in hdu.data:
+                rate = hdu.data["COUNT_RATE"].astype("float64")
+            elif "RATE" in hdu.data:
+                rate = hdu.data["RATE"].astype("float64")
+            elif "COUNTS" in hdu.data and "EXPOSURE" in hdu.header:
+                rate = hdu.data["COUNTS"].astype("float64") / hdu.header["EXPOSURE"]
+            else:
+                raise RuntimeError(
+                    "Cannot determine count rate from this " "spectrum file!!"
+                )
+            rate *= u.photon / u.s
+            arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
+            rmf = RedistributionMatrixFile(hdu.header["RESPFILE"])
+        ebins = (
+            np.append(rmf.ebounds_data["E_MIN"], rmf.ebounds_data["E_MAX"][-1]) * u.keV
+        )
+        de = np.diff(ebins)
+        rate /= de
+        return cls(
+            ebins,
+            rate,
+            arf,
+            binscale="linear",
+            rmf=rmf,
+            noisy=bool(hdu.header["POISSERR"]),
+            exp_time=hdu.header["EXPOSURE"],
+        )
+
+    def to_pha_file(self, specfile, overwrite=False):
+        """
+        Write a :class:`~soxs.spectra.base.ConvolvedSpectrum` object to a
+        PHA/PI file.
+
+        Parameters
+        ----------
+        specfile : string
+            The PHA/PI file to be written.
+        overwrite : boolean, optional
+            Whether to overwrite an already existing file. Default: False
+        """
+        from soxs.events.spectra import _write_spectrum
+
+        event_params = {
+            "RESPFILE": os.path.split(self.rmf.filename)[-1],
+            "ANCRFILE": os.path.split(self.arf.filename)[-1],
+            "TELESCOP": self.rmf.header["TELESCOP"],
+            "INSTRUME": self.rmf.header["INSTRUME"],
+            "MISSION": self.rmf.header.get("MISSION", ""),
+            "CHANTYPE": self.rmf.chan_type,
+        }
+        if self.exp_time is not None:
+            event_params["EXPOSURE"] = self.exp_time.value
+            spec = self.counts.value
+        else:
+            spec = self.rate.value
+
+        bins = (np.arange(self.rmf.n_ch) + self.rmf.cmin).astype("int32")
+        _write_spectrum(
+            bins,
+            spec,
+            event_params,
+            specfile,
+            overwrite=overwrite,
+            noisy=self.noisy,
+        )
+
+    @classmethod
+    def convolve(cls, spectrum, arf, use_arf_energies=False, rmf=None):
+        """
+        Generate a model convolved spectrum by convolving a spectrum with an
+        ARF, and optionally an RMF.
+
+        Parameters
+        ----------
+        spectrum : :class:`~soxs.spectra.base.Spectrum` object
             The input spectrum to convolve with.
-        arf : string or :class:`~soxs.instrument.AuxiliaryResponseFile`
+        arf : string or :class:`~soxs.response.AuxiliaryResponseFile`
             The ARF to use in the convolution.
         use_arf_energies : boolean, optional
             If True, use the energy binning of the ARF for
             the convolved spectrum. Default: False, which uses
             the original spectral binning.
+        rmf : string or :class:`~soxs.response.RedistributionMatrixFile`, optional
+            The RMF to use in the convolution if desired. Default is no RMF.
         """
-        from soxs.response import AuxiliaryResponseFile
+        from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
 
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
-        if use_arf_energies:
-            flux = u.Quantity(
+        if rmf is not None and not isinstance(rmf, RedistributionMatrixFile):
+            rmf = RedistributionMatrixFile(rmf)
+        if use_arf_energies or rmf is not None:
+            rate = (
                 regrid_spectrum(
                     arf.ebins,
                     spectrum.ebins.value,
                     spectrum.flux.value * spectrum.de.value,
                 )
-                / arf.de,
-                "cm-2 keV-1 ph s-1",
+                * arf.eff_area
             )
-            rate = u.Quantity(arf.eff_area, "cm**2") * flux
+            if rmf is not None:
+                rate = rmf.convolve_spectrum(
+                    (rate * arf.de).value, 1.0, noisy=False, rate=True
+                )
+            rate = u.Quantity(rate / arf.de, "keV-1 ph s-1")
             binscale = "linear"
             ebins = u.Quantity(arf.ebins, "keV")
         else:
@@ -1146,11 +1457,11 @@ class ConvolvedSpectrum(CountRateSpectrum):
             rate = spectrum.flux * earea
             binscale = spectrum.binscale
             ebins = spectrum.ebins
-        return cls(ebins, rate, arf, binscale=binscale)
+        return cls(ebins, rate, arf, binscale=binscale, rmf=rmf)
 
     def new_spec_from_band(self, emin, emax):
         """
-        Create a new :class:`~soxs.spectra.ConvolvedSpectrum` object
+        Create a new :class:`~soxs.spectra.base.ConvolvedSpectrum` object
         from a subset of an existing one defined by a particular
         energy band.
 
@@ -1162,13 +1473,25 @@ class ConvolvedSpectrum(CountRateSpectrum):
             The maximum energy of the band in keV.
         """
         ebins, flux = self._new_spec_from_band(emin, emax)
-        return ConvolvedSpectrum(ebins, flux, self.arf, binscale=self.binscale)
+        return ConvolvedSpectrum(
+            ebins,
+            flux,
+            self.arf,
+            binscale=self.binscale,
+            noisy=self.noisy,
+            rmf=self.rmf,
+            exp_time=self.exp_time,
+        )
 
     def deconvolve(self):
         """
-        Return the deconvolved :class:`~soxs.spectra.Spectrum`
+        Return the deconvolved :class:`~soxs.spectra.base.Spectrum`
         object associated with this convolved spectrum.
         """
+        if self.rmf is not None:
+            raise NotImplementedError(
+                "deconvolve is not implemented for ConvolvedSpectra with RMFs!"
+            )
         earea = self.arf.interpolate_area(self.emid)
         flux = self.flux / earea
         flux = np.nan_to_num(flux.value)
@@ -1193,6 +1516,10 @@ class ConvolvedSpectrum(CountRateSpectrum):
             creating energies. Useful if you have to loop over
             a lot of spectra. Default: False
         """
+        if self.rmf is not None:
+            raise NotImplementedError(
+                "generate_energies is not implemented for ConvolvedSpectra with RMFs!"
+            )
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
         rate = self.total_flux.value

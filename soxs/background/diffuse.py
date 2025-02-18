@@ -3,8 +3,7 @@ from astropy.io import fits
 from regions import PixCoord
 
 from soxs.instrument import perform_dither
-from soxs.spectra import ConvolvedSpectrum
-from soxs.thermal_spectra import ApecGenerator
+from soxs.spectra import ApecGenerator, ConvolvedSpectrum
 from soxs.utils import (
     create_region,
     get_data_file,
@@ -119,7 +118,7 @@ def read_instr_spectrum(filename, ext_area):
     return count_rate
 
 
-def generate_channel_spectrum(count_rate, t_exp, solid_angle, prng=None):
+def generate_channel_spectrum(count_rate, t_exp, solid_angle, noisy=True, prng=None):
     """
     Generate photon energy channels from this diffuse
     background spectrum given an exposure time,
@@ -131,6 +130,8 @@ def generate_channel_spectrum(count_rate, t_exp, solid_angle, prng=None):
         The exposure time in seconds.
     solid_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
         The solid angle in arcmin**2.
+    noisy : boolean, optional
+        Should the spectrum be generated with Poisson noise? Default: True
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -141,11 +142,21 @@ def generate_channel_spectrum(count_rate, t_exp, solid_angle, prng=None):
     solid_angle = parse_value(solid_angle, "arcmin**2")
     prng = parse_prng(prng)
     fac = t_exp * solid_angle  # Backgrounds are normalized to 1 arcmin**2
-    return prng.poisson(lam=count_rate * fac).astype("int")
+    spec = count_rate * fac
+    if noisy:
+        spec = prng.poisson(lam=spec).astype("int")
+    return spec
 
 
 def make_diffuse_background(
-    foreground, instr_bkgnd, inst_spec, event_params, arf, rmf, prng=None
+    foreground,
+    instr_bkgnd,
+    inst_spec,
+    event_params,
+    arf,
+    rmf,
+    prng=None,
+    instr_bkgnd_scale=1.0,
 ):
     from collections import defaultdict
 
@@ -182,6 +193,7 @@ def make_diffuse_background(
         ncts = np.zeros(rmf.n_ch, dtype="int")
         if instr_bkgnd:
             ispec = read_instr_spectrum(bkgnd_spec[i][0], bkgnd_spec[i][1])
+            ispec *= instr_bkgnd_scale
             icts = generate_channel_spectrum(
                 ispec, event_params["exposure_time"], sa, prng=prng
             )

@@ -8,7 +8,7 @@ from tqdm.auto import tqdm
 
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spatial import BetaModel, construct_wcs
-from soxs.thermal_spectra import ApecGenerator
+from soxs.spectra import ApecGenerator
 from soxs.utils import mylog, parse_prng, parse_value, soxs_files_path
 
 # Cosmological parameters for the catalog

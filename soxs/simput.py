@@ -65,13 +65,20 @@ class LazyReadPyxsimEvents(Sequence):
         if not hasattr(self.events, "get_data"):
             raise impe
         self.filenames = self.events.filenames
+        self.phys_coord = bool(self.events.parameters.get("phys_coord", 0))
 
     def __getitem__(self, i):
-        ra, dec, energy, flux = self.events.get_data(i)
+        x, y, energy, flux = self.events.get_data(i)
         name = os.path.splitext(self.filenames[i])[0]
-        src = SimputPhotonList(
-            Quantity(ra, "deg"),
-            Quantity(dec, "deg"),
+        if self.phys_coord:
+            src_cls = PhysicalCoordsSource
+            unit = "kpc"
+        else:
+            src_cls = SimputPhotonList
+            unit = "deg"
+        src = src_cls(
+            Quantity(x, unit),
+            Quantity(y, unit),
             Quantity(energy, "keV"),
             flux,
             name=name,
@@ -111,6 +118,29 @@ class SimputCatalog:
         self.timing = np.array(["NULL"] * self.num_sources)
 
     @classmethod
+    def make_empty(cls, filename, overwrite=False):
+        """
+        Create an empty SIMPUT catalog file.
+
+        Parameters
+        ----------
+        filename : string
+            The name of the SIMPUT catalog file to write.
+        overwrite : boolean, optional
+            Whether to overwrite an existing file with
+            the same name. If src_filename=None and the source is
+            to the written to the SIMPUT catalog file, then this
+            argument is ignored. If src_filename is another value,
+            it exists, and overwrite=False, the source will be
+            appended to the file. Default: False
+        """
+        sc = cls([], [], [], [], [], [], [], [], filename)
+        if os.path.exists(filename) and not overwrite:
+            raise IOError(f"{filename} exists and overwrite=False!")
+        sc._write_catalog(overwrite=overwrite)
+        return sc
+
+    @classmethod
     def from_source(cls, filename, source, src_filename=None, overwrite=False):
         """
         Create a new :class:`~soxs.simput.SimputCatalog`
@@ -135,12 +165,8 @@ class SimputCatalog:
             argument is ignored. If src_filename is another value,
             it exists, and overwrite=False, the source will be
             appended to the file. Default: False
-
         """
-        sc = cls([], [], [], [], [], [], [], [], filename)
-        if os.path.exists(filename) and not overwrite:
-            raise IOError(f"{filename} exists and overwrite=False!")
-        sc._write_catalog(overwrite=overwrite)
+        sc = cls.make_empty(filename, overwrite)
         sc.append(source, src_filename=src_filename, overwrite=overwrite)
         return sc
 
@@ -250,7 +276,7 @@ class SimputCatalog:
         """
         Write the SIMPUT catalog to disk.
         """
-        src_id = np.arange(self.num_sources)
+        src_id = np.arange(self.num_sources) + 1
         col1 = fits.Column(name="SRC_ID", format="J", array=src_id)
         col2 = fits.Column(name="RA", format="D", array=self.ra)
         col3 = fits.Column(name="DEC", format="D", array=self.dec)
@@ -289,7 +315,7 @@ class SimputCatalog:
             f = [fits.PrimaryHDU(), wrhdu]
             fits.HDUList(f).writeto(self.filename, overwrite=True)
 
-    def append(self, source, src_filename=None, overwrite=False):
+    def append(self, source, src_filename=None, overwrite=False, quiet=False):
         """
         Add a source to this catalog.
 
@@ -308,6 +334,10 @@ class SimputCatalog:
             argument is ignored. If src_filename is another value,
             it exists, and overwrite=False, the source will be
             appended to the file. Default: False
+        quiet : boolean, optional
+            If True, log messages will not be displayed when
+            appending a SIMPUT source. Useful if you have to
+            append many sources at once. Default: False
         """
         self.src_names = np.append(self.src_names, source.name)
         self.ra = np.append(self.ra, source.ra)
@@ -324,7 +354,8 @@ class SimputCatalog:
             # Don't overwrite the SIMPUT catalog file!!
             overwrite = False
         elif overwrite and os.path.exists(src_filename):
-            mylog.warning("Overwriting %s.", src_filename)
+            if not quiet:
+                mylog.warning("Overwriting %s.", src_filename)
             os.remove(src_filename)
 
         extver = _determine_extver(src_filename, source.src_type.upper())
@@ -350,7 +381,11 @@ class SimputCatalog:
 
         self._write_catalog()
         source._write_source(
-            src_filename, extver, img_extver=img_extver, overwrite=overwrite
+            src_filename,
+            extver,
+            img_extver=img_extver,
+            overwrite=overwrite,
+            quiet=quiet,
         )
 
 
@@ -381,7 +416,9 @@ class SimputSource:
     def _get_source_hdu(self):
         return None, None
 
-    def _write_source(self, filename, extver, img_extver=None, overwrite=False):
+    def _write_source(
+        self, filename, extver, img_extver=None, overwrite=False, quiet=False
+    ):
         coldefs, header = self._get_source_hdu()
 
         tbhdu = fits.BinTableHDU.from_columns(coldefs)
@@ -402,7 +439,8 @@ class SimputSource:
             self.imhdu.header["EXTVER"] = img_extver
 
         if os.path.exists(filename) and not overwrite:
-            mylog.info("Appending source '%s' to %s.", self.name, filename)
+            if not quiet:
+                mylog.info("Appending source '%s' to %s.", self.name, filename)
             with fits.open(filename, mode="append") as f:
                 f.append(tbhdu)
                 if self.imhdu is not None:
@@ -410,9 +448,13 @@ class SimputSource:
                 f.flush()
         else:
             if os.path.exists(filename):
-                mylog.warning("Overwriting %s with source '%s'.", filename, self.name)
+                if not quiet:
+                    mylog.warning(
+                        "Overwriting %s with source '%s'.", filename, self.name
+                    )
             else:
-                mylog.info("Writing source '%s' to %s.", self.name, filename)
+                if not quiet:
+                    mylog.info("Writing source '%s' to %s.", self.name, filename)
             f = [fits.PrimaryHDU(), tbhdu]
             if self.imhdu is not None:
                 f.append(self.imhdu)
@@ -448,9 +490,8 @@ class SimputSpectrum(SimputSource):
             array=np.array([self.fluxdensity], dtype=np.object_),
         )
         col3 = fits.Column(name="NAME", format="48A", array=np.array([""]))
-        cols = [col1, col2, col3]
 
-        coldefs = fits.ColDefs(cols)
+        coldefs = fits.ColDefs([col1, col2, col3])
 
         header = {"REFRA": self.ra, "REFDEC": self.dec}
 
@@ -558,10 +599,10 @@ class SimputPhotonList(SimputSource):
         area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The effective area in cm**2. If one is creating
             events for a SIMPUT file, a constant should be
-            used and it must be large enough so that a
+            used, and it must be large enough so that a
             sufficiently large sample is drawn for the ARF.
         prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. Typically will only
+            A pseudo-random number generator. Typically, this will only
             be specified if you have a reason to generate the same
             set of random numbers, such as for a test. Default is None,
             which sets the seed based on the system time.
@@ -677,6 +718,30 @@ class SimputPhotonList(SimputSource):
         ax.set_ylabel("Dec")
         ax.tick_params(axis="both", labelsize=fontsize)
         return fig, ax
+
+
+class PhysicalCoordsSource(SimputSource):
+    src_type = "phys_coord"
+
+    def __init__(self, x, y, energy, flux, name=None):
+        emin = np.asarray(energy).min()
+        emax = np.asarray(energy).max()
+        super().__init__(emin, emax, flux, 0.0, 0.0, name=name)
+        self.events = {"x": x, "y": y, "energy": energy}
+        self.num_events = energy.size
+
+    def __getitem__(self, item):
+        return self.events[item]
+
+    def __contains__(self, item):
+        return item in self.events
+
+    def __iter__(self):
+        for key in self.events:
+            yield key
+
+    def _write_source(self, filename, extver, img_extver=None, overwrite=False):
+        raise NotImplementedError
 
 
 def write_photon_list(

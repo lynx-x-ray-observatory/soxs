@@ -15,8 +15,8 @@ from soxs.instrument_registry import (
 )
 from soxs.simput import SimputCatalog, SimputPhotonList, SimputSpectrum
 from soxs.spatial import AnnulusModel, BetaModel, DoubleBetaModel
+from soxs.spectra.thermal_spectra import ApecGenerator
 from soxs.tests.utils import file_answer_testing
-from soxs.thermal_spectra import ApecGenerator
 
 kT = Quantity(6.0, "keV")
 Z = 0.3
