@@ -1,7 +1,14 @@
 Events API
 ==========
 
-.. automodule:: soxs.events
+.. automodule:: soxs.events.images
     :members:
     :undoc-members:
-    :exclude-members: write_event_file, wcs_from_event_file, wcs_from_header, parse_region_args
+
+.. automodule:: soxs.events.spectra
+    :members:
+    :undoc-members:
+
+.. automodule:: soxs.events.tools
+    :members:
+    :undoc-members:
