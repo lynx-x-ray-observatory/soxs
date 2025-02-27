@@ -214,7 +214,7 @@ class Spectrum:
         emax = parse_value(emax, "keV")
         vlos = parse_value(vlos, "km/s") / ckms
         if vtot is None:
-            vtot = vlos
+            vtot = np.abs(vlos)
         else:
             vtot = parse_value(vtot, "km/s") / ckms
         shift = np.sqrt(1.0 - vtot**2) / (1.0 + vlos)
@@ -225,6 +225,7 @@ class Spectrum:
         de = np.diff(ebins)
         spec_new = (
             shift
+            * shift
             * shift
             * regrid_spectrum(
                 ebins / shift, self.ebins.value, self.flux.value * self.de.value
