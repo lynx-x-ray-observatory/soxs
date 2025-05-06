@@ -299,6 +299,8 @@ def plot_spectrum(
         noerr = True
     if plot_energy:
         rmf = hdu.header.get("RESPFILE", None)
+        if rmf.strip() == "":
+            rmf = None
         if rmf is not None:
             rmf = RedistributionMatrixFile(rmf)
             emin = rmf.ebounds_data["E_MIN"]
@@ -338,7 +340,13 @@ def plot_spectrum(
                 "spectrum, so I cannot plot in energy!"
             )
     else:
-        xmid = hdu.data[chantype]
+        try:
+            xmid = hdu.data[chantype]
+        except KeyError:
+            try:
+                xmid = hdu.data["CHANNEL"]
+            except KeyError:
+                raise KeyError("Cannot find CHANNEL or CHANTYPE in the spectrum!")
         xerr = 0.5
         xlabel = f"Channel ({chantype})"
     dx = 2.0 * xerr
