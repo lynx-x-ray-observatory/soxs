@@ -473,6 +473,20 @@ class Spectrum:
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
+    def _from_ext_model(cls, ebins, flux):
+        ebins = np.array(ebins)
+        de = np.diff(ebins)
+        dloge = np.diff(np.log10(ebins))
+        flux = np.array(flux) / de
+        if np.isclose(de, de[0]).all():
+            binscale = "linear"
+        elif np.isclose(dloge, dloge[0]).all():
+            binscale = "log"
+        else:
+            binscale = "custom"
+        return cls(ebins, flux, binscale=binscale)
+
+    @classmethod
     def from_pyxspec_model(cls, model, spectrum_index=None):
         """
         Create a spectrum from a PyXspec model object.
@@ -497,9 +511,6 @@ class Spectrum:
                 ebins = model.energies(spectrum_index)
             else:
                 raise e
-        ebins = np.array(ebins)
-        de = np.diff(ebins)
-        dloge = np.diff(np.log10(ebins))
         if cls is Spectrum:
             flux = model.values(spectrum_index)
         elif cls is CountRateSpectrum:
@@ -508,14 +519,30 @@ class Spectrum:
             raise NotImplementedError(
                 f"from_pyxspec_model is not implemented for {cls}!"
             )
-        flux = np.array(flux) / de
-        if np.isclose(de, de[0]).all():
-            binscale = "linear"
-        elif np.isclose(dloge, dloge[0]).all():
-            binscale = "log"
+        return cls._from_ext_model(ebins, flux)
+
+    @classmethod
+    def from_spex_model(cls, spex_session, isect=1):
+        """
+        Create a spectrum from a SPEX session.
+
+        Parameters
+        ----------
+        spex_session : :class:`~pyspex.spex.Session`
+            The SPEX session object.
+        isect : integer, optional
+            The sector in the SPEX session to use. Default: 1.
+        """
+        ss = spex_session.mod_spectrum
+        ss.get(isect)
+        ehi = ss.energy_upper.to_value("keV")
+        elo = ehi - ss.energy_width.to_value("keV")
+        ebins = np.append(elo, ehi[-1])
+        if cls is Spectrum:
+            flux = ss.spectrum.to_value("ph/(bin*s*cm**2)")
         else:
-            binscale = "custom"
-        return cls(ebins, flux, binscale=binscale)
+            raise NotImplementedError(f"from_spex_model is not implemented for {cls}!")
+        return cls._from_ext_model(ebins, flux)
 
     @classmethod
     def from_powerlaw(
