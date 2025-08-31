@@ -118,13 +118,29 @@ class Spectrum:
             self._compute_waves()
         return self._dwv
 
+    _binned_flux = None
+
+    @property
+    def binned_flux(self):
+        if self._binned_flux is None:
+            self._binned_flux = self.flux * self.de
+        return self._binned_flux
+
+    _binned_energy_flux = None
+
+    @property
+    def binned_energy_flux(self):
+        if self._binned_energy_flux is None:
+            self._binned_energy_flux = self.energy_flux * self.de
+        return self._binned_energy_flux
+
     @property
     def flux_per_wavelength(self):
-        return self.flux * self.de / self.dwv
+        return self.binned_flux / self.dwv
 
     @property
     def energy_flux_per_wavelength(self):
-        return self.energy_flux * self.de / self.dwv
+        return self.binned_energy_flux / self.dwv
 
     _fbins = None
 
@@ -152,11 +168,11 @@ class Spectrum:
 
     @property
     def flux_per_frequency(self):
-        return self.flux * self.de / self.df
+        return self.binned_flux / self.df
 
     @property
     def energy_flux_per_frequency(self):
-        return self.energy_flux * self.de / self.df
+        return self.binned_energy_flux / self.df
 
     def __add__(self, other):
         self._check_binning_units(other)
@@ -264,10 +280,8 @@ class Spectrum:
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
-        pflux = (self.flux * self.de)[range].sum()
-        eflux = (self.flux * self.emid.to("erg") * self.de)[range].sum() / (
-            1.0 * u.photon
-        )
+        pflux = self.binned_flux[range].sum()
+        eflux = self.binned_energy_flux[range].sum()
         return pflux, eflux
 
     def get_lum_in_band(self, emin, emax, redshift=0.0, dist=None, cosmology=None):
@@ -693,9 +707,9 @@ class Spectrum:
         emax = parse_value(emax, "keV")
         idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         if flux_type == "photons":
-            f = (self.flux * self.de)[idxs].sum()
+            f = self.binned_flux[idxs].sum()
         elif flux_type == "energy":
-            f = (self.flux * self.emid.to("erg") * self.de)[idxs].sum()
+            f = self.binned_energy_flux[idxs].sum()
         self.flux *= new_flux / f.value
         self._compute_total_flux()
 
