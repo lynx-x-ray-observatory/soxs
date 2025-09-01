@@ -498,7 +498,9 @@ class SimputSpectrum(SimputSource):
         return coldefs, header
 
     @classmethod
-    def from_spectrum(cls, name, spectral_model, ra, dec, imhdu=None):
+    def from_spectrum(
+        cls, name, spectral_model, ra, dec, imhdu=None, emin=None, emax=None
+    ):
         """
         Generates a SIMPUT spectrum model for a point source
         from a spectral model and a coordinate on the sky. An image
@@ -519,13 +521,30 @@ class SimputSpectrum(SimputSource):
             ImageHDU instance or the name of a file to read one from. If the
             name contains an HDU extension, e.g. "cluster.fits[1]" or
             "cluster.fits['perseus']", that extension will be loaded.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy of the band to calculate the reference flux in.
+            If not specified, the minimum energy of the spectral model will
+            be used. Default: None
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy of the band to calculate the reference flux in.
+            If not specified, the maximum energy of the spectral model will
+            be used. Default: None
         """
         if isinstance(imhdu, str):
             imhdu = process_fits_string(imhdu)
+        if emin is None:
+            emin = spectral_model.ebins.value.min()
+        else:
+            emin = parse_value(emin, "keV")
+        if emax is None:
+            emax = spectral_model.ebins.value.max()
+        else:
+            emax = parse_value(emax, "keV")
+        flux = spectral_model.get_flux_in_band(emin, emax)[1].value
         return cls(
-            spectral_model.ebins.value.min(),
-            spectral_model.ebins.value.max(),
-            spectral_model.total_energy_flux.value,
+            emin,
+            emax,
+            flux,
             spectral_model.emid.value,
             spectral_model.flux.value,
             ra,
