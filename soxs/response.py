@@ -43,6 +43,7 @@ class AuxiliaryResponseFile:
                 "float64"
             )
             self.max_area = self.eff_area.max()
+            self.nbins = self.elo.size
 
     @classmethod
     def from_instrument(cls, name):
@@ -245,6 +246,7 @@ class FlatResponse(AuxiliaryResponseFile):
         self.emid = 0.5 * (self.elo + self.ehi)
         self.eff_area = area * np.ones(nbins)
         self.max_area = area
+        self.nbins = nbins
 
     def interpolate_area(self, energy):
         return u.Quantity(self.max_area * np.ones_like(energy), "cm**2")
