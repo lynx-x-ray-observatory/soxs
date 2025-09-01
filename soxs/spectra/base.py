@@ -238,6 +238,15 @@ class Spectrum:
         binscale : string, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
+        vlos : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The line-of-sight velocity of the source, in km/s.
+            Used for Doppler-shifting the spectrum. Default: 0.0
+        vtot : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The total velocity magnitude of the source, in km/s.
+            If not set, it is assumed to be equal to the absolute
+            value of the vlos argument. This value is mainly relevant
+            if the velocity is relativistic and is not completely
+            along the sight line. Default: None
         """
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
