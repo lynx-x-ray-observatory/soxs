@@ -629,6 +629,11 @@ class Spectrum:
             ebins = np.append(t["elo"].value, t["ehi"].value[-1])
             flux = t["flux"].value
             binscale = t.meta.get("binscale", "linear")
+            if t.meta["units"] != cls._units:
+                raise ValueError(
+                    f"Spectrum units in file ({t.meta["units"]}) do not match "
+                    f"the expected units ({cls._units})!"
+                )
             if "arf" in t.meta:
                 arf = t.meta["arf"]
             if "rmf" in t.meta:
@@ -741,7 +746,7 @@ class Spectrum:
         self._compute_total_flux()
 
     def _write_fits_or_ascii(self):
-        meta = {"binscale": self.binscale, "noisy": self.noisy}
+        meta = {"binscale": self.binscale, "noisy": self.noisy, "units": self._units}
         if self.arf is not None:
             meta["arf"] = self.arf.filename
         if self.rmf is not None:
@@ -821,6 +826,7 @@ class Spectrum:
             f.create_dataset("spectrum", data=self.flux.value)
             f.attrs["binscale"] = self.binscale
             f.attrs["noisy"] = self.noisy
+            f.attrs["units"] = self._units
             if self.arf is not None:
                 f.attrs["arf"] = self.arf.filename
             if self.rmf is not None:
