@@ -1,3 +1,4 @@
+import copy
 import os
 import shutil
 import subprocess
@@ -64,6 +65,18 @@ class Spectrum:
         self.exp_time = None
         self.arf = None
         self.rmf = None
+
+    def __copy__(self):
+        # Create a new instance and copy attributes
+        return type(self)(self.ebins, self.flux, binscale=self.binscale)
+
+    def __deepcopy__(self, memo):
+        # Create a new instance and deep copy attributes
+        return type(self)(
+            copy.deepcopy(self.ebins, memo),
+            copy.deepcopy(self.flux, memo),
+            binscale=self.binscale,
+        )
 
     def _compute_total_flux(self):
         self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
@@ -1340,6 +1353,45 @@ class ConvolvedSpectrum(CountRateSpectrum):
         bad_arf |= self.arf.filename != other.arf.filename
         if bad_arf:
             raise RuntimeError("The ARF for these two spectra are not the same!")
+
+    def __copy__(self):
+        # Create a new instance and copy attributes
+        return type(self)(
+            self.ebins,
+            self.flux,
+            self.arf,
+            rmf=self.rmf,
+            binscale=self.binscale,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
+        )
+
+    def __deepcopy__(self, memo):
+        # Create a new instance and deep copy attributes
+        from soxs.response import (
+            AuxiliaryResponseFile,
+            FlatResponse,
+            RedistributionMatrixFile,
+        )
+
+        if self.arf is None:
+            arf = None
+        elif isinstance(self.arf, FlatResponse):
+            arf = FlatResponse(
+                self.arf.ebins[0], self.arf.ebins[-1], self.arf.max_area, self.arf.nbins
+            )
+        else:
+            arf = AuxiliaryResponseFile(self.arf.filename)
+        rmf = None if self.rmf is None else RedistributionMatrixFile(self.rmf.filename)
+        return type(self)(
+            copy.deepcopy(self.ebins, memo),
+            copy.deepcopy(self.flux, memo),
+            arf,
+            rmf=rmf,
+            binscale=self.binscale,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
+        )
 
     def __add__(self, other):
         self._check_binning_units(other)
