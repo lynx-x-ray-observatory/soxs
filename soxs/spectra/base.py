@@ -1597,3 +1597,11 @@ class ConvolvedSpectrum(CountRateSpectrum):
     @classmethod
     def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
+
+    @classmethod
+    def from_pyxspec_model(cls, model, spectrum_index=None):
+        raise NotImplementedError
+
+    @classmethod
+    def from_spex_model(cls, spex_session, isect=1):
+        raise NotImplementedError
