@@ -455,6 +455,40 @@ instrument_registry["lem_0.9eV"] = {
     "grating": False,
 }
 
+# ExCEED
+
+instrument_registry["exceed_outer_array"] = {
+    "name": "exceed_outer_array",
+    "arf": "exceed_093025.arf",
+    "rmf": "exceed_2.5eV_093025.rmf",
+    "bkgnd": ["exceed_2.5eV_093025_fov_bkg.pi", 900.0],
+    "num_pixels": 128,
+    "fov": 32.0,
+    "aimpt_coords": [0.0, 0.0],
+    "chips": [["Box", 0, 0, 128, 128]],
+    "focal_length": 4.0,
+    "dither": True,
+    "psf": ["gaussian", 10.0],
+    "imaging": True,
+    "grating": False,
+}
+
+instrument_registry["exceed_inner_array"] = {
+    "name": "exceed_inner_array",
+    "arf": "exceed_093025.arf",
+    "rmf": "exceed_1.3eV_093025.rmf",
+    "bkgnd": ["exceed_1.3eV_093025_fov_bkg.pi", 900.0],
+    "num_pixels": 28,
+    "fov": 7.0,
+    "aimpt_coords": [0.0, 0.0],
+    "chips": [["Box", 0, 0, 28, 28]],
+    "focal_length": 4.0,
+    "dither": True,
+    "psf": ["gaussian", 10.0],
+    "imaging": True,
+    "grating": False,
+}
+
 
 def add_instrument_to_registry(inst_spec):
     """
