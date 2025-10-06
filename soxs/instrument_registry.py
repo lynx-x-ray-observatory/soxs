@@ -274,13 +274,14 @@ for energy in ["meg", "heg"]:
 
 # XRISM Resolve
 
-for res in ["Hp_5eV", "Mp_6eV", "Lp_18eV"]:
-    for filt in ["", "fwBe_", "fwND_"]:
-        instrument_registry[f"xrism_resolve_{filt}{res}"] = {
-            "name": f"xrism_resolve_{filt}{res}",
-            "arf": f"rsl_pointsource_{filt}GVclosed.arf",
-            "rmf": f"rsl_{res}.rmf",
-            "bkgnd": [f"rsl_{res}_bkg.pi", 1.0],
+for res in ["Hp", "Lp"]:
+    for filt in ["GVC", "fwBe", "fwND"]:
+        rmf_res = "Hp_L_2025" if res == "Hp" else "Lp_18eV"
+        instrument_registry[f"xrism_resolve_{filt}_{res}"] = {
+            "name": f"xrism_resolve_{filt}_{res}",
+            "arf": f"rsl_pntsrc_{filt}_2025.arf",
+            "rmf": f"rsl_{rmf_res}.rmf",
+            "bkgnd": ["rsl_nxb_model_v1_1Bsec.fak", 8.7856944],
             "num_pixels": 6,
             "fov": 3.0,
             "aimpt_coords": [0.0, 0.0],
@@ -293,7 +294,7 @@ for res in ["Hp_5eV", "Mp_6eV", "Lp_18eV"]:
         }
 
 instrument_registry["xrism_resolve"] = deepcopy(
-    instrument_registry["xrism_resolve_Hp_5eV"]
+    instrument_registry["xrism_resolve_GVC_Hp"]
 )
 
 instrument_registry["xrism_resolve_1arcsec"] = deepcopy(
