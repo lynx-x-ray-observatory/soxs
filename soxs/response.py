@@ -198,6 +198,12 @@ class AuxiliaryResponseFile:
         """
         import matplotlib.pyplot as plt
 
+        plt.rc("font", size=18)
+        plt.rc("axes", linewidth=2)
+        plt.rc("xtick.major", width=2, size=5)
+        plt.rc("ytick.major", width=2, size=5)
+        plt.rc("xtick.minor", width=2, size=2)
+        plt.rc("ytick.minor", width=2, size=2)
         if xlabel is None:
             xlabel = "E (keV)"
         if ylabel is None:
