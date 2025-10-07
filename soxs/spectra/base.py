@@ -80,6 +80,8 @@ class Spectrum:
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
         self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
+        self._binned_flux = None
+        self._binned_energy_flux = None
 
     def _check_binning_units(self, other):
         if (
@@ -124,15 +126,11 @@ class Spectrum:
             self._compute_waves()
         return self._dwv
 
-    _binned_flux = None
-
     @property
     def binned_flux(self):
         if self._binned_flux is None:
             self._binned_flux = self.flux * self.de
         return self._binned_flux
-
-    _binned_energy_flux = None
 
     @property
     def binned_energy_flux(self):
