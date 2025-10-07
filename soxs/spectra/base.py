@@ -264,6 +264,16 @@ class Spectrum:
         return type(self)(ebins, spec_new, binscale=binscale)
 
     def restrict_within_band(self, emin=None, emax=None):
+        """
+        Zeros out the flux outside a specified energy band.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy in the band, in keV. Default is to use the lowest energy.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy in the band, in keV. Default is to use the highest energy.
+        """
         if emin is not None:
             emin = parse_value(emin, "keV")
             self.flux[self.emid.value < emin] = 0.0
