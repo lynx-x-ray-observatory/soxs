@@ -568,6 +568,53 @@ class Spectrum:
         return cls._from_ext_model(ebins, flux)
 
     @classmethod
+    def from_xstar_model(
+        cls, xstar_file, which_spectrum, cosmology=None, redshift=0.0, dist=None
+    ):
+        """
+        Create a spectrum from an XSTAR output FITS file. See the XSTAR manual
+        (link below) for details on how to generate the output file. Since
+        XSTAR outputs luminosity in its spectra, you must either provide a
+        redshift or a distance to the source to convert to flux.
+
+        https://heasarc.gsfc.nasa.gov/docs/software/xstar/
+
+        Parameters
+        ----------
+        xstar_file : string
+            The path to the XSTAR output FITS file, typically with
+            "spect1" in the filename.
+        which_spectrum : string
+            Which spectrum to extract from the file. Options are:
+            "emit_outward", "emit_inward", "transmitted", "incident"
+        redshift : float
+            The redshift to the source, assuming it is cosmological.
+        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The distance to the source, if it is not cosmological. If a unit
+            is not specified, it is assumed to be in kpc.
+        cosmology : :class:`~astropy.cosmology.Cosmology` object
+            An AstroPy cosmology object used to determine the luminosity
+            distance if needed. If not set, the default is the Planck 2018
+            cosmology.
+        """
+        from astropy.cosmology import Planck18
+
+        spec = CountRateSpectrum.from_xstar_model(xstar_file, which_spectrum)
+        if cosmology is None:
+            cosmology = Planck18
+        if redshift == 0.0 and dist is None:
+            raise ValueError(
+                "Either 'redshift' must be > 0 or 'dist' cannot "
+                "be None for 'from_xstar_model'!"
+            )
+        if dist is None:
+            D_A = cosmology.luminosity_distance(redshift).to_value("cm")
+        else:
+            D_A = u.Quantity(parse_value(dist, "kpc"), "kpc").to_value("cm")
+        flux = spec.flux.value / (4.0 * np.pi * D_A**2 * (1.0 + redshift) ** 2)
+        return cls(spec.ebins.value / (1.0 + redshift), flux, binscale="custom")
+
+    @classmethod
     def from_powerlaw(
         cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"
     ):
@@ -1156,6 +1203,49 @@ class CountRateSpectrum(Spectrum):
         if self._rate is None:
             self._rate = self.flux * self.de
         return self._rate
+
+    @classmethod
+    def from_xstar_model(cls, xstar_file, which_spectrum):
+        """
+        Load a count rate spectrum from an XSTAR output FITS file.
+        See the XSTAR manual (link below) for details on how to generate the
+        output file.
+
+        https://heasarc.gsfc.nasa.gov/docs/software/xstar/
+
+        Parameters
+        ----------
+        xstar_file : string
+            The path to the XSTAR output FITS file, typically with
+            "spect1" in the filename.
+        which_spectrum : string
+            Which spectrum to extract from the file. Options are:
+            "emit_outward", "emit_inward", "transmitted", "incident"
+        """
+        from astropy.io import fits
+
+        with fits.open(xstar_file) as f:
+            if "XSTAR_SPECTRA" not in f:
+                raise ValueError("No XSTAR_SPECTRA extension found in file!")
+            hdu = f["XSTAR_SPECTRA"]
+            # energies in file are bin left edges in eV
+            elow = (
+                hdu.data["energy"].astype("float64") * 1.0e-3
+            )  # convert from eV to keV
+            # bin sizes are logarithmic, use the size of the last bin to get the upper edge
+            de = elow[-1] / elow[-2]
+            emax = elow[-1] * de
+            ebins = np.append(elow, emax)
+            emid = 0.5 * (ebins[1:] + ebins[:-1])
+            if which_spectrum not in hdu.data.dtype.names:
+                raise ValueError(
+                    f"Spectrum '{which_spectrum}' not found in XSTAR file! "
+                    f"Options are: {hdu.data.dtype.names}"
+                )
+            rate = hdu.data[which_spectrum] * 1.0e38
+            rate /= emid * erg_per_keV
+            rate *= erg_per_keV
+            return cls(ebins, rate, binscale="custom")
 
     def apply_foreground_absorption(
         self, nH, model="wabs", redshift=0.0, abund_table="angr"
