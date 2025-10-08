@@ -665,30 +665,23 @@ class Spectrum:
         filename : string
             The path to the file containing the spectrum.
         """
-        arf = None
-        rmf = None
-        noisy = False
-        exp_time = None
+        kwargs = {}
         try:
             # First try reading the file as HDF5
             with h5py.File(filename, "r") as f:
                 flux = f["spectrum"][()]
                 nbins = flux.size
-                binscale = f.attrs.get("binscale", "linear")
+                binscale = f.attrs.get("binscale", None)
+                if binscale is None:
+                    raise ValueError(f"No binscale found in file {filename}!")
                 if binscale == "linear":
                     ebins = np.linspace(f["emin"][()], f["emax"][()], nbins + 1)
                 elif binscale == "log":
                     ebins = np.logspace(
                         np.log10(f["emin"][()]), np.log10(f["emax"][()]), nbins + 1
                     )
-                if "arf" in f.attrs:
-                    arf = f.attrs["arf"]
-                if "rmf" in f.attrs:
-                    rmf = f.attrs["rmf"]
-                if "noisy" in f.attrs:
-                    noisy = f.attrs["noisy"]
-                if "exp_time" in f.attrs:
-                    exp_time = f.attrs["exp_time"]
+                for key in ["arf", "rmf", "noisy", "exp_time"]:
+                    kwargs[key] = f.attrs.get(key, None)
         except OSError:
             # If that fails, try reading the file as ASCII or FITS
             # using AstroPy QTable
@@ -698,29 +691,25 @@ class Spectrum:
                 t = QTable.read(filename, format="ascii.ecsv")
             ebins = np.append(t["elo"].value, t["ehi"].value[-1])
             flux = t["flux"].value
-            binscale = t.meta.get("binscale", "linear")
-            if t.meta["units"] != cls._units:
+            binscale = t.meta.get("binscale", t.meta.get("BINSCALE", None))
+            if binscale is None:
+                raise ValueError(f"No binscale found in file {filename}!")
+            units = t.meta.get("units", t.meta.get("UNITS", None))
+            if units is None or units != cls._units:
                 raise ValueError(
-                    f"Spectrum units in file ({t.meta['units']}) do not match "
+                    f"Spectrum units in file ({t.meta['UNITS']}) do not match "
                     f"the expected units ({cls._units})!"
                 )
-            if "arf" in t.meta:
-                arf = t.meta["arf"]
-            if "rmf" in t.meta:
-                rmf = t.meta["rmf"]
-            if "noisy" in t.meta:
-                noisy = t.meta["noisy"]
-            if "exp_time" in t.meta:
-                exp_time = t.meta["exp_time"]
-        if arf is not None:
+            for key in ["arf", "rmf", "noisy", "exp_time"]:
+                kwargs[key] = t.meta.get(key, t.meta.get(key.upper(), None))
+        if "arf" in kwargs:
+            arf = kwargs.pop("arf")
             return cls(
                 ebins,
                 flux,
                 arf,
                 binscale=binscale,
-                rmf=rmf,
-                noisy=noisy,
-                exp_time=exp_time,
+                **kwargs,
             )
         else:
             return cls(ebins, flux, binscale=binscale)
