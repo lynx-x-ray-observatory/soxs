@@ -701,7 +701,7 @@ class Spectrum:
             binscale = t.meta.get("binscale", "linear")
             if t.meta["units"] != cls._units:
                 raise ValueError(
-                    f"Spectrum units in file ({t.meta["units"]}) do not match "
+                    f"Spectrum units in file ({t.meta['units']}) do not match "
                     f"the expected units ({cls._units})!"
                 )
             if "arf" in t.meta:
