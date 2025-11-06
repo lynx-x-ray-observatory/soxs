@@ -4,10 +4,7 @@ requires = [
     "setuptools_scm[toml]>=7.0.1",
     # see https://github.com/numpy/numpy/pull/18389
     "wheel>=0.36.2",
-
-    # Cython 3.0 is the next version after 0.29, and a major change,
-    # we forbid it until we can properly test against it
-    "Cython>=0.29.21,<3.1",
+    "Cython>=0.29.21",
     "numpy>=2.0.0,<3",
 ]
 
