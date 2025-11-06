@@ -3,6 +3,11 @@
 ChangeLog
 =========
 
+Version 5.0.1
+-------------
+
+This is a minor version update to SOXS that adds support for Python 3.14.
+
 Version 5.0.0
 -------------
 
