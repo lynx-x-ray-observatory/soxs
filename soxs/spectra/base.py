@@ -1,3 +1,4 @@
+import copy
 import os
 import shutil
 import subprocess
@@ -9,17 +10,10 @@ import numpy as np
 from astropy.modeling.functional_models import Gaussian1D
 from astropy.table import QTable
 from pathlib import Path, PurePath
-from scipy.interpolate import interp1d
 
 from soxs.constants import ckms, erg_per_keV, hc, sigma_to_fwhm, sqrt2pi
-from soxs.utils import (
-    get_data_file,
-    line_width_equiv,
-    mylog,
-    parse_prng,
-    parse_value,
-    regrid_spectrum,
-)
+from soxs.spectra.foreground_absorption import tbabs_cross_section, wabs_cross_section
+from soxs.utils import line_width_equiv, mylog, parse_prng, parse_value, regrid_spectrum
 
 
 class Energies(u.Quantity):
@@ -65,6 +59,18 @@ class Spectrum:
         self.arf = None
         self.rmf = None
 
+    def __copy__(self):
+        # Create a new instance and copy attributes
+        return type(self)(self.ebins, self.flux, binscale=self.binscale)
+
+    def __deepcopy__(self, memo):
+        # Create a new instance and deep copy attributes
+        return type(self)(
+            copy.deepcopy(self.ebins, memo),
+            copy.deepcopy(self.flux, memo),
+            binscale=self.binscale,
+        )
+
     def _compute_total_flux(self):
         self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
         self.total_flux = (self.flux * self.de).sum()
@@ -74,6 +80,8 @@ class Spectrum:
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
         self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
+        self._binned_flux = None
+        self._binned_energy_flux = None
 
     def _check_binning_units(self, other):
         if (
@@ -119,12 +127,24 @@ class Spectrum:
         return self._dwv
 
     @property
+    def binned_flux(self):
+        if self._binned_flux is None:
+            self._binned_flux = self.flux * self.de
+        return self._binned_flux
+
+    @property
+    def binned_energy_flux(self):
+        if self._binned_energy_flux is None:
+            self._binned_energy_flux = self.energy_flux * self.de
+        return self._binned_energy_flux
+
+    @property
     def flux_per_wavelength(self):
-        return self.flux * self.de / self.dwv
+        return self.binned_flux / self.dwv
 
     @property
     def energy_flux_per_wavelength(self):
-        return self.energy_flux * self.de / self.dwv
+        return self.binned_energy_flux / self.dwv
 
     _fbins = None
 
@@ -152,11 +172,11 @@ class Spectrum:
 
     @property
     def flux_per_frequency(self):
-        return self.flux * self.de / self.df
+        return self.binned_flux / self.df
 
     @property
     def energy_flux_per_frequency(self):
-        return self.energy_flux * self.de / self.df
+        return self.binned_energy_flux / self.df
 
     def __add__(self, other):
         self._check_binning_units(other)
@@ -209,6 +229,15 @@ class Spectrum:
         binscale : string, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
+        vlos : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The line-of-sight velocity of the source, in km/s.
+            Used for Doppler-shifting the spectrum. Default: 0.0
+        vtot : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The total velocity magnitude of the source, in km/s.
+            If not set, it is assumed to be equal to the absolute
+            value of the vlos argument. This value is mainly relevant
+            if the velocity is relativistic and is not completely
+            along the sight line. Default: None
         """
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
@@ -235,6 +264,16 @@ class Spectrum:
         return type(self)(ebins, spec_new, binscale=binscale)
 
     def restrict_within_band(self, emin=None, emax=None):
+        """
+        Zeros out the flux outside a specified energy band.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy in the band, in keV. Default is to use the lowest energy.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy in the band, in keV. Default is to use the highest energy.
+        """
         if emin is not None:
             emin = parse_value(emin, "keV")
             self.flux[self.emid.value < emin] = 0.0
@@ -264,10 +303,8 @@ class Spectrum:
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
-        pflux = (self.flux * self.de)[range].sum()
-        eflux = (self.flux * self.emid.to("erg") * self.de)[range].sum() / (
-            1.0 * u.photon
-        )
+        pflux = self.binned_flux[range].sum()
+        eflux = self.binned_energy_flux[range].sum()
         return pflux, eflux
 
     def get_lum_in_band(self, emin, emax, redshift=0.0, dist=None, cosmology=None):
@@ -459,6 +496,20 @@ class Spectrum:
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
+    def _from_ext_model(cls, ebins, flux):
+        ebins = np.array(ebins)
+        de = np.diff(ebins)
+        dloge = np.diff(np.log10(ebins))
+        flux = np.array(flux) / de
+        if np.isclose(de, de[0]).all():
+            binscale = "linear"
+        elif np.isclose(dloge, dloge[0]).all():
+            binscale = "log"
+        else:
+            binscale = "custom"
+        return cls(ebins, flux, binscale=binscale)
+
+    @classmethod
     def from_pyxspec_model(cls, model, spectrum_index=None):
         """
         Create a spectrum from a PyXspec model object.
@@ -483,9 +534,6 @@ class Spectrum:
                 ebins = model.energies(spectrum_index)
             else:
                 raise e
-        ebins = np.array(ebins)
-        de = np.diff(ebins)
-        dloge = np.diff(np.log10(ebins))
         if cls is Spectrum:
             flux = model.values(spectrum_index)
         elif cls is CountRateSpectrum:
@@ -494,14 +542,77 @@ class Spectrum:
             raise NotImplementedError(
                 f"from_pyxspec_model is not implemented for {cls}!"
             )
-        flux = np.array(flux) / de
-        if np.isclose(de, de[0]).all():
-            binscale = "linear"
-        elif np.isclose(dloge, dloge[0]).all():
-            binscale = "log"
+        return cls._from_ext_model(ebins, flux)
+
+    @classmethod
+    def from_spex_model(cls, spex_session, isect=1):
+        """
+        Create a spectrum from a SPEX session.
+
+        Parameters
+        ----------
+        spex_session : :class:`~pyspex.spex.Session`
+            The SPEX session object.
+        isect : integer, optional
+            The sector in the SPEX session to use. Default: 1.
+        """
+        ss = spex_session.mod_spectrum
+        ss.get(isect)
+        ehi = ss.energy_upper.to_value("keV")
+        elo = ehi - ss.energy_width.to_value("keV")
+        ebins = np.append(elo, ehi[-1])
+        if cls is Spectrum:
+            flux = ss.spectrum.to_value("ph/(bin*s*cm**2)")
         else:
-            binscale = "custom"
-        return cls(ebins, flux, binscale=binscale)
+            raise NotImplementedError(f"from_spex_model is not implemented for {cls}!")
+        return cls._from_ext_model(ebins, flux)
+
+    @classmethod
+    def from_xstar_model(
+        cls, xstar_file, which_spectrum, cosmology=None, redshift=0.0, dist=None
+    ):
+        """
+        Create a spectrum from an XSTAR output FITS file. See the XSTAR manual
+        (link below) for details on how to generate the output file. Since
+        XSTAR outputs luminosity in its spectra, you must either provide a
+        redshift or a distance to the source to convert to flux.
+
+        https://heasarc.gsfc.nasa.gov/docs/software/xstar/
+
+        Parameters
+        ----------
+        xstar_file : string
+            The path to the XSTAR output FITS file, typically with
+            "spect1" in the filename.
+        which_spectrum : string
+            Which spectrum to extract from the file. Options are:
+            "emit_outward", "emit_inward", "transmitted", "incident"
+        redshift : float
+            The redshift to the source, assuming it is cosmological.
+        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The distance to the source, if it is not cosmological. If a unit
+            is not specified, it is assumed to be in kpc.
+        cosmology : :class:`~astropy.cosmology.Cosmology` object
+            An AstroPy cosmology object used to determine the luminosity
+            distance if needed. If not set, the default is the Planck 2018
+            cosmology.
+        """
+        from astropy.cosmology import Planck18
+
+        spec = CountRateSpectrum.from_xstar_model(xstar_file, which_spectrum)
+        if cosmology is None:
+            cosmology = Planck18
+        if redshift == 0.0 and dist is None:
+            raise ValueError(
+                "Either 'redshift' must be > 0 or 'dist' cannot "
+                "be None for 'from_xstar_model'!"
+            )
+        if dist is None:
+            D_A = cosmology.luminosity_distance(redshift).to_value("cm")
+        else:
+            D_A = u.Quantity(parse_value(dist, "kpc"), "kpc").to_value("cm")
+        flux = spec.flux.value / (4.0 * np.pi * D_A**2 * (1.0 + redshift) ** 2)
+        return cls(spec.ebins.value / (1.0 + redshift), flux, binscale="custom")
 
     @classmethod
     def from_powerlaw(
@@ -554,30 +665,23 @@ class Spectrum:
         filename : string
             The path to the file containing the spectrum.
         """
-        arf = None
-        rmf = None
-        noisy = False
-        exp_time = None
+        kwargs = {}
         try:
             # First try reading the file as HDF5
             with h5py.File(filename, "r") as f:
                 flux = f["spectrum"][()]
                 nbins = flux.size
-                binscale = f.attrs.get("binscale", "linear")
+                binscale = f.attrs.get("binscale", None)
+                if binscale is None:
+                    raise ValueError(f"No binscale found in file {filename}!")
                 if binscale == "linear":
                     ebins = np.linspace(f["emin"][()], f["emax"][()], nbins + 1)
                 elif binscale == "log":
                     ebins = np.logspace(
                         np.log10(f["emin"][()]), np.log10(f["emax"][()]), nbins + 1
                     )
-                if "arf" in f.attrs:
-                    arf = f.attrs["arf"]
-                if "rmf" in f.attrs:
-                    rmf = f.attrs["rmf"]
-                if "noisy" in f.attrs:
-                    noisy = f.attrs["noisy"]
-                if "exp_time" in f.attrs:
-                    exp_time = f.attrs["exp_time"]
+                for key in ["arf", "rmf", "noisy", "exp_time"]:
+                    kwargs[key] = f.attrs.get(key, None)
         except OSError:
             # If that fails, try reading the file as ASCII or FITS
             # using AstroPy QTable
@@ -587,24 +691,25 @@ class Spectrum:
                 t = QTable.read(filename, format="ascii.ecsv")
             ebins = np.append(t["elo"].value, t["ehi"].value[-1])
             flux = t["flux"].value
-            binscale = t.meta.get("binscale", "linear")
-            if "arf" in t.meta:
-                arf = t.meta["arf"]
-            if "rmf" in t.meta:
-                rmf = t.meta["rmf"]
-            if "noisy" in t.meta:
-                noisy = t.meta["noisy"]
-            if "exp_time" in t.meta:
-                exp_time = t.meta["exp_time"]
-        if arf is not None:
+            binscale = t.meta.get("binscale", t.meta.get("BINSCALE", None))
+            if binscale is None:
+                raise ValueError(f"No binscale found in file {filename}!")
+            units = t.meta.get("units", t.meta.get("UNITS", None))
+            if units is None or units != cls._units:
+                raise ValueError(
+                    f"Spectrum units in file ({t.meta['UNITS']}) do not match "
+                    f"the expected units ({cls._units})!"
+                )
+            for key in ["arf", "rmf", "noisy", "exp_time"]:
+                kwargs[key] = t.meta.get(key, t.meta.get(key.upper(), None))
+        if "arf" in kwargs:
+            arf = kwargs.pop("arf")
             return cls(
                 ebins,
                 flux,
                 arf,
                 binscale=binscale,
-                rmf=rmf,
-                noisy=noisy,
-                exp_time=exp_time,
+                **kwargs,
             )
         else:
             return cls(ebins, flux, binscale=binscale)
@@ -693,14 +798,14 @@ class Spectrum:
         emax = parse_value(emax, "keV")
         idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         if flux_type == "photons":
-            f = (self.flux * self.de)[idxs].sum()
+            f = self.binned_flux[idxs].sum()
         elif flux_type == "energy":
-            f = (self.flux * self.emid.to("erg") * self.de)[idxs].sum()
+            f = self.binned_energy_flux[idxs].sum()
         self.flux *= new_flux / f.value
         self._compute_total_flux()
 
     def _write_fits_or_ascii(self):
-        meta = {"binscale": self.binscale, "noisy": self.noisy}
+        meta = {"binscale": self.binscale, "noisy": self.noisy, "units": self._units}
         if self.arf is not None:
             meta["arf"] = self.arf.filename
         if self.rmf is not None:
@@ -780,6 +885,7 @@ class Spectrum:
             f.create_dataset("spectrum", data=self.flux.value)
             f.attrs["binscale"] = self.binscale
             f.attrs["noisy"] = self.noisy
+            f.attrs["units"] = self._units
             if self.arf is not None:
                 f.attrs["arf"] = self.arf.filename
             if self.rmf is not None:
@@ -1050,121 +1156,6 @@ class Spectrum:
         return fig, ax
 
 
-def wabs_cross_section(E):
-    emax = np.array(
-        [
-            0.0,
-            0.1,
-            0.284,
-            0.4,
-            0.532,
-            0.707,
-            0.867,
-            1.303,
-            1.840,
-            2.471,
-            3.210,
-            4.038,
-            7.111,
-            8.331,
-            10.0,
-        ]
-    )
-    c0 = np.array(
-        [
-            17.3,
-            34.6,
-            78.1,
-            71.4,
-            95.5,
-            308.9,
-            120.6,
-            141.3,
-            202.7,
-            342.7,
-            352.2,
-            433.9,
-            629.0,
-            701.2,
-        ]
-    )
-    c1 = np.array(
-        [
-            608.1,
-            267.9,
-            18.8,
-            66.8,
-            145.8,
-            -380.6,
-            169.3,
-            146.8,
-            104.7,
-            18.7,
-            18.7,
-            -2.4,
-            30.9,
-            25.2,
-        ]
-    )
-    c2 = np.array(
-        [
-            -2150.0,
-            -476.1,
-            4.3,
-            -51.4,
-            -61.1,
-            294.0,
-            -47.7,
-            -31.5,
-            -17.0,
-            0.0,
-            0.0,
-            0.75,
-            0.0,
-            0.0,
-        ]
-    )
-    idxs = np.minimum(np.searchsorted(emax, E) - 1, 13)
-    sigma = (c0[idxs] + c1[idxs] * E + c2[idxs] * E * E) * 1.0e-24 / E**3
-    return sigma
-
-
-def get_wabs_absorb(e, nH):
-    sigma = wabs_cross_section(e)
-    return np.exp(-nH * 1.0e22 * sigma)
-
-
-_tbabs_emid = None
-_tbabs_sigma = None
-_tbabs_func = None
-
-
-def tbabs_cross_section(E, abund_table="angr"):
-    global _tbabs_emid
-    global _tbabs_sigma
-    global _tbabs_func
-    if _tbabs_func is None:
-        with h5py.File(get_data_file("tbabs_table.h5"), "r") as f:
-            _tbabs_sigma = f["cross_section"][abund_table][:]
-            nbins = _tbabs_sigma.size
-            ebins = np.linspace(f["emin"][()], f["emax"][()], nbins + 1)
-        _tbabs_emid = 0.5 * (ebins[1:] + ebins[:-1])
-        _tbabs_func = interp1d(
-            _tbabs_emid,
-            _tbabs_sigma,
-            bounds_error=False,
-            fill_value=(_tbabs_sigma[0], _tbabs_sigma[-1]),
-            assume_sorted=True,
-            copy=False,
-        )
-    return _tbabs_func(E)
-
-
-def get_tbabs_absorb(e, nH, abund_table="angr"):
-    sigma = tbabs_cross_section(e, abund_table=abund_table)
-    return np.exp(-nH * 1.0e22 * sigma)
-
-
 class CountRateSpectrum(Spectrum):
     _units = "photon/(s*keV)"
 
@@ -1203,16 +1194,78 @@ class CountRateSpectrum(Spectrum):
         return self._rate
 
     @classmethod
-    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0, nbins=10000):
-        raise NotImplementedError
+    def from_xstar_model(cls, xstar_file, which_spectrum):
+        """
+        Load a count rate spectrum from an XSTAR output FITS file.
+        See the XSTAR manual (link below) for details on how to generate the
+        output file.
 
-    @classmethod
-    def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
-        raise NotImplementedError
+        https://heasarc.gsfc.nasa.gov/docs/software/xstar/
+
+        Parameters
+        ----------
+        xstar_file : string
+            The path to the XSTAR output FITS file, typically with
+            "spect1" in the filename.
+        which_spectrum : string
+            Which spectrum to extract from the file. Options are:
+            "emit_outward", "emit_inward", "transmitted", "incident"
+        """
+        from astropy.io import fits
+
+        with fits.open(xstar_file) as f:
+            if "XSTAR_SPECTRA" not in f:
+                raise ValueError("No XSTAR_SPECTRA extension found in file!")
+            hdu = f["XSTAR_SPECTRA"]
+            # energies in file are bin left edges in eV
+            elow = (
+                hdu.data["energy"].astype("float64") * 1.0e-3
+            )  # convert from eV to keV
+            # bin sizes are logarithmic, use the size of the last bin to get the upper edge
+            de = elow[-1] / elow[-2]
+            emax = elow[-1] * de
+            ebins = np.append(elow, emax)
+            emid = 0.5 * (ebins[1:] + ebins[:-1])
+            if which_spectrum not in hdu.data.dtype.names:
+                raise ValueError(
+                    f"Spectrum '{which_spectrum}' not found in XSTAR file! "
+                    f"Options are: {hdu.data.dtype.names}"
+                )
+            rate = hdu.data[which_spectrum] * 1.0e38
+            rate /= emid * erg_per_keV
+            rate *= erg_per_keV
+            return cls(ebins, rate, binscale="custom")
 
     def apply_foreground_absorption(
         self, nH, model="wabs", redshift=0.0, abund_table="angr"
     ):
+        raise NotImplementedError
+
+    @classmethod
+    def from_xspec_model(
+        cls,
+        model_string,
+        params,
+        emin,
+        emax,
+        nbins,
+        binscale="linear",
+        xspec_settings=None,
+    ):
+        raise NotImplementedError
+
+    @classmethod
+    def from_xspec_script(
+        cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None
+    ):
+        raise NotImplementedError
+
+    @classmethod
+    def from_pyxspec_model(cls, model, spectrum_index=None):
+        raise NotImplementedError
+
+    @classmethod
+    def from_spex_model(cls, spex_session, isect=1):
         raise NotImplementedError
 
 
@@ -1293,6 +1346,45 @@ class ConvolvedSpectrum(CountRateSpectrum):
         bad_arf |= self.arf.filename != other.arf.filename
         if bad_arf:
             raise RuntimeError("The ARF for these two spectra are not the same!")
+
+    def __copy__(self):
+        # Create a new instance and copy attributes
+        return type(self)(
+            self.ebins,
+            self.flux,
+            self.arf,
+            rmf=self.rmf,
+            binscale=self.binscale,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
+        )
+
+    def __deepcopy__(self, memo):
+        # Create a new instance and deep copy attributes
+        from soxs.response import (
+            AuxiliaryResponseFile,
+            FlatResponse,
+            RedistributionMatrixFile,
+        )
+
+        if self.arf is None:
+            arf = None
+        elif isinstance(self.arf, FlatResponse):
+            arf = FlatResponse(
+                self.arf.ebins[0], self.arf.ebins[-1], self.arf.max_area, self.arf.nbins
+            )
+        else:
+            arf = AuxiliaryResponseFile(self.arf.filename)
+        rmf = None if self.rmf is None else RedistributionMatrixFile(self.rmf.filename)
+        return type(self)(
+            copy.deepcopy(self.ebins, memo),
+            copy.deepcopy(self.flux, memo),
+            arf,
+            rmf=rmf,
+            binscale=self.binscale,
+            noisy=self.noisy,
+            exp_time=self.exp_time,
+        )
 
     def __add__(self, other):
         self._check_binning_units(other)
@@ -1530,23 +1622,12 @@ class ConvolvedSpectrum(CountRateSpectrum):
         energies = Energies(energy, flux)
         return energies
 
-    def apply_foreground_absorption(self, nH, model="wabs"):
-        raise NotImplementedError
-
     @classmethod
-    def from_constant(cls, const_flux, emin=0.01, emax=50.0, nbins=10000):
+    def from_constant(cls, const_flux, emin, emax, nbins, binscale="linear"):
         raise NotImplementedError
 
     @classmethod
     def from_powerlaw(
-        cls, photon_index, redshift, norm, emin=0.01, emax=50.0, nbins=10000
+        cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"
     ):
-        raise NotImplementedError
-
-    @classmethod
-    def from_xspec_model(cls, model_string, params, emin=0.01, emax=50.0, nbins=10000):
-        raise NotImplementedError
-
-    @classmethod
-    def from_xspec_script(cls, infile, emin=0.01, emax=50.0, nbins=10000):
         raise NotImplementedError
