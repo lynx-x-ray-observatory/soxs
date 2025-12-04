@@ -585,7 +585,7 @@ class Spectrum:
         if redshift == 0.0 and dist is None:
             raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'from_xstar_model'!")
         if dist is None:
-            D_A = cosmology.luminosity_distance(redshift).to_value("cm")
+            D_A = cosmology.angular_diameter_distance(redshift).to_value("cm")
         else:
             D_A = u.Quantity(parse_value(dist, "kpc"), "kpc").to_value("cm")
         flux = spec.flux.value / (4.0 * np.pi * D_A**2 * (1.0 + redshift) ** 2)
