@@ -432,7 +432,7 @@ class RedistributionMatrixFile:
         prng = parse_prng(prng)
         exp_time = parse_value(exp_time, "s")
         if isinstance(cspec, ConvolvedSpectrum):
-            counts = cspec.flux.value * exp_time * cspec.de.value
+            counts = cspec.rate.value * exp_time * cspec.de.value
             if len(cspec.emid) == self.n_e and np.isclose(cspec.ebins.value, self.ebins).all():
                 spec = counts
             else:
