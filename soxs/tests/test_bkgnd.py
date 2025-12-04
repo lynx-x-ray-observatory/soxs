@@ -44,7 +44,7 @@ def test_uniform_bkgnd_scale():
     S = ncts / t_exp / fov
     foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
     f_sum = foreground.get_rate_in_band(0.5, 2.0)[0] / u.arcmin**2
-    i_sum = acisi_particle_bkgnd.get_rate_in_band(0.5, 2.0)[0] * (u.cm / u.arcmin) ** 2
+    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.5, 2.0)[0] * (u.cm / u.arcmin) ** 2
     b_sum = (f_sum + i_sum).to_value("ph/(arcsec**2*s)")
     assert np.abs(S - b_sum) / b_sum < 0.02
 
@@ -79,7 +79,7 @@ def test_simulate_bkgnd_spectrum():
     S = ncts / exp_time / fov
     foreground = make_frgnd_spectrum(hdxi_arf, hdxi_rmf)
     f_sum = foreground.get_rate_in_band(0.5, 2.0)[0] / u.arcmin**2
-    i_sum = acisi_particle_bkgnd.get_rate_in_band(0.5, 2.0)[0] * (u.cm / u.arcmin) ** 2
+    i_sum = acisi_particle_bkgnd.get_flux_in_band(0.5, 2.0)[0] * (u.cm / u.arcmin) ** 2
     b_sum = (f_sum + i_sum).to_value("ph/(arcsec**2*s)")
     assert np.abs(S - b_sum) / b_sum < 0.03
 
