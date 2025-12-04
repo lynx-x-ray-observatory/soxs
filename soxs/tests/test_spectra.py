@@ -95,5 +95,5 @@ def test_convolved_spectra():
     spec2 = cspec1.deconvolve()
     assert_array_equal(cspec1.ebins.value, cspec2.ebins.value)
     assert_array_equal(spec1.ebins.value, spec2.ebins.value)
-    assert_array_equal(cspec1.flux.value, cspec2.flux.value)
+    assert_array_equal(cspec1.rate.value, cspec2.rate.value)
     assert_allclose(spec1.flux.value, spec2.flux.value)

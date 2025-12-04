@@ -43,46 +43,46 @@ def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
     return e
 
 
-class Spectrum:
-    _units = "photon/(cm**2*s*keV)"
+class BaseSpectrum:
+    _units = ""  # set by subclasses
 
-    def __init__(self, ebins, flux, binscale="linear"):
+    def __init__(self, ebins, spec, binscale="linear"):
         self.ebins = u.Quantity(ebins, "keV")
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
-        self.flux = u.Quantity(flux, self._units)
+        self._spec = u.Quantity(spec, self._units)
         self.nbins = len(self.emid)
         self.de = np.diff(self.ebins)
         self.binscale = binscale
-        self._compute_total_flux()
+        self._compute_totals()
         self.noisy = False
-        self.flux_err = None
+        self._spec_err = None
         self.exp_time = None
         self.arf = None
         self.rmf = None
 
     def __copy__(self):
         # Create a new instance and copy attributes
-        return type(self)(self.ebins, self.flux, binscale=self.binscale)
+        return type(self)(self.ebins, self._spec.value, binscale=self.binscale)
 
     def __deepcopy__(self, memo):
         # Create a new instance and deep copy attributes
         return type(self)(
             copy.deepcopy(self.ebins, memo),
-            copy.deepcopy(self.flux, memo),
+            copy.deepcopy(self._spec, memo),
             binscale=self.binscale,
         )
 
-    def _compute_total_flux(self):
-        self.energy_flux = self.flux * self.emid.to("erg") / (1.0 * u.photon)
-        self.total_flux = (self.flux * self.de).sum()
-        self.total_energy_flux = (self.energy_flux * self.de).sum()
-        cumspec = np.cumsum((self.flux * self.de).value)
+    def _compute_totals(self):
+        self._energy_spec = self._spec * self.emid.to("erg") / (1.0 * u.photon)
+        self._total_spec = (self._spec * self.de).sum()
+        self._total_energy_spec = (self._energy_spec * self.de).sum()
+        cumspec = np.cumsum((self._spec * self.de).value)
         cumspec = np.insert(cumspec, 0, 0.0)
         cumspec /= cumspec[-1]
         self.cumspec = cumspec
-        self.func = lambda e: np.interp(e, self.emid.value, self.flux.value)
-        self._binned_flux = None
-        self._binned_energy_flux = None
+        self.func = lambda e: np.interp(e, self.emid.value, self._spec.value)
+        self._binned_spec = self._spec * self.de
+        self._binned_energy_spec = self._energy_spec * self.de
 
     def _check_binning_units(self, other):
         if self.nbins != other.nbins or not np.isclose(self.ebins.value, other.ebins.value).all():
@@ -124,26 +124,6 @@ class Spectrum:
             self._compute_waves()
         return self._dwv
 
-    @property
-    def binned_flux(self):
-        if self._binned_flux is None:
-            self._binned_flux = self.flux * self.de
-        return self._binned_flux
-
-    @property
-    def binned_energy_flux(self):
-        if self._binned_energy_flux is None:
-            self._binned_energy_flux = self.energy_flux * self.de
-        return self._binned_energy_flux
-
-    @property
-    def flux_per_wavelength(self):
-        return self.binned_flux / self.dwv
-
-    @property
-    def energy_flux_per_wavelength(self):
-        return self.binned_energy_flux / self.dwv
-
     _fbins = None
 
     @property
@@ -168,38 +148,30 @@ class Spectrum:
             self._compute_freqs()
         return self._df
 
-    @property
-    def flux_per_frequency(self):
-        return self.binned_flux / self.df
-
-    @property
-    def energy_flux_per_frequency(self):
-        return self.binned_energy_flux / self.df
-
     def __add__(self, other):
         self._check_binning_units(other)
-        return type(self)(self.ebins, self.flux + other.flux, binscale=self.binscale)
+        return type(self)(self.ebins, self._spec + other._spec, binscale=self.binscale)
 
     def __sub__(self, other):
         self._check_binning_units(other)
-        return type(self)(self.ebins, self.flux - other.flux, binscale=self.binscale)
+        return type(self)(self.ebins, self._spec - other._spec, binscale=self.binscale)
 
     def __mul__(self, other):
         if hasattr(other, "eff_area"):
             return ConvolvedSpectrum.convolve(self, other)
         else:
-            return type(self)(self.ebins, other * self.flux, binscale=self.binscale)
+            return type(self)(self.ebins, other * self._spec, binscale=self.binscale)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
-        return type(self)(self.ebins, self.flux / other)
+        return type(self)(self.ebins, self._spec / other)
 
     __div__ = __truediv__
 
     def __repr__(self):
         s = f"{type(self).__name__} ({self.ebins[0]} - {self.ebins[-1]})\n"
-        s += f"    Total Flux:\n    {self.total_flux}\n    {self.total_energy_flux}\n"
+        s += f"    Total Values:\n    {self._total_spec}\n    {self._total_energy_spec}\n"
         return s
 
     def __call__(self, e):
@@ -252,14 +224,14 @@ class Spectrum:
             shift
             * shift
             * shift
-            * regrid_spectrum(ebins / shift, self.ebins.value, self.flux.value * self.de.value)
+            * regrid_spectrum(ebins / shift, self.ebins.value, self._spec.value * self.de.value)
             / de
         )
         return type(self)(ebins, spec_new, binscale=binscale)
 
     def restrict_within_band(self, emin=None, emax=None):
         """
-        Zeros out the flux outside a specified energy band.
+        Zeros out the spectrum outside a specified energy band.
 
         Parameters
         ----------
@@ -270,215 +242,19 @@ class Spectrum:
         """
         if emin is not None:
             emin = parse_value(emin, "keV")
-            self.flux[self.emid.value < emin] = 0.0
+            self._spec[self.emid.value < emin] = 0.0
         if emax is not None:
             emax = parse_value(emax, "keV")
-            self.flux[self.emid.value > emax] = 0.0
-        self._compute_total_flux()
+            self._spec[self.emid.value > emax] = 0.0
+        self._compute_totals()
 
-    def get_flux_in_band(self, emin, emax):
-        """
-        Determine the total flux within a band specified
-        by an energy range.
-
-        Parameters
-        ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy in the band, in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy in the band, in keV.
-
-        Returns
-        -------
-        A tuple of values for the flux/intensity in the
-        band: the first value is in terms of the photon
-        rate, the second value is in terms of the energy rate.
-        """
+    def _get_total_in_band(self, emin, emax):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
         pflux = self.binned_flux[range].sum()
         eflux = self.binned_energy_flux[range].sum()
         return pflux, eflux
-
-    def get_lum_in_band(self, emin, emax, redshift=0.0, dist=None, cosmology=None):
-        """
-        Determine the total luminosity in the source within a band specified
-        by an energy range.
-
-        Parameters
-        ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy in the band, in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy in the band, in keV.
-        redshift : float
-            The redshift to the source, assuming it is cosmological.
-        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The distance to the source, if it is not cosmological. If a unit
-            is not specified, it is assumed to be in kpc.
-        cosmology : :class:`~astropy.cosmology.Cosmology` object
-            An AstroPy cosmology object used to determine the luminosity
-            distance if needed. If not set, the default is the Planck 2018
-            cosmology.
-
-        Returns
-        -------
-        A tuple of values for the luminosity in the band: the first
-        value is in terms of the photon rate, the second value is
-        in terms of the energy rate.
-        """
-        from astropy.cosmology import Planck18
-
-        if cosmology is None:
-            cosmology = Planck18
-        if redshift == 0.0 and dist is None:
-            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'get_lum_in_band'!")
-        pflux, eflux = self.get_flux_in_band(emin / (1.0 + redshift), emax / (1.0 + redshift))
-        if dist is None:
-            D_L = cosmology.luminosity_distance(redshift).to("cm")
-        else:
-            D_L = u.Quantity(parse_value(dist, "kpc"), "kpc").to("cm")
-        dist_fac = 4.0 * np.pi * D_L**2
-        elum = dist_fac * eflux
-        plum = dist_fac * pflux / (1.0 + redshift)
-        return plum, elum
-
-    @classmethod
-    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None):
-        """
-        Create a model spectrum using a script file as
-        input to XSPEC.
-
-        Parameters
-        ----------
-        infile : string
-            Path to the script file to use.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy of the spectrum in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy of the spectrum in keV.
-        nbins : integer
-            The number of bins in the spectrum.
-        binscale : string, optional
-            The scale of the energy binning: "linear" or "log".
-            Default: "linear"
-        xspec_settings : dict, optional
-            A dictionary of XSPEC settings to set before running the
-            model, each of which will be run as (e.g.) "xset {key} {value}".
-            Default: None.
-        """
-        with open(infile) as f:
-            xspec_in = f.readlines()
-        return cls._from_xspec(
-            xspec_in,
-            emin,
-            emax,
-            nbins,
-            binscale=binscale,
-            xspec_settings=xspec_settings,
-        )
-
-    @classmethod
-    def from_xspec_model(
-        cls,
-        model_string,
-        params,
-        emin,
-        emax,
-        nbins,
-        binscale="linear",
-        xspec_settings=None,
-    ):
-        """
-        Create a model spectrum using a model string and parameters
-        as input to XSPEC.
-
-        Parameters
-        ----------
-        model_string : string
-            The model to create the spectrum from. Use standard XSPEC
-            model syntax. Example: "wabs*mekal"
-        params : list
-            The list of parameters for the model. Must be in the order
-            that XSPEC expects.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy of the spectrum in keV
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy of the spectrum in keV
-        nbins : integer
-            The number of bins in the spectrum.
-        binscale : string, optional
-            The scale of the energy binning: "linear" or "log".
-            Default: "linear"
-        xspec_settings : dict, optional
-            A dictionary of XSPEC settings to set before running the
-            model, each of which will be run as (e.g.) "xset {key} {value}".
-            Default: None.
-        """
-        xspec_in = []
-        model_str = f"{model_string} &"
-        for param in params:
-            model_str += f" {param} &"
-        model_str += " /*"
-        xspec_in.append(f"model {model_str}\n")
-        return cls._from_xspec(
-            xspec_in,
-            emin,
-            emax,
-            nbins,
-            binscale=binscale,
-            xspec_settings=xspec_settings,
-        )
-
-    @classmethod
-    def _from_xspec(cls, xspec_in, emin, emax, nbins, binscale="linear", xspec_settings=None):
-        emin = parse_value(emin, "keV")
-        emax = parse_value(emax, "keV")
-        tmpdir = Path(tempfile.mkdtemp())
-        curdir = Path.cwd()
-        outscript = []
-        if xspec_settings is not None:
-            for key, value in xspec_settings.items():
-                outscript.append(f"xset {key} {value}\n")
-        outscript.extend(xspec_in)
-        outscript.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
-        outscript += [
-            f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
-            "tclout energies\n",
-            "puts $fp $xspec_tclout\n",
-            "tclout modval\n",
-            "puts $fp $xspec_tclout\n",
-            "close $fp\n",
-            "quit\n",
-        ]
-        with open(tmpdir / "xspec.in", "w") as f_xin:
-            f_xin.writelines(outscript)
-        logfile = curdir / "xspec.log"
-        if os.environ["SHELL"] in ["tcsh", "csh"]:
-            init_suffix = "csh"
-        else:
-            init_suffix = "sh"
-        sh_file = [
-            f"#!{os.environ['SHELL']}\n",
-            f". {os.environ['HEADAS']}/headas-init.{init_suffix}\n",
-            f"xspec - {str(tmpdir)}/xspec.in\n",
-        ]
-        with open(tmpdir / "xspec.sh", "w") as f_xs:
-            f_xs.writelines(sh_file)
-        with open(logfile, "ab") as xsout:
-            subprocess.call(
-                [os.environ["SHELL"], f"{str(tmpdir)}/xspec.sh"],
-                stdout=xsout,
-                stderr=xsout,
-            )
-        with open(tmpdir / "spec_therm.xspec") as f_s:
-            lines = f_s.readlines()
-        ebins = np.array(lines[0].split()).astype("float64")
-        de = np.diff(ebins)
-        flux = np.array(lines[1].split()).astype("float64") / de
-        shutil.rmtree(str(tmpdir))
-        return cls(ebins, flux, binscale=binscale)
 
     @classmethod
     def _from_ext_model(cls, ebins, flux):
@@ -528,69 +304,33 @@ class Spectrum:
         return cls._from_ext_model(ebins, flux)
 
     @classmethod
-    def from_spex_model(cls, spex_session, isect=1):
+    def from_constant(cls, const_flux, emin, emax, nbins, binscale="linear"):
         """
-        Create a spectrum from a SPEX session.
+        Create a spectrum from a constant model.
 
         Parameters
         ----------
-        spex_session : :class:`~pyspex.spex.Session`
-            The SPEX session object.
-        isect : integer, optional
-            The sector in the SPEX session to use. Default: 1.
+        const_flux : float
+            The value of the constant flux in the units
+            of the spectrum.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the spectrum in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the spectrum in keV.
+        nbins : integer
+            The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log".
+            Default: "linear"
         """
-        ss = spex_session.mod_spectrum
-        ss.get(isect)
-        ehi = ss.energy_upper.to_value("keV")
-        elo = ehi - ss.energy_width.to_value("keV")
-        ebins = np.append(elo, ehi[-1])
-        if cls is Spectrum:
-            flux = ss.spectrum.to_value("ph/(bin*s*cm**2)")
-        else:
-            raise NotImplementedError(f"from_spex_model is not implemented for {cls}!")
-        return cls._from_ext_model(ebins, flux)
-
-    @classmethod
-    def from_xstar_model(cls, xstar_file, which_spectrum, cosmology=None, redshift=0.0, dist=None):
-        """
-        Create a spectrum from an XSTAR output FITS file. See the XSTAR manual
-        (link below) for details on how to generate the output file. Since
-        XSTAR outputs luminosity in its spectra, you must either provide a
-        redshift or a distance to the source to convert to flux.
-
-        https://heasarc.gsfc.nasa.gov/docs/software/xstar/
-
-        Parameters
-        ----------
-        xstar_file : string
-            The path to the XSTAR output FITS file, typically with
-            "spect1" in the filename.
-        which_spectrum : string
-            Which spectrum to extract from the file. Options are:
-            "emit_outward", "emit_inward", "transmitted", "incident"
-        redshift : float
-            The redshift to the source, assuming it is cosmological.
-        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The distance to the source, if it is not cosmological. If a unit
-            is not specified, it is assumed to be in kpc.
-        cosmology : :class:`~astropy.cosmology.Cosmology` object
-            An AstroPy cosmology object used to determine the luminosity
-            distance if needed. If not set, the default is the Planck 2018
-            cosmology.
-        """
-        from astropy.cosmology import Planck18
-
-        spec = CountRateSpectrum.from_xstar_model(xstar_file, which_spectrum)
-        if cosmology is None:
-            cosmology = Planck18
-        if redshift == 0.0 and dist is None:
-            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'from_xstar_model'!")
-        if dist is None:
-            D_A = cosmology.angular_diameter_distance(redshift).to_value("cm")
-        else:
-            D_A = u.Quantity(parse_value(dist, "kpc"), "kpc").to_value("cm")
-        flux = spec.flux.value / (4.0 * np.pi * D_A**2 * (1.0 + redshift) ** 2)
-        return cls(spec.ebins.value / (1.0 + redshift), flux, binscale="custom")
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
+        if binscale == "linear":
+            ebins = np.linspace(emin, emax, nbins + 1)
+        elif binscale == "log":
+            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
+        flux = const_flux * np.ones(nbins)
+        return cls(ebins, flux, binscale=binscale)
 
     @classmethod
     def from_powerlaw(cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"):
@@ -698,42 +438,13 @@ class Spectrum:
         else:
             return cls(ebins, flux, binscale=binscale)
 
-    @classmethod
-    def from_constant(cls, const_flux, emin, emax, nbins, binscale="linear"):
-        """
-        Create a spectrum from a constant model.
-
-        Parameters
-        ----------
-        const_flux : float
-            The value of the constant flux in the units
-            of the spectrum.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy of the spectrum in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy of the spectrum in keV.
-        nbins : integer
-            The number of bins in the spectrum.
-        binscale : string, optional
-            The scale of the energy binning: "linear" or "log".
-            Default: "linear"
-        """
-        emin = parse_value(emin, "keV")
-        emax = parse_value(emax, "keV")
-        if binscale == "linear":
-            ebins = np.linspace(emin, emax, nbins + 1)
-        elif binscale == "log":
-            ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
-        flux = const_flux * np.ones(nbins)
-        return cls(ebins, flux, binscale=binscale)
-
     def _new_spec_from_band(self, emin, emax):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         band = np.logical_and(self.ebins.value >= emin, self.ebins.value <= emax)
         idxs = np.where(band)[0]
         ebins = self.ebins.value[idxs]
-        flux = self.flux.value[idxs[:-1]]
+        flux = self._spec.value[idxs[:-1]]
         return ebins, flux
 
     def new_spec_from_band(self, emin, emax):
@@ -752,42 +463,6 @@ class Spectrum:
         ebins, flux = self._new_spec_from_band(emin, emax)
         return type(self)(ebins, flux, binscale=self.binscale)
 
-    def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
-        """
-        Rescale the flux of the spectrum, optionally using
-        a specific energy band.
-
-        Parameters
-        ----------
-        new_flux : float
-            The new flux in units of photons/s/cm**2.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The minimum energy of the band to consider,
-            in keV. Default: Use the minimum energy of
-            the entire spectrum.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
-            The maximum energy of the band to consider,
-            in keV. Default: Use the maximum energy of
-            the entire spectrum.
-        flux_type : string, optional
-            The units of the flux to use in the rescaling:
-                "photons": photons/s/cm**2
-                "energy": erg/s/cm**2
-        """
-        if emin is None:
-            emin = self.ebins[0].value
-        if emax is None:
-            emax = self.ebins[-1].value
-        emin = parse_value(emin, "keV")
-        emax = parse_value(emax, "keV")
-        idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
-        if flux_type == "photons":
-            f = self.binned_flux[idxs].sum()
-        elif flux_type == "energy":
-            f = self.binned_energy_flux[idxs].sum()
-        self.flux *= new_flux / f.value
-        self._compute_total_flux()
-
     def _write_fits_or_ascii(self):
         meta = {"binscale": self.binscale, "noisy": self.noisy, "units": self._units}
         if self.arf is not None:
@@ -797,7 +472,7 @@ class Spectrum:
         if self.exp_time is not None:
             meta["exp_time"] = self.exp_time.value
         t = QTable(
-            [self.ebins[:-1], self.ebins[1:], self.flux],
+            [self.ebins[:-1], self.ebins[1:], self._spec],
             names=["elo", "ehi", "flux"],
             meta=meta,
         )
@@ -866,7 +541,7 @@ class Spectrum:
         with h5py.File(specfile, "w") as f:
             f.create_dataset("emin", data=self.ebins[0].value)
             f.create_dataset("emax", data=self.ebins[-1].value)
-            f.create_dataset("spectrum", data=self.flux.value)
+            f.create_dataset("spectrum", data=self._spec.value)
             f.attrs["binscale"] = self.binscale
             f.attrs["noisy"] = self.noisy
             f.attrs["units"] = self._units
@@ -935,103 +610,8 @@ class Spectrum:
                     "the TBabs model!"
                 )
             sigma = tbabs_cross_section(e, abund_table=abund_table)
-        self.flux *= np.exp(-nH * 1.0e22 * sigma)
-        self._compute_total_flux()
-
-    def add_emission_line(self, line_center, line_width, line_amp, line_type="gaussian"):
-        """
-        Add an emission line to this spectrum.
-
-        Parameters
-        ----------
-        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line center position in units of keV, in the observer frame.
-        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line width (FWHM) in units of keV, in the observer frame. Can also
-            input the line width in units of velocity in the rest frame. For the Voigt
-            profile, a list, tuple, or array of two values should be provided since there
-            are two line widths, the Lorentzian and the Gaussian (in that order).
-        line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The integrated line amplitude in the units of the flux
-        line_type : string, optional
-            The line profile type. Default: "gaussian"
-        """
-        line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
-        line_amp = parse_value(line_amp, self._units)
-        if line_type == "gaussian":
-            sigma = line_width / sigma_to_fwhm
-            line_amp /= sqrt2pi * sigma
-            f = Gaussian1D(line_amp, line_center, sigma)
-        else:
-            raise NotImplementedError(f'Line profile type "{line_type}" not implemented!')
-        self.flux += u.Quantity(f(self.emid.value), self._units)
-        self._compute_total_flux()
-
-    def add_absorption_line(self, line_center, line_width, equiv_width, line_type="gaussian"):
-        """
-        Add an absorption line to this spectrum.
-
-        Parameters
-        ----------
-        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line center position in units of keV, in the observer frame.
-        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line width (FWHM) in units of keV, in the observer frame. Can also
-            input the line width in units of velocity in the rest frame. For the Voigt
-            profile, a list, tuple, or array of two values should be provided since there
-            are two line widths, the Lorentzian and the Gaussian (in that order).
-        equiv_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The equivalent width of the line, in units of milli-Angstrom
-        line_type : string, optional
-            The line profile type. Default: "gaussian"
-        """
-        line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
-        equiv_width = parse_value(equiv_width, "1.0e-3*angstrom")  # in milliangstroms
-        equiv_width *= 1.0e-3  # convert to angstroms
-        if line_type == "gaussian":
-            sigma = line_width / sigma_to_fwhm
-            B = equiv_width * line_center * line_center
-            B /= hc * sqrt2pi * sigma
-            f = Gaussian1D(B, line_center, sigma)
-        else:
-            raise NotImplementedError(f"Line profile type '{line_type}' not implemented!")
-        self.flux *= np.exp(-f(self.emid.value))
-        self._compute_total_flux()
-
-    def generate_energies(self, t_exp, area, prng=None, quiet=False):
-        """
-        Generate photon energies from this spectrum
-        given an exposure time and effective area.
-
-        Parameters
-        ----------
-        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The exposure time in seconds.
-        area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The effective area in cm**2. If one is creating
-            events for a SIMPUT file, a constant should be
-            used, and it must be large enough so that a
-            sufficiently large sample is drawn for the ARF.
-        prng : :class:`~numpy.random.RandomState` object, integer, or None
-            A pseudo-random number generator. This will typically only
-            be specified if you have a reason to generate the same
-            set of random numbers, such as for a test. Default is None,
-            which sets the seed based on the system time.
-        quiet : boolean, optional
-            If True, log messages will not be displayed when
-            creating energies. Useful if you have to loop over
-            a lot of spectra. Default: False
-        """
-        t_exp = parse_value(t_exp, "s")
-        area = parse_value(area, "cm**2")
-        prng = parse_prng(prng)
-        rate = area * self.total_flux.value
-        energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
-        flux = np.sum(energy) * erg_per_keV / t_exp / area
-        energies = Energies(energy, flux)
-        return energies
+        self._spec *= np.exp(-nH * 1.0e22 * sigma)
+        self._compute_totals()
 
     def plot(
         self,
@@ -1105,9 +685,9 @@ class Spectrum:
         if self.noisy:
             ax.errorbar(
                 self.emid,
-                self.flux,
+                self._spec,
                 xerr=0.5 * self.de,
-                yerr=self.flux_err,
+                yerr=self._spec_err,
                 fmt=".",
                 lw=lw,
                 ms=lw,
@@ -1115,7 +695,7 @@ class Spectrum:
                 **kwargs,
             )
         else:
-            ax.plot(self.emid, self.flux, lw=lw, label=label, **kwargs)
+            ax.plot(self.emid, self._spec, lw=lw, label=label, **kwargs)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
         ax.set_xlim(xmin, xmax)
@@ -1127,8 +707,497 @@ class Spectrum:
         return fig, ax
 
 
-class CountRateSpectrum(Spectrum):
+class Spectrum(BaseSpectrum):
+    _units = "photon/(cm**2*s*keV)"
+
+    @property
+    def flux(self):
+        return self._spec
+
+    @property
+    def energy_flux(self):
+        return self._energy_spec
+
+    @property
+    def total_flux(self):
+        return self._total_spec
+
+    @property
+    def total_energy_flux(self):
+        return self._total_energy_spec
+
+    @property
+    def binned_flux(self):
+        return self._binned_spec
+
+    @property
+    def binned_energy_flux(self):
+        return self._binned_energy_spec
+
+    @property
+    def flux_per_wavelength(self):
+        return self.binned_flux / self.dwv
+
+    @property
+    def energy_flux_per_wavelength(self):
+        return self.binned_energy_flux / self.dwv
+
+    @property
+    def flux_per_frequency(self):
+        return self.binned_flux / self.df
+
+    @property
+    def energy_flux_per_frequency(self):
+        return self.binned_energy_flux / self.df
+
+    def add_emission_line(self, line_center, line_width, line_amp, line_type="gaussian"):
+        """
+        Add an emission line to this spectrum.
+
+        Parameters
+        ----------
+        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line center position in units of keV, in the observer frame.
+        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line width (FWHM) in units of keV, in the observer frame. Can also
+            input the line width in units of velocity in the rest frame. For the Voigt
+            profile, a list, tuple, or array of two values should be provided since there
+            are two line widths, the Lorentzian and the Gaussian (in that order).
+        line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The integrated line amplitude in the units of the flux
+        line_type : string, optional
+            The line profile type. Default: "gaussian"
+        """
+        line_center = parse_value(line_center, "keV")
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
+        line_amp = parse_value(line_amp, self._units)
+        if line_type == "gaussian":
+            sigma = line_width / sigma_to_fwhm
+            line_amp /= sqrt2pi * sigma
+            f = Gaussian1D(line_amp, line_center, sigma)
+        else:
+            raise NotImplementedError(f'Line profile type "{line_type}" not implemented!')
+        self._spec += u.Quantity(f(self.emid.value), self._units)
+        self._compute_totals()
+
+    def add_absorption_line(self, line_center, line_width, equiv_width, line_type="gaussian"):
+        """
+        Add an absorption line to this spectrum.
+
+        Parameters
+        ----------
+        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line center position in units of keV, in the observer frame.
+        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line width (FWHM) in units of keV, in the observer frame. Can also
+            input the line width in units of velocity in the rest frame. For the Voigt
+            profile, a list, tuple, or array of two values should be provided since there
+            are two line widths, the Lorentzian and the Gaussian (in that order).
+        equiv_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The equivalent width of the line, in units of milli-Angstrom
+        line_type : string, optional
+            The line profile type. Default: "gaussian"
+        """
+        line_center = parse_value(line_center, "keV")
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
+        equiv_width = parse_value(equiv_width, "1.0e-3*angstrom")  # in milliangstroms
+        equiv_width *= 1.0e-3  # convert to angstroms
+        if line_type == "gaussian":
+            sigma = line_width / sigma_to_fwhm
+            B = equiv_width * line_center * line_center
+            B /= hc * sqrt2pi * sigma
+            f = Gaussian1D(B, line_center, sigma)
+        else:
+            raise NotImplementedError(f"Line profile type '{line_type}' not implemented!")
+        self._spec *= np.exp(-f(self.emid.value))
+        self._compute_totals()
+
+    def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
+        """
+        Rescale the flux of the spectrum, optionally using
+        a specific energy band.
+
+        Parameters
+        ----------
+        new_flux : float
+            The new flux in units of photons/s/cm**2.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy of the band to consider,
+            in keV. Default: Use the minimum energy of
+            the entire spectrum.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy of the band to consider,
+            in keV. Default: Use the maximum energy of
+            the entire spectrum.
+        flux_type : string, optional
+            The units of the flux to use in the rescaling:
+                "photons": photons/s/cm**2
+                "energy": erg/s/cm**2
+        """
+        if emin is None:
+            emin = self.ebins[0].value
+        if emax is None:
+            emax = self.ebins[-1].value
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
+        idxs = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
+        if flux_type == "photons":
+            f = self._binned_spec[idxs].sum()
+        elif flux_type == "energy":
+            f = self._binned_energy_spec[idxs].sum()
+        self._spec *= new_flux / f.value
+        self._compute_totals()
+
+    def get_flux_in_band(self, emin, emax):
+        """
+        Determine the total flux within a band specified
+        by an energy range.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy in the band, in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy in the band, in keV.
+
+        Returns
+        -------
+        A tuple of values for the flux/intensity in the
+        band: the first value is in terms of the photon
+        rate, the second value is in terms of the energy rate.
+        """
+        return self._get_total_in_band(emin, emax)
+
+    def get_lum_in_band(self, emin, emax, redshift=0.0, dist=None, cosmology=None):
+        """
+        Determine the total luminosity in the source within a band specified
+        by an energy range.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy in the band, in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy in the band, in keV.
+        redshift : float
+            The redshift to the source, assuming it is cosmological.
+        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The distance to the source, if it is not cosmological. If a unit
+            is not specified, it is assumed to be in kpc.
+        cosmology : :class:`~astropy.cosmology.Cosmology` object
+            An AstroPy cosmology object used to determine the luminosity
+            distance if needed. If not set, the default is the Planck 2018
+            cosmology.
+
+        Returns
+        -------
+        A tuple of values for the luminosity in the band: the first
+        value is in terms of the photon rate, the second value is
+        in terms of the energy rate.
+        """
+        from astropy.cosmology import Planck18
+
+        if cosmology is None:
+            cosmology = Planck18
+        if redshift == 0.0 and dist is None:
+            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'get_lum_in_band'!")
+        pflux, eflux = self.get_flux_in_band(emin / (1.0 + redshift), emax / (1.0 + redshift))
+        if dist is None:
+            D_L = cosmology.luminosity_distance(redshift).to("cm")
+        else:
+            D_L = u.Quantity(parse_value(dist, "kpc"), "kpc").to("cm")
+        dist_fac = 4.0 * np.pi * D_L**2
+        elum = dist_fac * eflux
+        plum = dist_fac * pflux / (1.0 + redshift)
+        return plum, elum
+
+    def generate_energies(self, t_exp, area, prng=None, quiet=False):
+        """
+        Generate photon energies from this spectrum
+        given an exposure time and effective area.
+
+        Parameters
+        ----------
+        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The exposure time in seconds.
+        area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The effective area in cm**2. If one is creating
+            events for a SIMPUT file, a constant should be
+            used, and it must be large enough so that a
+            sufficiently large sample is drawn for the ARF.
+        prng : :class:`~numpy.random.RandomState` object, integer, or None
+            A pseudo-random number generator. This will typically only
+            be specified if you have a reason to generate the same
+            set of random numbers, such as for a test. Default is None,
+            which sets the seed based on the system time.
+        quiet : boolean, optional
+            If True, log messages will not be displayed when
+            creating energies. Useful if you have to loop over
+            a lot of spectra. Default: False
+        """
+        t_exp = parse_value(t_exp, "s")
+        area = parse_value(area, "cm**2")
+        prng = parse_prng(prng)
+        rate = area * self.total_flux.value
+        energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
+        flux = np.sum(energy) * erg_per_keV / t_exp / area
+        energies = Energies(energy, flux)
+        return energies
+
+    @classmethod
+    def from_count_rate_spectrum(cls, spec, cosmology=None, redshift=0.0, dist=None):
+        """
+        Create a Spectrum from a CountRateSpectrum object, assuming that the latter
+        is in the rest frame of the source. To get the Spectrum in the observer
+        frame, you must either provide a redshift or a distance to the source to
+        convert to flux.
+
+        Parameters
+        ----------
+        spec : :class:`~soxs.spectra.base.CountRateSpectrum`
+            The CountRateSpectrum object to create the spectrum from.
+        redshift : float
+            The redshift to the source, assuming it is cosmological.
+        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The distance to the source, if it is not cosmological. If a unit
+            is not specified, it is assumed to be in kpc.
+        cosmology : :class:`~astropy.cosmology.Cosmology` object
+            An AstroPy cosmology object used to determine the luminosity
+            distance if needed. If not set, the default is the Planck 2018
+            cosmology.
+        """
+        from astropy.cosmology import Planck18
+
+        if cosmology is None:
+            cosmology = Planck18
+        if redshift == 0.0 and dist is None:
+            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'from_xstar_model'!")
+        if dist is None:
+            D_A = cosmology.angular_diameter_distance(redshift).to_value("cm")
+        else:
+            D_A = u.Quantity(parse_value(dist, "kpc"), "kpc").to_value("cm")
+        flux = spec.rate.value / (4.0 * np.pi * D_A**2 * (1.0 + redshift) ** 2)
+        return cls(spec.ebins.value / (1.0 + redshift), flux, binscale="custom")
+
+    @classmethod
+    def from_spex_model(cls, spex_session, isect=1):
+        """
+        Create a spectrum from a SPEX session.
+
+        Parameters
+        ----------
+        spex_session : :class:`~pyspex.spex.Session`
+            The SPEX session object.
+        isect : integer, optional
+            The sector in the SPEX session to use. Default: 1.
+        """
+        ss = spex_session.mod_spectrum
+        ss.get(isect)
+        ehi = ss.energy_upper.to_value("keV")
+        elo = ehi - ss.energy_width.to_value("keV")
+        ebins = np.append(elo, ehi[-1])
+        flux = ss.spectrum.to_value("ph/(bin*s*cm**2)")
+        return cls._from_ext_model(ebins, flux)
+
+    @classmethod
+    def _from_xspec(cls, xspec_in, emin, emax, nbins, binscale="linear", xspec_settings=None):
+        emin = parse_value(emin, "keV")
+        emax = parse_value(emax, "keV")
+        tmpdir = Path(tempfile.mkdtemp())
+        curdir = Path.cwd()
+        outscript = []
+        if xspec_settings is not None:
+            for key, value in xspec_settings.items():
+                outscript.append(f"xset {key} {value}\n")
+        outscript.extend(xspec_in)
+        outscript.append(f"dummyrsp {emin} {emax} {nbins} {binscale[:3]}\n")
+        outscript += [
+            f"set fp [open {str(tmpdir)}/spec_therm.xspec w+]\n",
+            "tclout energies\n",
+            "puts $fp $xspec_tclout\n",
+            "tclout modval\n",
+            "puts $fp $xspec_tclout\n",
+            "close $fp\n",
+            "quit\n",
+        ]
+        with open(tmpdir / "xspec.in", "w") as f_xin:
+            f_xin.writelines(outscript)
+        logfile = curdir / "xspec.log"
+        if os.environ["SHELL"] in ["tcsh", "csh"]:
+            init_suffix = "csh"
+        else:
+            init_suffix = "sh"
+        sh_file = [
+            f"#!{os.environ['SHELL']}\n",
+            f". {os.environ['HEADAS']}/headas-init.{init_suffix}\n",
+            f"xspec - {str(tmpdir)}/xspec.in\n",
+        ]
+        with open(tmpdir / "xspec.sh", "w") as f_xs:
+            f_xs.writelines(sh_file)
+        with open(logfile, "ab") as xsout:
+            subprocess.call(
+                [os.environ["SHELL"], f"{str(tmpdir)}/xspec.sh"],
+                stdout=xsout,
+                stderr=xsout,
+            )
+        with open(tmpdir / "spec_therm.xspec") as f_s:
+            lines = f_s.readlines()
+        ebins = np.array(lines[0].split()).astype("float64")
+        de = np.diff(ebins)
+        flux = np.array(lines[1].split()).astype("float64") / de
+        shutil.rmtree(str(tmpdir))
+        return cls(ebins, flux, binscale=binscale)
+
+    @classmethod
+    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None):
+        """
+        Create a model spectrum using a script file as
+        input to XSPEC.
+
+        Parameters
+        ----------
+        infile : string
+            Path to the script file to use.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the spectrum in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the spectrum in keV.
+        nbins : integer
+            The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log".
+            Default: "linear"
+        xspec_settings : dict, optional
+            A dictionary of XSPEC settings to set before running the
+            model, each of which will be run as (e.g.) "xset {key} {value}".
+            Default: None.
+        """
+        with open(infile) as f:
+            xspec_in = f.readlines()
+        return cls._from_xspec(
+            xspec_in,
+            emin,
+            emax,
+            nbins,
+            binscale=binscale,
+            xspec_settings=xspec_settings,
+        )
+
+    @classmethod
+    def from_xspec_model(
+        cls,
+        model_string,
+        params,
+        emin,
+        emax,
+        nbins,
+        binscale="linear",
+        xspec_settings=None,
+    ):
+        """
+        Create a model spectrum using a model string and parameters
+        as input to XSPEC.
+
+        Parameters
+        ----------
+        model_string : string
+            The model to create the spectrum from. Use standard XSPEC
+            model syntax. Example: "wabs*mekal"
+        params : list
+            The list of parameters for the model. Must be in the order
+            that XSPEC expects.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the spectrum in keV
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the spectrum in keV
+        nbins : integer
+            The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log".
+            Default: "linear"
+        xspec_settings : dict, optional
+            A dictionary of XSPEC settings to set before running the
+            model, each of which will be run as (e.g.) "xset {key} {value}".
+            Default: None.
+        """
+        xspec_in = []
+        model_str = f"{model_string} &"
+        for param in params:
+            model_str += f" {param} &"
+        model_str += " /*"
+        xspec_in.append(f"model {model_str}\n")
+        return cls._from_xspec(
+            xspec_in,
+            emin,
+            emax,
+            nbins,
+            binscale=binscale,
+            xspec_settings=xspec_settings,
+        )
+
+
+class CountRateSpectrum(BaseSpectrum):
     _units = "photon/(s*keV)"
+
+    @property
+    def rate(self):
+        return self._spec
+
+    @property
+    def luminosity(self):
+        return self._energy_spec
+
+    @property
+    def total_rate(self):
+        return self._total_spec
+
+    @property
+    def total_luminosity(self):
+        return self._total_energy_spec
+
+    @property
+    def binned_rate(self):
+        return self._binned_spec
+
+    @property
+    def binned_luminosity(self):
+        return self._binned_energy_spec
+
+    @property
+    def rate_per_wavelength(self):
+        return self.binned_rate / self.dwv
+
+    @property
+    def luminosity_per_wavelength(self):
+        return self.binned_luminosity / self.dwv
+
+    @property
+    def rate_per_frequency(self):
+        return self.binned_flux / self.df
+
+    @property
+    def luminosity_per_frequency(self):
+        return self.binned_energy_flux / self.df
+
+    def get_lum_in_band(self, emin, emax):
+        """
+        Determine the total luminosity in the source within a band specified
+        by an energy range.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy in the band, in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy in the band, in keV.
+
+        Returns
+        -------
+        A tuple of values for the luminosity in the band: the first
+        value is in terms of the photon rate, the second value is
+        in terms of the energy rate.
+        """
+        return self._get_total_in_band(emin, emax)
 
     def generate_energies(self, t_exp, prng=None, quiet=False):
         """
@@ -1155,14 +1224,6 @@ class CountRateSpectrum(Spectrum):
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         energies = u.Quantity(energy, "keV")
         return energies
-
-    _rate = None
-
-    @property
-    def rate(self):
-        if self._rate is None:
-            self._rate = self.flux * self.de
-        return self._rate
 
     @classmethod
     def from_xstar_model(cls, xstar_file, which_spectrum):
@@ -1205,32 +1266,7 @@ class CountRateSpectrum(Spectrum):
             rate *= erg_per_keV
             return cls(ebins, rate, binscale="custom")
 
-    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0, abund_table="angr"):
-        raise NotImplementedError
-
-    @classmethod
-    def from_xspec_model(
-        cls,
-        model_string,
-        params,
-        emin,
-        emax,
-        nbins,
-        binscale="linear",
-        xspec_settings=None,
-    ):
-        raise NotImplementedError
-
-    @classmethod
-    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None):
-        raise NotImplementedError
-
-    @classmethod
-    def from_pyxspec_model(cls, model, spectrum_index=None):
-        raise NotImplementedError
-
-    @classmethod
-    def from_spex_model(cls, spex_session, isect=1):
+    def get_flux_in_band(self, emin, emax):
         raise NotImplementedError
 
 
@@ -1258,11 +1294,11 @@ class ConvolvedSpectrum(CountRateSpectrum):
             exp_time = parse_value(exp_time, "s") * u.s
         self.exp_time = exp_time
         if self.exp_time is not None and self.noisy:
-            self.flux_err = (
-                np.sqrt(self.flux * self.exp_time * self.de).value * u.photon / (self.exp_time * self.de)
+            self._spec_err = (
+                np.sqrt(self._spec * self.exp_time * self.de).value * u.photon / (self.exp_time * self.de)
             )
         else:
-            self.flux_err = None
+            self._spec_err = None
 
     _counts = None
 
@@ -1279,7 +1315,9 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     @property
     def counts_err(self):
-        if self._counts_err is None and self.exp_time is not None:
+        if self._spec_err is not None:
+            self._counts_err = self._spec_err * self.exp_time * self.de
+        elif self._counts_err is None and self.exp_time is not None:
             self._counts_err = np.sqrt(self.counts.value) * u.photon
         return self._counts_err
 
@@ -1308,7 +1346,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         # Create a new instance and copy attributes
         return type(self)(
             self.ebins,
-            self.flux,
+            self._spec,
             self.arf,
             rmf=self.rmf,
             binscale=self.binscale,
@@ -1333,7 +1371,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         rmf = None if self.rmf is None else RedistributionMatrixFile(self.rmf.filename)
         return type(self)(
             copy.deepcopy(self.ebins, memo),
-            copy.deepcopy(self.flux, memo),
+            copy.deepcopy(self._spec, memo),
             arf,
             rmf=rmf,
             binscale=self.binscale,
@@ -1345,7 +1383,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         self._check_binning_units(other)
         return ConvolvedSpectrum(
             self.ebins,
-            self.flux + other.flux,
+            self._spec + other._spec,
             self.arf,
             binscale=self.binscale,
             rmf=self.rmf,
@@ -1357,7 +1395,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         self._check_binning_units(other)
         return ConvolvedSpectrum(
             self.ebins,
-            self.flux - other.flux,
+            self._spec - other._spec,
             self.arf,
             binscale=self.binscale,
             rmf=self.rmf,
@@ -1368,7 +1406,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
     def __mul__(self, other):
         return ConvolvedSpectrum(
             self.ebins,
-            other * self.flux,
+            other * self._spec,
             self.arf,
             binscale=self.binscale,
             rmf=self.rmf,
@@ -1485,7 +1523,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
                 regrid_spectrum(
                     arf.ebins,
                     spectrum.ebins.value,
-                    spectrum.flux.value * spectrum.de.value,
+                    spectrum._spec.value * spectrum.de.value,
                 )
                 * arf.eff_area
             )
@@ -1496,7 +1534,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
             ebins = u.Quantity(arf.ebins, "keV")
         else:
             earea = arf.interpolate_area(spectrum.emid.value)
-            rate = spectrum.flux * earea
+            rate = spectrum._spec * earea
             binscale = spectrum.binscale
             ebins = spectrum.ebins
         return cls(ebins, rate, arf, binscale=binscale, rmf=rmf)
@@ -1533,7 +1571,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         if self.rmf is not None:
             raise NotImplementedError("deconvolve is not implemented for ConvolvedSpectra with RMFs!")
         earea = self.arf.interpolate_area(self.emid)
-        flux = self.flux / earea
+        flux = self._spec / earea
         flux = np.nan_to_num(flux.value)
         return Spectrum(self.ebins.value, flux, binscale=self.binscale)
 
@@ -1573,4 +1611,24 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     @classmethod
     def from_powerlaw(cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"):
+        raise NotImplementedError
+
+    @classmethod
+    def from_xspec_model(
+        cls,
+        model_string,
+        params,
+        emin,
+        emax,
+        nbins,
+        binscale="linear",
+        xspec_settings=None,
+    ):
+        raise NotImplementedError
+
+    @classmethod
+    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None):
+        raise NotImplementedError
+
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0, abund_table="angr"):
         raise NotImplementedError
