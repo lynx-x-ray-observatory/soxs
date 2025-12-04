@@ -102,7 +102,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
             arcminutes.
         """
         fov = parse_value(fov, "arcmin")
-        flux = spec.flux.value / fov / fov
+        flux = spec.rate.value / fov / fov
         return cls(spec.ebins.value, flux, spec.binscale)
 
     def generate_energies(self, t_exp, fov, prng=None, quiet=False):
@@ -131,7 +131,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         t_exp = parse_value(t_exp, "s")
         fov = parse_value(fov, "arcmin")
         prng = parse_prng(prng)
-        rate = fov * fov * self.total_flux.value
+        rate = fov * fov * self.total_rate.value
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy) * erg_per_keV / t_exp / earea.sum()
