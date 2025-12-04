@@ -7,7 +7,7 @@ spec = {
 exp_time = (1.0, "Ms")
 
 for cy in [0, 22]:
-    rmf = "aciss_aimpt_cy%d.rmf" % cy
+    rmf = f"aciss_aimpt_cy{cy}.rmf"
     instrument = (
         None,
         rmf,
