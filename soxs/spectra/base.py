@@ -1266,8 +1266,25 @@ class CountRateSpectrum(BaseSpectrum):
             rate *= erg_per_keV
             return cls(ebins, rate, binscale="custom")
 
-    def get_flux_in_band(self, emin, emax):
-        raise NotImplementedError
+    def get_rate_in_band(self, emin, emax):
+        """
+        Determine the total rate within a band specified
+        by an energy range.
+
+        Parameters
+        ----------
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy in the band, in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy in the band, in keV.
+
+        Returns
+        -------
+        A tuple of values for the rate/luminosity in the
+        band: the first value is in terms of the photon
+        rate, the second value is in terms of the energy rate.
+        """
+        return self._get_total_in_band(emin, emax)
 
 
 class ConvolvedSpectrum(CountRateSpectrum):

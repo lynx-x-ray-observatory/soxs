@@ -18,8 +18,8 @@ def spectrum_answer_testing(spec, filename, answer_store, rtol=1.0e-7):
     else:
         answer_spec = type(spec).from_file(testfile)
         assert_allclose(answer_spec.emid.value, spec.emid.value, rtol=rtol)
-        assert_allclose(answer_spec.flux.value, spec.flux.value, rtol=rtol)
-        assert answer_spec.flux.unit == spec.flux.unit
+        assert_allclose(answer_spec._spec.value, spec._spec.value, rtol=rtol)
+        assert answer_spec._spec.unit == spec._spec.unit
 
 
 def file_answer_testing(hdu, filename, answer_store):
