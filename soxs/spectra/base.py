@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import warnings
 
 import astropy.units as u
 import h5py
@@ -648,7 +649,12 @@ class Spectrum:
                 nbins = flux.size
                 binscale = f.attrs.get("binscale", None)
                 if binscale is None:
-                    raise ValueError(f"No binscale found in file {filename}!")
+                    warnings.warn(
+                        "This spectrum file was written without a 'binscale' attribute!"
+                        "a linear energy binning will be assumed.",
+                        stacklevel=2,
+                    )
+                    binscale = "linear"
                 if binscale == "linear":
                     ebins = np.linspace(f["emin"][()], f["emax"][()], nbins + 1)
                 elif binscale == "log":
@@ -666,7 +672,12 @@ class Spectrum:
             flux = t["flux"].value
             binscale = t.meta.get("binscale", t.meta.get("BINSCALE", None))
             if binscale is None:
-                raise ValueError(f"No binscale found in file {filename}!") from None
+                warnings.warn(
+                    "This spectrum file was written without a 'binscale' attribute!"
+                    "a linear energy binning will be assumed.",
+                    stacklevel=2,
+                )
+                binscale = "linear"
             units = t.meta.get("units", t.meta.get("UNITS", None))
             if units is None or units != cls._units:
                 raise ValueError(
