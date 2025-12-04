@@ -252,8 +252,8 @@ class BaseSpectrum:
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         range = np.logical_and(self.emid.value >= emin, self.emid.value <= emax)
-        pflux = self.binned_flux[range].sum()
-        eflux = self.binned_energy_flux[range].sum()
+        pflux = self._binned_spec[range].sum()
+        eflux = self._binned_energy_spec[range].sum()
         return pflux, eflux
 
     @classmethod
