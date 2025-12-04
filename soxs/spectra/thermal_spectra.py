@@ -15,6 +15,7 @@ from soxs.constants import (
     hc,
     m_u,
     metal_elem,
+    trace_elem,
 )
 from soxs.lib.broaden_lines import broaden_lines
 from soxs.utils import (
@@ -43,6 +44,7 @@ class CIEGenerator:
         nolines=False,
         abund_table=None,
         nei=False,
+        trace_abund=1.0,
     ):
         self.binscale = binscale
         if model_vers is None:
@@ -98,6 +100,7 @@ class CIEGenerator:
         self.maxlam = self.wvbins.max()
         self.var_elem_names = []
         self.var_ion_names = []
+        self.trace_abund = trace_abund
         if var_elem is None:
             self.var_elem = np.empty((0, 1), dtype="int")
         else:
@@ -127,9 +130,11 @@ class CIEGenerator:
         if self.nei:
             self.cosmic_elem = [elem for elem in [1, 2] if elem not in self.var_elem[:, 0]]
             self.metal_elem = []
+            self.trace_elem = []
         else:
             self.cosmic_elem = [elem for elem in cosmic_elem if elem not in self.var_elem[:, 0]]
             self.metal_elem = [elem for elem in metal_elem if elem not in self.var_elem[:, 0]]
+            self.trace_elem = [elem for elem in trace_elem if elem not in self.var_elem[:, 0]]
         if abund_table is None:
             abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, str):
@@ -237,6 +242,19 @@ class CIEGenerator:
                     line_fields,
                     coco_fields,
                     scale_factor,
+                )
+            for elem in self.trace_elem:
+                cspec[i, :] += (
+                    self._make_spectrum(
+                        self.Tvals[ikT],
+                        elem,
+                        0,
+                        velocity,
+                        line_fields,
+                        coco_fields,
+                        scale_factor,
+                    )
+                    * self.trace_abund
                 )
             # Next do the metals
             for elem in self.metal_elem:
@@ -424,6 +442,12 @@ class ApecGenerator(CIEGenerator):
         "cl17.03" : the abundance table used in Cloudy v17.03.
     nei : boolean, optional
         If True, use the non-equilibrium ionization tables.
+    trace_abund : float, optional
+        The abundance to give to trace elements (Li, Be, B, F, Na, P,
+        Cl, K, Sc, Ti, V, Cr, Mn, Co, Cu, Zn), relative to solar. Any
+        trace element that has an abundance already set using var_elem
+        will not be considered here. By default, trace element abundances
+        are set at 1 solar, similar to the behavior of XSPEC.
 
     Examples
     --------
@@ -444,6 +468,7 @@ class ApecGenerator(CIEGenerator):
         nolines=False,
         abund_table=None,
         nei=False,
+        trace_abund=1.0,
     ):
         super().__init__(
             "apec",
@@ -458,6 +483,7 @@ class ApecGenerator(CIEGenerator):
             nolines=nolines,
             abund_table=abund_table,
             nei=nei,
+            trace_abund=trace_abund,
         )
 
 
@@ -517,6 +543,12 @@ class SpexGenerator(CIEGenerator):
         except for elements not listed which are given zero abundance)
         "lodd" : from Lodders, K (2003, ApJ 591, 1220)
         "cl17.03" : the abundance table used in Cloudy v17.03.
+    trace_abund : float, optional
+        The abundance to give to trace elements (Li, Be, B, F, Na, P,
+        Cl, K, Sc, Ti, V, Cr, Mn, Co, Cu, Zn), relative to solar. Any
+        trace element that has an abundance already set using var_elem
+        will not be considered here. By default, trace element abundances
+        are set at 1 solar, similar to the behavior of XSPEC.
 
     Examples
     --------
@@ -535,6 +567,7 @@ class SpexGenerator(CIEGenerator):
         broadening=True,
         nolines=False,
         abund_table=None,
+        trace_abund=1.0,
     ):
         super().__init__(
             "spex",
@@ -549,6 +582,7 @@ class SpexGenerator(CIEGenerator):
             nolines=nolines,
             abund_table=abund_table,
             nei=False,
+            trace_abund=trace_abund,
         )
 
     def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
