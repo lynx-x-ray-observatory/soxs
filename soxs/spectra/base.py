@@ -650,8 +650,8 @@ class Spectrum:
                 binscale = f.attrs.get("binscale", None)
                 if binscale is None:
                     warnings.warn(
-                        "This spectrum file was written without a 'binscale' attribute!"
-                        "a linear energy binning will be assumed.",
+                        "This spectrum file was written without a 'binscale' attribute! "
+                        "A linear energy binning will be assumed.",
                         stacklevel=2,
                     )
                     binscale = "linear"
@@ -673,8 +673,8 @@ class Spectrum:
             binscale = t.meta.get("binscale", t.meta.get("BINSCALE", None))
             if binscale is None:
                 warnings.warn(
-                    "This spectrum file was written without a 'binscale' attribute!"
-                    "a linear energy binning will be assumed.",
+                    "This spectrum file was written without a 'binscale' attribute! "
+                    "A linear energy binning will be assumed.",
                     stacklevel=2,
                 )
                 binscale = "linear"
@@ -686,7 +686,7 @@ class Spectrum:
                 ) from None
             for key in ["arf", "rmf", "noisy", "exp_time"]:
                 kwargs[key] = t.meta.get(key, t.meta.get(key.upper(), None))
-        if "arf" in kwargs:
+        if kwargs["arf"] is not None:
             arf = kwargs.pop("arf")
             return cls(
                 ebins,
