@@ -20,9 +20,7 @@ from soxs.spectra import Spectrum
 from soxs.tests.utils import spectrum_answer_testing
 from soxs.utils import set_soxs_config, soxs_files_path
 
-acisi_particle_bkgnd = Spectrum.from_file(
-    os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5")
-)
+acisi_particle_bkgnd = Spectrum.from_file(os.path.join(soxs_files_path, "acisi_particle_bkgnd.h5"))
 
 
 def test_uniform_bkgnd_scale():
@@ -40,9 +38,7 @@ def test_uniform_bkgnd_scale():
     )
     ch_min = hdxi_rmf.eb_to_ch(0.5) - hdxi_rmf.cmin
     ch_max = hdxi_rmf.eb_to_ch(2.0) - hdxi_rmf.cmin
-    ncts = np.logical_and(
-        events[hdxi_rmf.chan_type] >= ch_min, events[hdxi_rmf.chan_type] <= ch_max
-    ).sum()
+    ncts = np.logical_and(events[hdxi_rmf.chan_type] >= ch_min, events[hdxi_rmf.chan_type] <= ch_max).sum()
     t_exp = event_params["exposure_time"]
     fov = (event_params["fov"] * 60.0) ** 2
     S = ncts / t_exp / fov
@@ -115,9 +111,7 @@ def test_add_background():
         overwrite=True,
     )
 
-    make_background_file(
-        "bkg_evt.fits", exp_time, "lynx_hdxi", [ra0, dec0], prng=prng2, overwrite=True
-    )
+    make_background_file("bkg_evt.fits", exp_time, "lynx_hdxi", [ra0, dec0], prng=prng2, overwrite=True)
 
     instrument_simulator(
         None,

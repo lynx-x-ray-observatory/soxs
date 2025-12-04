@@ -100,9 +100,9 @@ class MultiEEFPSF(PSF):
                 hdu = f[1]
                 unit = getattr(hdu.columns["Radius"], "unit", "arcsec")
                 eef_e = convert_endian(hdu.data["Energy"])
-                eef_r = Quantity(
-                    convert_endian(hdu.data["Theta"]), hdu.columns["Theta"].unit
-                ).to_value("arcmin")
+                eef_r = Quantity(convert_endian(hdu.data["Theta"]), hdu.columns["Theta"].unit).to_value(
+                    "arcmin"
+                )
                 eef_i = np.arange(eef_e.size)
         eef_r = (eef_r / plate_scale_arcmin) ** 2
         if np.all(eef_e > 100.0):
@@ -151,9 +151,7 @@ class MultiEEFPSF(PSF):
         with fits.open(self.eef_file) as f:
             hdu = f[1]
             rad = convert_endian(hdu.data["Radius"]).astype("float64") * self.eef_s
-            cdf = np.insert(
-                convert_endian(hdu.data["EEF"]).astype("float64"), 0, 0.0, axis=1
-            )
+            cdf = np.insert(convert_endian(hdu.data["EEF"]).astype("float64"), 0, 0.0, axis=1)
             cdf /= cdf[:, -1, np.newaxis]
         randvec = self.prng.uniform(low=0.0, high=1.0, size=n_evt)
         r = eef_cdf(idx_score, randvec, rad, cdf)
@@ -174,13 +172,9 @@ class ImagePSF(PSF):
         plate_scale_deg = plate_scale_arcmin / 60.0
         plate_scale_mm = inst["focal_length"] * 1e3 * np.deg2rad(plate_scale_deg)
         self.imhdu = fits.open(get_data_file(img_file))[hdu]
-        self.imctr = np.array(
-            [self.imhdu.header["CRPIX1"], self.imhdu.header["CRPIX2"]]
-        )
+        self.imctr = np.array([self.imhdu.header["CRPIX1"], self.imhdu.header["CRPIX2"]])
         unit = self.imhdu.header.get("CUNIT1", "mm")
-        self.scale = Quantity(
-            [self.imhdu.header["CDELT1"], self.imhdu.header["CDELT2"]], unit
-        ).to_value("mm")
+        self.scale = Quantity([self.imhdu.header["CDELT1"], self.imhdu.header["CDELT2"]], unit).to_value("mm")
         self.scale /= plate_scale_mm
 
     def scatter(self, x, y, e):

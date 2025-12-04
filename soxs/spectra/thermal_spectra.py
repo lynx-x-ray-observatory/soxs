@@ -63,9 +63,7 @@ class CIEGenerator:
         if binscale == "linear":
             self.ebins = np.linspace(self.emin, self.emax, nbins + 1, dtype="float64")
         elif binscale == "log":
-            self.ebins = np.logspace(
-                np.log10(self.emin), np.log10(self.emax), nbins + 1, dtype="float64"
-            )
+            self.ebins = np.logspace(np.log10(self.emin), np.log10(self.emax), nbins + 1, dtype="float64")
         self.de = np.diff(self.ebins)
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
         if nei:
@@ -85,10 +83,7 @@ class CIEGenerator:
             self.linefile = os.path.join(model_root, linefile)
         self.model_root = model_root
         if not os.path.exists(self.cocofile) or not os.path.exists(self.linefile):
-            raise IOError(
-                f"Cannot find the {model} files!\n {self.cocofile}\n, "
-                f"{self.linefile}"
-            )
+            raise OSError(f"Cannot find the {model} files!\n {self.cocofile}\n, {self.linefile}")
         mylog.debug("Using %s for generating spectral lines.", linefile)
         mylog.debug("Using %s for generating the continuum.", cocofile)
         self.nolines = nolines
@@ -97,9 +92,7 @@ class CIEGenerator:
         self.line_handle = fits.open(self.linefile)
         self.coco_handle = fits.open(self.cocofile)
         self.nT = self.line_handle[1].data.shape[0]
-        self.Tvals = convert_endian(self.line_handle[1].data.field("kT")).astype(
-            "float64"
-        )
+        self.Tvals = convert_endian(self.line_handle[1].data.field("kT")).astype("float64")
         self.dTvals = np.diff(self.Tvals)
         self.minlam = self.wvbins.min()
         self.maxlam = self.wvbins.max()
@@ -110,24 +103,18 @@ class CIEGenerator:
         else:
             self.var_elem = []
             if len(var_elem) != len(set(var_elem)):
-                raise RuntimeError(
-                    'Duplicates were found in the "var_elem" list! %s' % var_elem
-                )
+                raise RuntimeError(f'Duplicates were found in the "var_elem" list! {var_elem}')
             for elem in var_elem:
                 if "^" in elem:
                     if not self.nei:
-                        raise RuntimeError(
-                            "Cannot use different ionization states with a "
-                            "CIE plasma!"
-                        )
+                        raise RuntimeError("Cannot use different ionization states with a CIE plasma!")
                     el = elem.split("^")
                     e = el[0]
                     ion = int(el[1])
                 else:
                     if self.nei:
                         raise RuntimeError(
-                            "Variable elements must include the ionization "
-                            "state for NEI plasmas!"
+                            "Variable elements must include the ionization state for NEI plasmas!"
                         )
                     e = elem
                     ion = 0
@@ -135,38 +122,26 @@ class CIEGenerator:
             self.var_elem.sort(key=lambda x: (x[0], x[1]))
             self.var_elem = np.array(self.var_elem, dtype="int")
             self.var_elem_names = [elem_names[e[0]] for e in self.var_elem]
-            self.var_ion_names = [
-                "%s^%d" % (elem_names[e[0]], e[1]) for e in self.var_elem
-            ]
+            self.var_ion_names = [f"{elem_names[e[0]]}^{e[1]}" for e in self.var_elem]
         self.num_var_elem = len(self.var_elem)
         if self.nei:
-            self.cosmic_elem = [
-                elem for elem in [1, 2] if elem not in self.var_elem[:, 0]
-            ]
+            self.cosmic_elem = [elem for elem in [1, 2] if elem not in self.var_elem[:, 0]]
             self.metal_elem = []
         else:
-            self.cosmic_elem = [
-                elem for elem in cosmic_elem if elem not in self.var_elem[:, 0]
-            ]
-            self.metal_elem = [
-                elem for elem in metal_elem if elem not in self.var_elem[:, 0]
-            ]
+            self.cosmic_elem = [elem for elem in cosmic_elem if elem not in self.var_elem[:, 0]]
+            self.metal_elem = [elem for elem in metal_elem if elem not in self.var_elem[:, 0]]
         if abund_table is None:
             abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, str):
             if len(abund_table) != 30:
-                raise RuntimeError(
-                    "User-supplied abundance tables must be 30 elements long!"
-                )
+                raise RuntimeError("User-supplied abundance tables must be 30 elements long!")
             self.atable = np.concatenate([[0.0], np.array(abund_table)])
         else:
             self.atable = abund_tables[abund_table].copy()
         self._atable = self.atable.copy()
         self._atable[1:] /= abund_tables["angr"][1:]
 
-    def _make_spectrum(
-        self, kT, element, ion, velocity, line_fields, coco_fields, scale_factor
-    ):
+    def _make_spectrum(self, kT, element, ion, velocity, line_fields, coco_fields, scale_factor):
         tmpspec = np.zeros(self.nbins)
 
         if not self.nolines:
@@ -189,9 +164,7 @@ class CIEGenerator:
                 vec = np.histogram(E0, self.ebins, weights=amp)[0]
             tmpspec += vec
 
-        ind = np.where(
-            (coco_fields["Z"] == element) & (coco_fields["rmJ"] == ion + int(self.nei))
-        )[0]
+        ind = np.where((coco_fields["Z"] == element) & (coco_fields["rmJ"] == ion + int(self.nei)))[0]
 
         if len(ind) == 0:
             return tmpspec
@@ -202,21 +175,13 @@ class CIEGenerator:
 
         n_cont = coco_fields["N_Cont"][ind]
         e_cont = coco_fields["E_Cont"][ind][:n_cont].astype("float64") * scale_factor
-        continuum = (
-            coco_fields["Continuum"][ind][:n_cont].astype("float64")
-            * self._atable[element]
-        )
+        continuum = coco_fields["Continuum"][ind][:n_cont].astype("float64") * self._atable[element]
 
         tmpspec += np.interp(self.emid, e_cont, continuum) * de0
 
         n_pseudo = coco_fields["N_Pseudo"][ind]
-        e_pseudo = (
-            coco_fields["E_Pseudo"][ind][:n_pseudo].astype("float64") * scale_factor
-        )
-        pseudo = (
-            coco_fields["Pseudo"][ind][:n_pseudo].astype("float64")
-            * self._atable[element]
-        )
+        e_pseudo = coco_fields["E_Pseudo"][ind][:n_pseudo].astype("float64") * scale_factor
+        pseudo = coco_fields["Pseudo"][ind][:n_pseudo].astype("float64") * self._atable[element]
 
         tmpspec += np.interp(self.emid, e_pseudo, pseudo) * de0
 
@@ -342,8 +307,7 @@ class CIEGenerator:
             raise RuntimeError(
                 "The supplied set of abundances is not the "
                 "same as that was originally set!\n"
-                "Free elements: %s\nAbundances: %s"
-                % (set(elem_abund.keys()), set(self.var_elem_names))
+                f"Free elements: {set(elem_abund.keys())}\nAbundances: {set(self.var_elem_names)}"
             )
         kT, dT, tindex, v = self._spectrum_init(kT, velocity)
         if tindex >= self.Tvals.shape[0] - 1 or tindex < 0:
@@ -388,8 +352,7 @@ class CIEGenerator:
             raise RuntimeError(
                 "The supplied set of abundances is not the "
                 "same as that was originally set!\n"
-                "Free elements: %s\nAbundances: %s"
-                % (set(elem_abund.keys()), set(self.var_ion_names))
+                f"Free elements: {set(elem_abund.keys())}\nAbundances: {set(self.var_ion_names)}"
             )
         kT, dT, tindex, v = self._spectrum_init(kT, velocity)
         if tindex >= self.Tvals.shape[0] - 1 or tindex < 0:
@@ -589,9 +552,7 @@ class SpexGenerator(CIEGenerator):
         )
 
     def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
-        raise RuntimeError(
-            "SPEX NEI spectra are not supported in this " "version of SOXS!"
-        )
+        raise RuntimeError("SPEX NEI spectra are not supported in this version of SOXS!")
 
 
 metal_tab_names = {
@@ -643,9 +604,7 @@ class AtableGenerator:
         if binscale == "linear":
             self.ebins = np.linspace(self.emin, self.emax, nbins + 1)
         elif binscale == "log":
-            self.ebins = np.logspace(
-                np.log10(self.emin), np.log10(self.emax), nbins + 1
-            )
+            self.ebins = np.logspace(np.log10(self.emin), np.log10(self.emax), nbins + 1)
         self.de = np.diff(self.ebins)
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
         self.n_D = 1
@@ -672,31 +631,21 @@ class AtableGenerator:
         mylog.debug("Opening %s.", self.cosmic_table)
         with fits.open(self.cosmic_table) as f:
             cosmic_spec = (
-                f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64")
-                * self.norm_fac[0]
+                f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64") * self.norm_fac[0]
             )
         for j, mfile in enumerate(self.metal_tables):
             mylog.debug("Opening %s.", mfile)
             with fits.open(mfile) as f:
                 metal_spec += (
-                    f["SPECTRA"]
-                    .data["INTPSPEC"][:, eidxs[0] : eidxs[1]]
-                    .astype("float64")
-                    * self.norm_fac[j]
+                    f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64") * self.norm_fac[j]
                 )
-        var_spec = (
-            np.zeros((self.nvar_elem, self.n_T * self.n_D, ne))
-            if self.nvar_elem > 0
-            else None
-        )
+        var_spec = np.zeros((self.nvar_elem, self.n_T * self.n_D, ne)) if self.nvar_elem > 0 else None
         for i, el in enumerate(self._available_elem):
             for j, vfile in enumerate(self.var_tables[i]):
                 mylog.debug("Opening %s.", vfile)
                 with fits.open(vfile) as f:
                     data = (
-                        f["SPECTRA"]
-                        .data["INTPSPEC"][:, eidxs[0] : eidxs[1]]
-                        .astype("float64")
+                        f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64")
                         * self.norm_fac[j]
                     )
                 if el in self.var_elem:
@@ -786,9 +735,7 @@ class Atable1DGenerator(AtableGenerator):
         if vspec is not None:
             for elem, eabund in elem_abund.items():
                 j = self.var_elem_names.index(elem)
-                spec += eabund * (
-                    vspec[j, tidx, :] * (1.0 - dT) + vspec[j, tidx + 1, :] * dT
-                )
+                spec += eabund * (vspec[j, tidx, :] * (1.0 - dT) + vspec[j, tidx + 1, :] * dT)
         np.clip(spec, 0.0, None, out=spec)
         spec = norm * regrid_spectrum(self.ebins, ebins, spec[0, :]) / self.de
         return Spectrum(self.ebins, spec, binscale=self.binscale)
@@ -820,13 +767,9 @@ class Atable2DGenerator(AtableGenerator):
         )
         with fits.open(self.cosmic_table) as f:
             self.n_D = f["PARAMETERS"].data["NUMBVALS"][0]
-            self.Dvals = convert_endian(
-                f["PARAMETERS"].data["VALUE"][0][: self.n_D]
-            ).astype("float64")
+            self.Dvals = convert_endian(f["PARAMETERS"].data["VALUE"][0][: self.n_D]).astype("float64")
             self.n_T = f["PARAMETERS"].data["NUMBVALS"][1]
-            self.Tvals = convert_endian(
-                f["PARAMETERS"].data["VALUE"][1][: self.n_T]
-            ).astype("float64")
+            self.Tvals = convert_endian(f["PARAMETERS"].data["VALUE"][1][: self.n_T]).astype("float64")
         self.dDvals = np.diff(self.Dvals)
         self.dTvals = np.diff(self.Tvals)
         self.norm_fac = np.ones(len(metal_tables))
@@ -970,17 +913,13 @@ class MekalGenerator(Atable1DGenerator):
         "cl17.03" : the abundance table used in Cloudy v17.03.
     """
 
-    def __init__(
-        self, emin, emax, nbins, binscale="linear", var_elem=None, abund_table="angr"
-    ):
+    def __init__(self, emin, emax, nbins, binscale="linear", var_elem=None, abund_table="angr"):
         mekal_table = get_data_file("mekal.mod")
-        metal_tables = tuple()
-        var_tables = tuple()
+        metal_tables = ()
+        var_tables = ()
         if var_elem is None:
             var_elem = []
-        super().__init__(
-            emin, emax, nbins, mekal_table, metal_tables, var_tables, var_elem, binscale
-        )
+        super().__init__(emin, emax, nbins, mekal_table, metal_tables, var_tables, var_elem, binscale)
         # Hack to convert to what we usually expect
         self.Tvals = np.log10(self.Tvals * K_per_keV)
         self.dTvals = np.diff(self.Tvals)
@@ -988,9 +927,7 @@ class MekalGenerator(Atable1DGenerator):
             abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, str):
             if len(abund_table) != 30:
-                raise RuntimeError(
-                    "User-supplied abundance tables " "must be 30 elements long!"
-                )
+                raise RuntimeError("User-supplied abundance tables must be 30 elements long!")
             self.atable = np.concatenate([[0.0], np.array(abund_table)])
         else:
             self.atable = abund_tables[abund_table].copy()
@@ -1000,14 +937,10 @@ class MekalGenerator(Atable1DGenerator):
     def _get_table(self, ne, eidxs, redshift):
         scale_factor = 1.0 / (1.0 + redshift)
         metal_spec = np.zeros((self.n_T, ne))
-        var_spec = (
-            np.zeros((self.nvar_elem, self.n_T, ne)) if self.nvar_elem > 0 else None
-        )
+        var_spec = np.zeros((self.nvar_elem, self.n_T, ne)) if self.nvar_elem > 0 else None
         mylog.debug("Opening %s.", self.cosmic_table)
         with fits.open(self.cosmic_table) as f:
-            cosmic_spec = (
-                f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64")
-            )
+            cosmic_spec = f["SPECTRA"].data["INTPSPEC"][:, eidxs[0] : eidxs[1]].astype("float64")
             k = 0
             for i in range(14):
                 j = elem_names.index(self._available_elem[i])
@@ -1111,8 +1044,7 @@ class CloudyCIEGenerator(Atable1DGenerator):
         cosmic_table = get_data_file(f"cie_v{model_vers}_nome.fits")
         metal_tables = (get_data_file(f"cie_v{model_vers}_mxxx.fits"),)
         var_tables = [
-            (get_data_file(f"cie_v{model_vers}_{metal_tab_names[el]}.fits"),)
-            for el in self._available_elem
+            (get_data_file(f"cie_v{model_vers}_{metal_tab_names[el]}.fits"),) for el in self._available_elem
         ]
         super().__init__(
             emin,
@@ -1282,5 +1214,5 @@ def download_spectrum_tables(model, model_vers=None, loc=None):
         dog = PoochHandle(cache_dir=loc)
         for fn in fns:
             dog.fetch(fn)
-    except ValueError:
-        raise ValueError(f"Invalid model specification '{model}'.")
+    except ValueError as e:
+        raise ValueError(f"Invalid model specification '{model}'.") from e

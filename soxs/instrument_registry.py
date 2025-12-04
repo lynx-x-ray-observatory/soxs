@@ -65,7 +65,7 @@ class InstrumentRegistry:
             if "image" in inst_spec["psf"][0]:
                 fns.append(inst_spec["psf"][1])
                 logs.append("PSF model")
-        for fn, log in zip(fns, logs):
+        for fn, log in zip(fns, logs, strict=True):
             mylog.info(log_msg, log, fn)
             dog.fetch(fn)
 
@@ -293,13 +293,9 @@ for res in ["Hp", "Lp"]:
             "grating": False,
         }
 
-instrument_registry["xrism_resolve"] = deepcopy(
-    instrument_registry["xrism_resolve_GVC_Hp"]
-)
+instrument_registry["xrism_resolve"] = deepcopy(instrument_registry["xrism_resolve_GVC_Hp"])
 
-instrument_registry["xrism_resolve_1arcsec"] = deepcopy(
-    instrument_registry["xrism_resolve"]
-)
+instrument_registry["xrism_resolve_1arcsec"] = deepcopy(instrument_registry["xrism_resolve"])
 instrument_registry["xrism_resolve_1arcsec"]["psf"] = ["gaussian", 1.0]
 
 instrument_registry["xrism_resolve_old"] = {
@@ -318,12 +314,8 @@ instrument_registry["xrism_resolve_old"] = {
     "grating": False,
 }
 
-instrument_registry["xrism_resolve_withGV_old"] = deepcopy(
-    instrument_registry["xrism_resolve"]
-)
-instrument_registry["xrism_resolve_withGV_old"][
-    "arf"
-] = "resolve_pnt_heasim_withGV_20190701.arf"
+instrument_registry["xrism_resolve_withGV_old"] = deepcopy(instrument_registry["xrism_resolve"])
+instrument_registry["xrism_resolve_withGV_old"]["arf"] = "resolve_pnt_heasim_withGV_20190701.arf"
 
 # XRISM Xtend
 
@@ -510,7 +502,9 @@ def add_instrument_to_registry(inst_spec):
     ...     "name": "lynx_hdxi", # The short name of the instrument
     ...     "arf": "xrs_hdxi_3x10.arf", # The file containing the ARF
     ...     "rmf": "xrs_hdxi.rmf", # The file containing the RMF
-    ...     "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0], # The name of the particle background file and the area of extraction
+    ...     "bkgnd": ["lynx_hdxi_particle_bkgnd.pha", 1.0], # The name of the particle background
+    ...                                                     # and the solid angle of extraction in
+    ...                                                     # square arcminutes
     ...     "fov": 20.0, # The field of view in arcminutes
     ...     "focal_length": 10.0, # The focal length in meters
     ...     "num_pixels": 4096, # The number of pixels on a side in the FOV
@@ -525,13 +519,12 @@ def add_instrument_to_registry(inst_spec):
     if isinstance(inst_spec, dict):
         inst = inst_spec
     elif os.path.exists(inst_spec):
-        with open(inst_spec, "r") as f:
+        with open(inst_spec) as f:
             inst = json.load(f)
     name = inst["name"]
     if name in instrument_registry:
         raise KeyError(
-            f"The instrument with name {name} is already in the "
-            f"registry! Assign a different name!"
+            f"The instrument with name {name} is already in the registry! Assign a different name!"
         )
     # Catch older JSON files which don't distinguish between imagings
     # and non-imagings
@@ -551,10 +544,7 @@ def add_instrument_to_registry(inst_spec):
         )
         inst["grating"] = False
     if inst["grating"] and inst["imaging"]:
-        raise RuntimeError(
-            "Currently, gratings instrument specifications cannot "
-            "have 'imaging' == True!"
-        )
+        raise RuntimeError("Currently, gratings instrument specifications cannot have 'imaging' == True!")
     if inst["imaging"]:
         default_set = {
             "name",
@@ -600,20 +590,18 @@ def add_instrument_to_registry(inst_spec):
         )
     if "dep_name" in inst:
         mylog.warning(
-            "The 'dep_name' option is no longer supported. Dropping it "
-            "from the instrument specification."
+            "The 'dep_name' option is no longer supported. Dropping it from the instrument specification."
         )
         inst.pop("dep_name")
     my_keys = set(inst.keys())
     if my_keys != default_set:
         missing = default_set.difference(my_keys)
         raise RuntimeError(
-            f"One or more items is missing from the instrument "
-            f"specification!\nItems needed: {missing}"
+            f"One or more items is missing from the instrument specification!\nItems needed: {missing}"
         )
     instrument_registry[name] = inst
     mylog.debug(
-        "The %s instrument specification has been added " "to the instrument registry.",
+        "The %s instrument specification has been added to the instrument registry.",
         name,
     )
     return name
@@ -688,9 +676,7 @@ def make_simple_instrument(
     """
     sq_inst = get_instrument_from_registry(base_inst)
     if sq_inst["imaging"] is False:
-        raise RuntimeError(
-            "make_simple_instrument only works with imaging instruments!"
-        )
+        raise RuntimeError("make_simple_instrument only works with imaging instruments!")
     sq_inst["name"] = new_inst
     sq_inst["chips"] = [["Box", 0, 0, num_pixels, num_pixels]]
     sq_inst["fov"] = parse_value(fov, "arcmin")

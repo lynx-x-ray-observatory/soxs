@@ -25,7 +25,6 @@ norm = 1.0
 
 
 def test_vacx2_ctype1(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -41,7 +40,6 @@ def test_vacx2_ctype1(answer_store):
 
 
 def test_vacx2_ctype2(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -71,7 +69,6 @@ def test_vacx2_ctype2(answer_store):
 
 
 def test_oneacx2(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)

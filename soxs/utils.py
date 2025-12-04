@@ -26,16 +26,14 @@ soxs_cfg_defaults = {
     "frgnd_abund": 1.0,
 }
 
-config_root = os.environ.get(
-    "XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config")
-)
+config_root = os.environ.get("XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config"))
 CONFIG_DIR = os.path.join(config_root, "soxs")
 
 if not os.path.exists(CONFIG_DIR):
     try:
         os.makedirs(CONFIG_DIR)
     except OSError:
-        warnings.warn("unable to create soxs config directory")
+        warnings.warn("unable to create soxs config directory", stacklevel=2)
 
 CURRENT_CONFIG_FILE = os.path.join(CONFIG_DIR, "soxs.cfg")
 
@@ -45,8 +43,8 @@ if not os.path.exists(CURRENT_CONFIG_FILE):
     try:
         with open(CURRENT_CONFIG_FILE, "w") as new_cfg:
             cp.write(new_cfg)
-    except IOError:
-        warnings.warn("unable to write new config file")
+    except OSError:
+        warnings.warn("unable to write new config file", stacklevel=2)
 
 
 soxs_cfg = ConfigParser(soxs_cfg_defaults)
@@ -87,7 +85,7 @@ if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
 def issue_deprecation_warning(msg):
     import warnings
 
-    from numpy import VisibleDeprecationWarning
+    from numpy.exceptions import VisibleDeprecationWarning
 
     warnings.warn(msg, VisibleDeprecationWarning, stacklevel=3)
 
@@ -189,12 +187,7 @@ def downsample(myarr, factor, estimator=np.mean):
     ys, xs = myarr.shape
     crarr = myarr[: ys - (ys % int(factor)), : xs - (xs % int(factor))]
     dsarr = estimator(
-        np.concatenate(
-            [
-                [crarr[i::factor, j::factor] for i in range(factor)]
-                for j in range(factor)
-            ]
-        ),
+        np.concatenate([[crarr[i::factor, j::factor] for i in range(factor)] for j in range(factor)]),
         axis=0,
     )
     return dsarr
@@ -262,7 +255,7 @@ def process_fits_string(fitsstr):
         if len(brackets) == 0:
             imgs = np.array([hdu.is_image and hdu.header["NAXIS"] == 2 for hdu in f])
             if imgs.sum() > 1:
-                raise IOError("Multiple HDUs in this file, please specify one to read!")
+                raise OSError("Multiple HDUs in this file, please specify one to read!")
             ext = np.where(imgs)[0][0]
         else:
             ext = brackets[0]
@@ -311,9 +304,7 @@ def get_data_file(fn):
     data_fn = os.path.join(soxs_data_dir, rel_fn)
     if os.path.exists(rel_fn):
         if rel_fn in finley._registry:
-            mylog.warning(
-                "Using local file %s instead of the one from the database.", rel_fn
-            )
+            mylog.warning("Using local file %s instead of the one from the database.", rel_fn)
         return fn
     elif rel_fn not in finley._registry and os.path.exists(data_fn):
         return data_fn

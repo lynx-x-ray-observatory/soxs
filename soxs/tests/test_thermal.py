@@ -32,15 +32,9 @@ agen_var0 = ApecGenerator(0.01, 10.0, 20000, var_elem=["O", "Fe"], broadening=Tr
 agen_nolines0 = ApecGenerator(0.01, 10.0, 20000, broadening=True, nolines=True)
 agen_aspl0 = ApecGenerator(0.01, 10.0, 20000, broadening=True, abund_table="aspl")
 agen = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, broadening=True)
-agen_var = ApecGenerator(
-    rmf.elo[0], rmf.ehi[-1], rmf.n_e, var_elem=["O", "Fe"], broadening=True
-)
-agen_nolines = ApecGenerator(
-    rmf.elo[0], rmf.ehi[-1], rmf.n_e, broadening=True, nolines=True
-)
-agen_aspl = ApecGenerator(
-    rmf.elo[0], rmf.ehi[-1], rmf.n_e, broadening=True, abund_table="aspl"
-)
+agen_var = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, var_elem=["O", "Fe"], broadening=True)
+agen_nolines = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, broadening=True, nolines=True)
+agen_aspl = ApecGenerator(rmf.elo[0], rmf.ehi[-1], rmf.n_e, broadening=True, abund_table="aspl")
 agen_nei = ApecGenerator(
     rmf.elo[0],
     rmf.ehi[-1],
@@ -98,9 +92,7 @@ def test_thermal(answer_store):
     spectrum_answer_testing(spec, "thermal_spec.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    pt_src = SimputPhotonList.from_models(
-        "thermal_model", spec, pt_src_pos, exp_time, area, prng=prng
-    )
+    pt_src = SimputPhotonList.from_models("thermal_model", spec, pt_src_pos, exp_time, area, prng=prng)
     SimputCatalog.from_source("thermal_model_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
@@ -133,9 +125,7 @@ def test_thermal_from_spectrum(answer_store):
 
     inst = get_instrument_from_registry(inst_name)
 
-    simulate_spectrum(
-        spec, inst["name"], exp_time, "thermal_model_spec_evt.pha", prng=prng
-    )
+    simulate_spectrum(spec, inst["name"], exp_time, "thermal_model_spec_evt.pha", prng=prng)
 
     file_answer_testing("SPECTRUM", "thermal_model_spec_evt.pha", answer_store)
 
@@ -157,9 +147,7 @@ def test_nolines_thermal_from_spectrum(answer_store):
 
     inst = get_instrument_from_registry(inst_name)
 
-    simulate_spectrum(
-        spec_nolines, inst["name"], exp_time, "nolines_thermal_model_evt.pha", prng=prng
-    )
+    simulate_spectrum(spec_nolines, inst["name"], exp_time, "nolines_thermal_model_evt.pha", prng=prng)
 
     file_answer_testing(
         "SPECTRUM",
@@ -198,9 +186,7 @@ def test_thermal_abund_table(answer_store):
         prng=prng,
     )
 
-    write_spectrum(
-        "thermal_model_aspl_evt.fits", "thermal_model_aspl_evt.pha", overwrite=True
-    )
+    write_spectrum("thermal_model_aspl_evt.fits", "thermal_model_aspl_evt.pha", overwrite=True)
 
     file_answer_testing(
         "EVENTS",
@@ -219,7 +205,6 @@ def test_thermal_abund_table(answer_store):
 
 @min_numpy_vers
 def test_thermal_nei(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -246,9 +231,7 @@ def test_thermal_nei(answer_store):
         prng=prng,
     )
 
-    write_spectrum(
-        "thermal_model_nei_evt.fits", "thermal_model_nei_evt.pha", overwrite=True
-    )
+    write_spectrum("thermal_model_nei_evt.fits", "thermal_model_nei_evt.pha", overwrite=True)
 
     file_answer_testing(
         "EVENTS",
@@ -317,16 +300,12 @@ def test_linlog():
     agen0_log = ApecGenerator(0.01, 10.0, 20000, binscale="log")
     spec_log = agen0_log.get_spectrum(kT_sim, abund_sim, redshift, norm_sim)
     assert_almost_equal(spec_lin.total_flux.value, spec_log.total_flux.value)
-    assert_almost_equal(
-        spec_lin.total_energy_flux.value, spec_log.total_energy_flux.value
-    )
+    assert_almost_equal(spec_lin.total_energy_flux.value, spec_log.total_energy_flux.value)
 
 
 def test_cloudy_cie(answer_store):
     cgen = CloudyCIEGenerator(0.5, 8.0, 5000, binscale="log")
-    cgen_var1 = CloudyCIEGenerator(
-        0.5, 8.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe"]
-    )
+    cgen_var1 = CloudyCIEGenerator(0.5, 8.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe"])
     cgen_var2 = CloudyCIEGenerator(
         0.5, 8.0, 5000, binscale="log", var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"]
     )
@@ -402,9 +381,7 @@ def test_igm(answer_store):
     kT_igm = 0.7
 
     igen = CloudyPionGenerator(0.2, 5.0, 1000, binscale="log")
-    igen_var1 = CloudyPionGenerator(
-        0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe"]
-    )
+    igen_var1 = CloudyPionGenerator(0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe"])
     igen_var2 = CloudyPionGenerator(
         0.2, 5.0, 1000, binscale="log", var_elem=["O", "Ne", "Fe", "S", "Si", "Mg"]
     )
@@ -468,9 +445,7 @@ def test_igm(answer_store):
     assert_allclose(ispec.ebins, ispec_var3.ebins)
     assert_allclose(ispec.flux, ispec_var3.flux, rtol=1.0e-5)
 
-    sigen = CloudyPionGenerator(
-        0.2, 5.0, 1000, binscale="log", resonant_scattering=True
-    )
+    sigen = CloudyPionGenerator(0.2, 5.0, 1000, binscale="log", resonant_scattering=True)
     sigen_var1 = CloudyPionGenerator(
         0.2,
         5.0,

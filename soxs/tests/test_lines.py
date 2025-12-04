@@ -34,9 +34,7 @@ def test_emission_line(answer_store):
     spectrum_answer_testing(spec, "emission_line_test.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    pt_src = SimputPhotonList.from_models(
-        "emission_line", spec, pt_src_pos, exp_time, area, prng=prng
-    )
+    pt_src = SimputPhotonList.from_models("emission_line", spec, pt_src_pos, exp_time, area, prng=prng)
     SimputCatalog.from_source("emission_line_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(
@@ -78,9 +76,7 @@ def test_absorption_line(answer_store):
 
     spectrum_answer_testing(spec, "absorption_line_test.h5", answer_store)
 
-    simulate_spectrum(
-        spec, inst_name, exp_time, "absorption_line_evt.pha", overwrite=True, prng=69
-    )
+    simulate_spectrum(spec, inst_name, exp_time, "absorption_line_evt.pha", overwrite=True, prng=69)
 
     file_answer_testing("SPECTRUM", "absorption_line_evt.pha", answer_store)
 

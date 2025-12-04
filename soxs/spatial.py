@@ -122,7 +122,7 @@ class PointSourceModel(SpatialModel):
     """
 
     def __init__(self, ra0, dec0):
-        super(PointSourceModel, self).__init__(ra0, dec0)
+        super().__init__(ra0, dec0)
 
     def _generate_coords(self, num_events, prng):
         return (np.zeros(num_events),) * 2
@@ -164,15 +164,13 @@ class RadialFunctionModel(SpatialModel):
     """
 
     def __init__(self, ra0, dec0, func, theta=0.0, ellipticity=1.0):
-        super(RadialFunctionModel, self).__init__(ra0, dec0)
+        super().__init__(ra0, dec0)
         self.theta = parse_value(theta, "deg")
         self.func = func
         self.ellipticity = ellipticity
 
     def _generate_coords(self, num_events, prng):
-        x, y = generate_radial_events(
-            num_events, self.func, prng, ellipticity=self.ellipticity
-        )
+        x, y = generate_radial_events(num_events, self.func, prng, ellipticity=self.ellipticity)
         coords = rotate_xy(self.theta, x, y)
         return coords[0, :], coords[1, :]
 
@@ -215,9 +213,7 @@ class RadialArrayModel(RadialFunctionModel):
         def func(rr):
             return np.interp(rr, r, S_r, left=0.0, right=0.0)
 
-        super(RadialArrayModel, self).__init__(
-            ra0, dec0, func, theta=theta, ellipticity=ellipticity
-        )
+        super().__init__(ra0, dec0, func, theta=theta, ellipticity=ellipticity)
 
 
 class RadialFileModel(RadialArrayModel):
@@ -250,9 +246,7 @@ class RadialFileModel(RadialArrayModel):
 
     def __init__(self, ra0, dec0, radfile, theta=0.0, ellipticity=1.0):
         r, S_r = np.loadtxt(radfile, unpack=True)
-        super(RadialFileModel, self).__init__(
-            ra0, dec0, r, S_r, theta=theta, ellipticity=ellipticity
-        )
+        super().__init__(ra0, dec0, r, S_r, theta=theta, ellipticity=ellipticity)
 
 
 class BetaModel(RadialFunctionModel):
@@ -288,9 +282,7 @@ class BetaModel(RadialFunctionModel):
         def func(r):
             return (1.0 + (r / r_c) ** 2) ** (-3 * beta + 0.5)
 
-        super(BetaModel, self).__init__(
-            ra0, dec0, func, theta=theta, ellipticity=ellipticity
-        )
+        super().__init__(ra0, dec0, func, theta=theta, ellipticity=ellipticity)
 
 
 class DoubleBetaModel(RadialFunctionModel):
@@ -326,20 +318,16 @@ class DoubleBetaModel(RadialFunctionModel):
         shape you want. Default: 1.0
     """
 
-    def __init__(
-        self, ra0, dec0, r_c1, beta1, r_c2, beta2, sb_ratio, theta=0.0, ellipticity=1.0
-    ):
+    def __init__(self, ra0, dec0, r_c1, beta1, r_c2, beta2, sb_ratio, theta=0.0, ellipticity=1.0):
         r_c1 = parse_value(r_c1, "arcsec")
         r_c2 = parse_value(r_c2, "arcsec")
 
         def func(r):
-            return (1.0 + (r / r_c1) ** 2) ** (-3 * beta1 + 0.5) + sb_ratio * (
-                1.0 + (r / r_c2) ** 2
-            ) ** (-3 * beta2 + 0.5)
+            return (1.0 + (r / r_c1) ** 2) ** (-3 * beta1 + 0.5) + sb_ratio * (1.0 + (r / r_c2) ** 2) ** (
+                -3 * beta2 + 0.5
+            )
 
-        super(DoubleBetaModel, self).__init__(
-            ra0, dec0, func, theta=theta, ellipticity=ellipticity
-        )
+        super().__init__(ra0, dec0, func, theta=theta, ellipticity=ellipticity)
 
 
 class AnnulusModel(RadialFunctionModel):
@@ -380,9 +368,7 @@ class AnnulusModel(RadialFunctionModel):
             f[idxs] = 1.0
             return f
 
-        super(AnnulusModel, self).__init__(
-            ra0, dec0, func, theta=theta, ellipticity=ellipticity
-        )
+        super().__init__(ra0, dec0, func, theta=theta, ellipticity=ellipticity)
 
 
 class RectangleModel(SpatialModel):
@@ -406,7 +392,7 @@ class RectangleModel(SpatialModel):
     """
 
     def __init__(self, ra0, dec0, width, height, theta=0.0):
-        super(RectangleModel, self).__init__(ra0, dec0)
+        super().__init__(ra0, dec0)
         self.width = parse_value(width, "arcsec")
         self.height = parse_value(height, "arcsec")
         self.theta = parse_value(theta, "deg")
@@ -421,9 +407,7 @@ class RectangleModel(SpatialModel):
 
     def _generate_coords(self, num_events, prng):
         x = prng.uniform(low=-0.5 * self.width, high=0.5 * self.width, size=num_events)
-        y = prng.uniform(
-            low=-0.5 * self.height, high=0.5 * self.height, size=num_events
-        )
+        y = prng.uniform(low=-0.5 * self.height, high=0.5 * self.height, size=num_events)
         coords = rotate_xy(self.theta, x, y)
         return coords[0, :], coords[1, :]
 
@@ -446,4 +430,4 @@ class FillFOVModel(RectangleModel):
         fov = parse_value(fov, "arcmin")
         width = fov * 60.0
         height = fov * 60.0
-        super(FillFOVModel, self).__init__(ra0, dec0, width, height)
+        super().__init__(ra0, dec0, width, height)

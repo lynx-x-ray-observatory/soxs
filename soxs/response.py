@@ -39,9 +39,7 @@ class AuxiliaryResponseFile:
             self.ebins = np.append(self.elo, self.ehi[-1])
             self.de = np.diff(self.ebins)
             self.emid = 0.5 * (self.elo + self.ehi)
-            self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP")).astype(
-                "float64"
-            )
+            self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP")).astype("float64")
             self.max_area = self.eff_area.max()
             self.nbins = self.elo.size
 
@@ -75,9 +73,7 @@ class AuxiliaryResponseFile:
         Interpolate the effective area to the energies
         provided  by the supplied *energy* array.
         """
-        earea = np.interp(
-            np.asarray(energy), self.emid, self.eff_area, left=0.0, right=0.0
-        )
+        earea = np.interp(np.asarray(energy), self.emid, self.eff_area, left=0.0, right=0.0)
         return u.Quantity(earea, "cm**2")
 
     def detect_events_spec(self, src, exp_time, prng=None):
@@ -138,7 +134,7 @@ class AuxiliaryResponseFile:
         fak = float(n_ph) / energy.size
         if fak > 1.0:
             mylog.error(
-                "Number of events in sample: %d, Number of events " "wanted: %d",
+                "Number of events in sample: %d, Number of events wanted: %d",
                 n_ph,
                 energy.size,
             )
@@ -353,7 +349,7 @@ class RedistributionMatrixFile:
         true_channel = []
         f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
         n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
-        for start, nchan in zip(f_chan, n_chan):
+        for start, nchan in zip(f_chan, n_chan, strict=True):
             if nchan == 0:
                 true_channel.append(start)
             else:
@@ -403,7 +399,7 @@ class RedistributionMatrixFile:
         emax = sorted_e[-1]
 
         pbar = tqdm(leave=True, total=last, desc="Scattering energies ")
-        for (k, low), high in zip(enumerate(self.elo), self.ehi):
+        for (k, low), high in zip(enumerate(self.elo), self.ehi, strict=True):
             if high < emin or low > emax:
                 continue
             e = sorted_e[fcurr:last]
@@ -437,10 +433,7 @@ class RedistributionMatrixFile:
         exp_time = parse_value(exp_time, "s")
         if isinstance(cspec, ConvolvedSpectrum):
             counts = cspec.flux.value * exp_time * cspec.de.value
-            if (
-                len(cspec.emid) == self.n_e
-                and np.isclose(cspec.ebins.value, self.ebins).all()
-            ):
+            if len(cspec.emid) == self.n_e and np.isclose(cspec.ebins.value, self.ebins).all():
                 spec = counts
             else:
                 spec = regrid_spectrum(self.ebins, cspec.ebins.value, counts)
@@ -448,9 +441,7 @@ class RedistributionMatrixFile:
             spec = np.asarray(cspec) * exp_time
         conv_spec = np.zeros(self.n_ch)
         pbar = tqdm(leave=True, total=self.n_e, desc="Convolving spectrum ")
-        if not isinstance(self.data["MATRIX"], fits.column._VLF) and np.all(
-            self.data["N_GRP"] == 1
-        ):
+        if not isinstance(self.data["MATRIX"], fits.column._VLF) and np.all(self.data["N_GRP"] == 1):
             # We can do things a bit faster if there is only one group each
             f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"])) - self.cmin
             n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"]))
@@ -458,22 +449,17 @@ class RedistributionMatrixFile:
             for k in range(self.n_e):
                 weights = mat[k, :]
                 weights /= weights.sum()
-                conv_spec[f_chan[k] : f_chan[k] + n_chan[k]] += (
-                    spec[k] * weights[: n_chan[k]]
-                )
+                conv_spec[f_chan[k] : f_chan[k] + n_chan[k]] += spec[k] * weights[: n_chan[k]]
                 pbar.update()
         else:
             # Otherwise, we have to go step-by-step
             for k in range(self.n_e):
-                f_chan = (
-                    ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k]))
-                    - self.cmin
-                )
+                f_chan = ensure_numpy_array(np.nan_to_num(self.data["F_CHAN"][k])) - self.cmin
                 n_chan = ensure_numpy_array(np.nan_to_num(self.data["N_CHAN"][k]))
                 weights = np.nan_to_num(np.float64(self.data["MATRIX"][k]))
                 weights /= weights.sum()
                 f1 = 0
-                for n, f in zip(n_chan, f_chan):
+                for n, f in zip(n_chan, f_chan, strict=True):
                     conv_spec[f : f + n] += spec[k] * weights[f1 : f1 + n]
                     f1 += n
                 pbar.update()

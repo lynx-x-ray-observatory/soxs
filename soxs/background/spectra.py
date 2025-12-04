@@ -78,9 +78,7 @@ class BackgroundSpectrum(Spectrum):
         if isinstance(other, AuxiliaryResponseFile):
             return ConvolvedBackgroundSpectrum.convolve(self, other)
         else:
-            return BackgroundSpectrum(
-                self.ebins, other * self.flux, binscale=self.binscale
-            )
+            return BackgroundSpectrum(self.ebins, other * self.flux, binscale=self.binscale)
 
     __rmul__ = __mul__
 

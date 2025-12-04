@@ -84,10 +84,7 @@ class Spectrum:
         self._binned_energy_flux = None
 
     def _check_binning_units(self, other):
-        if (
-            self.nbins != other.nbins
-            or not np.isclose(self.ebins.value, other.ebins.value).all()
-        ):
+        if self.nbins != other.nbins or not np.isclose(self.ebins.value, other.ebins.value).all():
             raise RuntimeError("Energy binning for these two spectra is not the same!!")
         if self._units != other._units:
             raise RuntimeError("The units for these two spectra are not the same!")
@@ -211,9 +208,7 @@ class Spectrum:
             e = e.to("keV").value
         return u.Quantity(self.func(e), self._units)
 
-    def regrid_spectrum(
-        self, emin, emax, nbins, binscale="linear", vlos=0.0, vtot=None
-    ):
+    def regrid_spectrum(self, emin, emax, nbins, binscale="linear", vlos=0.0, vtot=None):
         """
         Regrid an existing spectrum to a new energy binning and
         return a new spectrum.
@@ -256,9 +251,7 @@ class Spectrum:
             shift
             * shift
             * shift
-            * regrid_spectrum(
-                ebins / shift, self.ebins.value, self.flux.value * self.de.value
-            )
+            * regrid_spectrum(ebins / shift, self.ebins.value, self.flux.value * self.de.value)
             / de
         )
         return type(self)(ebins, spec_new, binscale=binscale)
@@ -339,13 +332,8 @@ class Spectrum:
         if cosmology is None:
             cosmology = Planck18
         if redshift == 0.0 and dist is None:
-            raise ValueError(
-                "Either 'redshift' must be > 0 or 'dist' cannot "
-                "be None for 'get_lum_in_band'!"
-            )
-        pflux, eflux = self.get_flux_in_band(
-            emin / (1.0 + redshift), emax / (1.0 + redshift)
-        )
+            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'get_lum_in_band'!")
+        pflux, eflux = self.get_flux_in_band(emin / (1.0 + redshift), emax / (1.0 + redshift))
         if dist is None:
             D_L = cosmology.luminosity_distance(redshift).to("cm")
         else:
@@ -356,9 +344,7 @@ class Spectrum:
         return plum, elum
 
     @classmethod
-    def from_xspec_script(
-        cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None
-    ):
+    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None):
         """
         Create a model spectrum using a script file as
         input to XSPEC.
@@ -381,7 +367,7 @@ class Spectrum:
             model, each of which will be run as (e.g.) "xset {key} {value}".
             Default: None.
         """
-        with open(infile, "r") as f:
+        with open(infile) as f:
             xspec_in = f.readlines()
         return cls._from_xspec(
             xspec_in,
@@ -430,11 +416,11 @@ class Spectrum:
             Default: None.
         """
         xspec_in = []
-        model_str = "%s &" % model_string
+        model_str = f"{model_string} &"
         for param in params:
-            model_str += " %g &" % param
+            model_str += f" {param} &"
         model_str += " /*"
-        xspec_in.append("model %s\n" % model_str)
+        xspec_in.append(f"model {model_str}\n")
         return cls._from_xspec(
             xspec_in,
             emin,
@@ -445,9 +431,7 @@ class Spectrum:
         )
 
     @classmethod
-    def _from_xspec(
-        cls, xspec_in, emin, emax, nbins, binscale="linear", xspec_settings=None
-    ):
+    def _from_xspec(cls, xspec_in, emin, emax, nbins, binscale="linear", xspec_settings=None):
         emin = parse_value(emin, "keV")
         emax = parse_value(emax, "keV")
         tmpdir = Path(tempfile.mkdtemp())
@@ -487,7 +471,7 @@ class Spectrum:
                 stdout=xsout,
                 stderr=xsout,
             )
-        with open(tmpdir / "spec_therm.xspec", "r") as f_s:
+        with open(tmpdir / "spec_therm.xspec") as f_s:
             lines = f_s.readlines()
         ebins = np.array(lines[0].split()).astype("float64")
         de = np.diff(ebins)
@@ -539,9 +523,7 @@ class Spectrum:
         elif cls is CountRateSpectrum:
             flux = model.folded(spectrum_index)
         else:
-            raise NotImplementedError(
-                f"from_pyxspec_model is not implemented for {cls}!"
-            )
+            raise NotImplementedError(f"from_pyxspec_model is not implemented for {cls}!")
         return cls._from_ext_model(ebins, flux)
 
     @classmethod
@@ -568,9 +550,7 @@ class Spectrum:
         return cls._from_ext_model(ebins, flux)
 
     @classmethod
-    def from_xstar_model(
-        cls, xstar_file, which_spectrum, cosmology=None, redshift=0.0, dist=None
-    ):
+    def from_xstar_model(cls, xstar_file, which_spectrum, cosmology=None, redshift=0.0, dist=None):
         """
         Create a spectrum from an XSTAR output FITS file. See the XSTAR manual
         (link below) for details on how to generate the output file. Since
@@ -603,10 +583,7 @@ class Spectrum:
         if cosmology is None:
             cosmology = Planck18
         if redshift == 0.0 and dist is None:
-            raise ValueError(
-                "Either 'redshift' must be > 0 or 'dist' cannot "
-                "be None for 'from_xstar_model'!"
-            )
+            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'from_xstar_model'!")
         if dist is None:
             D_A = cosmology.luminosity_distance(redshift).to_value("cm")
         else:
@@ -615,9 +592,7 @@ class Spectrum:
         return cls(spec.ebins.value / (1.0 + redshift), flux, binscale="custom")
 
     @classmethod
-    def from_powerlaw(
-        cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"
-    ):
+    def from_powerlaw(cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"):
         """
         Create a spectrum from a power-law model. Form of the model
         is F(E) = norm*(e/1 keV)**-photon_index.
@@ -677,9 +652,7 @@ class Spectrum:
                 if binscale == "linear":
                     ebins = np.linspace(f["emin"][()], f["emax"][()], nbins + 1)
                 elif binscale == "log":
-                    ebins = np.logspace(
-                        np.log10(f["emin"][()]), np.log10(f["emax"][()]), nbins + 1
-                    )
+                    ebins = np.logspace(np.log10(f["emin"][()]), np.log10(f["emax"][()]), nbins + 1)
                 for key in ["arf", "rmf", "noisy", "exp_time"]:
                     kwargs[key] = f.attrs.get(key, None)
         except OSError:
@@ -693,13 +666,13 @@ class Spectrum:
             flux = t["flux"].value
             binscale = t.meta.get("binscale", t.meta.get("BINSCALE", None))
             if binscale is None:
-                raise ValueError(f"No binscale found in file {filename}!")
+                raise ValueError(f"No binscale found in file {filename}!") from None
             units = t.meta.get("units", t.meta.get("UNITS", None))
             if units is None or units != cls._units:
                 raise ValueError(
                     f"Spectrum units in file ({t.meta['UNITS']}) do not match "
                     f"the expected units ({cls._units})!"
-                )
+                ) from None
             for key in ["arf", "rmf", "noisy", "exp_time"]:
                 kwargs[key] = t.meta.get(key, t.meta.get(key.upper(), None))
         if "arf" in kwargs:
@@ -878,7 +851,7 @@ class Spectrum:
             file with the same name. Default: False
         """
         if Path(specfile).exists() and not overwrite:
-            raise IOError("File %s exists and overwrite=False!" % specfile)
+            raise OSError(f"File {specfile} exists and overwrite=False!")
         with h5py.File(specfile, "w") as f:
             f.create_dataset("emin", data=self.ebins[0].value)
             f.create_dataset("emax", data=self.ebins[-1].value)
@@ -908,9 +881,7 @@ class Spectrum:
         t = self._write_fits_or_ascii()
         t.write(specfile, overwrite=overwrite, format="fits")
 
-    def apply_foreground_absorption(
-        self, nH, model="wabs", redshift=0.0, abund_table="angr"
-    ):
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0, abund_table="angr"):
         """
         Given a hydrogen column density, apply
         galactic foreground absorption to the spectrum.
@@ -956,9 +927,7 @@ class Spectrum:
         self.flux *= np.exp(-nH * 1.0e22 * sigma)
         self._compute_total_flux()
 
-    def add_emission_line(
-        self, line_center, line_width, line_amp, line_type="gaussian"
-    ):
+    def add_emission_line(self, line_center, line_width, line_amp, line_type="gaussian"):
         """
         Add an emission line to this spectrum.
 
@@ -977,24 +946,18 @@ class Spectrum:
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
-        line_width = parse_value(
-            line_width, "keV", equivalence=line_width_equiv(line_center)
-        )
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
         line_amp = parse_value(line_amp, self._units)
         if line_type == "gaussian":
             sigma = line_width / sigma_to_fwhm
             line_amp /= sqrt2pi * sigma
             f = Gaussian1D(line_amp, line_center, sigma)
         else:
-            raise NotImplementedError(
-                "Line profile type '%s' " % line_type + "not implemented!"
-            )
+            raise NotImplementedError(f'Line profile type "{line_type}" not implemented!')
         self.flux += u.Quantity(f(self.emid.value), self._units)
         self._compute_total_flux()
 
-    def add_absorption_line(
-        self, line_center, line_width, equiv_width, line_type="gaussian"
-    ):
+    def add_absorption_line(self, line_center, line_width, equiv_width, line_type="gaussian"):
         """
         Add an absorption line to this spectrum.
 
@@ -1013,9 +976,7 @@ class Spectrum:
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
-        line_width = parse_value(
-            line_width, "keV", equivalence=line_width_equiv(line_center)
-        )
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
         equiv_width = parse_value(equiv_width, "1.0e-3*angstrom")  # in milliangstroms
         equiv_width *= 1.0e-3  # convert to angstroms
         if line_type == "gaussian":
@@ -1024,9 +985,7 @@ class Spectrum:
             B /= hc * sqrt2pi * sigma
             f = Gaussian1D(B, line_center, sigma)
         else:
-            raise NotImplementedError(
-                f"Line profile type '{line_type}' not implemented!"
-            )
+            raise NotImplementedError(f"Line profile type '{line_type}' not implemented!")
         self.flux *= np.exp(-f(self.emid.value))
         self._compute_total_flux()
 
@@ -1113,7 +1072,8 @@ class Spectrum:
 
         Returns
         -------
-        A tuple of the :class:`~matplotlib.figure.Figure` and the :class:`~matplotlib.axes.Axes` objects.
+        A tuple of the :class:`~matplotlib.figure.Figure` and the
+        :class:`~matplotlib.axes.Axes` objects.
         """
         import matplotlib.pyplot as plt
 
@@ -1151,7 +1111,7 @@ class Spectrum:
         ax.set_ylim(ymin, ymax)
         ax.set_xlabel("Energy (keV)", fontsize=fontsize)
         yunit = u.Unit(self._units).to_string("latex").replace("{}^{\\prime}", "arcmin")
-        ax.set_ylabel("Spectrum (%s)" % yunit, fontsize=fontsize)
+        ax.set_ylabel(f"Spectrum ({yunit})", fontsize=fontsize)
         ax.tick_params(reset=True, axis="both", labelsize=fontsize)
         return fig, ax
 
@@ -1218,9 +1178,7 @@ class CountRateSpectrum(Spectrum):
                 raise ValueError("No XSTAR_SPECTRA extension found in file!")
             hdu = f["XSTAR_SPECTRA"]
             # energies in file are bin left edges in eV
-            elow = (
-                hdu.data["energy"].astype("float64") * 1.0e-3
-            )  # convert from eV to keV
+            elow = hdu.data["energy"].astype("float64") * 1.0e-3  # convert from eV to keV
             # bin sizes are logarithmic, use the size of the last bin to get the upper edge
             de = elow[-1] / elow[-2]
             emax = elow[-1] * de
@@ -1236,9 +1194,7 @@ class CountRateSpectrum(Spectrum):
             rate *= erg_per_keV
             return cls(ebins, rate, binscale="custom")
 
-    def apply_foreground_absorption(
-        self, nH, model="wabs", redshift=0.0, abund_table="angr"
-    ):
+    def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0, abund_table="angr"):
         raise NotImplementedError
 
     @classmethod
@@ -1255,9 +1211,7 @@ class CountRateSpectrum(Spectrum):
         raise NotImplementedError
 
     @classmethod
-    def from_xspec_script(
-        cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None
-    ):
+    def from_xspec_script(cls, infile, emin, emax, nbins, binscale="linear", xspec_settings=None):
         raise NotImplementedError
 
     @classmethod
@@ -1270,9 +1224,7 @@ class CountRateSpectrum(Spectrum):
 
 
 class ConvolvedSpectrum(CountRateSpectrum):
-    def __init__(
-        self, ebins, flux, arf, rmf=None, binscale="linear", noisy=False, exp_time=None
-    ):
+    def __init__(self, ebins, flux, arf, rmf=None, binscale="linear", noisy=False, exp_time=None):
         from numbers import Number
 
         from soxs.response import (
@@ -1281,7 +1233,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
             RedistributionMatrixFile,
         )
 
-        super(ConvolvedSpectrum, self).__init__(ebins, flux, binscale=binscale)
+        super().__init__(ebins, flux, binscale=binscale)
         if isinstance(arf, Number):
             arf = FlatResponse(ebins[0], ebins[-1], arf, ebins.size - 1)
         elif isinstance(arf, str):
@@ -1296,9 +1248,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         self.exp_time = exp_time
         if self.exp_time is not None and self.noisy:
             self.flux_err = (
-                np.sqrt(self.flux * self.exp_time * self.de).value
-                * u.photon
-                / (self.exp_time * self.de)
+                np.sqrt(self.flux * self.exp_time * self.de).value * u.photon / (self.exp_time * self.de)
             )
         else:
             self.flux_err = None
@@ -1325,17 +1275,13 @@ class ConvolvedSpectrum(CountRateSpectrum):
     def _check_binning_units(self, other):
         super()._check_binning_units(other)
         if self.noisy != other.noisy:
-            raise RuntimeError(
-                "The noisy flags for these two spectra are not the same!"
-            )
+            raise RuntimeError("The noisy flags for these two spectra are not the same!")
         bad_exp = self.exp_time is None and other.exp_time is not None
         bad_exp |= self.exp_time is not None and other.exp_time is None
         if self.exp_time is not None and other.exp_time is not None:
             bad_exp |= not np.isclose(self.exp_time.value, other.exp_time.value)
         if bad_exp:
-            raise RuntimeError(
-                "The exposure times for these two spectra are not the same!"
-            )
+            raise RuntimeError("The exposure times for these two spectra are not the same!")
         bad_rmf = self.rmf is not None and other.rmf is None
         bad_rmf |= self.rmf is None and other.rmf is not None
         bad_rmf |= self.rmf.filename != other.rmf.filename
@@ -1370,9 +1316,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         if self.arf is None:
             arf = None
         elif isinstance(self.arf, FlatResponse):
-            arf = FlatResponse(
-                self.arf.ebins[0], self.arf.ebins[-1], self.arf.max_area, self.arf.nbins
-            )
+            arf = FlatResponse(self.arf.ebins[0], self.arf.ebins[-1], self.arf.max_area, self.arf.nbins)
         else:
             arf = AuxiliaryResponseFile(self.arf.filename)
         rmf = None if self.rmf is None else RedistributionMatrixFile(self.rmf.filename)
@@ -1445,15 +1389,11 @@ class ConvolvedSpectrum(CountRateSpectrum):
             elif "COUNTS" in hdu.data and "EXPOSURE" in hdu.header:
                 rate = hdu.data["COUNTS"].astype("float64") / hdu.header["EXPOSURE"]
             else:
-                raise RuntimeError(
-                    "Cannot determine count rate from this " "spectrum file!!"
-                )
+                raise RuntimeError("Cannot determine count rate from this spectrum file!!")
             rate *= u.photon / u.s
             arf = AuxiliaryResponseFile(hdu.header["ANCRFILE"])
             rmf = RedistributionMatrixFile(hdu.header["RESPFILE"])
-        ebins = (
-            np.append(rmf.ebounds_data["E_MIN"], rmf.ebounds_data["E_MAX"][-1]) * u.keV
-        )
+        ebins = np.append(rmf.ebounds_data["E_MIN"], rmf.ebounds_data["E_MAX"][-1]) * u.keV
         de = np.diff(ebins)
         rate /= de
         return cls(
@@ -1539,9 +1479,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
                 * arf.eff_area
             )
             if rmf is not None:
-                rate = rmf.convolve_spectrum(
-                    (rate * arf.de).value, 1.0, noisy=False, rate=True
-                )
+                rate = rmf.convolve_spectrum((rate * arf.de).value, 1.0, noisy=False, rate=True)
             rate = u.Quantity(rate / arf.de, "keV-1 ph s-1")
             binscale = "linear"
             ebins = u.Quantity(arf.ebins, "keV")
@@ -1582,9 +1520,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         object associated with this convolved spectrum.
         """
         if self.rmf is not None:
-            raise NotImplementedError(
-                "deconvolve is not implemented for ConvolvedSpectra with RMFs!"
-            )
+            raise NotImplementedError("deconvolve is not implemented for ConvolvedSpectra with RMFs!")
         earea = self.arf.interpolate_area(self.emid)
         flux = self.flux / earea
         flux = np.nan_to_num(flux.value)
@@ -1610,9 +1546,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
             a lot of spectra. Default: False
         """
         if self.rmf is not None:
-            raise NotImplementedError(
-                "generate_energies is not implemented for ConvolvedSpectra with RMFs!"
-            )
+            raise NotImplementedError("generate_energies is not implemented for ConvolvedSpectra with RMFs!")
         t_exp = parse_value(t_exp, "s")
         prng = parse_prng(prng)
         rate = self.total_flux.value
@@ -1627,7 +1561,5 @@ class ConvolvedSpectrum(CountRateSpectrum):
         raise NotImplementedError
 
     @classmethod
-    def from_powerlaw(
-        cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"
-    ):
+    def from_powerlaw(cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"):
         raise NotImplementedError

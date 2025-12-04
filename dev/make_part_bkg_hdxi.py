@@ -11,6 +11,4 @@ instrument = (
 )
 out_file = rmf.replace(".rmf", ".pha")
 
-soxs.simulate_spectrum(
-    spec, instrument, exp_time, out_file, overwrite=True, noisy=False
-)
+soxs.simulate_spectrum(spec, instrument, exp_time, out_file, overwrite=True, noisy=False)

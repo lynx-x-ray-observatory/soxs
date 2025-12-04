@@ -51,9 +51,7 @@ def file_answer_testing(hdu, filename, answer_store):
                         rtol = 1.0e-6
                     else:
                         rtol = 1.0e-8
-                    assert_allclose(
-                        f_old[hdu].data[name], f_new[hdu].data[name], rtol=rtol
-                    )
+                    assert_allclose(f_old[hdu].data[name], f_new[hdu].data[name], rtol=rtol)
         f_old.close()
         f_new.close()
 

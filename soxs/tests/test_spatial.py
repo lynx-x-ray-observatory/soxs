@@ -91,9 +91,7 @@ def test_annulus(answer_store):
 
     ann_pos = AnnulusModel(ra0, dec0, r_in, r_out)
 
-    ann_src = SimputPhotonList.from_models(
-        "ann", spec, ann_pos, exp_time, area, prng=prng
-    )
+    ann_src = SimputPhotonList.from_models("ann", spec, ann_pos, exp_time, area, prng=prng)
     SimputCatalog.from_source("ann_simput.fits", ann_src, overwrite=True)
 
     instrument_simulator(
@@ -141,9 +139,7 @@ def test_beta_model(answer_store):
     exp_time = Quantity(500.0, "ks")
 
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
-    beta_src = SimputPhotonList.from_models(
-        "beta", spec, beta_src_pos, exp_time, area, prng=prng
-    )
+    beta_src = SimputPhotonList.from_models("beta", spec, beta_src_pos, exp_time, area, prng=prng)
     SimputCatalog.from_source("beta_simput.fits", beta_src, overwrite=True)
 
     instrument_simulator(
@@ -197,9 +193,7 @@ def test_double_beta_model(answer_store):
     double_beta_src = SimputPhotonList.from_models(
         "double_beta", spec, double_beta_src_pos, exp_time, area, prng=prng
     )
-    SimputCatalog.from_source(
-        "double_beta_simput.fits", double_beta_src, overwrite=True
-    )
+    SimputCatalog.from_source("double_beta_simput.fits", double_beta_src, overwrite=True)
 
     instrument_simulator(
         "double_beta_simput.fits",
@@ -244,9 +238,7 @@ def test_beta_model_flux(answer_store):
     prng = np.random.default_rng(24)
 
     beta_src_pos = BetaModel(ra0, dec0, r_c, beta)
-    beta_src = SimputPhotonList.from_models(
-        "beta", spec, beta_src_pos, exp_time, area, prng=prng
-    )
+    beta_src = SimputPhotonList.from_models("beta", spec, beta_src_pos, exp_time, area, prng=prng)
     SimputCatalog.from_source("beta_simput.fits", beta_src, overwrite=True)
 
     instrument_simulator(
