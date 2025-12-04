@@ -14,6 +14,4 @@ for cy in [0, 22]:
     )
     for key in spec:
         out_file = rmf.replace(".rmf", f"_{key}.pha")
-        soxs.simulate_spectrum(
-            spec[key], instrument, exp_time, out_file, overwrite=True, noisy=False
-        )
+        soxs.simulate_spectrum(spec[key], instrument, exp_time, out_file, overwrite=True, noisy=False)
