@@ -3,13 +3,13 @@ import pytest
 
 from soxs import Spectrum
 
-spex = pytest.importorskip("pyspex.spex")
+pyspex = pytest.importorskip("pyspex", reason="pyspex not installed")
 
 
 def test_spex():
     # For now, this is just a test to make sure it works
 
-    s = spex.Session()
+    s = pyspex.spex.Session()
     s.egrid(0.2, 10.0, 5000, "kev", False)
     s.abun("aspl")
 
