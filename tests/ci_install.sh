@@ -37,11 +37,11 @@ fi
 # Install soxs
 if [[ ${mode} == "testing" ]]; then
   python -m pip install -e .
-  if ! [[ ${whichos} == "windows-latest" ]]; then
+  if ! [[ ${whichos} == "windows-latest" || ${pyver} == "3.11" ]]; then
     python -m pip install pyatomdb
   fi
   # special cases
-  if [[ ${pyver} == "3.12" && ${whichos} == "ubuntu-latest" ]]; then
+  if [[ ${pyver} == "3.11" && ${whichos} == "ubuntu-latest" ]]; then
     micromamba install --yes -c spexxray spex
   fi
 fi
