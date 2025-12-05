@@ -41,7 +41,7 @@ if [[ ${mode} == "testing" ]]; then
     python -m pip install pyatomdb
   fi
   # special cases
-  if [[ ${pyver} == "3.11" ]]; then
+  if [[ ${pyver} == "3.12" && ${whichos} == "ubuntu-latest" ]]; then
     micromamba install --yes -c spexxray spex
   fi
 fi

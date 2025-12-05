@@ -6,7 +6,7 @@ from soxs import Spectrum
 pyspex = pytest.importorskip("pyspex", reason="pyspex not installed")
 
 
-def test_spex():
+def test_pyspex():
     # For now, this is just a test to make sure it works
 
     s = pyspex.spex.Session()
