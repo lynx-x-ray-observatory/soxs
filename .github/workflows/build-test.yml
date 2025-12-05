@@ -59,6 +59,8 @@ jobs:
               shell: bash -el {0}
               env:
                   mode: testing
+                  pyver: ${{ matrix.python-version }}
+                  whichos: ${{ matrix.os }}
               run: source ./tests/ci_install.sh
             - name: Run Tests
               shell: bash -el {0}

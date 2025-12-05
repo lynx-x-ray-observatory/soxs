@@ -14,6 +14,12 @@ if [[ ${mode} == "testing" ]]; then
   echo "soxs_answer_dir = ${GITHUB_WORKSPACE}/soxs_test_data" >> $HOME/.config/soxs/soxs.cfg
   cat $HOME/.config/soxs/soxs.cfg
 
+  if ! [[ ${whichos} == "windows-latest" ]]; then
+    # Set location of ATOMDB data
+    mkdir -p $HOME/atomdb
+    touch $HOME/atomdb/userdata # to avoid
+  fi
+
 fi
 
 # Install dependencies using mamba and pip
@@ -25,10 +31,17 @@ micromamba activate test-env
 micromamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
 if [[ ${mode} == "wheels" ]]; then
-  conda install --yes wheel setuptools
+  micromamba install --yes wheel setuptools
 fi
 
 # Install soxs
 if [[ ${mode} == "testing" ]]; then
   python -m pip install -e .
+  if ! [[ ${whichos} == "windows-latest" ]]; then
+    python -m pip install pyatomdb
+  fi
+  # special cases
+  if [[ ${pyver} == "3.11" ]]; then
+    micromamba install --yes -c spexxray spex
+  fi
 fi
