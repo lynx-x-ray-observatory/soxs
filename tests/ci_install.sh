@@ -28,6 +28,12 @@ eval "$(micromamba shell hook --shell bash)"
 micromamba shell init --shell bash --root-prefix=~/micromamba
 micromamba activate test-env
 
+if [[ ${mode} == "testing" ]]; then
+  # special cases
+  if [[ ${whichos} == "ubuntu-latest" || ${pyver} == "3.11" ]]; then
+    micromamba install --yes -c spexxray spex
+  fi
+fi
 micromamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
 if [[ ${mode} == "wheels" ]]; then
@@ -39,9 +45,5 @@ if [[ ${mode} == "testing" ]]; then
   python -m pip install -e .
   if ! [[ ${whichos} == "windows-latest" || ${pyver} == "3.11" ]]; then
     python -m pip install pyatomdb
-  fi
-  # special cases
-  if [[ ${pyver} == "3.11" && ${whichos} == "ubuntu-latest" ]]; then
-    micromamba install --yes -c spexxray spex
   fi
 fi
