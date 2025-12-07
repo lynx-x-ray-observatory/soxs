@@ -60,6 +60,7 @@ jobs:
               env:
                   mode: testing
                   pyver: ${{ matrix.python-version }}
+                  npver: ${{ matrix.numpy-version }}
                   whichos: ${{ matrix.os }}
               run: source ./tests/ci_install.sh
             - name: Run Tests

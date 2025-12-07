@@ -30,7 +30,7 @@ micromamba activate test-env
 
 if [[ ${mode} == "testing" ]]; then
   # special cases
-  if [[ ${whichos} == "macos-latest" && ${pyver} == "3.11" ]]; then
+  if [[ ${whichos} == "macos-latest" && ${npver} == "1" ]]; then
     micromamba install --yes -c spexxray spex
   fi
 fi
