@@ -535,7 +535,7 @@ class SimputSpectrum(SimputSource):
         )
 
     @classmethod
-    def from_models(cls, name, spectral_model, spatial_model, width, nx):
+    def from_models(cls, name, spectral_model, spatial_model, width, nx, emin=None, emax=None):
         """
         Generate a SIMPUT spectrum from a spectral and a spatial
         model, and parameters for an image.
@@ -553,9 +553,19 @@ class SimputSpectrum(SimputSource):
         nx : integer
             The resolution of the image, e.g. the number of pixels
             on a side.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy of the band to calculate the reference flux in.
+            If not specified, the minimum energy of the spectral model will
+            be used. Default: None
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy of the band to calculate the reference flux in.
+            If not specified, the maximum energy of the spectral model will
+            be used. Default: None
         """
         imhdu = spatial_model.generate_image(width, nx)
-        return cls.from_spectrum(name, spectral_model, spatial_model.ra0, spatial_model.dec0, imhdu=imhdu)
+        return cls.from_spectrum(
+            name, spectral_model, spatial_model.ra0, spatial_model.dec0, imhdu=imhdu, emin=emin, emax=emax
+        )
 
 
 class SimputPhotonList(SimputSource):
