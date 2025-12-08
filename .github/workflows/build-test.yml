@@ -65,4 +65,8 @@ jobs:
               run: source ./tests/ci_install.sh
             - name: Run Tests
               shell: bash -el {0}
-              run: micromamba activate test-env; export SPEX90=$PWD/SPEX-3.08.02-Linux; source $SPEX90/spexdist.sh; python -m pytest -vv soxs/tests
+              env:
+                pyver: ${{ matrix.python-version }}
+                npver: ${{ matrix.numpy-version }}
+                whichos: ${{ matrix.os }}
+              run: source ./tests/run_tests.sh
