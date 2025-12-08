@@ -38,7 +38,7 @@ if [[ ${mode} == "testing" && ${npver} == "1" && ${pyver} == "3.11" ]]; then
   tar xvfz spex-3.08.02-Linux-Intel.tar.gz
   export SPEX90=$PWD/SPEX-3.08.02-Linux
   source $SPEX90/spexdist.sh
-  micromamba install -c spexxray pyspextools
+  pip install pyspextools
 fi
 
 # Install soxs
