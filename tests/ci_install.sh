@@ -33,7 +33,7 @@ if [[ ${mode} == "wheels" ]]; then
   micromamba install --yes wheel setuptools
 fi
 # special case for SPEX
-if [[ ${mode} == "testing" && ${whichos} == "ubuntu-latest" && {npver} == "1" && {pyver} == "3.11" ]]; then
+if [[ ${mode} == "testing" && ${npver} == "1" && ${pyver} == "3.11" ]]; then
   curl -OL https://zenodo.org/records/17313851/files/spex-3.08.02-Linux-Intel.tar.gz
   tar xvfz spex-3.08.02-Linux-Intel.tar.gz
   export SPEX90=$PWD/SPEX-3.08.02-Linux
