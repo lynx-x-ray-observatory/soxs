@@ -321,11 +321,13 @@ By default, the various generators handle abundances greater than H and
 He using the ``abund`` parameter in the various ``get_spectrum`` methods.
 Exactly what abundances are set by this parameter depends on the model used:
 
-* APEC and SPEX: Includes C, N, O, Ne, Mg, Al, Si, S, Ar, Ca, Fe, Ni (He
-  fixed at abundance table value, Li, Be, B, F, Na, P, Cl, K, Sc, Ti,
-  V, Cr, Mn, Co, Cu, Zn fixed at solar).
-* MeKaL: Includes C, N, O, Ne, Na, Mg, Al, Si, S, Ar, Ca, Fe, Ni (He
-  fixed at abundance table value, other elements not modeled)
+* APEC and SPEX: Includes C, N, O, Ne, Mg, Al, Si, S, Ar, Ca, Fe, Ni. He
+  is fixed at the abundance table value (see :ref:`changing-abund-tables`).
+  Li, Be, B, F, Na, P, Cl, K, Sc, Ti, V, Cr, Mn, Co, Cu, and Zn are fixed at
+  solar by default, but see :ref:`trace-abundances`.
+* MeKaL: Includes C, N, O, Ne, Na, Mg, Al, Si, S, Ar, Ca, Fe, and Ni. He is
+  fixed at the abundance table value (see :ref:`changing-abund-tables`),
+  other elements not modeled).
 * Cloudy CIE and Pion: He fixed at abundance table value, all higher
   elements up Zn to included.
 
@@ -366,9 +368,29 @@ in solar units. This is done by supplying the ``elem_abund`` dict like so:
 Note that setting the ``abund`` parameter is still necessary for the other
 metals.
 
-All abundances are relative to the
+All abundances by default are relative to the
 `Anders & Grevesse 1989 <http://adsabs.harvard.edu/abs/1989GeCoA..53..197A>`_
 tables. See :ref:`changing-abund-tables` to see how to use a different table.
+
+.. _trace-abundances:
+
+Handling Trace Abundances in APEC and SPEX Models
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Both the :class:`~soxs.spectra.thermal_spectra.ApecGenerator` and
+:class:`~soxs.spectra.thermal_spectra.SpexGenerator` classes allow for the
+option to set the overall solar abundance for the "trace elements" of Li,
+Be, B, F, Na, P, Cl, K, Sc, Ti, V, Cr, Mn, Co, Cu, and Zn, using the
+``trace_abund`` keyword argument:
+
+.. code-block:: python
+
+    import soxs
+    sgen = soxs.SpexGenerator(0.1, 10.0, 10000, trace_abund=0.3)
+
+Where the value is in units of solar metallicity. ``trace_abund`` is set to 1.0
+by default. Any trace abundances treated as variable using the ``var_elem``
+argument will not be set by ``trace_abund``.
 
 .. _nei:
 
@@ -422,7 +444,7 @@ Once this has been created, we use a special method for NEI spectra,
 .. _changing-abund-tables:
 
 Changing Abundance Tables
--------------------------
++++++++++++++++++++++++++
 
 The abundance parameters discussed so far assume abundance of a particular
 element or a number of elements relative to the Solar value. Underlying this

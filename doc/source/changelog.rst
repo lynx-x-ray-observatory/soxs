@@ -3,6 +3,19 @@
 ChangeLog
 =========
 
+Version 5.1.0
+-------------
+
+This update to SOXS provides
+
+* It is now possible to create :class:`~soxs.spectra.base.Spectrum` objects from
+  models created in `XSTAR <https://heasarc.gsfc.nasa.gov/docs/software/xstar/xstar.html>`_.
+  See :ref:`xstar` for details.
+* The reference flux of a :class:`~soxs.simput.SimputSpectrum` may now be calculated
+  in a different band than the total band of the spectral model, using the methods
+  :class:`~soxs.simput.SimputSpectrum.from_spectrum` or
+  :class:`~soxs.simput.SimputSpectrum.from_models`.
+
 Version 5.0.1
 -------------
 
