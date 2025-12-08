@@ -43,7 +43,7 @@ if [[ ${mode} == "testing" ]]; then
   if [[ ${whichos} == "ubuntu-latest" ]]; then
     curl -OL https://zenodo.org/records/17313851/files/spex-3.08.02-Linux-Intel.tar.gz
     tar xvfz spex-3.08.02-Linux-Intel.tar.gz
-    export SPEX90=${HOME}/SPEX-3.08.02-Linux
+    export SPEX90=$PWD/SPEX-3.08.02-Linux
     source $SPEX90/spexdist.sh
     conda env create -f $SPEX90/python/spex.yml
     conda activate spex-3.08
