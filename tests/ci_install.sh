@@ -27,19 +27,18 @@ fi
 eval "$(micromamba shell hook --shell bash)"
 micromamba shell init --shell bash --root-prefix=~/micromamba
 micromamba activate test-env
-# special case for SPEX
-if [[ ${mode} == "testing" && ${whichos} == "ubuntu-latest" ]]; then
-  curl -OL https://zenodo.org/records/17313851/files/spex-3.08.02-Linux-Intel.tar.gz
-  tar xvfz spex-3.08.02-Linux-Intel.tar.gz
-  export SPEX90=$PWD/SPEX-3.08.02-Linux
-  source $SPEX90/spexdist.sh
-  micromamba env create -f $SPEX90/python/spex.yml
-  micromamba activate spex-3.08
-fi
 micromamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
 
 if [[ ${mode} == "wheels" ]]; then
   micromamba install --yes wheel setuptools
+fi
+# special case for SPEX
+if [[ ${mode} == "testing" && ${whichos} == "ubuntu-latest" && {npver} == "1" && {pyver} == "3.11" ]]; then
+  curl -OL https://zenodo.org/records/17313851/files/spex-3.08.02-Linux-Intel.tar.gz
+  tar xvfz spex-3.08.02-Linux-Intel.tar.gz
+  export SPEX90=$PWD/SPEX-3.08.02-Linux
+  source $SPEX90/spexdist.sh
+  micromamba install -c spexxray pyspextools
 fi
 
 # Install soxs
