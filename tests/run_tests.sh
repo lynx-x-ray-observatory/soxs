@@ -1,7 +1,7 @@
 set -x
 
 micromamba activate test-env
-if [[ ${mode} == "testing" && ${npver} == "1" && ${pyver} == "3.11" ]]; then
+if [[ ${npver} == "1" && ${pyver} == "3.11" ]]; then
   export SPEX90=$PWD/SPEX-3.08.02-Linux
   source $SPEX90/spexdist.sh
 fi
