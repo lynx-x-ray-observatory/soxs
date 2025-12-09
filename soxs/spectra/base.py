@@ -971,7 +971,9 @@ class Spectrum(BaseSpectrum):
         if cosmology is None:
             cosmology = Planck18
         if redshift == 0.0 and dist is None:
-            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'from_xstar_model'!")
+            raise ValueError(
+                "Either 'redshift' must be > 0 or 'dist' cannot be None for 'from_count_rate_spectrum'.'!"
+            )
         if dist is None:
             D_A = cosmology.angular_diameter_distance(redshift).to_value("cm")
         else:
