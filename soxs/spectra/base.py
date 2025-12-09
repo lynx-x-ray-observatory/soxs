@@ -1181,26 +1181,6 @@ class CountRateSpectrum(BaseSpectrum):
     def luminosity_per_frequency(self):
         return self.binned_energy_flux / self.df
 
-    def get_lum_in_band(self, emin, emax):
-        """
-        Determine the total luminosity in the source within a band specified
-        by an energy range.
-
-        Parameters
-        ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The minimum energy in the band, in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The maximum energy in the band, in keV.
-
-        Returns
-        -------
-        A tuple of values for the luminosity in the band: the first
-        value is in terms of the photon rate, the second value is
-        in terms of the energy rate.
-        """
-        return self._get_total_in_band(emin, emax)
-
     def generate_energies(self, t_exp, prng=None, quiet=False):
         """
         Generate photon energies from this count rate spectrum given an
@@ -1284,7 +1264,8 @@ class CountRateSpectrum(BaseSpectrum):
         -------
         A tuple of values for the rate/luminosity in the
         band: the first value is in terms of the photon
-        rate, the second value is in terms of the energy rate.
+        rate, the second value is in terms of the energy rate
+        (or simply the luminosity).
         """
         return self._get_total_in_band(emin, emax)
 
