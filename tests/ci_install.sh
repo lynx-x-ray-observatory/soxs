@@ -28,14 +28,13 @@ eval "$(micromamba shell hook --shell bash)"
 micromamba shell init --shell bash --root-prefix=~/micromamba
 micromamba activate test-env
 micromamba install --yes -c conda-forge numpy pytest pip astropy scipy cython h5py tqdm pyyaml appdirs pandas regions
+# special case for SPEX
+if [[ ${mode} == "testing" && ${npver} == "1" && ${pyver} == "3.11" ]]; then
+  micromamba install --yes -c conda-forge -c spexxray mkl spex
+fi
 
 if [[ ${mode} == "wheels" ]]; then
   micromamba install --yes wheel setuptools
-fi
-# special case for SPEX
-if [[ ${mode} == "testing" && ${npver} == "1" && ${pyver} == "3.11" ]]; then
-  curl -OL https://zenodo.org/records/17313851/files/spex-3.08.02-Linux-Intel.tar.gz
-  tar xvfz spex-3.08.02-Linux-Intel.tar.gz
 fi
 
 # Install soxs
