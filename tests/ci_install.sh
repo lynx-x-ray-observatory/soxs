@@ -42,5 +42,7 @@ if [[ ${mode} == "testing" ]]; then
   python -m pip install -e .
   if ! [[ ${whichos} == "windows-latest" || ${pyver} == "3.11" ]]; then
     python -m pip install pyatomdb
+    pip install git+https://github.com/AtomDB/ACX2.git
+
   fi
 fi
