@@ -60,3 +60,13 @@ min_numpy_vers = pytest.mark.skipif(
     np.lib.NumpyVersion(np.__version__) < np.lib.NumpyVersion("2.0.0"),
     reason="Requires NumPy >= 2.0.0",
 )
+
+
+def get_atomdb_files():
+    try:
+        from pyatomdb.util import download_atomdb_emissivity_files
+
+        if not os.path.exists(os.path.join(os.environ["ATOMDB"], "filemap")):
+            download_atomdb_emissivity_files(os.environ["ATOMDB"], "00000000", "3.1.3")
+    except ImportError:
+        pass
