@@ -3,6 +3,7 @@ import shutil
 import tempfile
 
 import pytest
+from pyatomdb.util import download_atomdb_emissivity_files
 
 from soxs.spectra.charge_exchange import ACX2Generator, OneACX2Generator
 from soxs.tests.utils import spectrum_answer_testing
@@ -22,6 +23,8 @@ Ne = 0.5
 Ca = 0.3
 redshift = 0.05
 norm = 1.0
+
+download_atomdb_emissivity_files(os.environ["ATOMDB"], "00000000", "3.1.3")
 
 
 def test_vacx2_ctype1(answer_store):
