@@ -17,7 +17,7 @@ if [[ ${mode} == "testing" ]]; then
   if ! [[ ${whichos} == "windows-latest" ]]; then
     # Set location of ATOMDB data
     mkdir -p $HOME/atomdb
-    touch $HOME/atomdb/userdata # to avoid
+    echo "USERID = 00000000" > $HOME/atomdb/userdata
   fi
 
 fi
@@ -42,7 +42,6 @@ if [[ ${mode} == "testing" ]]; then
   python -m pip install -e .
   if ! [[ ${whichos} == "windows-latest" || ${pyver} == "3.11" ]]; then
     python -m pip install pyatomdb
-    pip install git+https://github.com/AtomDB/ACX2.git
-
+    python -m pip install git+https://github.com/AtomDB/ACX2.git
   fi
 fi
