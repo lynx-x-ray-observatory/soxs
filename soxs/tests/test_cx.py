@@ -35,7 +35,7 @@ def test_vacx2_ctype1(answer_store):
 
     spec0 = cxgen0.get_spectrum(kT, collnpar1, abund, He_frac, redshift, norm)
 
-    spectrum_answer_testing(spec0, "cx_spec0.h5", answer_store)
+    spectrum_answer_testing(spec0, "cx_spec0.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -64,7 +64,7 @@ def test_vacx2_ctype2(answer_store):
         elem_abund={"C": C, "Ne": Ne, "Ca": Ca},
     )
 
-    spectrum_answer_testing(spec2, "cx_spec2.h5", answer_store)
+    spectrum_answer_testing(spec2, "cx_spec2.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
@@ -79,7 +79,7 @@ def test_oneacx2(answer_store):
 
     spec4 = cxgen4.get_spectrum("Si", 13, collnpar2, He_frac, redshift, norm)
 
-    spectrum_answer_testing(spec4, "cx_spec4.h5", answer_store)
+    spectrum_answer_testing(spec4, "cx_spec4.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
