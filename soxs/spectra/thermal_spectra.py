@@ -292,6 +292,33 @@ class CIEGenerator:
         dT = (kT - self.Tvals[tindex]) / self.dTvals[tindex]
         return kT, dT, tindex, v
 
+    def _get_spectrum(self, spec_class, norm_fac, kT, abund, redshift, norm, velocity=0.0, elem_abund=None):
+        if elem_abund is None:
+            elem_abund = {}
+        if self.nei:
+            names = self.var_ion_names
+        else:
+            names = self.var_elem_names
+        if set(elem_abund.keys()) != names:
+            raise RuntimeError(
+                "The supplied set of abundances is not the "
+                "same as that was originally set!\n"
+                f"Free elements: {set(elem_abund.keys())}\nAbundances: {set(names)}"
+            )
+        kT, dT, tindex, v = self._spectrum_init(kT, velocity)
+        if tindex >= self.Tvals.shape[0] - 1 or tindex < 0:
+            return np.zeros(self.nbins)
+        cspec, mspec, vspec = self._get_table([tindex, tindex + 1], redshift, v)
+        spec = cspec[0, :] * (1.0 - dT) + cspec[1, :] * dT
+        if not self.nei:
+            metal_spec = mspec[0, :] * (1.0 - dT) + mspec[1, :] * dT
+            spec += abund * metal_spec
+        if vspec is not None:
+            for elem, eabund in elem_abund.items():
+                j = names.index(elem)
+                spec += eabund * (vspec[j, 0, :] * (1.0 - dT) + vspec[j, 1, :] * dT)
+        return spec_class(self.ebins, norm_fac * norm * spec / self.de, binscale=self.binscale)
+
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0, elem_abund=None):
         """
         Get a thermal emission spectrum assuming CIE.
@@ -319,27 +346,10 @@ class CIEGenerator:
 
         if self.nei:
             raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
-        if elem_abund is None:
-            elem_abund = {}
-        if set(elem_abund.keys()) != set(self.var_elem_names):
-            raise RuntimeError(
-                "The supplied set of abundances is not the "
-                "same as that was originally set!\n"
-                f"Free elements: {set(elem_abund.keys())}\nAbundances: {set(self.var_elem_names)}"
-            )
-        kT, dT, tindex, v = self._spectrum_init(kT, velocity)
-        if tindex >= self.Tvals.shape[0] - 1 or tindex < 0:
-            return Spectrum(self.ebins, np.zeros(self.nbins), binscale=self.binscale)
-        cspec, mspec, vspec = self._get_table([tindex, tindex + 1], redshift, v)
-        cosmic_spec = cspec[0, :] * (1.0 - dT) + cspec[1, :] * dT
-        metal_spec = mspec[0, :] * (1.0 - dT) + mspec[1, :] * dT
-        spec = cosmic_spec + abund * metal_spec
-        if vspec is not None:
-            for elem, eabund in elem_abund.items():
-                j = self.var_elem_names.index(elem)
-                spec += eabund * (vspec[j, 0, :] * (1.0 - dT) + vspec[j, 1, :] * dT)
-        spec = 1.0e14 * norm * spec / self.de
-        return Spectrum(self.ebins, spec, binscale=self.binscale)
+        spec = self._get_spectrum(
+            Spectrum, 1.0e14, kT, abund, redshift, norm, velocity=velocity, elem_abund=elem_abund
+        )
+        return spec
 
     def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
         """
@@ -365,23 +375,58 @@ class CIEGenerator:
         from soxs.spectra import Spectrum
 
         if not self.nei:
-            raise RuntimeError("Use 'get_spectrum' for CIE spectra!")
-        if set(elem_abund.keys()) != set(self.var_ion_names):
-            raise RuntimeError(
-                "The supplied set of abundances is not the "
-                "same as that was originally set!\n"
-                f"Free elements: {set(elem_abund.keys())}\nAbundances: {set(self.var_ion_names)}"
-            )
-        kT, dT, tindex, v = self._spectrum_init(kT, velocity)
-        if tindex >= self.Tvals.shape[0] - 1 or tindex < 0:
-            return np.zeros(self.nbins)
-        cspec, _, vspec = self._get_table([tindex, tindex + 1], redshift, v)
-        spec = cspec[0, :] * (1.0 - dT) + cspec[1, :] * dT
-        for elem, eabund in elem_abund.items():
-            j = self.var_ion_names.index(elem)
-            spec += eabund * (vspec[j, 0, :] * (1.0 - dT) + vspec[j, 1, :] * dT)
-        spec = 1.0e14 * norm * spec / self.de
-        return Spectrum(self.ebins, spec, binscale=self.binscale)
+            raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
+        spec = self._get_spectrum(
+            Spectrum, 1.0e14, kT, 0.0, redshift, norm, velocity=velocity, elem_abund=elem_abund
+        )
+        return spec
+
+    def get_count_rate_spectrum(self, kT, abund, EM, elem_abund=None):
+        """
+        Get a thermal emission count-rate spectrum assuming CIE, in the
+        rest-frame of the source.
+
+        Parameters
+        ----------
+        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The temperature in keV.
+        abund : float
+            The metal abundance in solar units.
+        EM : float
+            The emission measure of the model, in units of cm**-3.
+        elem_abund : dict of element name, float pairs, optional
+            A dictionary of elemental abundances in solar
+            units to vary freely of the abund parameter, e.g.
+            {"O": 0.4, "N": 0.3, "He": 0.9}. Default: None
+        """
+        from soxs.spectra import CountRateSpectrum
+
+        if self.nei:
+            raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
+        spec = self._get_spectrum(CountRateSpectrum, 1.0, kT, abund, 0.0, EM, elem_abund=elem_abund)
+        return spec
+
+    def get_nei_count_rate_spectrum(self, kT, elem_abund, EM):
+        """
+        Get a thermal emission spectrum assuming NEI.
+
+        Parameters
+        ----------
+        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The temperature in keV.
+        elem_abund : dict of element name, float pairs
+            A dictionary of ionization state abundances in solar
+            units to vary freely of the abund parameter, e.g.
+            {"O^1": 0.4, "O^4": 0.6, "N^2": 0.7} Default: None
+        EM : float
+            The emission measure of the model, in units of cm**-3.
+        """
+        from soxs.spectra import CountRateSpectrum
+
+        if not self.nei:
+            raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
+        spec = self._get_spectrum(CountRateSpectrum, 1.0, kT, 0.0, 0.0, EM, elem_abund=elem_abund)
+        return spec
 
 
 class ApecGenerator(CIEGenerator):
