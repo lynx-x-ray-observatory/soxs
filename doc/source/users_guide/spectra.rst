@@ -5,7 +5,7 @@ Creating and Using Spectra
 
 SOXS provides a way to create common types of spectra that can then be
 used in your scripts to create mock observations via the
-:class:`~soxs.spectra.Spectrum` object.
+:class:`~soxs.spectra.base.Spectrum` object.
 
 .. _spectrum-binning:
 
@@ -30,15 +30,15 @@ keyword arguments to control the binning of spectral tables:
 Creating Spectrum Objects
 -------------------------
 
-A :class:`~soxs.spectra.Spectrum` object is simply defined by a table
+A :class:`~soxs.spectra.base.Spectrum` object is simply defined by a table
 of energies and photon fluxes. There are several ways to create a
-:class:`~soxs.spectra.Spectrum`, depending on your use case.
+:class:`~soxs.spectra.base.Spectrum`, depending on your use case.
 
 Creating a Constant Spectrum
 ++++++++++++++++++++++++++++
 
 A simple constant spectrum can be created using the
-:meth:`~soxs.spectra.Spectrum.from_constant` method. This takes as input the
+:meth:`~soxs.spectra.base.Spectrum.from_constant` method. This takes as input the
 value of the flux ``const_flux``, which is in units of
 :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. The parameters
 ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to control the binning.
@@ -55,7 +55,7 @@ Creating a Power-Law Spectrum
 +++++++++++++++++++++++++++++
 
 A simple power-law spectrum can be created using the
-:meth:`~soxs.spectra.Spectrum.from_powerlaw` method. This takes as input
+:meth:`~soxs.spectra.base.Spectrum.from_powerlaw` method. This takes as input
 a spectral index ``photon_index``, a redshift ``redshift``, and a normalization
 of the source ``norm`` at 1 keV in the source frame, in units of
 :math:`{\rm photons}~{\rm cm}^{-2}~{\rm s}^{-1}~{\rm keV}^{-1}`. Mathematically,
@@ -80,6 +80,22 @@ You can set up a power-law spectrum like this:
     nbins = 20000
     spec = Spectrum.from_powerlaw(alpha, zobs, norm, emin, emax, nbins, binscale="log")
 
+.. _spectrum-thermal:
+
+Generating Spectra from Thermal Models
+++++++++++++++++++++++++++++++++++++++
+
+There are a number of ways in SOXS to generate :class:`~soxs.spectra.base.Spectrum` objects
+from thermal emission models. To find out how, check out :ref:`thermal-spectra`.
+
+.. _spectrum-cx:
+
+Generating Spectra from Charge Exchange Models
+++++++++++++++++++++++++++++++++++++++++++++++
+
+To find out how to generate :class:`~soxs.spectra.base.Spectrum` objects, from charge
+exchange models check out :ref:`charge-exchange`.
+
 .. _xspec:
 
 Generating a Spectrum from XSPEC or pyXspec
@@ -89,7 +105,7 @@ If you have `XSPEC <https://heasarc.gsfc.nasa.gov/xanadu/xspec/>`_ installed on
 your machine, you can use it with SOXS to create any spectral model that XSPEC
 supports. You can do this in three ways. The first is by passing in a model
 string and a list of parameters to the
-:meth:`~soxs.spectra.Spectrum.from_xspec_model` method:
+:meth:`~soxs.spectra.base.Spectrum.from_xspec_model` method:
 
 .. code-block:: python
 
@@ -105,7 +121,7 @@ were entering them in XSPEC. The parameters ``emin``, ``emax``, ``nbins``,
 and ``binscale`` are used to control the binning.
 
 The second way involves passing an XSPEC script file to the
-:meth:`~soxs.spectra.Spectrum.from_xspec_script` method which defines an XSPEC
+:meth:`~soxs.spectra.base.Spectrum.from_xspec_script` method which defines an XSPEC
 model. For example, a script that creates a model spectrum from a sum of two
 APEC models may look like this:
 
@@ -129,7 +145,7 @@ APEC models may look like this:
         1.12328e-06       0.01          0          0      1e+24      1e+24
 
 If it is contained within the file ``"two_apec.xcm"``, it can be used to
-create a :class:`~soxs.spectra.Spectrum` like this:
+create a :class:`~soxs.spectra.base.Spectrum` like this:
 
 .. code-block:: python
 
@@ -142,8 +158,8 @@ create a :class:`~soxs.spectra.Spectrum` like this:
 The parameters ``emin``, ``emax``, ``nbins``, and ``binscale`` are used to
 control the binning.
 
-For either :meth:`~soxs.spectra.Spectrum.from_xspec_model` or
-:meth:`~soxs.spectra.Spectrum.from_xspec_script`, you can pass a dictionary ``xspec_settings`` which
+For either :meth:`~soxs.spectra.base.Spectrum.from_xspec_model` or
+:meth:`~soxs.spectra.base.Spectrum.from_xspec_script`, you can pass a dictionary ``xspec_settings`` which
 will apply a number of XSPEC settings before generating the spectral models. For example, you can
 set the ``APECROOT`` and the ``APECTHERMAL`` variables in this way:
 
@@ -163,7 +179,7 @@ dictionary.
 The third way is to use `pyXspec <https://heasarc.gsfc.nasa.gov/xanadu/xspec/python/html/index.html>`_
 to generate a spectrum. This requires that pyXspec is installed as part of your HEASoft installation
 and is installed into the same Python environment as SOXS. If so, you can create an ``xspec.Model``
-object in the usual way, and then pass it to the :meth:`~soxs.spectra.Spectrum.from_pyxspec_model`
+object in the usual way, and then pass it to the :meth:`~soxs.spectra.base.Spectrum.from_pyxspec_model`
 method:
 
 .. code-block:: python
@@ -197,7 +213,7 @@ method:
 Math with ``Spectrum`` Objects
 ------------------------------
 
-Two :class:`~soxs.spectra.Spectrum` objects can be co-added, provided that
+Two :class:`~soxs.spectra.base.Spectrum` objects can be co-added, provided that
 they have the same energy binning:
 
 .. code-block:: python
@@ -228,7 +244,7 @@ You can also multiply a spectrum by a constant float number or divide it by one:
 Attributes of Spectrum Objects
 ------------------------------
 
-The :class:`~soxs.spectra.Spectrum` object has a number of unitful attributes
+The :class:`~soxs.spectra.base.Spectrum` object has a number of unitful attributes
 which may be helpful for the end-user, which are shown here.
 
 .. code-block:: python
@@ -324,8 +340,8 @@ above:
 Getting the Values and Total Flux or Luminosity of a Spectrum Within a Specific Energy Band
 -------------------------------------------------------------------------------------------
 
-A new :class:`~soxs.spectra.Spectrum` object can be created from a restricted
-energy band of an existing one by calling the :meth:`~soxs.spectra.Spectrum.new_spec_from_band`
+A new :class:`~soxs.spectra.base.Spectrum` object can be created from a restricted
+energy band of an existing one by calling the :meth:`~soxs.spectra.base.Spectrum.new_spec_from_band`
 method:
 
 .. code-block:: python
@@ -334,7 +350,7 @@ method:
     emax = 7.0
     subspec = spec.new_spec_from_band(emin, emax)
 
-The :meth:`~soxs.spectra.Spectrum.get_flux_in_band` method can be used
+The :meth:`~soxs.spectra.base.Spectrum.get_flux_in_band` method can be used
 to quickly report on the total flux within a specific energy band within
 the observer frame:
 
@@ -351,7 +367,7 @@ which returns a tuple of the photon flux and the energy flux, showing:
     (<Quantity 2.2215588675210208e-07 ph / (cm2 s)>,
      <Quantity 7.8742710307246895e-16 erg / (cm2 s)>)
 
-The :meth:`~soxs.spectra.Spectrum.get_lum_in_band` method can also be used
+The :meth:`~soxs.spectra.base.Spectrum.get_lum_in_band` method can also be used
 to quickly report on the total luminosity and count rate within a specific
 energy band, where in this case the band in question is the rest frame of
 the source. For this reason, either a redshift must be supplied, or for a
@@ -390,7 +406,7 @@ You can supply a distance for a local source (redshift assumed zero) like this:
     emax = 7.0
     print(spec.get_lum_in_band(emin, emax, dist=(8.0, "kpc")))
 
-Finally, :class:`~soxs.spectra.Spectrum` objects are "callable", and if one
+Finally, :class:`~soxs.spectra.base.Spectrum` objects are "callable", and if one
 supplies a single energy or array of energies, the values of the spectrum
 at these energies will be returned. AstroPy :class:`~astropy.units.Quantity`
 objects are detected and handled appropriately.
@@ -418,7 +434,7 @@ Rescaling the Normalization of a Spectrum
 -----------------------------------------
 
 You can rescale the normalization of the entire spectrum using the
-:meth:`~soxs.spectra.Spectrum.rescale_flux` method. This can be
+:meth:`~soxs.spectra.base.Spectrum.rescale_flux` method. This can be
 helpful when you want to set the normalization of the spectrum by the
 total flux within a certain energy band instead.
 
@@ -438,7 +454,7 @@ and in the latter case the units must be
 Applying Galactic Foreground Absorption to a Spectrum
 -----------------------------------------------------
 
-The :meth:`~soxs.spectra.Spectrum.apply_foreground_absorption` method
+The :meth:`~soxs.spectra.base.Spectrum.apply_foreground_absorption` method
 can be used to apply foreground absorption using the ``"wabs"`` or
 ``"tbabs"`` models. It takes one required parameter, the hydrogen
 column along the line of sight, in units of :math:`10^{22}~{\rm cm}^{-2}`.
@@ -484,7 +500,7 @@ Adding Emission Lines to a Spectrum
 -----------------------------------
 
 The :meth:`~soxs.Spectrum.add_emission_line` method adds a single Gaussian
-emission line to an existing :class:`~soxs.spectra.Spectrum` object. The
+emission line to an existing :class:`~soxs.spectra.base.Spectrum` object. The
 line energy, line width, and amplitude of the line (the line strength or
 integral under the curve) must be specified. The formula for the emission
 line is:
@@ -527,7 +543,7 @@ Adding Absorption Lines to a Spectrum
 -------------------------------------
 
 The :meth:`~soxs.Spectrum.add_absorption_line` method adds a single Gaussian
-absorption line to an existing :class:`~soxs.spectra.Spectrum` object. The
+absorption line to an existing :class:`~soxs.spectra.base.Spectrum` object. The
 line energy, line width, and equivalent width of the line must be specified.
 The formula for the absorption line is given in terms of the optical depth
 :math:`\tau(E)`:
@@ -581,8 +597,8 @@ Currently, this functionality only supports absorption lines with a Gaussian sha
 Generating Photon Energies From a Spectrum
 ------------------------------------------
 
-Given a :class:`~soxs.spectra.Spectrum`, a set of photon energies can be
-drawn from it using the :meth:`~soxs.spectra.Spectrum.generate_energies`
+Given a :class:`~soxs.spectra.base.Spectrum`, a set of photon energies can be
+drawn from it using the :meth:`~soxs.spectra.base.Spectrum.generate_energies`
 method. This will most often be used to generate discrete samples for mock
 observations. For this method, an exposure time and a constant
 (energy-independent) effective area must be supplied to convert the spectrum's
@@ -591,7 +607,7 @@ both should be larger than the values for the mock observation that you want to
 simulate, to create a statistically robust sample to draw photons from when we
 actually pass them to the instrument simulator.
 
-An example using a :class:`~soxs.spectra.Spectrum` created from a file:
+An example using a :class:`~soxs.spectra.base.Spectrum` created from a file:
 
 .. code-block:: python
 
@@ -600,7 +616,7 @@ An example using a :class:`~soxs.spectra.Spectrum` created from a file:
     area = (3.0, "m**2") # constant effective area
     energies = spec.generate_energies(t_exp, area)
 
-The ``energies`` object :meth:`~soxs.spectra.Spectrum.generate_energies` returns
+The ``energies`` object :meth:`~soxs.spectra.base.Spectrum.generate_energies` returns
 is an augmented NumPy array which also carries the unit information and the total
 flux of energies:
 
@@ -614,7 +630,7 @@ flux of energies:
     Unit("keV")
     <Quantity 1.1256362913845828e-15 erg / (cm2 s)>
 
-Normally, :meth:`~soxs.spectra.Spectrum.generate_energies` will not need to be
+Normally, :meth:`~soxs.spectra.base.Spectrum.generate_energies` will not need to be
 called by the end-user but will be used "under the hood" in the generation of
 a :class:`~soxs.simput.PhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
 See :ref:`simput` for more information.
@@ -624,16 +640,14 @@ See :ref:`simput` for more information.
 Count Rate Spectra
 ------------------
 
-The :class:`~soxs.spectra.CountRateSpectrum` class is basically the same thing as a
-the :class:`~soxs.spectra.Spectrum` class, except that it is in units of
+The :class:`~soxs.spectra.base.CountRateSpectrum` class is basically the same thing as a
+the :class:`~soxs.spectra.base.Spectrum` class, except that it is in units of
 :math:`\rm{counts}~\rm{s}^{-1}~\rm{keV}^{-1}`. This sort of spectrum makes the most
-sense in the rest frame of a source. This object is usually not generated on its own,
-but is the result of some other kind of operation (such as
-`making source spectra in pyXSIM <https://hea-www.cfa.harvard.edu/~jzuhone/pyxsim/spectra.html>`_).
+sense in the rest frame of a source.
 
-One important note about :class:`~soxs.spectra.CountRateSpectrum` objects is that you
-can also call :meth:`~soxs.spectra.CountRateSpectrum.generate_energies` on them, except
-that unlike :class:`~soxs.spectra.Spectrum` objects it is not necessary to specify an area,
+One important note about :class:`~soxs.spectra.base.CountRateSpectrum` objects is that you
+can call :meth:`~soxs.spectra.base.CountRateSpectrum.generate_energies` on them, except
+that unlike :class:`~soxs.spectra.base.Spectrum` objects it is not necessary to specify an area,
 but only an exposure time, to generate energies:
 
 .. code-block:: python
@@ -649,9 +663,9 @@ but only an exposure time, to generate energies:
 
 One may want to examine a spectrum after it has been convolved with a particular
 effective area curve. One can generate such a
-:class:`~soxs.spectra.ConvolvedSpectrum` using the
-:meth:`~soxs.spectra.ConvolvedSpectrum.convolve` method, feeding it a
-:class:`~soxs.spectra.Spectrum` object and an ARF:
+:class:`~soxs.spectra.base.ConvolvedSpectrum` using the
+:meth:`~soxs.spectra.base.ConvolvedSpectrum.convolve` method, feeding it a
+:class:`~soxs.spectra.base.Spectrum` object and an ARF:
 
 .. code-block:: python
 
@@ -662,12 +676,12 @@ effective area curve. One can generate such a
 
 The spectrum in this object has units of
 :math:`{\rm photons}~{\rm s}^{-1}~{\rm keV}^{-1}`, and one can use many of
-:class:`~soxs.spectra.Spectrum`'s methods on it. For example, to determine the
-count and energy rate within a particular band:
+:class:`~soxs.spectra.base.CountRateSpectrum`'s methods on it. For example,
+to determine the count and energy rate within a particular band:
 
 .. code-block:: python
 
-    cspec.get_flux_in_band(0.5, 7.0)
+    cspec.get_rate_in_band(0.5, 7.0)
 
 .. code-block:: python
 
@@ -682,8 +696,8 @@ Or to generate an array of energies:
     e = cspec.generate_energies(t_exp)
 
 If one has already loaded a :class:`~soxs.instrument.AuxiliaryResponseFile`,
-then one can also generate a :class:`~soxs.spectra.ConvolvedSpectrum` by simply
-multiplying the ARF by a :class:`~soxs.spectra.Spectrum` object:
+then one can also generate a :class:`~soxs.spectra.base.ConvolvedSpectrum` by simply
+multiplying the ARF by a :class:`~soxs.spectra.base.Spectrum` object:
 
 .. code-block:: python
 
@@ -693,9 +707,9 @@ multiplying the ARF by a :class:`~soxs.spectra.Spectrum` object:
     spec2 = agen.get_spectrum(6.0, 0.3, 0.05, 1.0e-3)
     cspec = spec2*arf
 
-To "deconvolve" a :class:`~soxs.spectra.ConvolvedSpectrum` object and return
-a :class:`~soxs.spectra.Spectrum` object, simply call
-:meth:`~soxs.spectra.ConvolvedSpectrum.deconvolve`:
+To "deconvolve" a :class:`~soxs.spectra.base.ConvolvedSpectrum` object and return
+a :class:`~soxs.spectra.base.Spectrum` object, simply call
+:meth:`~soxs.spectra.base.ConvolvedSpectrum.deconvolve`:
 
 .. code-block:: python
 
@@ -710,9 +724,9 @@ It is also possible to include an RMF in the convolution process. This will take
 the spectrum which has been convolved with the ARF and further convolve it with
 with the response matrix in the RMF. This will produce a spectrum with features
 that have been broadened by the energy resolution of the instrument. This may be
-useful for comparing model :class:`~soxs.spectra.Spectrum` objects to mock observations
+useful for comparing model :class:`~soxs.spectra.base.Spectrum` objects to mock observations
 by forward-modeling them through the instrument responses. To do this, simply pass
-the name of the RMF file to :meth:`~soxs.spectra.ConvolvedSpectrum.convolve`:
+the name of the RMF file to :meth:`~soxs.spectra.base.ConvolvedSpectrum.convolve`:
 
 .. code-block:: python
 
@@ -725,17 +739,17 @@ the name of the RMF file to :meth:`~soxs.spectra.ConvolvedSpectrum.convolve`:
 .. note::
 
     If one uses an RMF to convolve, the methods
-    :meth:`~soxs.spectra.ConvolvedSpectrum.generate_energies` and
-    :meth:`~soxs.spectra.ConvolvedSpectrum.deconvolve` are not available.
+    :meth:`~soxs.spectra.base.ConvolvedSpectrum.generate_energies` and
+    :meth:`~soxs.spectra.base.ConvolvedSpectrum.deconvolve` are not available.
 
 .. _spectra-plots:
 
 Plotting Spectra
 ----------------
 
-All :class:`~soxs.spectra.Spectrum` objects and their associated subclasses have
-a :meth:`~soxs.spectra.Spectrum.plot` method which can be used to make a
-`Matplotlib <http://www.matplotlib.org>`_ plot. The :meth:`~soxs.spectra.Spectrum.plot`
+All :class:`~soxs.spectra.base.Spectrum` objects and their associated subclasses have
+a :meth:`~soxs.spectra.base.Spectrum.plot` method which can be used to make a
+`Matplotlib <http://www.matplotlib.org>`_ plot. The :meth:`~soxs.spectra.base.Spectrum.plot`
 method has no required arguments, but has a number of optional arguments for plot
 customization. This method returns a tuple of the :class:`~matplotlib.figure.Figure` and
 the :class:`~matplotlib.axes.Axes` objects to allow for further customization. This
@@ -763,16 +777,16 @@ zooming in on a section of it, and setting the energy scale to linear:
 
 .. image:: ../images/plot_two_spectra.png
 
-For other customizations, consult the :meth:`~soxs.spectra.Spectrum.plot` API.
+For other customizations, consult the :meth:`~soxs.spectra.base.Spectrum.plot` API.
 
 .. _write-spectra:
 
 Writing a Spectrum to Disk
 --------------------------
 
-:class:`~soxs.spectra.Spectrum` objects can be written to disk in three formats:
+:class:`~soxs.spectra.base.Spectrum` objects can be written to disk in three formats:
 an ASCII text file in the ECSV format, a FITS file, or an HDF5 file. To write a
-spectrum to an ASCII ECSV file, use the :meth:`~soxs.spectra.Spectrum.write_ascii_file`
+spectrum to an ASCII ECSV file, use the :meth:`~soxs.spectra.base.Spectrum.write_ascii_file`
 method:
 
 .. code-block:: python
@@ -781,7 +795,7 @@ method:
     spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
     spec1.write_ascii_file("my_spec.ecsv", overwrite=True)
 
-To write a spectrum to an HDF5 file, use :meth:`~soxs.spectra.Spectrum.write_hdf5_file`:
+To write a spectrum to an HDF5 file, use :meth:`~soxs.spectra.base.Spectrum.write_hdf5_file`:
 
 .. code-block:: python
 
@@ -789,7 +803,7 @@ To write a spectrum to an HDF5 file, use :meth:`~soxs.spectra.Spectrum.write_hdf
     spec1 = agen.get_spectrum(5.0, 0.3, 0.02, 1.0e-3)
     spec1.write_hdf5_file("my_spec.h5", overwrite=True)
 
-To write a spectrum to a FITS file, use :meth:`~soxs.spectra.Spectrum.write_fits_file`:
+To write a spectrum to a FITS file, use :meth:`~soxs.spectra.base.Spectrum.write_fits_file`:
 
 .. code-block:: python
 
@@ -807,9 +821,9 @@ object, the name of the ARF which was used to do the convolution is also stored.
 Reading a Spectrum from Disk
 ----------------------------
 
-:class:`~soxs.spectra.Spectrum` objects written using any of the writing methods
+:class:`~soxs.spectra.base.Spectrum` objects written using any of the writing methods
 detailed above (ASCII ECSV, HDF5, or FITS) can be the spectrum can be read back
-in again in, using :meth:`~soxs.spectra.Spectrum.from_file`:
+in again in, using :meth:`~soxs.spectra.base.Spectrum.from_file`:
 
 .. code-block:: python
 
@@ -821,9 +835,9 @@ in again in, using :meth:`~soxs.spectra.Spectrum.from_file`:
 Special I/O for Convolved Spectra
 ---------------------------------
 
-:class:`~soxs.spectra.ConvolvedSpectrum` objects can be written directly to
+:class:`~soxs.spectra.base.ConvolvedSpectrum` objects can be written directly to
 PI/PHA files using the same standard format that is used for real spectra,
-with the :meth:`~soxs.spectra.ConvolvedSpectrum.to_pha_file` method:
+with the :meth:`~soxs.spectra.base.ConvolvedSpectrum.to_pha_file` method:
 
 .. code-block:: python
 
@@ -833,7 +847,7 @@ with the :meth:`~soxs.spectra.ConvolvedSpectrum.to_pha_file` method:
     cspec = ConvolvedSpectrum.convolve(spec2, "xrs_hdxi_3x10.arf")
     cspec.to_pha_file("my_spec.pi", overwrite=True)
 
-Conversely, PI/PHA files produced can be read in as :class:`~soxs.spectra.ConvolvedSpectrum`
+Conversely, PI/PHA files produced can be read in as :class:`~soxs.spectra.base.ConvolvedSpectrum`
 objects:
 
 .. code-block:: python

@@ -16,12 +16,12 @@ class BackgroundSpectrum(Spectrum):
     def from_spectrum(cls, spec, fov):
         """
         Create a background spectrum from a regular
-        :class:`~soxs.spectra.Spectrum` object and the width
+        :class:`~soxs.spectra.base.Spectrum` object and the width
         of a field of view on a side.
 
         Parameters
         ----------
-        spec : :class:`~soxs.spectra.Spectrum`
+        spec : :class:`~soxs.spectra.base.Spectrum`
             The spectrum to be used.
         fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The width of the field of view on a side in

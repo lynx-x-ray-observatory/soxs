@@ -19,7 +19,7 @@ spectrum generators available in SOXS are:
   collisional+photoionization spectra with optional resonant scattering from the CXB
 
 Each of these are essentially "factory" classes which generate new
-:class:`~soxs.spectra.Spectrum` objects.
+:class:`~soxs.spectra.base.Spectrum` objects.
 
 .. _apec-spectra:
 
@@ -299,7 +299,7 @@ A more specific invocation may look like this:
     velocity = (100.0, "km/s") # optional
     spec1 = agen.get_spectrum(kT, abund, redshift, norm, velocity=velocity)
 
-``spec1`` is just a standard :class:`~soxs.spectra.Spectrum` object.
+``spec1`` is just a standard :class:`~soxs.spectra.base.Spectrum` object.
 
 For the Cloudy-based photoionization generator, because it includes the
 effects of photoionization, it also depends on the hydrogen number density,

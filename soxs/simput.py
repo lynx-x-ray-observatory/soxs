@@ -491,7 +491,7 @@ class SimputSpectrum(SimputSource):
         ----------
         name : string
             The name of the SIMPUT spectrum.
-        spectral_model : :class:`~soxs.spectra.Spectrum`
+        spectral_model : :class:`~soxs.spectra.base.Spectrum`
             The spectral model to use to generate the event energies.
         ra : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The RA of the source in degrees.
@@ -544,7 +544,7 @@ class SimputSpectrum(SimputSource):
         ----------
         name : string
             The name of the SIMPUT spectrum.
-        spectral_model : :class:`~soxs.spectra.Spectrum`
+        spectral_model : :class:`~soxs.spectra.base.Spectrum`
             The spectral model to use to generate the event energies.
         spatial_model : :class:`~soxs.spatial.SpatialModel`
             The spatial model to use to generate the event coordinates.
@@ -598,7 +598,7 @@ class SimputPhotonList(SimputSource):
         ----------
         name : string
             The name of the SIMPUT photon list.
-        spectral_model : :class:`~soxs.spectra.Spectrum`
+        spectral_model : :class:`~soxs.spectra.base.Spectrum`
             The spectral model to use to generate the event energies.
         spatial_model : :class:`~soxs.spatial.SpatialModel`
             The spatial model to use to generate the event coordinates.

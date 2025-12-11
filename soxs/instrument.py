@@ -1056,14 +1056,14 @@ def simulate_spectrum(
     **kwargs,
 ):
     """
-    Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
+    Generate a PI or PHA spectrum from a :class:`~soxs.spectra.base.Spectrum`
     by convolving it with responses. To be used if one wants to
     create a spectrum without worrying about spatial response. Similar
     to XSPEC's "fakeit".
 
     Parameters
     ----------
-    spec : :class:`~soxs.spectra.Spectrum`
+    spec : :class:`~soxs.spectra.base.Spectrum`
         The spectrum to be convolved. If None is supplied, only backgrounds
         will be simulated (if they are turned on).
     instrument : string or tuple

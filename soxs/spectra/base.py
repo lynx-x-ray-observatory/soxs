@@ -764,7 +764,7 @@ class Spectrum(BaseSpectrum):
             profile, a list, tuple, or array of two values should be provided since there
             are two line widths, the Lorentzian and the Gaussian (in that order).
         line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The integrated line amplitude in the units of the flux
+            The integrated line amplitude in the units of the spectrum
         line_type : string, optional
             The line profile type. Default: "gaussian"
         """

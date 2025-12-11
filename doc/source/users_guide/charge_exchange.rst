@@ -29,6 +29,10 @@ To use the charge exchange model in SOXS, you must first |pyatomdb|_, which is a
 Python package for atomic data and modeling of X-ray spectra. Following that, you
 can |acx2|_.
 
+.. note::
+
+    This functionality is not currently supported on Windows (unless you are using WSL).
+
 Usage
 -----
 

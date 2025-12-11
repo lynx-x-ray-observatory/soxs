@@ -88,8 +88,8 @@ exactly. For this, many functions in SOXS take a ``prng`` optional argument,
 which has a default of ``None``, but if set to an integer will use this value as
 a random seed.
 
-For example, to generate photon energies from a :class:`~soxs.spectra.Spectrum`
-object using the :meth:`~soxs.spectra.Spectrum.generate_energies` method, one
+For example, to generate photon energies from a :class:`~soxs.spectra.base.Spectrum`
+object using the :meth:`~soxs.spectra.base.Spectrum.generate_energies` method, one
 would set the random seed in this way:
 
 .. code-block:: python
