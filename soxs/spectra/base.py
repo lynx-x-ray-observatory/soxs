@@ -50,6 +50,20 @@ def _generate_energies(spec, t_exp, rate, prng, binscale, quiet=False):
     return e
 
 
+def distance_handler(redshift, dist, cosmology):
+    from astropy.cosmology import Planck18
+
+    if cosmology is None:
+        cosmology = Planck18
+    if redshift == 0.0 and dist is None:
+        raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None!")
+    if dist is None:
+        D_A = cosmology.angular_diameter_distance(redshift).to_value("cm")
+    else:
+        D_A = u.Quantity(parse_value(dist, "kpc"), "kpc").to_value("cm")
+    return D_A
+
+
 class BaseSpectrum:
     _units = ""  # set by subclasses
 
@@ -308,8 +322,8 @@ class BaseSpectrum:
     @classmethod
     def from_powerlaw(cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"):
         """
-        Create a spectrum from a power-law model. Form of the model
-        is F(E) = norm*(e/1 keV)**-photon_index.
+        Create a spectrum from a power-law model. The form of the model
+        is F(E) = norm*(e*(1+z)/(1 keV))**-photon_index.
 
         Parameters
         ----------
@@ -319,9 +333,8 @@ class BaseSpectrum:
             The redshift of the source.
         norm : float
             The normalization of the source in units of
-            the spectrum (photons/s/cm**2/keV for Spectrum
-            objects, photons/s/keV for CountRateSpectrum objects)
-            at 1 keV in the source frame.
+            the spectrum, photons/s/cm**2/keV, at 1 keV
+            in the source frame.
         emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The minimum energy of the spectrum in keV.
         emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -346,9 +359,8 @@ class BaseSpectrum:
     def from_file(cls, filename):
         """
         Read a spectrum from an ASCII ECSV, FITS, or HDF5 file, in
-        the forms written by :meth:`~soxs.Spectrum.write_ascii_file`
-        :meth:`~soxs.Spectrum.write_fits_file`, and
-        :meth:`~soxs.Spectrum.write_h5_file`.
+        the forms written by ``write_ascii_file``, ``write_fits_file``,
+        and ``write_h5_file``.
 
         Parameters
         ----------
@@ -871,17 +883,8 @@ class Spectrum(BaseSpectrum):
         value is in terms of the photon rate, the second value is
         in terms of the energy rate.
         """
-        from astropy.cosmology import Planck18
-
-        if cosmology is None:
-            cosmology = Planck18
-        if redshift == 0.0 and dist is None:
-            raise ValueError("Either 'redshift' must be > 0 or 'dist' cannot be None for 'get_lum_in_band'!")
+        D_L = distance_handler(redshift, dist, cosmology) * (1.0 + redshift) ** 2
         pflux, eflux = self.get_flux_in_band(emin / (1.0 + redshift), emax / (1.0 + redshift))
-        if dist is None:
-            D_L = cosmology.luminosity_distance(redshift).to("cm")
-        else:
-            D_L = u.Quantity(parse_value(dist, "kpc"), "kpc").to("cm")
         dist_fac = 4.0 * np.pi * D_L**2
         elum = dist_fac * eflux
         plum = dist_fac * pflux / (1.0 + redshift)
@@ -921,18 +924,18 @@ class Spectrum(BaseSpectrum):
         return energies
 
     @classmethod
-    def from_count_rate_spectrum(cls, spec, cosmology=None, redshift=0.0, dist=None):
+    def from_count_rate_spectrum(cls, spec, redshift=0.0, dist=None, cosmology=None):
         """
         Create a Spectrum from a CountRateSpectrum object, assuming that the latter
         is in the rest frame of the source. To get the Spectrum in the observer
         frame, you must either provide a redshift or a distance to the source to
-        convert to flux. Note that the energy bins opf the original CountRateSpectrum
+        convert to flux. Note that the energy bins of the original CountRateSpectrum
         object will be cosmologically redshifted if the redshift is nonzero.
 
         Parameters
         ----------
         spec : :class:`~soxs.spectra.base.CountRateSpectrum`
-            The CountRateSpectrum object to create the spectrum from.
+            The CountRateSpectrum object to create the Spectrum from.
         redshift : float
             The redshift to the source, assuming it is cosmological.
         dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -943,20 +946,9 @@ class Spectrum(BaseSpectrum):
             distance if needed. If not set, the default is the Planck 2018
             cosmology.
         """
-        from astropy.cosmology import Planck18
-
-        if cosmology is None:
-            cosmology = Planck18
-        if redshift == 0.0 and dist is None:
-            raise ValueError(
-                "Either 'redshift' must be > 0 or 'dist' cannot be None for 'from_count_rate_spectrum'.'!"
-            )
-        if dist is None:
-            D_A = cosmology.angular_diameter_distance(redshift).to_value("cm")
-        else:
-            D_A = u.Quantity(parse_value(dist, "kpc"), "kpc").to_value("cm")
+        D_A = distance_handler(redshift, dist, cosmology)
         flux = spec.rate.value / (4.0 * np.pi * D_A**2 * (1.0 + redshift) ** 2)
-        return cls(spec.ebins.value / (1.0 + redshift), flux, binscale="custom")
+        return cls(spec.ebins.value / (1.0 + redshift), flux, binscale=spec.binscale)
 
     @classmethod
     def from_spex_model(cls, spex_session, isect=1):
@@ -1211,6 +1203,60 @@ class CountRateSpectrum(BaseSpectrum):
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         energies = u.Quantity(energy, "keV")
         return energies
+
+    @classmethod
+    def from_spectrum(cls, spec, redshift=0.0, dist=None, cosmology=None):
+        """
+        Create a CountRateSpectrum from a Spectrum object, assuming that the latter
+        is in the observer frame. To get the CountRateSpectrum in the source
+        frame, you must either provide a redshift or a distance to the source to
+        convert to photon count rate and luminosity. Note that the energy bins
+        of the original Spectrum object will be cosmologically blueshifted if
+        the redshift is nonzero.
+
+        Parameters
+        ----------
+        spec : :class:`~soxs.spectra.base.Spectrum`
+            The Spectrum object to create the CountRateSpectrum from.
+        redshift : float
+            The redshift to the source, assuming it is cosmological.
+        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The distance to the source, if it is not cosmological. If a unit
+            is not specified, it is assumed to be in kpc.
+        cosmology : :class:`~astropy.cosmology.Cosmology` object
+            An AstroPy cosmology object used to determine the luminosity
+            distance if needed. If not set, the default is the Planck 2018
+            cosmology.
+        """
+        D_A = distance_handler(redshift, dist, cosmology)
+        rate = spec.flux.value * (4.0 * np.pi * D_A**2 * (1.0 + redshift) ** 2)
+        return cls(spec.ebins.value * (1.0 + redshift), rate, binscale=spec.binscale)
+
+    @classmethod
+    def from_powerlaw(cls, photon_index, norm, emin, emax, nbins, binscale="linear"):
+        """
+        Create a count rate spectrum from a power-law model, in the frame of the
+        source. The form of the model is R(E) = norm*(e/(1 keV))**-photon_index.
+
+        Parameters
+        ----------
+        photon_index : float
+            The photon index of the source.
+        norm : float
+            The normalization of the source in units of
+            the spectrum, photons/s/keV, at 1 keV
+            in the source frame.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The minimum energy of the spectrum in keV.
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The maximum energy of the spectrum in keV.
+        nbins : integer
+            The number of bins in the spectrum.
+        binscale : string, optional
+            The scale of the energy binning: "linear" or "log".
+            Default: "linear"
+        """
+        super().from_powerlaw(photon_index, 0.0, norm, emin, emax, nbins, binscale)
 
     @classmethod
     def from_xstar_model(cls, xstar_file, which_spectrum):
@@ -1617,11 +1663,11 @@ class ConvolvedSpectrum(CountRateSpectrum):
         return energies
 
     @classmethod
-    def from_constant(cls, const_flux, emin, emax, nbins, binscale="linear"):
+    def from_constant(cls, const_value, emin, emax, nbins, binscale="linear"):
         raise NotImplementedError
 
     @classmethod
-    def from_powerlaw(cls, photon_index, redshift, norm, emin, emax, nbins, binscale="linear"):
+    def from_powerlaw(cls, photon_index, norm, emin, emax, nbins, binscale="linear"):
         raise NotImplementedError
 
     @classmethod
