@@ -14,7 +14,14 @@ from pathlib import Path, PurePath
 
 from soxs.constants import ckms, erg_per_keV, hc, sigma_to_fwhm, sqrt2pi
 from soxs.spectra.foreground_absorption import tbabs_cross_section, wabs_cross_section
-from soxs.utils import line_width_equiv, mylog, parse_prng, parse_value, regrid_spectrum
+from soxs.utils import (
+    issue_deprecation_warning,
+    line_width_equiv,
+    mylog,
+    parse_prng,
+    parse_value,
+    regrid_spectrum,
+)
 
 
 class Energies(u.Quantity):
@@ -1268,6 +1275,12 @@ class CountRateSpectrum(BaseSpectrum):
         (or simply the luminosity).
         """
         return self._get_total_in_band(emin, emax)
+
+    def get_flux_in_band(self, emin, emax):
+        issue_deprecation_warning(
+            "'get_flux_in_band' is deprecated for CountRateSpectrum, use 'get_rate_in_band' instead!",
+        )
+        return self.get_rate_in_band(emin, emax)
 
 
 class ConvolvedSpectrum(CountRateSpectrum):
