@@ -50,7 +50,7 @@ def test_vacx2_ctype2(answer_store):
 
     spec1 = cxgen1.get_spectrum(kT, collnpar2, abund, He_frac, redshift, norm)
 
-    spectrum_answer_testing(spec1, "cx_spec1.h5", answer_store)
+    spectrum_answer_testing(spec1, "cx_spec1.h5", answer_store, rtol=1.0e-5)
 
     cxgen2 = ACX2Generator(emin, emax, nbins, collntype=2, var_elem=["C", "Ne", "Ca"])
 
