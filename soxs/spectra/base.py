@@ -278,48 +278,14 @@ class BaseSpectrum:
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
-    def from_pyxspec_model(cls, model, spectrum_index=None):
-        """
-        Create a spectrum from a PyXspec model object.
-
-        Parameters
-        ----------
-        model : :class:`~xspec.Model`
-            The PyXspec model object.
-        spectrum_index : integer, optional
-            The index of the spectrum in the model object to
-            use for getting the energies and fluxes. Default: Will
-            use the first valid value of the spectral index, starting
-            from zero.
-        """
-        if spectrum_index is None:
-            spectrum_index = 0
-        try:
-            ebins = model.energies(spectrum_index)
-        except Exception as e:
-            if spectrum_index == 0:
-                spectrum_index = 1
-                ebins = model.energies(spectrum_index)
-            else:
-                raise e
-        if cls is Spectrum:
-            flux = model.values(spectrum_index)
-        elif cls is CountRateSpectrum:
-            flux = model.folded(spectrum_index)
-        else:
-            raise NotImplementedError(f"from_pyxspec_model is not implemented for {cls}!")
-        return cls._from_ext_model(ebins, flux)
-
-    @classmethod
-    def from_constant(cls, const_flux, emin, emax, nbins, binscale="linear"):
+    def from_constant(cls, const_value, emin, emax, nbins, binscale="linear"):
         """
         Create a spectrum from a constant model.
 
         Parameters
         ----------
-        const_flux : float
-            The value of the constant flux in the units
-            of the spectrum.
+        const_value : float
+            The value of the constant in the units of the spectrum.
         emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The minimum energy of the spectrum in keV.
         emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -336,7 +302,7 @@ class BaseSpectrum:
             ebins = np.linspace(emin, emax, nbins + 1)
         elif binscale == "log":
             ebins = np.logspace(np.log10(emin), np.log10(emax), nbins + 1)
-        flux = const_flux * np.ones(nbins)
+        flux = const_value * np.ones(nbins)
         return cls(ebins, flux, binscale=binscale)
 
     @classmethod
@@ -353,8 +319,9 @@ class BaseSpectrum:
             The redshift of the source.
         norm : float
             The normalization of the source in units of
-            photons/s/cm**2/keV at 1 keV in the source
-            frame.
+            the spectrum (photons/s/cm**2/keV for Spectrum
+            objects, photons/s/keV for CountRateSpectrum objects)
+            at 1 keV in the source frame.
         emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The minimum energy of the spectrum in keV.
         emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
@@ -574,6 +541,68 @@ class BaseSpectrum:
         t = self._write_fits_or_ascii()
         t.write(specfile, overwrite=overwrite, format="fits")
 
+    def add_emission_line(self, line_center, line_width, line_amp, line_type="gaussian"):
+        """
+        Add an emission line to this spectrum.
+
+        Parameters
+        ----------
+        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line center position in units of keV, in the observer frame.
+        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line width (FWHM) in units of keV, in the observer frame. Can also
+            input the line width in units of velocity in the rest frame. For the Voigt
+            profile, a list, tuple, or array of two values should be provided since there
+            are two line widths, the Lorentzian and the Gaussian (in that order).
+        line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The integrated line amplitude in the units of the spectrum
+        line_type : string, optional
+            The line profile type. Default: "gaussian"
+        """
+        line_center = parse_value(line_center, "keV")
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
+        line_amp = parse_value(line_amp, self._units)
+        if line_type == "gaussian":
+            sigma = line_width / sigma_to_fwhm
+            line_amp /= sqrt2pi * sigma
+            f = Gaussian1D(line_amp, line_center, sigma)
+        else:
+            raise NotImplementedError(f'Line profile type "{line_type}" not implemented!')
+        self._spec += u.Quantity(f(self.emid.value), self._units)
+        self._compute_totals()
+
+    def add_absorption_line(self, line_center, line_width, equiv_width, line_type="gaussian"):
+        """
+        Add an absorption line to this spectrum.
+
+        Parameters
+        ----------
+        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line center position in units of keV, in the observer frame.
+        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The line width (FWHM) in units of keV, in the observer frame. Can also
+            input the line width in units of velocity in the rest frame. For the Voigt
+            profile, a list, tuple, or array of two values should be provided since there
+            are two line widths, the Lorentzian and the Gaussian (in that order).
+        equiv_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+            The equivalent width of the line, in units of milli-Angstrom
+        line_type : string, optional
+            The line profile type. Default: "gaussian"
+        """
+        line_center = parse_value(line_center, "keV")
+        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
+        equiv_width = parse_value(equiv_width, "1.0e-3*angstrom")  # in milliangstroms
+        equiv_width *= 1.0e-3  # convert to angstroms
+        if line_type == "gaussian":
+            sigma = line_width / sigma_to_fwhm
+            B = equiv_width * line_center * line_center
+            B /= hc * sqrt2pi * sigma
+            f = Gaussian1D(B, line_center, sigma)
+        else:
+            raise NotImplementedError(f"Line profile type '{line_type}' not implemented!")
+        self._spec *= np.exp(-f(self.emid.value))
+        self._compute_totals()
+
     def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0, abund_table="angr"):
         """
         Given a hydrogen column density, apply
@@ -757,68 +786,6 @@ class Spectrum(BaseSpectrum):
     def energy_flux_per_frequency(self):
         return self.binned_energy_flux / self.df
 
-    def add_emission_line(self, line_center, line_width, line_amp, line_type="gaussian"):
-        """
-        Add an emission line to this spectrum.
-
-        Parameters
-        ----------
-        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line center position in units of keV, in the observer frame.
-        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line width (FWHM) in units of keV, in the observer frame. Can also
-            input the line width in units of velocity in the rest frame. For the Voigt
-            profile, a list, tuple, or array of two values should be provided since there
-            are two line widths, the Lorentzian and the Gaussian (in that order).
-        line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The integrated line amplitude in the units of the spectrum
-        line_type : string, optional
-            The line profile type. Default: "gaussian"
-        """
-        line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
-        line_amp = parse_value(line_amp, self._units)
-        if line_type == "gaussian":
-            sigma = line_width / sigma_to_fwhm
-            line_amp /= sqrt2pi * sigma
-            f = Gaussian1D(line_amp, line_center, sigma)
-        else:
-            raise NotImplementedError(f'Line profile type "{line_type}" not implemented!')
-        self._spec += u.Quantity(f(self.emid.value), self._units)
-        self._compute_totals()
-
-    def add_absorption_line(self, line_center, line_width, equiv_width, line_type="gaussian"):
-        """
-        Add an absorption line to this spectrum.
-
-        Parameters
-        ----------
-        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line center position in units of keV, in the observer frame.
-        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The line width (FWHM) in units of keV, in the observer frame. Can also
-            input the line width in units of velocity in the rest frame. For the Voigt
-            profile, a list, tuple, or array of two values should be provided since there
-            are two line widths, the Lorentzian and the Gaussian (in that order).
-        equiv_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The equivalent width of the line, in units of milli-Angstrom
-        line_type : string, optional
-            The line profile type. Default: "gaussian"
-        """
-        line_center = parse_value(line_center, "keV")
-        line_width = parse_value(line_width, "keV", equivalence=line_width_equiv(line_center))
-        equiv_width = parse_value(equiv_width, "1.0e-3*angstrom")  # in milliangstroms
-        equiv_width *= 1.0e-3  # convert to angstroms
-        if line_type == "gaussian":
-            sigma = line_width / sigma_to_fwhm
-            B = equiv_width * line_center * line_center
-            B /= hc * sqrt2pi * sigma
-            f = Gaussian1D(B, line_center, sigma)
-        else:
-            raise NotImplementedError(f"Line profile type '{line_type}' not implemented!")
-        self._spec *= np.exp(-f(self.emid.value))
-        self._compute_totals()
-
     def rescale_flux(self, new_flux, emin=None, emax=None, flux_type="photons"):
         """
         Rescale the flux of the spectrum, optionally using
@@ -877,8 +844,10 @@ class Spectrum(BaseSpectrum):
 
     def get_lum_in_band(self, emin, emax, redshift=0.0, dist=None, cosmology=None):
         """
-        Determine the total luminosity in the source within a band specified
-        by an energy range.
+        Determine the total photon count rate and luminosity
+        within a band specified by an energy range. Either a redshift or
+        or an explicit distance must be specified in order to convert
+        from the observer frame to the source frame.
 
         Parameters
         ----------
@@ -957,7 +926,8 @@ class Spectrum(BaseSpectrum):
         Create a Spectrum from a CountRateSpectrum object, assuming that the latter
         is in the rest frame of the source. To get the Spectrum in the observer
         frame, you must either provide a redshift or a distance to the source to
-        convert to flux.
+        convert to flux. Note that the energy bins opf the original CountRateSpectrum
+        object will be cosmologically redshifted if the redshift is nonzero.
 
         Parameters
         ----------
@@ -1144,6 +1114,34 @@ class Spectrum(BaseSpectrum):
             xspec_settings=xspec_settings,
         )
 
+    @classmethod
+    def from_pyxspec_model(cls, model, spectrum_index=None):
+        """
+        Create a spectrum from a PyXspec model object.
+
+        Parameters
+        ----------
+        model : :class:`~xspec.Model`
+            The PyXspec model object.
+        spectrum_index : integer, optional
+            The index of the spectrum in the model object to
+            use for getting the energies and fluxes. Default: Will
+            use the first valid value of the spectral index, starting
+            from zero.
+        """
+        if spectrum_index is None:
+            spectrum_index = 0
+        try:
+            ebins = model.energies(spectrum_index)
+        except Exception as e:
+            if spectrum_index == 0:
+                spectrum_index = 1
+                ebins = model.energies(spectrum_index)
+            else:
+                raise e
+        flux = model.values(spectrum_index)
+        return cls._from_ext_model(ebins, flux)
+
 
 class CountRateSpectrum(BaseSpectrum):
     _units = "photon/(s*keV)"
@@ -1255,10 +1253,10 @@ class CountRateSpectrum(BaseSpectrum):
             rate *= erg_per_keV
             return cls(ebins, rate, binscale="custom")
 
-    def get_rate_in_band(self, emin, emax):
+    def get_lum_in_band(self, emin, emax):
         """
-        Determine the total rate within a band specified
-        by an energy range.
+        Determine the total photon count rate and luminosity
+        within a band specified by an energy range.
 
         Parameters
         ----------
@@ -1278,9 +1276,9 @@ class CountRateSpectrum(BaseSpectrum):
 
     def get_flux_in_band(self, emin, emax):
         issue_deprecation_warning(
-            "'get_flux_in_band' is deprecated for CountRateSpectrum, use 'get_rate_in_band' instead!",
+            "'get_flux_in_band' is deprecated for CountRateSpectrum, use 'get_lum_in_band' instead!",
         )
-        return self.get_rate_in_band(emin, emax)
+        return self.get_lum_in_band(emin, emax)
 
 
 class ConvolvedSpectrum(CountRateSpectrum):
@@ -1644,4 +1642,10 @@ class ConvolvedSpectrum(CountRateSpectrum):
         raise NotImplementedError
 
     def apply_foreground_absorption(self, nH, model="wabs", redshift=0.0, abund_table="angr"):
+        raise NotImplementedError
+
+    def add_absorption_line(self, line_center, line_width, equiv_width, line_type="gaussian"):
+        raise NotImplementedError
+
+    def add_absorption_lines(self, line_center, line_width, equiv_lines):
         raise NotImplementedError

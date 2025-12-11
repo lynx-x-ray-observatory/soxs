@@ -299,7 +299,7 @@ class CIEGenerator:
             names = self.var_ion_names
         else:
             names = self.var_elem_names
-        if set(elem_abund.keys()) != names:
+        if set(elem_abund.keys()) != set(names):
             raise RuntimeError(
                 "The supplied set of abundances is not the "
                 "same as that was originally set!\n"
@@ -321,7 +321,7 @@ class CIEGenerator:
 
     def get_spectrum(self, kT, abund, redshift, norm, velocity=0.0, elem_abund=None):
         """
-        Get a thermal emission spectrum assuming CIE.
+        Get a thermal emission spectrum assuming CIE in the observer frame.
 
         Parameters
         ----------
@@ -353,7 +353,7 @@ class CIEGenerator:
 
     def get_nei_spectrum(self, kT, elem_abund, redshift, norm, velocity=0.0):
         """
-        Get a thermal emission spectrum assuming NEI.
+        Get a thermal emission spectrum assuming NEI in the observer frame.
 
         Parameters
         ----------
@@ -383,7 +383,7 @@ class CIEGenerator:
 
     def get_count_rate_spectrum(self, kT, abund, EM, elem_abund=None):
         """
-        Get a thermal emission count-rate spectrum assuming CIE, in the
+        Get a thermal emission count-rate spectrum assuming CIE in the
         rest-frame of the source.
 
         Parameters
@@ -408,7 +408,8 @@ class CIEGenerator:
 
     def get_nei_count_rate_spectrum(self, kT, elem_abund, EM):
         """
-        Get a thermal emission spectrum assuming NEI.
+        Get a thermal emission spectrum assuming NEI in the rest frame of
+        the source.
 
         Parameters
         ----------
