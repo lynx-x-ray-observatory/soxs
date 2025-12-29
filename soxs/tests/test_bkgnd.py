@@ -202,7 +202,7 @@ def test_ptsrc():
 
 
 def test_change_bkgnd(answer_store):
-    set_soxs_config("frgnd_spec_model", "default")
+    set_soxs_config("frgnd_spec_model", "two_comp")
     lem_arf = AuxiliaryResponseFile("lem_030322a.arf")
     lem_rmf = RedistributionMatrixFile("lem_09ev_030322.rmf")
     spectrum_answer_testing(

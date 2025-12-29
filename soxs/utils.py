@@ -21,7 +21,7 @@ soxs_cfg_defaults = {
     "spex_vers": "3.07.03",
     "bkgnd_nH": 0.018,
     "bkgnd_absorb_model": "tbabs",
-    "frgnd_spec_model": "default",
+    "frgnd_spec_model": "halosat",
     "frgnd_velocity": 0.0,
     "frgnd_abund": 1.0,
 }

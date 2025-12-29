@@ -15,8 +15,8 @@ from soxs.utils import (
 )
 
 """
-XSPEC model used to create the "default" foreground spectrum
-  model  apec + wabs*apec
+XSPEC model used to create the "two_comp" foreground spectrum
+  model  apec + tbabs*apec
             0.099
                 1
                 0
@@ -27,7 +27,7 @@ XSPEC model used to create the "default" foreground spectrum
                 0
           7.3e-07
 
-XSPEC model used to create the "lem" foreground spectrum
+XSPEC model used to create the "halosat" foreground spectrum
   model  apec + tbabs*(bapec+bapec)
             0.099
                 1
@@ -55,7 +55,7 @@ def _make_frgnd_spectrum(
     bkgnd_nH=0.018,
     absorb_model="tbabs",
     frgnd_velocity=100.0,
-    frgnd_spec_model="default",
+    frgnd_spec_model="two_comp",
     sky_area=(1.0, "arcmin**2"),
 ):
     sky_area = parse_value(sky_area, "arcmin**2")

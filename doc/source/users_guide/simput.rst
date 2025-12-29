@@ -273,7 +273,7 @@ Galactic absorption and the value of the hydrogen column can be changed:
     soxs.make_bkgnd_simput("bkgnd.simput", t_exp, area, fov, sky_center,
                            overwrite=True, absorb_model="wabs", nH=0.02)
 
-The foreground model can be switched between ``"default"`` or ``"halosat"``:
+The foreground model can be switched between ``"two_comp"`` or ``"halosat"``:
 
 .. code-block:: python
 

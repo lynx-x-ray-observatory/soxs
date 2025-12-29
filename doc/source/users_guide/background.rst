@@ -15,13 +15,13 @@ background components in turn.
 Galactic Foreground Model
 -------------------------
 
-Two models for the galactic foreground are available in SOXS, ``"default"``
-and ``"halosat"``. The
+Two models for the galactic foreground are available in SOXS, ``"two_comp"``
+and ``"halosat"``. The model used by default is ``"halosat"``.
 
-The ``"default"`` Foreground Model
+The ``"two_comp"`` Foreground Model
 ++++++++++++++++++++++++++++++++++
 
-The ``"default"`` galactic foreground component is modeled as a sum of two
+The ``"two_comp"`` galactic foreground component is modeled as a sum of two
 thermal models with thermal broadening of emission lines, one absorbed,
 ``bapec+tbabs*bapec``, with parameters:
 
@@ -45,7 +45,7 @@ This model is from `McCammon et al. (2002) <https://ui.adsabs.harvard.edu/abs/20
 The ``"halosat"`` Foreground Model
 ++++++++++++++++++++++++++++++++++
 
-The ``"halosat"`` foreground model is the same as the ``"default"``, except that it
+The ``"halosat"`` foreground model is the same as the ``"two_comp"``, except that it
 includes an additional absorbed thermal model (with ``tbabs``) for the Hot Halo,
 based on HaloSat observations:
 
@@ -87,7 +87,7 @@ spectral index of :math:`\alpha = 2.0`. The spectral indices of AGN sources are
 drawn from a fit to the spectral index distribution of sources given in
 Figure 13a of `Hickox & Markevitch 2006 <http://adsabs.harvard.edu/abs/2006ApJ...645...95H>`_.
 Sources are absorbed by foreground Galactic neutral hydrogen assuming a neutral
-hydrogen column of :math:`n_H = 0.018 \times 10^{22}~\rm{cm}^{-2}` and the ``wabs``
+hydrogen column of :math:`n_H = 0.018 \times 10^{22}~\rm{cm}^{-2}` and the ``tbabs``
 model by default. The absorption model and the value of the hydrogen column can
 be changed using the :ref:`config`. The position of each point source is uniformly
 randomly distributed within the field of view. A uniform background across the field
