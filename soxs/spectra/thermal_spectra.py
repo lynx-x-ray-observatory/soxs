@@ -381,54 +381,6 @@ class CIEGenerator:
         )
         return spec
 
-    def get_count_rate_spectrum(self, kT, abund, EM, elem_abund=None):
-        """
-        Get a thermal emission count-rate spectrum assuming CIE in the
-        rest-frame of the source.
-
-        Parameters
-        ----------
-        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The temperature in keV.
-        abund : float
-            The metal abundance in solar units.
-        EM : float
-            The emission measure of the model, in units of cm**-3.
-        elem_abund : dict of element name, float pairs, optional
-            A dictionary of elemental abundances in solar
-            units to vary freely of the abund parameter, e.g.
-            {"O": 0.4, "N": 0.3, "He": 0.9}. Default: None
-        """
-        from soxs.spectra import CountRateSpectrum
-
-        if self.nei:
-            raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
-        spec = self._get_spectrum(CountRateSpectrum, 1.0, kT, abund, 0.0, EM, elem_abund=elem_abund)
-        return spec
-
-    def get_nei_count_rate_spectrum(self, kT, elem_abund, EM):
-        """
-        Get a thermal emission spectrum assuming NEI in the rest frame of
-        the source.
-
-        Parameters
-        ----------
-        kT : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
-            The temperature in keV.
-        elem_abund : dict of element name, float pairs
-            A dictionary of ionization state abundances in solar
-            units to vary freely of the abund parameter, e.g.
-            {"O^1": 0.4, "O^4": 0.6, "N^2": 0.7} Default: None
-        EM : float
-            The emission measure of the model, in units of cm**-3.
-        """
-        from soxs.spectra import CountRateSpectrum
-
-        if not self.nei:
-            raise RuntimeError("Use 'get_nei_spectrum' for NEI spectra!")
-        spec = self._get_spectrum(CountRateSpectrum, 1.0, kT, 0.0, 0.0, EM, elem_abund=elem_abund)
-        return spec
-
 
 class ApecGenerator(CIEGenerator):
     r"""
