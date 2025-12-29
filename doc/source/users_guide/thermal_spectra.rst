@@ -46,7 +46,7 @@ control the binning.
 The ``broadening`` parameter sets whether or not spectral lines will be
 thermally and velocity broadened, and is ``True`` by default..The
 ``apec_vers`` parameter sets the version of the AtomDB tables to use.
-Version 3.0.9 is the default, and the tables will be downloaded if necessary.
+Version 3.1.3 is the default, and the tables will be downloaded if necessary.
 
 You may also supply another location for the AtomDB tables. For example, the
 following construction will look for the AtomDB tables in the current working

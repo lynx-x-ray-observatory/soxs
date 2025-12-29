@@ -22,6 +22,7 @@ This update to SOXS provides new features.
   in a different band than the total band of the spectral model, using the methods
   :class:`~soxs.simput.SimputSpectrum.from_spectrum` or
   :class:`~soxs.simput.SimputSpectrum.from_models`.
+* The default APEC version has been updated to v3.1.3.
 
 Version 5.0.1
 -------------
