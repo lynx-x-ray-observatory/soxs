@@ -8,6 +8,9 @@ Version 5.1.0
 
 This update to SOXS provides new features.
 
+* The default model for the Galactic foreground emission is now ``"halosat"``. The
+  previously named ``"default"`` background model has been renamed to ``"two_comp"``.
+  Please check :ref:`foreground` for more information.
 * It is now possible to create :class:`~soxs.spectra.base.Spectrum` objects from models
   created in SPEX. See :ref:`spex-models` for details.
 * It is now possible to create :class:`~soxs.spectra.base.CountRateSpectrum` objects from
