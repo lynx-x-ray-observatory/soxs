@@ -72,6 +72,12 @@ mylog = soxsLogger
 
 mylog.setLevel("INFO")
 
+if soxs_cfg.get("soxs", "frgnd_spec_model") not in ["two_comp", "halosat"]:
+    raise ValueError(
+        'The "frgnd_spec_model" configuration value must be either "two_comp" or '
+        '"halosat"! Consult the SOXS documentation for more information.'
+    )
+
 if soxs_cfg.get("soxs", "soxs_data_dir") == "/does/not/exist":
     soxs_data_dir = appdirs.user_cache_dir("soxs")
     mylog.warning(
