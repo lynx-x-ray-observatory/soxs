@@ -6,7 +6,7 @@ ChangeLog
 Version 5.1.0
 -------------
 
-This update to SOXS provides a significant number of new features.
+This update to SOXS provides new features.
 
 * It is now possible to create :class:`~soxs.spectra.base.Spectrum` objects from models
   created in SPEX. See :ref:`spex-models` for details.
@@ -15,6 +15,9 @@ This update to SOXS provides a significant number of new features.
   See :ref:`xstar` for details.
 * The :meth:`~soxs.spectra.base.CountRateSpectrum.get_flux_in_band` has been deprecated
   in favor of :meth:`~soxs.spectra.base.CountRateSpectrum.get_lum_in_band`.
+* Two methods for converting back and forth between :class:`~soxs.spectra.base.Spectrum`
+  and :class:`~soxs.spectra.base.CountRateSpectrum` objects have been added. See
+  :ref:`from-spectrum` for more details.
 * The reference flux of a :class:`~soxs.simput.SimputSpectrum` may now be calculated
   in a different band than the total band of the spectral model, using the methods
   :class:`~soxs.simput.SimputSpectrum.from_spectrum` or

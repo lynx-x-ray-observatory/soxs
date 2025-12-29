@@ -797,7 +797,7 @@ above:
     [8.33761014e+23 8.32944076e+23 8.32135858e+23 ... 5.26340489e+23
      5.26335277e+23 5.26330066e+23] erg / (Hz s)
 
-.. _from_spectrum:
+.. _from-spectrum:
 
 Generating a ``CountRateSpectrum`` from a ``Spectrum``, and Vice-Versa
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
