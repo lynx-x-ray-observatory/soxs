@@ -1172,11 +1172,11 @@ class CountRateSpectrum(BaseSpectrum):
 
     @property
     def rate_per_frequency(self):
-        return self.binned_flux / self.df
+        return self.binned_rate / self.df
 
     @property
     def luminosity_per_frequency(self):
-        return self.binned_energy_flux / self.df
+        return self.binned_luminosity / self.df
 
     def generate_energies(self, t_exp, prng=None, quiet=False):
         """
@@ -1256,7 +1256,7 @@ class CountRateSpectrum(BaseSpectrum):
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
         """
-        super().from_powerlaw(photon_index, 0.0, norm, emin, emax, nbins, binscale)
+        return super().from_powerlaw(photon_index, 0.0, norm, emin, emax, nbins, binscale=binscale)
 
     @classmethod
     def from_xstar_model(cls, xstar_file, which_spectrum):
