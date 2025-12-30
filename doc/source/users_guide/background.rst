@@ -19,7 +19,7 @@ Two models for the galactic foreground are available in SOXS, ``"two_comp"``
 and ``"halosat"``. The model used by default is ``"halosat"``.
 
 The ``"two_comp"`` Foreground Model
-++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++
 
 The ``"two_comp"`` galactic foreground component is modeled as a sum of two
 thermal models with thermal broadening of emission lines, one absorbed,
