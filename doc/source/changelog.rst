@@ -28,6 +28,7 @@ This update to SOXS provides new features.
   :class:`~soxs.simput.SimputSpectrum.from_spectrum` or
   :class:`~soxs.simput.SimputSpectrum.from_models`.
 * The default APEC version has been updated to v3.1.3.
+* The default SPEX version for CIE spectra has been updated to v3.08.02.
 
 Version 5.0.1
 -------------

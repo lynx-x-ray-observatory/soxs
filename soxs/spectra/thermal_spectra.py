@@ -415,7 +415,7 @@ class ApecGenerator(CIEGenerator):
     apec_vers : string, optional
         The version identifier string for the APEC files. Default is
         set in the SOXS configuration file, the default for which is
-        currently "3.1.2".
+        currently "3.1.3".
     broadening : boolean, optional
         Whether the spectral lines should be thermally and velocity
         broadened. Default: True
@@ -518,7 +518,7 @@ class SpexGenerator(CIEGenerator):
     spex_vers : string, optional
         The version identifier string for the SPEX files. Default is
         set in the SOXS configuration file, the default for which is
-        "3.07.03".
+        "3.08.02".
     broadening : boolean, optional
         Whether the spectral lines should be thermally and velocity
         broadened. Default: True
