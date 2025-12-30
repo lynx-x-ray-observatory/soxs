@@ -4,10 +4,9 @@ from .base import (
     Energies,
     Spectrum,
     _generate_energies,
-    get_tbabs_absorb,
-    get_wabs_absorb,
 )
 from .charge_exchange import ACX2Generator, OneACX2Generator
+from .foreground_absorption import get_tbabs_absorb, get_wabs_absorb
 from .thermal_spectra import (
     ApecGenerator,
     CIEGenerator,

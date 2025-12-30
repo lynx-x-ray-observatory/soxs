@@ -31,20 +31,14 @@ halos_cat_file = os.path.join(soxs_files_path, "halo_catalog.h5")
 
 def lum(M_mean, z_mean):
     # Alexey's cosmology II paper, eq. 22
-    E_z = np.sqrt(
-        omega_m * (1.0 + z_mean) ** 3 + omega_k * (1.0 + z_mean) ** 2 + omega_l
-    )
-    ln_Lx = (
-        47.392 + 1.61 * np.log(M_mean) + 1.850 * np.log(E_z) - 0.39 * np.log(h0 / 0.72)
-    )
+    E_z = np.sqrt(omega_m * (1.0 + z_mean) ** 3 + omega_k * (1.0 + z_mean) ** 2 + omega_l)
+    ln_Lx = 47.392 + 1.61 * np.log(M_mean) + 1.850 * np.log(E_z) - 0.39 * np.log(h0 / 0.72)
     return np.exp(ln_Lx)
 
 
 def Tx(M_mean, z_mean):
     # Alexey's cosmology II paper, eq. 6, Table 3 for coefficients.
-    E_z = np.sqrt(
-        omega_m * (1.0 + z_mean) ** 3 + omega_k * (1.0 + z_mean) ** 2 + omega_l
-    )
+    E_z = np.sqrt(omega_m * (1.0 + z_mean) ** 3 + omega_k * (1.0 + z_mean) ** 2 + omega_l)
     return 5.0 * (M_mean * E_z * h0 / 3.02e14) ** (1.0 / 1.53)
 
 
@@ -167,9 +161,7 @@ def make_cosmological_sources(
     m = halo_data["M500c"][fov_idxs].astype("float64") / h0
     # We need to compute proper scales here
     s = scale[fov_idxs].to("Mpc/arcsec").value / (1.0 + z)
-    ra0, dec0 = w.wcs_pix2world(
-        (halo_x[fov_idxs] - xc) * 60.0, (halo_y[fov_idxs] - yc) * 60.0, 1
-    )
+    ra0, dec0 = w.wcs_pix2world((halo_x[fov_idxs] - xc) * 60.0, (halo_y[fov_idxs] - yc) * 60.0, 1)
 
     # Close the halo catalog file
     halo_data.close()
@@ -360,14 +352,10 @@ def make_cosmological_sources_file(
         write_regions=write_regions,
         prng=prng,
     )
-    phlist = SimputPhotonList(
-        events["ra"], events["dec"], events["energy"], events["flux"], name=name
-    )
+    phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"], events["flux"], name=name)
     if append:
         cat = SimputCatalog.from_file(filename)
         cat.append(phlist, src_filename=src_filename, overwrite=overwrite)
     else:
-        cat = SimputCatalog.from_source(
-            filename, phlist, src_filename=src_filename, overwrite=overwrite
-        )
+        cat = SimputCatalog.from_source(filename, phlist, src_filename=src_filename, overwrite=overwrite)
     return cat

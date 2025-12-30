@@ -85,7 +85,7 @@ To make an exposure map with the default parameters using an energy of 4.0 keV:
 
 If you have an idea of what the spectrum of the object is, you can alternatively
 use an energy range and the spectrum itself as a set of "weights" to make a weighted
-exposure map. This example uses a :class:`~soxs.spectra.Spectrum` object ``spec``:
+exposure map. This example uses a :class:`~soxs.spectra.base.Spectrum` object ``spec``:
 
 .. code-block:: python
 

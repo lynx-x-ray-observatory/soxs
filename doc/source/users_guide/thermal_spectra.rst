@@ -19,7 +19,7 @@ spectrum generators available in SOXS are:
   collisional+photoionization spectra with optional resonant scattering from the CXB
 
 Each of these are essentially "factory" classes which generate new
-:class:`~soxs.spectra.Spectrum` objects.
+:class:`~soxs.spectra.base.Spectrum` objects.
 
 .. _apec-spectra:
 
@@ -46,7 +46,7 @@ control the binning.
 The ``broadening`` parameter sets whether or not spectral lines will be
 thermally and velocity broadened, and is ``True`` by default..The
 ``apec_vers`` parameter sets the version of the AtomDB tables to use.
-Version 3.0.9 is the default, and the tables will be downloaded if necessary.
+Version 3.1.3 is the default, and the tables will be downloaded if necessary.
 
 You may also supply another location for the AtomDB tables. For example, the
 following construction will look for the AtomDB tables in the current working
@@ -100,7 +100,7 @@ and ``spex_root``, respectively.
 If you set the ``spex_vers`` parameter but not the ``spex_root`` parameter, the
 AtomDB table files will be looked for in (1) the current working directory and
 (2) the location specified by ``soxs_data_dir`` in the :ref:`config`. The current
-default version of the SPEX thermal model in SOXS is 3.07.03.
+default version of the SPEX thermal model in SOXS is 3.08.02.
 
 .. _mekal-spectra:
 
@@ -299,7 +299,7 @@ A more specific invocation may look like this:
     velocity = (100.0, "km/s") # optional
     spec1 = agen.get_spectrum(kT, abund, redshift, norm, velocity=velocity)
 
-``spec1`` is just a standard :class:`~soxs.spectra.Spectrum` object.
+``spec1`` is just a standard :class:`~soxs.spectra.base.Spectrum` object.
 
 For the Cloudy-based photoionization generator, because it includes the
 effects of photoionization, it also depends on the hydrogen number density,
@@ -321,11 +321,13 @@ By default, the various generators handle abundances greater than H and
 He using the ``abund`` parameter in the various ``get_spectrum`` methods.
 Exactly what abundances are set by this parameter depends on the model used:
 
-* APEC and SPEX: Includes C, N, O, Ne, Mg, Al, Si, S, Ar, Ca, Fe, Ni (He
-  fixed at abundance table value, Li, Be, B, F, Na, P, Cl, K, Sc, Ti,
-  V, Cr, Mn, Co, Cu, Zn fixed at solar).
-* MeKaL: Includes C, N, O, Ne, Na, Mg, Al, Si, S, Ar, Ca, Fe, Ni (He
-  fixed at abundance table value, other elements not modeled)
+* APEC and SPEX: Includes C, N, O, Ne, Mg, Al, Si, S, Ar, Ca, Fe, Ni. He
+  is fixed at the abundance table value (see :ref:`changing-abund-tables`).
+  Li, Be, B, F, Na, P, Cl, K, Sc, Ti, V, Cr, Mn, Co, Cu, and Zn are fixed at
+  solar by default, but see :ref:`trace-abundances`.
+* MeKaL: Includes C, N, O, Ne, Na, Mg, Al, Si, S, Ar, Ca, Fe, and Ni. He is
+  fixed at the abundance table value (see :ref:`changing-abund-tables`),
+  other elements not modeled).
 * Cloudy CIE and Pion: He fixed at abundance table value, all higher
   elements up Zn to included.
 
@@ -366,9 +368,29 @@ in solar units. This is done by supplying the ``elem_abund`` dict like so:
 Note that setting the ``abund`` parameter is still necessary for the other
 metals.
 
-All abundances are relative to the
+All abundances by default are relative to the
 `Anders & Grevesse 1989 <http://adsabs.harvard.edu/abs/1989GeCoA..53..197A>`_
 tables. See :ref:`changing-abund-tables` to see how to use a different table.
+
+.. _trace-abundances:
+
+Handling Trace Abundances in APEC and SPEX Models
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Both the :class:`~soxs.spectra.thermal_spectra.ApecGenerator` and
+:class:`~soxs.spectra.thermal_spectra.SpexGenerator` classes allow for the
+option to set the overall solar abundance for the "trace elements" of Li,
+Be, B, F, Na, P, Cl, K, Sc, Ti, V, Cr, Mn, Co, Cu, and Zn, using the
+``trace_abund`` keyword argument:
+
+.. code-block:: python
+
+    import soxs
+    sgen = soxs.SpexGenerator(0.1, 10.0, 10000, trace_abund=0.3)
+
+Where the value is in units of solar metallicity. ``trace_abund`` is set to 1.0
+by default. Any trace abundances treated as variable using the ``var_elem``
+argument will not be set by ``trace_abund``.
 
 .. _nei:
 
@@ -422,7 +444,7 @@ Once this has been created, we use a special method for NEI spectra,
 .. _changing-abund-tables:
 
 Changing Abundance Tables
--------------------------
++++++++++++++++++++++++++
 
 The abundance parameters discussed so far assume abundance of a particular
 element or a number of elements relative to the Solar value. Underlying this

@@ -113,9 +113,7 @@ def make_mosaic_events(
     t["evtfile"] = out_list
     outfile = f"{out_prefix}_event_mosaic.dat"
     mylog.info("Writing mosaic information to %s.", outfile)
-    t.write(
-        outfile, overwrite=overwrite, delimiter="\t", format="ascii.commented_header"
-    )
+    t.write(outfile, overwrite=overwrite, delimiter="\t", format="ascii.commented_header")
     return outfile
 
 
@@ -161,7 +159,7 @@ def make_mosaic_image(
     use_expmap : boolean, optional
         Whether to use (and potentially generate) an exposure map
         and a flux map. Default: False
-    expmap_energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, or NumPy array, optional
+    expmap_energy : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, NumPy array, optional
         The energy in keV to use when computing the exposure map, or
         a set of energies to be used with the *weights* parameter. If
         providing a set, it must be in keV.
@@ -176,11 +174,10 @@ def make_mosaic_image(
     try:
         from reproject import reproject_interp
         from reproject.mosaicking import find_optimal_celestial_wcs, reproject_and_coadd
-    except ImportError:
+    except ImportError as e:
         raise ImportError(
-            "The mosaic functionality of SOXS requires the "
-            "'reproject' package to be installed!"
-        )
+            "The mosaic functionality of SOXS requires the 'reproject' package to be installed!"
+        ) from e
     t = ascii.read(
         evtfile_list,
         format="commented_header",
@@ -240,10 +237,7 @@ def make_mosaic_image(
 
     if use_expmap:
         if expmap_energy is None:
-            raise RuntimeError(
-                "The 'expmap_energy' argument must be set if "
-                "making a mosaicked exposure map!"
-            )
+            raise RuntimeError("The 'expmap_energy' argument must be set if making a mosaicked exposure map!")
         emap_hdus = [fits.open(fns[1], memmap=True)[1] for fns in files]
         emap, footprint = reproject_and_coadd(
             emap_hdus,

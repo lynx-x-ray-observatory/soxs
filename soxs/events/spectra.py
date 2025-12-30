@@ -25,9 +25,7 @@ def _write_spectrum(
         cnt_type = "float64"
 
     col_ch = fits.Column(name="CHANNEL", format="1J", array=bins)
-    col_chf = fits.Column(
-        name=spectype.upper(), format="1D", array=bins.astype("float64")
-    )
+    col_chf = fits.Column(name=spectype.upper(), format="1D", array=bins.astype("float64"))
 
     cols = [col_ch, col_chf]
 
@@ -35,9 +33,7 @@ def _write_spectrum(
         rate = spec
     else:
         rate = spec / exp_time
-        col_cnt = fits.Column(
-            name="COUNTS", format=cnt_fmt, array=spec.astype(cnt_type)
-        )
+        col_cnt = fits.Column(name="COUNTS", format=cnt_fmt, array=spec.astype(cnt_type))
         cols.append(col_cnt)
 
     col_rate = fits.Column(name="COUNT_RATE", format="1D", array=rate)
@@ -314,9 +310,7 @@ def plot_spectrum(
             else:
                 if isinstance(ebins, tuple):
                     if len(ebins) != 2:
-                        raise RuntimeError(
-                            "If ebins is a tuple, it must have 2 elements!"
-                        )
+                        raise RuntimeError("If ebins is a tuple, it must have 2 elements!")
                     sigma, max_size = ebins
                     sigma2 = sigma * sigma
                     ebins = [emin[0]]
@@ -336,8 +330,7 @@ def plot_spectrum(
             xerr = 0.5 * np.diff(ebins)
         else:
             raise RuntimeError(
-                "Cannot find the RMF associated with this "
-                "spectrum, so I cannot plot in energy!"
+                "Cannot find the RMF associated with this spectrum, so I cannot plot in energy!"
             )
     else:
         try:
@@ -345,8 +338,8 @@ def plot_spectrum(
         except KeyError:
             try:
                 xmid = hdu.data["CHANNEL"]
-            except KeyError:
-                raise KeyError("Cannot find CHANNEL or CHANTYPE in the spectrum!")
+            except KeyError as e:
+                raise KeyError("Cannot find CHANNEL or CHANTYPE in the spectrum!") from e
         xerr = 0.5
         xlabel = f"Channel ({chantype})"
     dx = 2.0 * xerr
@@ -384,9 +377,7 @@ def plot_spectrum(
     if noerr:
         ax.plot(xmid, y, lw=lw, label=label, **kwargs)
     else:
-        ax.errorbar(
-            xmid, y, yerr=yerr, xerr=xerr, fmt=".", lw=lw, label=label, **kwargs
-        )
+        ax.errorbar(xmid, y, yerr=yerr, xerr=xerr, fmt=".", lw=lw, label=label, **kwargs)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     ax.set_xlim(xmin, xmax)

@@ -3,6 +3,33 @@
 ChangeLog
 =========
 
+Version 5.1.0
+-------------
+
+This update to SOXS provides new features.
+
+* APEC and SPEX CIE spectra generators now support setting a custom abundance for "trace
+  elements." See :ref:`trace-abundances` for details.
+* The default model for the Galactic foreground emission is now ``"halosat"``. The
+  previously named ``"default"`` background model has been renamed to ``"two_comp"``.
+  Please check :ref:`foreground` for more information.
+* It is now possible to create :class:`~soxs.spectra.base.Spectrum` objects from general
+  models created in SPEX. See :ref:`spex-models` for details.
+* It is now possible to create :class:`~soxs.spectra.base.CountRateSpectrum` objects from
+  models created in `XSTAR <https://heasarc.gsfc.nasa.gov/docs/software/xstar/xstar.html>`_.
+  See :ref:`xstar` for details.
+* The :meth:`~soxs.spectra.base.CountRateSpectrum.get_flux_in_band` has been deprecated
+  in favor of :meth:`~soxs.spectra.base.CountRateSpectrum.get_lum_in_band`.
+* Two methods for converting back and forth between :class:`~soxs.spectra.base.Spectrum`
+  and :class:`~soxs.spectra.base.CountRateSpectrum` objects have been added. See
+  :ref:`from-spectrum` for more details.
+* The reference flux of a :class:`~soxs.simput.SimputSpectrum` may now be calculated
+  in a different band than the total band of the spectral model, using the methods
+  :class:`~soxs.simput.SimputSpectrum.from_spectrum` or
+  :class:`~soxs.simput.SimputSpectrum.from_models`.
+* The default APEC version has been updated to v3.1.3.
+* The default SPEX version for CIE spectra has been updated to v3.08.02.
+
 Version 5.0.1
 -------------
 

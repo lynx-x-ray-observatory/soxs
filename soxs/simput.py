@@ -53,14 +53,11 @@ class LazyReadSimputCatalog(Sequence):
 
 class LazyReadPyxsimEvents(Sequence):
     def __init__(self, source):
-        impe = ImportError(
-            "You must install pyxsim v4.3.0 or later "
-            "to read from a pyXSIM event file!"
-        )
+        impe = ImportError("You must install pyxsim v4.3.0 or later to read from a pyXSIM event file!")
         try:
             import pyxsim
-        except ImportError:
-            raise impe
+        except ImportError as e:
+            raise impe from e
         self.events = pyxsim.EventList(source)
         if not hasattr(self.events, "get_data"):
             raise impe
@@ -101,9 +98,7 @@ def read_catalog(source):
 
 
 class SimputCatalog:
-    def __init__(
-        self, spectra, images, src_names, ra, dec, fluxes, emin, emax, filename
-    ):
+    def __init__(self, spectra, images, src_names, ra, dec, fluxes, emin, emax, filename):
         self.spectra = ensure_numpy_array(spectra)
         self.images = ensure_numpy_array(images)
         self.src_names = ensure_numpy_array(src_names)
@@ -136,7 +131,7 @@ class SimputCatalog:
         """
         sc = cls([], [], [], [], [], [], [], [], filename)
         if os.path.exists(filename) and not overwrite:
-            raise IOError(f"{filename} exists and overwrite=False!")
+            raise OSError(f"{filename} exists and overwrite=False!")
         sc._write_catalog(overwrite=overwrite)
         return sc
 
@@ -228,9 +223,7 @@ class SimputCatalog:
             ra = Quantity(convert_endian(data["ra"]).astype("float64"), "deg")
             dec = Quantity(convert_endian(data["dec"]).astype("float64"), "deg")
             energy = Quantity(convert_endian(data["energy"]).astype("float64"), "keV")
-            src = SimputPhotonList(
-                ra, dec, energy, self.fluxes[i], name=self.src_names[i]
-            )
+            src = SimputPhotonList(ra, dec, energy, self.fluxes[i], name=self.src_names[i])
         elif extname == "spectrum":
             emid = convert_endian(data["energy"])
             flux = convert_endian(data["fluxdensity"])
@@ -288,9 +281,7 @@ class SimputCatalog:
         col9 = fits.Column(name="TIMING", format="512A", array=self.timing)
         col10 = fits.Column(name="SRC_NAME", format="512A", array=self.src_names)
 
-        coldefs = fits.ColDefs(
-            [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10]
-        )
+        coldefs = fits.ColDefs([col1, col2, col3, col4, col5, col6, col7, col8, col9, col10])
 
         wrhdu = fits.BinTableHDU.from_columns(coldefs)
         wrhdu.name = "SRC_CAT"
@@ -416,9 +407,7 @@ class SimputSource:
     def _get_source_hdu(self):
         return None, None
 
-    def _write_source(
-        self, filename, extver, img_extver=None, overwrite=False, quiet=False
-    ):
+    def _write_source(self, filename, extver, img_extver=None, overwrite=False, quiet=False):
         coldefs, header = self._get_source_hdu()
 
         tbhdu = fits.BinTableHDU.from_columns(coldefs)
@@ -449,9 +438,7 @@ class SimputSource:
         else:
             if os.path.exists(filename):
                 if not quiet:
-                    mylog.warning(
-                        "Overwriting %s with source '%s'.", filename, self.name
-                    )
+                    mylog.warning("Overwriting %s with source '%s'.", filename, self.name)
             else:
                 if not quiet:
                     mylog.info("Writing source '%s' to %s.", self.name, filename)
@@ -467,12 +454,8 @@ class SimputSource:
 class SimputSpectrum(SimputSource):
     src_type = "spectrum"
 
-    def __init__(
-        self, emin, emax, flux, energy, fluxdensity, ra, dec, name=None, imhdu=None
-    ):
-        super(SimputSpectrum, self).__init__(
-            emin, emax, flux, ra, dec, name=name, imhdu=imhdu
-        )
+    def __init__(self, emin, emax, flux, energy, fluxdensity, ra, dec, name=None, imhdu=None):
+        super().__init__(emin, emax, flux, ra, dec, name=name, imhdu=imhdu)
         self.energy = energy
         self.fluxdensity = fluxdensity
 
@@ -498,7 +481,7 @@ class SimputSpectrum(SimputSource):
         return coldefs, header
 
     @classmethod
-    def from_spectrum(cls, name, spectral_model, ra, dec, imhdu=None):
+    def from_spectrum(cls, name, spectral_model, ra, dec, imhdu=None, emin=None, emax=None):
         """
         Generates a SIMPUT spectrum model for a point source
         from a spectral model and a coordinate on the sky. An image
@@ -508,7 +491,7 @@ class SimputSpectrum(SimputSource):
         ----------
         name : string
             The name of the SIMPUT spectrum.
-        spectral_model : :class:`~soxs.spectra.Spectrum`
+        spectral_model : :class:`~soxs.spectra.base.Spectrum`
             The spectral model to use to generate the event energies.
         ra : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The RA of the source in degrees.
@@ -519,13 +502,30 @@ class SimputSpectrum(SimputSource):
             ImageHDU instance or the name of a file to read one from. If the
             name contains an HDU extension, e.g. "cluster.fits[1]" or
             "cluster.fits['perseus']", that extension will be loaded.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy of the band to calculate the reference flux in.
+            If not specified, the minimum energy of the spectral model will
+            be used. Default: None
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy of the band to calculate the reference flux in.
+            If not specified, the maximum energy of the spectral model will
+            be used. Default: None
         """
         if isinstance(imhdu, str):
             imhdu = process_fits_string(imhdu)
+        if emin is None:
+            emin = spectral_model.ebins.value.min()
+        else:
+            emin = parse_value(emin, "keV")
+        if emax is None:
+            emax = spectral_model.ebins.value.max()
+        else:
+            emax = parse_value(emax, "keV")
+        flux = spectral_model.get_flux_in_band(emin, emax)[1].value
         return cls(
-            spectral_model.ebins.value.min(),
-            spectral_model.ebins.value.max(),
-            spectral_model.total_energy_flux.value,
+            emin,
+            emax,
+            flux,
             spectral_model.emid.value,
             spectral_model.flux.value,
             ra,
@@ -535,7 +535,7 @@ class SimputSpectrum(SimputSource):
         )
 
     @classmethod
-    def from_models(cls, name, spectral_model, spatial_model, width, nx):
+    def from_models(cls, name, spectral_model, spatial_model, width, nx, emin=None, emax=None):
         """
         Generate a SIMPUT spectrum from a spectral and a spatial
         model, and parameters for an image.
@@ -544,7 +544,7 @@ class SimputSpectrum(SimputSource):
         ----------
         name : string
             The name of the SIMPUT spectrum.
-        spectral_model : :class:`~soxs.spectra.Spectrum`
+        spectral_model : :class:`~soxs.spectra.base.Spectrum`
             The spectral model to use to generate the event energies.
         spatial_model : :class:`~soxs.spatial.SpatialModel`
             The spatial model to use to generate the event coordinates.
@@ -553,10 +553,18 @@ class SimputSpectrum(SimputSource):
         nx : integer
             The resolution of the image, e.g. the number of pixels
             on a side.
+        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The minimum energy of the band to calculate the reference flux in.
+            If not specified, the minimum energy of the spectral model will
+            be used. Default: None
+        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+            The maximum energy of the band to calculate the reference flux in.
+            If not specified, the maximum energy of the spectral model will
+            be used. Default: None
         """
         imhdu = spatial_model.generate_image(width, nx)
         return cls.from_spectrum(
-            name, spectral_model, spatial_model.ra0, spatial_model.dec0, imhdu=imhdu
+            name, spectral_model, spatial_model.ra0, spatial_model.dec0, imhdu=imhdu, emin=emin, emax=emax
         )
 
 
@@ -566,7 +574,7 @@ class SimputPhotonList(SimputSource):
     def __init__(self, ra, dec, energy, flux, name=None):
         emin = np.asarray(energy).min()
         emax = np.asarray(energy).max()
-        super(SimputPhotonList, self).__init__(emin, emax, flux, 0.0, 0.0, name=name)
+        super().__init__(emin, emax, flux, 0.0, 0.0, name=name)
         self.events = {"ra": ra, "dec": dec, "energy": energy}
         self.num_events = energy.size
 
@@ -578,7 +586,7 @@ class SimputPhotonList(SimputSource):
 
     def __iter__(self):
         for key in self.events:
-            yield key
+            yield from key
 
     @classmethod
     def from_models(cls, name, spectral_model, spatial_model, t_exp, area, prng=None):
@@ -590,7 +598,7 @@ class SimputPhotonList(SimputSource):
         ----------
         name : string
             The name of the SIMPUT photon list.
-        spectral_model : :class:`~soxs.spectra.Spectrum`
+        spectral_model : :class:`~soxs.spectra.base.Spectrum`
             The spectral model to use to generate the event energies.
         spatial_model : :class:`~soxs.spatial.SpatialModel`
             The spatial model to use to generate the event coordinates.
@@ -703,9 +711,7 @@ class SimputPhotonList(SimputSource):
             emax = self.emax
         else:
             emax = parse_value(emax, "keV")
-        idxs = np.logical_and(
-            self["energy"].value >= emin, self["energy"].value <= emax
-        )
+        idxs = np.logical_and(self["energy"].value >= emin, self["energy"].value <= emax)
         ra = self["ra"][idxs][::stride].value
         dec = self["dec"][idxs][::stride].value
         x, y = wcs.wcs_world2pix(ra, dec, 1)
@@ -738,15 +744,13 @@ class PhysicalCoordsSource(SimputSource):
 
     def __iter__(self):
         for key in self.events:
-            yield key
+            yield from key
 
     def _write_source(self, filename, extver, img_extver=None, overwrite=False):
         raise NotImplementedError
 
 
-def write_photon_list(
-    simput_prefix, phlist_prefix, flux, ra, dec, energy, overwrite=False
-):
+def write_photon_list(simput_prefix, phlist_prefix, flux, ra, dec, energy, overwrite=False):
     """
     This function is designed to preserve backwards-compatibility
     with pyXSIM 2.x. It will be removed in a future release.
@@ -754,9 +758,7 @@ def write_photon_list(
     simput_file = f"{simput_prefix}_simput.fits"
     phlist_file = f"{phlist_prefix}_phlist.fits"
     phlist = SimputPhotonList(ra, dec, energy, flux)
-    SimputCatalog.from_source(
-        simput_file, phlist, src_filename=phlist_file, overwrite=overwrite
-    )
+    SimputCatalog.from_source(simput_file, phlist, src_filename=phlist_file, overwrite=overwrite)
 
 
 def make_bkgnd_simput(

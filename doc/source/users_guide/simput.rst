@@ -22,7 +22,7 @@ The simplest SIMPUT source model in SOXS is that of a point-source located at a
 particular location on the sky, with a given energy spectrum. A
 :class:`~soxs.simput.SimputSpectrum` can be created using the
 :meth:`~soxs.simput.SimputSpectrum.from_spectrum` method, using a
-:class:`~soxs.spectra.Spectrum` object:
+:class:`~soxs.spectra.base.Spectrum` object:
 
 .. code-block:: python
 
@@ -119,7 +119,7 @@ of photon coordinates and energies using the
 :class:`~soxs.simput.SimputPhotonList` class. Specifically, one can generate a
 :class:`~soxs.simput.SimputPhotonList` using the
 :meth:`~soxs.simput.SimputPhotonList.from_models` method. This requires a
-:class:`~soxs.spectra.Spectrum` for the spectral model, a
+:class:`~soxs.spectra.base.Spectrum` for the spectral model, a
 :class:`~soxs.spatial.SpatialModel` for modeling the spatial extent of the
 source, an exposure time, and a flat effective area.
 
@@ -273,7 +273,7 @@ Galactic absorption and the value of the hydrogen column can be changed:
     soxs.make_bkgnd_simput("bkgnd.simput", t_exp, area, fov, sky_center,
                            overwrite=True, absorb_model="wabs", nH=0.02)
 
-The foreground model can be switched between ``"default"`` or ``"halosat"``:
+The foreground model can be switched between ``"two_comp"`` or ``"halosat"``:
 
 .. code-block:: python
 

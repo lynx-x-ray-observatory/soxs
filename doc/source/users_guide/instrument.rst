@@ -384,7 +384,7 @@ Simulating Spectra Only
 -----------------------
 
 If you would like to use an instrument specification and a
-:class:`~soxs.spectra.Spectrum` object to generate a spectrum file only (without
+:class:`~soxs.spectra.base.Spectrum` object to generate a spectrum file only (without
 including spatial effects), SOXS provides a function
 :func:`~soxs.instrument.simulate_spectrum` which can take an unconvolved
 spectrum and generate a convolved one from it. This is similar to what the XSPEC
@@ -514,7 +514,7 @@ A Note About Simulations with Grating Instruments
 
 Currently in SOXS, simulations of sources observed by grating instruments are
 not supported with the :func:`~soxs.instrument.instrument_simulator`. Gratings
-observations can be generated using :class:`~soxs.spectra.Spectrum` objects
+observations can be generated using :class:`~soxs.spectra.base.Spectrum` objects
 and :func:`~soxs.instrument.simulate_spectrum`, which produces a mock gratings
 spectrum:
 

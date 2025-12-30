@@ -15,8 +15,8 @@ from soxs.utils import (
 )
 
 """
-XSPEC model used to create the "default" foreground spectrum
-  model  apec + wabs*apec
+XSPEC model used to create the "two_comp" foreground spectrum
+  model  apec + tbabs*apec
             0.099
                 1
                 0
@@ -27,7 +27,7 @@ XSPEC model used to create the "default" foreground spectrum
                 0
           7.3e-07
 
-XSPEC model used to create the "lem" foreground spectrum
+XSPEC model used to create the "halosat" foreground spectrum
   model  apec + tbabs*(bapec+bapec)
             0.099
                 1
@@ -55,18 +55,14 @@ def _make_frgnd_spectrum(
     bkgnd_nH=0.018,
     absorb_model="tbabs",
     frgnd_velocity=100.0,
-    frgnd_spec_model="default",
+    frgnd_spec_model="two_comp",
     sky_area=(1.0, "arcmin**2"),
 ):
     sky_area = parse_value(sky_area, "arcmin**2")
     agen = ApecGenerator(emin, emax, nbins, broadening=True)
-    spec = agen.get_spectrum(
-        0.225, frgnd_abund, 0.0, 7.3e-7 * sky_area, velocity=frgnd_velocity
-    )
+    spec = agen.get_spectrum(0.225, frgnd_abund, 0.0, 7.3e-7 * sky_area, velocity=frgnd_velocity)
     if frgnd_spec_model == "halosat":
-        spec += agen.get_spectrum(
-            0.7, frgnd_abund, 0.0, 8.76e-8 * sky_area, velocity=frgnd_velocity
-        )
+        spec += agen.get_spectrum(0.7, frgnd_abund, 0.0, 8.76e-8 * sky_area, velocity=frgnd_velocity)
     spec.apply_foreground_absorption(bkgnd_nH, model=absorb_model)
     spec += agen.get_spectrum(0.099, 1.0, 0.0, 1.7e-6 * sky_area)
     return spec
@@ -194,15 +190,11 @@ def make_diffuse_background(
         if instr_bkgnd:
             ispec = read_instr_spectrum(bkgnd_spec[i][0], bkgnd_spec[i][1])
             ispec *= instr_bkgnd_scale
-            icts = generate_channel_spectrum(
-                ispec, event_params["exposure_time"], sa, prng=prng
-            )
+            icts = generate_channel_spectrum(ispec, event_params["exposure_time"], sa, prng=prng)
             ncts += icts
             n_instr += icts.sum()
         if foreground:
-            fcts = generate_channel_spectrum(
-                fspec, event_params["exposure_time"], sa, prng=prng
-            )
+            fcts = generate_channel_spectrum(fspec, event_params["exposure_time"], sa, prng=prng)
             ncts += fcts
             n_frgnd += fcts.sum()
         chan = np.concatenate([channels[i] * np.ones(n) for i, n in enumerate(ncts)])
@@ -234,26 +226,16 @@ def make_diffuse_background(
 
     n_e = bkg_events["energy"].size
 
-    bkg_events["time"] = prng.uniform(
-        size=n_e, low=0.0, high=event_params["exposure_time"]
-    )
+    bkg_events["time"] = prng.uniform(size=n_e, low=0.0, high=event_params["exposure_time"])
 
-    x_offset, y_offset = perform_dither(
-        bkg_events["time"], event_params["dither_params"]
-    )
+    x_offset, y_offset = perform_dither(bkg_events["time"], event_params["dither_params"])
 
     rot_mat = get_rot_mat(event_params["roll_angle"])
 
     det = np.array(
         [
-            bkg_events["detx"]
-            + x_offset
-            - event_params["aimpt_coords"][0]
-            - event_params["aimpt_shift"][0],
-            bkg_events["dety"]
-            + y_offset
-            - event_params["aimpt_coords"][1]
-            - event_params["aimpt_shift"][1],
+            bkg_events["detx"] + x_offset - event_params["aimpt_coords"][0] - event_params["aimpt_shift"][0],
+            bkg_events["dety"] + y_offset - event_params["aimpt_coords"][1] - event_params["aimpt_shift"][1],
         ]
     )
     pix = np.dot(rot_mat.T, det)

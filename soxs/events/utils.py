@@ -23,17 +23,11 @@ def make_event_file(events, parameters):
 
     col_x = fits.Column(name="X", format="D", unit="pixel", array=events["xpix"])
     col_y = fits.Column(name="Y", format="D", unit="pixel", array=events["ypix"])
-    col_e = fits.Column(
-        name="ENERGY", format="E", unit="eV", array=events["energy"] * 1000.0
-    )
+    col_e = fits.Column(name="ENERGY", format="E", unit="eV", array=events["energy"] * 1000.0)
     col_dx = fits.Column(name="DETX", format="D", unit="pixel", array=events["detx"])
     col_dy = fits.Column(name="DETY", format="D", unit="pixel", array=events["dety"])
-    col_id = fits.Column(
-        name="CCD_ID", format="J", unit="pixel", array=events["ccd_id"]
-    )
-    col_se = fits.Column(
-        name="SOXS_ENERGY", format="E", unit="eV", array=events["soxs_energy"] * 1000.0
-    )
+    col_id = fits.Column(name="CCD_ID", format="J", unit="pixel", array=events["ccd_id"])
+    col_se = fits.Column(name="SOXS_ENERGY", format="E", unit="eV", array=events["soxs_energy"] * 1000.0)
 
     chantype = parameters["channel_type"].upper()
     if chantype == "PHA":
@@ -215,9 +209,7 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
                     v2 = header_dict[key]
                     if v1 != v2:
                         raise ValueError(
-                            f"'{key}' from {eventfile} "
-                            f"does not match from {eventfiles[0]}! "
-                            f"{v1} != {v2}!"
+                            f"'{key}' from {eventfile} does not match from {eventfiles[0]}! {v1} != {v2}!"
                         )
                 if hdu.header["EXPOSURE"] < header_dict["EXPOSURE"]:
                     raise ValueError(
@@ -308,9 +300,7 @@ def _combine_events(eventfiles, wcs_out, shape_out, outfile, overwrite=False):
             tbhdu.header[key] = f["EVENTS"].header[key]
 
     start = fits.Column(name="START", format="1D", unit="s", array=np.array([0.0]))
-    stop = fits.Column(
-        name="STOP", format="1D", unit="s", array=np.array([tbhdu.header["EXPOSURE"]])
-    )
+    stop = fits.Column(name="STOP", format="1D", unit="s", array=np.array([tbhdu.header["EXPOSURE"]]))
 
     tbhdu_gti = fits.BinTableHDU.from_columns([start, stop])
     tbhdu_gti.name = "STDGTI"

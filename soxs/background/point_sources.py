@@ -43,12 +43,8 @@ def get_flux_scale(ind, fb_emin, fb_emax, spec_emin, spec_emax):
     f_E = np.log(fb_emax / fb_emin) * np.ones(ind.size)
     n1 = ind != 1.0
     n2 = ind != 2.0
-    f_g[n1] = (spec_emax ** (1.0 - ind[n1]) - spec_emin ** (1.0 - ind[n1])) / (
-        1.0 - ind[n1]
-    )
-    f_E[n2] = (fb_emax ** (2.0 - ind[n2]) - fb_emin ** (2.0 - ind[n2])) / (
-        2.0 - ind[n2]
-    )
+    f_g[n1] = (spec_emax ** (1.0 - ind[n1]) - spec_emin ** (1.0 - ind[n1])) / (1.0 - ind[n1])
+    f_E[n2] = (fb_emax ** (2.0 - ind[n2]) - fb_emin ** (2.0 - ind[n2])) / (2.0 - ind[n2])
     fscale = f_g / f_E
     return fscale
 
@@ -117,9 +113,7 @@ def generate_sources(fov, sky_center, prng=None):
 
     fluxes = np.concatenate([agn_fluxes, gal_fluxes])
 
-    ind = np.concatenate(
-        [get_agn_index(np.log10(agn_fluxes)), gal_index * np.ones(gal_fluxes.size)]
-    )
+    ind = np.concatenate([get_agn_index(np.log10(agn_fluxes)), gal_index * np.ones(gal_fluxes.size)])
 
     ra0, dec0 = generate_positions(fluxes.size, fov, sky_center, prng)
 
@@ -213,9 +207,7 @@ def make_ptsrc_background(
 
     # If requested, output the source properties to a file
     if output_sources is not None:
-        t = Table(
-            [ra0, dec0, fluxes, ind], names=("RA", "Dec", "flux_0.5_2.0_keV", "index")
-        )
+        t = Table([ra0, dec0, fluxes, ind], names=("RA", "Dec", "flux_0.5_2.0_keV", "index"))
         t["RA"].unit = "deg"
         t["Dec"].unit = "deg"
         t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"
@@ -289,7 +281,7 @@ def make_ptsrc_background(
 
     if dump_fluxes_band is not None:
         dfluxes = np.zeros_like(ref_ph_flux)
-        for idx, e in zip(detected, all_energies):
+        for idx, e in zip(detected, all_energies, strict=True):
             eidxs = (e > dump_fluxes_band[0]) & (e < dump_fluxes_band[1])
             dfluxes[idx] = np.sum(e[eidxs]) * erg_per_keV / area / exp_time
         filename = f"dump_fluxes_{dump_fluxes_band[0]}_{dump_fluxes_band[1]}.dat"
@@ -417,16 +409,12 @@ def make_point_sources_file(
         diffuse_unresolved=diffuse_unresolved,
         drop_brightest=drop_brightest,
     )
-    phlist = SimputPhotonList(
-        events["ra"], events["dec"], events["energy"], events["flux"], name=name
-    )
+    phlist = SimputPhotonList(events["ra"], events["dec"], events["energy"], events["flux"], name=name)
     if append:
         cat = SimputCatalog.from_file(filename)
         cat.append(phlist, src_filename=src_filename, overwrite=overwrite)
     else:
-        cat = SimputCatalog.from_source(
-            filename, phlist, src_filename=src_filename, overwrite=overwrite
-        )
+        cat = SimputCatalog.from_source(filename, phlist, src_filename=src_filename, overwrite=overwrite)
     return cat
 
 
@@ -473,9 +461,7 @@ def make_point_source_list(
         fluxes = fluxes[idx]
         ind = ind[idx]
 
-    t = Table(
-        [ra0, dec0, fluxes, ind], names=("RA", "Dec", "flux_0.5_2.0_keV", "index")
-    )
+    t = Table([ra0, dec0, fluxes, ind], names=("RA", "Dec", "flux_0.5_2.0_keV", "index"))
     t["RA"].unit = "deg"
     t["Dec"].unit = "deg"
     t["flux_0.5_2.0_keV"].unit = "erg/(cm**2*s)"

@@ -65,7 +65,7 @@ the slope parameter, and :math:`r_c` is the core radius. To construct one:
     beta_src = BetaModel(ra0, dec0, r_c, beta)
 
 The normalization of the :class:`~soxs.spatial.BetaModel` will be determined
-by the :class:`~soxs.spectra.Spectrum` object it is combined with, so the
+by the :class:`~soxs.spectra.base.Spectrum` object it is combined with, so the
 :math:`S_0` parameter is not specified.
 
 .. _double-beta-model:

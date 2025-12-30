@@ -21,6 +21,4 @@ instrument = (
     args.rmf,
 )
 
-soxs.simulate_spectrum(
-    spec, instrument, exp_time, args.outfile, overwrite=True, noisy=False
-)
+soxs.simulate_spectrum(spec, instrument, exp_time, args.outfile, overwrite=True, noisy=False)

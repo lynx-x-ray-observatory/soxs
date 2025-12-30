@@ -42,9 +42,7 @@ def plaw_fit(alpha_sim, answer_store):
     spectrum_answer_testing(spec, f"power_law_{alpha_sim}.h5", answer_store)
 
     pt_src_pos = PointSourceModel(30.0, 45.0)
-    pt_src = SimputPhotonList.from_models(
-        "plaw_model", spec, pt_src_pos, exp_time, area, prng=prng
-    )
+    pt_src = SimputPhotonList.from_models("plaw_model", spec, pt_src_pos, exp_time, area, prng=prng)
     SimputCatalog.from_source("plaw_model_simput.fits", pt_src, overwrite=True)
 
     instrument_simulator(

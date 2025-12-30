@@ -14,7 +14,7 @@ defaults:
         shell: bash
 
 env:
-    ANSWER_VER: 16
+    ANSWER_VER: 17
 
 jobs:
     build:
@@ -59,7 +59,14 @@ jobs:
               shell: bash -el {0}
               env:
                   mode: testing
+                  pyver: ${{ matrix.python-version }}
+                  npver: ${{ matrix.numpy-version }}
+                  whichos: ${{ matrix.os }}
               run: source ./tests/ci_install.sh
             - name: Run Tests
               shell: bash -el {0}
-              run: micromamba activate test-env; python -m pytest -vv soxs/tests
+              env:
+                pyver: ${{ matrix.python-version }}
+                npver: ${{ matrix.numpy-version }}
+                whichos: ${{ matrix.os }}
+              run: source ./tests/run_tests.sh

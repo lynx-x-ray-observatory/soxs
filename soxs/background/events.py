@@ -44,10 +44,7 @@ def add_background_from_file(events, event_params, bkg_file):
 
     for k1, k2 in key_map.items():
         if event_params[k1] != hdu.header[k2]:
-            raise ValueError(
-                f"'{k1}' keyword does not match! "
-                f"{event_params[k1]} vs. {hdu.header[k2]}"
-            )
+            raise ValueError(f"'{k1}' keyword does not match! {event_params[k1]} vs. {hdu.header[k2]}")
     rmf1 = os.path.split(event_params["rmf"])[-1]
     rmf2 = hdu.header["RESPFILE"]
     arf1 = os.path.split(event_params["arf"])[-1]
@@ -94,9 +91,7 @@ def add_background_from_file(events, event_params, bkg_file):
         all_events[key] = np.concatenate([events[key], hdu.data[key.upper()][idxs]])
     all_events["xpix"] = np.concatenate([events["xpix"], xpix])
     all_events["ypix"] = np.concatenate([events["ypix"], ypix])
-    all_events["energy"] = np.concatenate(
-        [events["energy"], hdu.data["ENERGY"][idxs] * 1.0e-3]
-    )
+    all_events["energy"] = np.concatenate([events["energy"], hdu.data["ENERGY"][idxs] * 1.0e-3])
     all_events["soxs_energy"] = np.concatenate(
         [events["soxs_energy"], hdu.data["SOXS_ENERGY"][idxs] * 1.0e-3]
     )

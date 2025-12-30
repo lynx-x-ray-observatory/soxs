@@ -97,6 +97,9 @@ feature_parser.add_argument(
     "Only available for 'apec' and 'spex' models.",
 )
 parser.set_defaults(broadening=True)
+parser.add_argument("trace_abund", type=float, default=1.0,
+                    help="The trace element abundance in solar units. "
+                         "Only available for 'apec' and 'spex' models.")
 
 args, unknown = parser.parse_known_args()
 
@@ -128,6 +131,7 @@ if args.model in ["apec", "spex"]:
         nolines=args.nolines,
         var_elem=var_elem,
         abund_table=abund_table,
+        trace_abund=args.trace_abund,
     )
     spec = cgen.get_spectrum(
         args.kT,

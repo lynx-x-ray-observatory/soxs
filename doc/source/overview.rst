@@ -95,9 +95,9 @@ The instrument simulator is called using either the |instrument_simulator_py|_
 or the |instrument_simulator_cmd|_.
 
 Currently, the instrument simulator can simulate certain "default" instrument
-configurations for *Lynx*, *Athena*, *Chandra*, *AXIS*, *XRISM*, and *STAR-X*,
-but one can also supply a modified instrument configuration for use with the
-instrument simulator, which is laid out in more detail in :ref:`instrument`.
+configurations for various missions, but one can also supply a modified
+instrument configuration for use with the instrument simulator, which is laid
+out in more detail in :ref:`instrument`.
 
 Working with Other Tools
 ------------------------
@@ -110,7 +110,7 @@ interest in using:
 MARX
 ++++
 
-Website: http://space.mit.edu/CXC/MARX/
+Website: https://chandra-marx.github.io/
 
 MARX is a set of programs developed to provide a detailed ray-tracing simulation
 of the on-orbit performance of *Chandra*. The SIMPUT files produced by SOXS can
@@ -132,7 +132,7 @@ such as *Athena*, *XRISM*, etc.
 SIXTE
 +++++
 
-Website: http://www.sternwarte.uni-erlangen.de/research/sixte/index.php
+Website: https://www.sternwarte.uni-erlangen.de/sixte/
 
 SIXTE is a software package for X-ray telescope observation simulations
 developed at the Erlangen Centre for Astroparticle Physics (ECAP). It allows

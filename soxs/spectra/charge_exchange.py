@@ -107,11 +107,10 @@ class ACX2Generator:
     ):
         try:
             from acx2 import ACXModel, __version__ as model_vers
-        except ImportError:
+        except ImportError as exc:
             raise ImportError(
-                "You must have the acx2 and pyatomdb packages "
-                "installed to use the ACX2Generator class!"
-            )
+                "You must have the acx2 and pyatomdb packages installed to use the ACX2Generator class!"
+            ) from exc
         self.model_vers = model_vers
         self.model = ACXModel()
         self.binscale = binscale
@@ -123,9 +122,7 @@ class ACX2Generator:
         if binscale == "linear":
             self.ebins = np.linspace(self.emin, self.emax, nbins + 1)
         elif binscale == "log":
-            self.ebins = np.logspace(
-                np.log10(self.emin), np.log10(self.emax), nbins + 1
-            )
+            self.ebins = np.logspace(np.log10(self.emin), np.log10(self.emax), nbins + 1)
         self.de = np.diff(self.ebins)
         self.emid = 0.5 * (self.ebins[1:] + self.ebins[:-1])
         self.elements = elem_full
@@ -133,25 +130,19 @@ class ACX2Generator:
             self.var_elem = np.empty(0, dtype="int")
         else:
             if len(var_elem) != len(set(var_elem)):
-                raise RuntimeError(
-                    'Duplicates were found in the "var_elem" list! %s' % var_elem
-                )
+                raise RuntimeError(f'Duplicates were found in the "var_elem" list! {var_elem}')
             self.var_elem = [elem_names.index(e) for e in var_elem]
             self.var_elem.sort()
             self.var_elem = np.array(self.var_elem, dtype="int")
             self.var_elem_names = [elem_names[e] for e in self.var_elem]
-            self.var_elem_idxs = np.array(
-                [self.elements.index(e) for e in self.var_elem], dtype="int"
-            )
+            self.var_elem_idxs = np.array([self.elements.index(e) for e in self.var_elem], dtype="int")
         self.num_var_elem = len(self.var_elem)
         self.num_elements = len(self.elements)
         if abund_table is None:
             abund_table = soxs_cfg.get("soxs", "abund_table")
         if not isinstance(abund_table, str):
             if len(abund_table) != 30:
-                raise RuntimeError(
-                    "User-supplied abundance tables must be 30 elements long!"
-                )
+                raise RuntimeError("User-supplied abundance tables must be 30 elements long!")
             self.atable = np.concatenate([[0.0], np.array(abund_table)])
         else:
             self.atable = abund_tables[abund_table].copy()
@@ -181,7 +172,6 @@ class ACX2Generator:
         self.model.set_collisiontype(collntype, self.coll_units)
 
     def _get_spectrum(self, redshift, He_frac, collnpar, tbroad, velocity):
-
         # Shift the energy bins to the source frame
         self.model.set_ebins(self.ebins * (1.0 + redshift))
 
@@ -379,9 +369,7 @@ class OneACX2Generator(ACX2Generator):
             pbar.close()
         return h_spec, he_spec
 
-    def get_spectrum(
-        self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0
-    ):
+    def get_spectrum(self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0):
         """
         Get a charge exchange spectrum for a single recombining ion.
 

@@ -5,7 +5,7 @@ import tempfile
 from numpy.testing import assert_allclose, assert_array_equal
 
 from soxs.response import AuxiliaryResponseFile
-from soxs.spectra import ConvolvedSpectrum, Spectrum
+from soxs.spectra import ConvolvedSpectrum, CountRateSpectrum, Spectrum
 
 
 def test_arithmetic():
@@ -95,5 +95,21 @@ def test_convolved_spectra():
     spec2 = cspec1.deconvolve()
     assert_array_equal(cspec1.ebins.value, cspec2.ebins.value)
     assert_array_equal(spec1.ebins.value, spec2.ebins.value)
-    assert_array_equal(cspec1.flux.value, cspec2.flux.value)
+    assert_array_equal(cspec1.rate.value, cspec2.rate.value)
     assert_allclose(spec1.flux.value, spec2.flux.value)
+
+
+def test_spec_round_trip():
+    redshift = 0.05
+    dist = (4.0, "kpc")
+    spec1 = Spectrum.from_powerlaw(2.0, 0.01, 1.0, 0.1, 10.0, 1000)
+    cr_spec1 = CountRateSpectrum.from_spectrum(spec1, redshift=redshift)
+    spec2 = Spectrum.from_count_rate_spectrum(cr_spec1, redshift=redshift)
+    assert_allclose(spec1.ebins.value, spec2.ebins.value)
+    assert_array_equal(spec1.ebins.value * (1.0 + redshift), cr_spec1.ebins.value)
+    assert_allclose(spec1.flux.value, spec2.flux.value)
+    cr_spec2 = CountRateSpectrum.from_spectrum(spec1, dist=dist)
+    spec3 = Spectrum.from_count_rate_spectrum(cr_spec2, dist=dist)
+    assert_allclose(spec1.ebins.value, spec3.ebins.value)
+    assert_array_equal(spec1.ebins.value, cr_spec2.ebins.value)
+    assert_allclose(spec1.flux.value, spec3.flux.value)

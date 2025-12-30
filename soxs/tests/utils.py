@@ -18,8 +18,8 @@ def spectrum_answer_testing(spec, filename, answer_store, rtol=1.0e-7):
     else:
         answer_spec = type(spec).from_file(testfile)
         assert_allclose(answer_spec.emid.value, spec.emid.value, rtol=rtol)
-        assert_allclose(answer_spec.flux.value, spec.flux.value, rtol=rtol)
-        assert answer_spec.flux.unit == spec.flux.unit
+        assert_allclose(answer_spec._spec.value, spec._spec.value, rtol=rtol)
+        assert answer_spec._spec.unit == spec._spec.unit
 
 
 def file_answer_testing(hdu, filename, answer_store):
@@ -51,9 +51,7 @@ def file_answer_testing(hdu, filename, answer_store):
                         rtol = 1.0e-6
                     else:
                         rtol = 1.0e-8
-                    assert_allclose(
-                        f_old[hdu].data[name], f_new[hdu].data[name], rtol=rtol
-                    )
+                    assert_allclose(f_old[hdu].data[name], f_new[hdu].data[name], rtol=rtol)
         f_old.close()
         f_new.close()
 
@@ -62,3 +60,13 @@ min_numpy_vers = pytest.mark.skipif(
     np.lib.NumpyVersion(np.__version__) < np.lib.NumpyVersion("2.0.0"),
     reason="Requires NumPy >= 2.0.0",
 )
+
+
+def get_atomdb_files():
+    try:
+        from pyatomdb.util import download_atomdb_emissivity_files
+
+        if not os.path.exists(os.path.join(os.environ["ATOMDB"], "filemap")):
+            download_atomdb_emissivity_files(os.environ["ATOMDB"], "00000000", "3.1.3")
+    except ImportError:
+        pass

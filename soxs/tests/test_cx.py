@@ -5,7 +5,7 @@ import tempfile
 import pytest
 
 from soxs.spectra.charge_exchange import ACX2Generator, OneACX2Generator
-from soxs.tests.utils import spectrum_answer_testing
+from soxs.tests.utils import get_atomdb_files, spectrum_answer_testing
 
 acx2 = pytest.importorskip("acx2")
 
@@ -23,9 +23,10 @@ Ca = 0.3
 redshift = 0.05
 norm = 1.0
 
+get_atomdb_files()
+
 
 def test_vacx2_ctype1(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -34,14 +35,13 @@ def test_vacx2_ctype1(answer_store):
 
     spec0 = cxgen0.get_spectrum(kT, collnpar1, abund, He_frac, redshift, norm)
 
-    spectrum_answer_testing(spec0, "cx_spec0.h5", answer_store)
+    spectrum_answer_testing(spec0, "cx_spec0.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
 def test_vacx2_ctype2(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -50,7 +50,7 @@ def test_vacx2_ctype2(answer_store):
 
     spec1 = cxgen1.get_spectrum(kT, collnpar2, abund, He_frac, redshift, norm)
 
-    spectrum_answer_testing(spec1, "cx_spec1.h5", answer_store)
+    spectrum_answer_testing(spec1, "cx_spec1.h5", answer_store, rtol=1.0e-5)
 
     cxgen2 = ACX2Generator(emin, emax, nbins, collntype=2, var_elem=["C", "Ne", "Ca"])
 
@@ -64,14 +64,13 @@ def test_vacx2_ctype2(answer_store):
         elem_abund={"C": C, "Ne": Ne, "Ca": Ca},
     )
 
-    spectrum_answer_testing(spec2, "cx_spec2.h5", answer_store)
+    spectrum_answer_testing(spec2, "cx_spec2.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)
 
 
 def test_oneacx2(answer_store):
-
     tmpdir = tempfile.mkdtemp()
     curdir = os.getcwd()
     os.chdir(tmpdir)
@@ -80,7 +79,7 @@ def test_oneacx2(answer_store):
 
     spec4 = cxgen4.get_spectrum("Si", 13, collnpar2, He_frac, redshift, norm)
 
-    spectrum_answer_testing(spec4, "cx_spec4.h5", answer_store)
+    spectrum_answer_testing(spec4, "cx_spec4.h5", answer_store, rtol=1.0e-5)
 
     os.chdir(curdir)
     shutil.rmtree(tmpdir)

@@ -131,12 +131,11 @@ def generate_events(
 
     try:
         instrument_spec = instrument_registry[instrument]
-    except KeyError:
-        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
+    except KeyError as e:
+        raise KeyError(f"Instrument {instrument} is not in the instrument registry!") from e
     if not instrument_spec["imaging"]:
         raise RuntimeError(
-            f"Instrument '{instrument_spec['name']}' is not "
-            f"designed for imaging observations!"
+            f"Instrument '{instrument_spec['name']}' is not designed for imaging observations!"
         )
 
     arf_file = get_data_file(instrument_spec["arf"])
@@ -240,9 +239,7 @@ def generate_events(
         )
         if src.src_type == "phlist":
             refband = [src.emin, src.emax]
-            events = arf.detect_events_phlist(
-                src.events.copy(), exp_time, src.flux, refband, prng=prng
-            )
+            events = arf.detect_events_phlist(src.events.copy(), exp_time, src.flux, refband, prng=prng)
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, prng=prng)
 
@@ -284,9 +281,7 @@ def generate_events(
         dety = det[1, :] + event_params["aimpt_coords"][1] + aimpt_shift[1]
 
         # Add times to events
-        all_events["time"] = prng.uniform(
-            size=n_evt, low=0.0, high=event_params["exposure_time"]
-        )
+        all_events["time"] = prng.uniform(size=n_evt, low=0.0, high=event_params["exposure_time"])
 
         # Apply dithering
 
@@ -339,12 +334,8 @@ def generate_events(
                 all_events["detx"] = detx[keep]
                 all_events["dety"] = dety[keep]
             else:
-                all_events["detx"] = cx[keep] + prng.uniform(
-                    low=-0.5, high=0.5, size=n_evt
-                )
-                all_events["dety"] = cy[keep] + prng.uniform(
-                    low=-0.5, high=0.5, size=n_evt
-                )
+                all_events["detx"] = cx[keep] + prng.uniform(low=-0.5, high=0.5, size=n_evt)
+                all_events["dety"] = cy[keep] + prng.uniform(low=-0.5, high=0.5, size=n_evt)
 
             # Convert detector coordinates back to pixel coordinates by
             # adding the dither offsets back in and applying the rotation
@@ -352,14 +343,8 @@ def generate_events(
 
             det = np.array(
                 [
-                    all_events["detx"]
-                    + x_offset[keep]
-                    - event_params["aimpt_coords"][0]
-                    - aimpt_shift[0],
-                    all_events["dety"]
-                    + y_offset[keep]
-                    - event_params["aimpt_coords"][1]
-                    - aimpt_shift[1],
+                    all_events["detx"] + x_offset[keep] - event_params["aimpt_coords"][0] - aimpt_shift[0],
+                    all_events["dety"] + y_offset[keep] - event_params["aimpt_coords"][1] - aimpt_shift[1],
                 ]
             )
             pix = np.dot(rot_mat.T, det)
@@ -474,6 +459,7 @@ def make_background(
             "configuration file if you want to change these "
             "values. ",
             DeprecationWarning,
+            stacklevel=2,
         )
     from soxs.background import make_diffuse_background, make_ptsrc_background
 
@@ -482,14 +468,11 @@ def make_background(
     roll_angle = parse_value(roll_angle, "deg")
     try:
         instrument_spec = instrument_registry[instrument]
-    except KeyError:
-        raise KeyError(
-            f"Instrument {instrument} is not in the " f"instrument registry!"
-        )
+    except KeyError as e:
+        raise KeyError(f"Instrument {instrument} is not in the instrument registry!") from e
     if not instrument_spec["imaging"]:
         raise RuntimeError(
-            f"Instrument '{instrument_spec['name']}' is not "
-            f"designed for imaging observations!"
+            f"Instrument '{instrument_spec['name']}' is not designed for imaging observations!"
         )
     fov = instrument_spec["fov"]
 
@@ -681,12 +664,13 @@ def make_background_file(
             "configuration file if you want to change these "
             "values. ",
             DeprecationWarning,
+            stacklevel=2,
         )
     if "input_sources" in kwargs:
         warnings.warn(
-            "The 'input_sources' keyword argument has been changed "
-            "to 'input_pt_sources' and is deprecated.",
+            "The 'input_sources' keyword argument has been changed to 'input_pt_sources' and is deprecated.",
             DeprecationWarning,
+            stacklevel=2,
         )
         input_pt_sources = kwargs.pop("input_sources")
     prng = parse_prng(prng)
@@ -776,13 +760,10 @@ def _instrument_simulator(
     else:
         mylog.info("Adding background events from the file %s.", bkgnd_file)
         if not os.path.exists(bkgnd_file):
-            raise IOError(f"Cannot find the background event file {bkgnd_file}!")
+            raise OSError(f"Cannot find the background event file {bkgnd_file}!")
         events = add_background_from_file(events, event_params, bkgnd_file)
     if len(events["energy"]) == 0:
-        mylog.warning(
-            "No events were detected from source or background!! We "
-            "will not write an event file."
-        )
+        mylog.warning("No events were detected from source or background!! We will not write an event file.")
         f = None
     else:
         f = make_event_file(events, event_params)
@@ -969,6 +950,7 @@ def _simulate_spectrum(
             "configuration file if you want to change these "
             "values. ",
             DeprecationWarning,
+            stacklevel=2,
         )
     prng = parse_prng(prng)
     exp_time = parse_value(exp_time, "s")
@@ -989,10 +971,8 @@ def _simulate_spectrum(
     else:
         try:
             instrument_spec = instrument_registry[instrument]
-        except KeyError:
-            raise KeyError(
-                f"Instrument {instrument} is not in the instrument registry!"
-            )
+        except KeyError as e:
+            raise KeyError(f"Instrument {instrument} is not in the instrument registry!") from e
         arf = AuxiliaryResponseFile.from_instrument(instrument)
         rmf = RedistributionMatrixFile.from_instrument(instrument)
         bkgnd_spec = instrument_spec["bkgnd"]
@@ -1026,27 +1006,20 @@ def _simulate_spectrum(
 
     if foreground:
         mylog.info("Adding in astrophysical foreground.")
-        frgnd_spec = rmf.convolve_spectrum(
-            make_frgnd_spectrum(arf, rmf), exp_time, noisy=False, rate=True
-        )
-        out_spec += generate_channel_spectrum(
-            frgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng
-        )
+        frgnd_spec = rmf.convolve_spectrum(make_frgnd_spectrum(arf, rmf), exp_time, noisy=False, rate=True)
+        out_spec += generate_channel_spectrum(frgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng)
     if instr_bkgnd and bkgnd_spec is not None:
         if instrument_spec:
             if instrument_spec["grating"]:
                 raise NotImplementedError(
-                    "Backgrounds cannot be included in simulations "
-                    "of gratings spectra at this time!"
+                    "Backgrounds cannot be included in simulations of gratings spectra at this time!"
                 )
             # Temporary hack for ACIS-S
             if "aciss" in instrument_spec["name"]:
                 bkgnd_spec = bkgnd_spec[1]
         mylog.info("Adding in instrumental background.")
         bkgnd_spec = read_instr_spectrum(bkgnd_spec[0], bkgnd_spec[1])
-        out_spec += generate_channel_spectrum(
-            bkgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng
-        )
+        out_spec += generate_channel_spectrum(bkgnd_spec, exp_time, bkgnd_area, noisy=noisy, prng=prng)
     if ptsrc_bkgnd:
         mylog.info("Adding in background from unresolved point-sources.")
         bkgnd_nH = float(soxs_cfg.get("soxs", "bkgnd_nH"))
@@ -1083,14 +1056,14 @@ def simulate_spectrum(
     **kwargs,
 ):
     """
-    Generate a PI or PHA spectrum from a :class:`~soxs.spectra.Spectrum`
+    Generate a PI or PHA spectrum from a :class:`~soxs.spectra.base.Spectrum`
     by convolving it with responses. To be used if one wants to
     create a spectrum without worrying about spatial response. Similar
     to XSPEC's "fakeit".
 
     Parameters
     ----------
-    spec : :class:`~soxs.spectra.Spectrum`
+    spec : :class:`~soxs.spectra.base.Spectrum`
         The spectrum to be convolved. If None is supplied, only backgrounds
         will be simulated (if they are turned on).
     instrument : string or tuple
@@ -1196,12 +1169,11 @@ def simple_event_list(
 
     try:
         instrument_spec = instrument_registry[instrument]
-    except KeyError:
-        raise KeyError(f"Instrument {instrument} is not in the instrument registry!")
+    except KeyError as e:
+        raise KeyError(f"Instrument {instrument} is not in the instrument registry!") from e
     if not instrument_spec["imaging"]:
         raise RuntimeError(
-            f"Instrument '{instrument_spec['name']}' is not "
-            f"designed for imaging observations!"
+            f"Instrument '{instrument_spec['name']}' is not designed for imaging observations!"
         )
 
     arf_file = get_data_file(instrument_spec["arf"])
@@ -1237,9 +1209,7 @@ def simple_event_list(
         )
         if src.src_type == "phlist":
             refband = [src.emin, src.emax]
-            events = arf.detect_events_phlist(
-                src.events.copy(), exp_time, src.flux, refband, prng=prng
-            )
+            events = arf.detect_events_phlist(src.events.copy(), exp_time, src.flux, refband, prng=prng)
         elif src.src_type.endswith("spectrum"):
             events = arf.detect_events_spec(src, exp_time, prng=prng)
 
@@ -1296,9 +1266,7 @@ def simple_event_list(
 
     col_ra = fits.Column(name=names[0], format="E", unit=unit, array=lon)
     col_dec = fits.Column(name=names[1], format="E", unit=unit, array=lat)
-    col_e = fits.Column(
-        name="ENERGY", format="E", unit="eV", array=all_events["energy"] * 1000.0
-    )
+    col_e = fits.Column(name="ENERGY", format="E", unit="eV", array=all_events["energy"] * 1000.0)
     col_se = fits.Column(
         name="SOXS_ENERGY",
         format="E",
@@ -1311,9 +1279,7 @@ def simple_event_list(
         cunit = "adu"
     elif chantype == "PI":
         cunit = "Chan"
-    col_ch = fits.Column(
-        name=chantype, format="1J", unit=cunit, array=all_events[chantype]
-    )
+    col_ch = fits.Column(name=chantype, format="1J", unit=cunit, array=all_events[chantype])
 
     col_t = fits.Column(name="TIME", format="1D", unit="s", array=all_events["time"])
 

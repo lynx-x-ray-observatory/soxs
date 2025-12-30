@@ -55,10 +55,7 @@ def make_image(
         sky coordinates. Default: 1
     """
     if bands is not None:
-        bands = [
-            (parse_value(b[0], "keV") * 1000.0, parse_value(b[1], "keV") * 1000.0)
-            for b in bands
-        ]
+        bands = [(parse_value(b[0], "keV") * 1000.0, parse_value(b[1], "keV") * 1000.0) for b in bands]
     else:
         if emin is None:
             emin = 0.0
@@ -71,9 +68,7 @@ def make_image(
             emax = parse_value(emax, "keV")
         emax *= 1000.0
     if coord_type == "det" and reblock != 1:
-        raise RuntimeError(
-            "Reblocking images is not supported for detector coordinates!"
-        )
+        raise RuntimeError("Reblocking images is not supported for detector coordinates!")
     if isinstance(evt_file, fits.HDUList):
         ehdu = evt_file["EVENTS"]
     else:
@@ -123,15 +118,10 @@ def make_image(
 
     if expmap_file is not None:
         if coord_type == "det":
-            raise RuntimeError(
-                "Cannot divide by an exposure map for images "
-                "binned in detector coordinates!"
-            )
+            raise RuntimeError("Cannot divide by an exposure map for images binned in detector coordinates!")
         with fits.open(expmap_file) as f:
             if f["EXPMAP"].shape != (nx, ny):
-                raise RuntimeError(
-                    "Exposure map and image do not have the same shape!!"
-                )
+                raise RuntimeError("Exposure map and image do not have the same shape!!")
             with np.errstate(invalid="ignore", divide="ignore"):
                 H /= f["EXPMAP"].data.T
             H[np.isinf(H)] = 0.0
@@ -288,9 +278,7 @@ def make_exposure_map(
     from soxs.response import AuxiliaryResponseFile
 
     if isinstance(energy, np.ndarray) and weights is None:
-        raise RuntimeError(
-            "Must supply a single value for the energy if " "you do not supply weights!"
-        )
+        raise RuntimeError("Must supply a single value for the energy if you do not supply weights!")
     if not isinstance(energy, np.ndarray):
         energy = parse_value(energy, "keV")
     f_evt = fits.open(event_file)
@@ -384,7 +372,7 @@ def make_exposure_map(
     for i in range(niterx):
         for j in range(nitery):
             chips, _ = create_region(rtypes[0], args[0], dx + x_mid[i], dy + y_mid[j])
-            for rtype, arg in zip(rtypes[1:], args[1:]):
+            for rtype, arg in zip(rtypes[1:], args[1:], strict=True):
                 r, _ = create_region(rtype, arg, dx + x_mid[i], dy + y_mid[j])
                 chips = chips | r
             dexp = chips.to_mask().to_image(expmap.shape).astype("float64")
@@ -443,10 +431,7 @@ def make_exposure_map(
             fits.HDUList(hdulist).writeto(asol_file, overwrite=overwrite)
 
         else:
-            mylog.warning(
-                "Refusing to write an aspect solution file because "
-                "there was no dithering."
-            )
+            mylog.warning("Refusing to write an aspect solution file because there was no dithering.")
 
 
 def plot_image(

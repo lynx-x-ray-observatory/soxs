@@ -16,12 +16,12 @@ class BackgroundSpectrum(Spectrum):
     def from_spectrum(cls, spec, fov):
         """
         Create a background spectrum from a regular
-        :class:`~soxs.spectra.Spectrum` object and the width
+        :class:`~soxs.spectra.base.Spectrum` object and the width
         of a field of view on a side.
 
         Parameters
         ----------
-        spec : :class:`~soxs.spectra.Spectrum`
+        spec : :class:`~soxs.spectra.base.Spectrum`
             The spectrum to be used.
         fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The width of the field of view on a side in
@@ -78,9 +78,7 @@ class BackgroundSpectrum(Spectrum):
         if isinstance(other, AuxiliaryResponseFile):
             return ConvolvedBackgroundSpectrum.convolve(self, other)
         else:
-            return BackgroundSpectrum(
-                self.ebins, other * self.flux, binscale=self.binscale
-            )
+            return BackgroundSpectrum(self.ebins, other * self.flux, binscale=self.binscale)
 
     __rmul__ = __mul__
 
@@ -104,7 +102,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
             arcminutes.
         """
         fov = parse_value(fov, "arcmin")
-        flux = spec.flux.value / fov / fov
+        flux = spec.rate.value / fov / fov
         return cls(spec.ebins.value, flux, spec.binscale)
 
     def generate_energies(self, t_exp, fov, prng=None, quiet=False):
@@ -133,7 +131,7 @@ class ConvolvedBackgroundSpectrum(ConvolvedSpectrum):
         t_exp = parse_value(t_exp, "s")
         fov = parse_value(fov, "arcmin")
         prng = parse_prng(prng)
-        rate = fov * fov * self.total_flux.value
+        rate = fov * fov * self.total_rate.value
         energy = _generate_energies(self, t_exp, rate, prng, self.binscale, quiet=quiet)
         earea = self.arf.interpolate_area(energy).value
         flux = np.sum(energy) * erg_per_keV / t_exp / earea.sum()

@@ -6,7 +6,7 @@ from astropy.io import fits
 from pathlib import Path
 
 from soxs.events.utils import _combine_events, _region_filter, wcs_from_header
-from soxs.utils import parse_value
+from soxs.utils import parse_prng, parse_value
 
 
 def filter_events(
@@ -187,9 +187,7 @@ def write_radial_profile(
     col7 = fits.Column(name="NET_RATE", format="D", unit="count/s", array=R)
     col8 = fits.Column(name="ERR_RATE", format="D", unit="count/s", array=Rerr)
     col9 = fits.Column(name="SUR_BRI", format="D", unit="count/s/arcsec**2", array=S)
-    col10 = fits.Column(
-        name="SUR_BRI_ERR", format="1D", unit="count/s/arcsec**2", array=Serr
-    )
+    col10 = fits.Column(name="SUR_BRI_ERR", format="1D", unit="count/s/arcsec**2", array=Serr)
 
     coldefs = [col1, col2, col3, col4, col5, col6, col7, col8, col9, col10]
 
@@ -205,10 +203,7 @@ def write_radial_profile(
         x, y = np.mgrid[1 : nx + 1, 1 : ny + 1]
         r = np.sqrt((x - ectr[0]) ** 2 + (y - ectr[1]) ** 2)
         f.close()
-        E = (
-            np.histogram(r, bins=rr / reblock, weights=exp)[0]
-            / np.histogram(r, bins=rr / reblock)[0]
-        )
+        E = np.histogram(r, bins=rr / reblock, weights=exp)[0] / np.histogram(r, bins=rr / reblock)[0]
         with np.errstate(invalid="ignore", divide="ignore"):
             F = R / E
             Ferr = Rerr / E
@@ -216,15 +211,9 @@ def write_radial_profile(
         SFerr = Ferr / A
         col11 = fits.Column(name="MEAN_SRC_EXP", format="D", unit="cm**2", array=E)
         col12 = fits.Column(name="NET_FLUX", format="D", unit="count/s/cm**2", array=F)
-        col13 = fits.Column(
-            name="NET_FLUX_ERR", format="D", unit="count/s/cm**2", array=Ferr
-        )
-        col14 = fits.Column(
-            name="SUR_FLUX", format="D", unit="count/s/cm**2/arcsec**2", array=SF
-        )
-        col15 = fits.Column(
-            name="SUR_FLUX_ERR", format="D", unit="count/s/cm**2/arcsec**2", array=SFerr
-        )
+        col13 = fits.Column(name="NET_FLUX_ERR", format="D", unit="count/s/cm**2", array=Ferr)
+        col14 = fits.Column(name="SUR_FLUX", format="D", unit="count/s/cm**2/arcsec**2", array=SF)
+        col15 = fits.Column(name="SUR_FLUX_ERR", format="D", unit="count/s/cm**2/arcsec**2", array=SFerr)
         coldefs += [col11, col12, col13, col14, col15]
 
     tbhdu = fits.BinTableHDU.from_columns(fits.ColDefs(coldefs))
@@ -235,9 +224,7 @@ def write_radial_profile(
     hdulist.writeto(out_file, overwrite=overwrite)
 
 
-def fill_regions(
-    in_img, out_img, src_reg, bkg_val, median=False, overwrite=False, format="ds9"
-):
+def fill_regions(in_img, out_img, src_reg, bkg_val, median=False, overwrite=False, format="ds9", prng=None):
     """
     Fill regions which have been removed from an image (e.g. by
     wavdetect) with a Poisson distribution of counts, either
@@ -269,6 +256,7 @@ def fill_regions(
     """
     from regions import PixelRegion, Region, Regions, SkyRegion
 
+    prng = parse_prng(prng)
     fill_op = np.median if median else np.mean
     if isinstance(src_reg, str):
         if Path(src_reg).exists():
@@ -300,7 +288,7 @@ def fill_regions(
             hdu = f[0]
         else:
             hdu = f[1]
-        for src_r, bkg_v in zip(src_reg, bkg_val):
+        for src_r, bkg_v in zip(src_reg, bkg_val, strict=True):
             if isinstance(src_r, PixelRegion):
                 src_mask = src_r.to_mask(mode="exact").astype("bool")
             elif isinstance(src_r, SkyRegion):
@@ -322,7 +310,7 @@ def fill_regions(
                 bkg_mask = bkg_mask.to_image(hdu.shape).astype("bool")
                 lam = fill_op(hdu.data[bkg_mask])
             n_src = src_mask.sum()
-            hdu.data[src_mask] = np.random.poisson(lam=lam, size=n_src)
+            hdu.data[src_mask] = prng.poisson(lam=lam, size=n_src)
         f.writeto(out_img, overwrite=overwrite)
 
 
