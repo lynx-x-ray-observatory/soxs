@@ -257,6 +257,43 @@ class ACX2Generator:
 
         return Spectrum(self.ebins, norm * spec / self.de, binscale=self.binscale)
 
+    def make_table(self, ions, colls, redshift):
+        from astropy.units import Quantity
+
+        numc = colls.size
+        numi = len(ions)
+        h_spec = np.zeros((numi, numc, self.nbins))
+        he_spec = np.zeros((numi, numc, self.nbins))
+
+        self.model.set_abund(np.ones(self.num_elements), elements=self.elements)
+
+        # Shift the energy bins to the source frame
+        self.model.set_ebins(self.ebins * (1.0 + redshift))
+
+        # collision parameter parsing
+        if not hasattr(colls, "unit"):
+            colls = Quantity(colls, self.coll_units)
+        colls = colls.to_value(self.coll_units)
+
+        for i, (Z, ion) in enumerate(ions):
+            if Z is not None:
+                mylog.info("Creating spectrum table for %s %i", elem_names[Z], ion)
+                # Set the ionization fraction
+                ionfrac = {}
+                for e in self.model.elements:
+                    ionfrac[e] = np.zeros(e + 1)
+                ionfrac[Z][ion] = 1.0
+                self.model.set_ionfrac(ionfrac)
+            pbar = tqdm(leave=True, total=numc, desc="Preparing spectrum table ")
+            for j, coll in enumerate(colls):
+                self.model.set_donorabund(["H", "He"], [1.0, 0.0])
+                h_spec[i, j, :] = self.model.calc_spectrum(coll)
+                self.model.set_donorabund(["H", "He"], [0.0, 1.0])
+                he_spec[i, j, :] = self.model.calc_spectrum(coll)
+                pbar.update()
+            pbar.close()
+        return h_spec, he_spec
+
 
 class OneACX2Generator(ACX2Generator):
     _one_ion = True
@@ -332,42 +369,6 @@ class OneACX2Generator(ACX2Generator):
             var_elem=None,
             abund_table=abund_table,
         )
-
-    def make_table(self, ions, colls, redshift):
-        from astropy.units import Quantity
-
-        numc = colls.size
-        numi = len(ions)
-        h_spec = np.zeros((numi, numc, self.nbins))
-        he_spec = np.zeros((numi, numc, self.nbins))
-
-        self.model.set_abund(np.ones(self.num_elements), elements=self.elements)
-
-        # Shift the energy bins to the source frame
-        self.model.set_ebins(self.ebins * (1.0 + redshift))
-
-        # collision parameter parsing
-        if not hasattr(colls, "unit"):
-            colls = Quantity(colls, self.coll_units)
-        colls = colls.to_value(self.coll_units)
-
-        for i, (Z, ion) in enumerate(ions):
-            mylog.info("Creating spectrum table for %s %i", elem_names[Z], ion)
-            # Set the ionization fraction
-            ionfrac = {}
-            for e in self.model.elements:
-                ionfrac[e] = np.zeros(e + 1)
-            ionfrac[Z][ion] = 1.0
-            self.model.set_ionfrac(ionfrac)
-            pbar = tqdm(leave=True, total=numc, desc="Preparing spectrum table ")
-            for j, coll in enumerate(colls):
-                self.model.set_donorabund(["H", "He"], [1.0, 0.0])
-                h_spec[i, j, :] = self.model.calc_spectrum(coll)
-                self.model.set_donorabund(["H", "He"], [0.0, 1.0])
-                he_spec[i, j, :] = self.model.calc_spectrum(coll)
-                pbar.update()
-            pbar.close()
-        return h_spec, he_spec
 
     def get_spectrum(self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0):
         """
