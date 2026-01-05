@@ -244,7 +244,7 @@ Explorer of Cosmic Ecosystems and Energetic Dynamics (ExCEED)
 
 Two instrument specifications ``"exceed_outer_array"`` and ``"exceed_inner_array"``,
 are available for the Explorer of Cosmic Ecosystems and Energetic Dynamics
-(ExCEED) missin concept. Both have a 4 m focal length and a Gaussian PSF with
+(ExCEED) mission concept. Both have a 4 m focal length and a Gaussian PSF with
 a FWHM of 10 arcseconds. The outer array has a square-shaped 32 arcminute field
 of view and a spectral resolution of 2.5 eV, whereas the inner array has a
 square-shaped 7-arcminute field of view and a spectral resolution of 1.3 eV. The
