@@ -3,6 +3,13 @@
 ChangeLog
 =========
 
+Version 5.2.0
+-------------
+
+This update to SOXS includes the instrument configuration for the Explorer for Cosmic
+Ecosystems and Energetic Dynamics (ExCEED) mission concept, as well as improve support
+for charge exchange models for pyXSIM in the future.
+
 Version 5.1.0
 -------------
 

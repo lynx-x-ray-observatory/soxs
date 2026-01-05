@@ -229,13 +229,28 @@ Line Emission Mapper (LEM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Two instrument specifications ``"lem_outer_array"`` and ``"lem_inner_array"``, are
-available for the `Line Emission Mapper (LEM) <https://lem.cfa.harvard.edu>`_.
-Both have a 4 m focal length and a Gaussian PSF with a FWHM of 10 arcseconds.
-The outer array has a square-shaped 32 arcminute field of view and a spectral
-resolution of 2.5 eV, whereas the inner array has a square-shaped 7 arcminute
-field of view and a spectral resolution of 1.3 eV. The old LEM configurations
-``"lem_2eV"`` and ``"lem_0.9eV"`` are still supported, both with square fields
-of view of 32 arcminutes.
+available for the `Line Emission Mapper (LEM) <https://lem.cfa.harvard.edu>`_
+mission concept. Both have a 4 m focal length and a Gaussian PSF with a FWHM
+of 10 arcseconds. The outer array has a square-shaped 32 arcminute field of view
+and a spectral resolution of 2.5 eV, whereas the inner array has a square-shaped
+7 arcminute field of view and a spectral resolution of 1.3 eV. The old LEM
+configurations ``"lem_2eV"`` and ``"lem_0.9eV"`` are still supported, both with
+square fields of view of 32 arcminutes.
+
+.. _exceed:
+
+Explorer of Cosmic Ecosystems and Energetic Dynamics (ExCEED)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Two instrument specifications ``"exceed_outer_array"`` and ``"exceed_inner_array"``,
+are available for the Explorer of Cosmic Ecosystems and Energetic Dynamics
+(ExCEED) missin concept. Both have a 4 m focal length and a Gaussian PSF with
+a FWHM of 10 arcseconds. The outer array has a square-shaped 32 arcminute field
+of view and a spectral resolution of 2.5 eV, whereas the inner array has a
+square-shaped 7-arcminute field of view and a spectral resolution of 1.3 eV. The
+effective area curve for ExCEED is derived from a mirror model produced by COSINE,
+detailed in
+`Barrière et al. (2025) <https://www.spiedigitallibrary.org/conference-proceedings-of-spie/13626/3065437/Silicon-pore-optics--design-and-feasibility-of-a-4/10.1117/12.3065437.short>`_.
 
 .. _bkgnds:
 
