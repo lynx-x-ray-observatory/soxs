@@ -209,19 +209,19 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy in the band, in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy in the band, in keV.
         nbins : integer
             The number of bins in the spectrum.
-        binscale : string, optional
+        binscale : str, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
-        vlos : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        vlos : float, (value, unit) tuple, or Quantity, optional
             The line-of-sight velocity of the source, in km/s.
             Used for Doppler-shifting the spectrum. Default: 0.0
-        vtot : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        vtot : float, (value, unit) tuple, or Quantity, optional
             The total velocity magnitude of the source, in km/s.
             If not set, it is assumed to be equal to the absolute
             value of the vlos argument. This value is mainly relevant
@@ -256,9 +256,9 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emin : float, (value, unit) tuple, or Quantity, optional
             The minimum energy in the band, in keV. Default is to use the lowest energy.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emax : float, (value, unit) tuple, or Quantity, optional
             The maximum energy in the band, in keV. Default is to use the highest energy.
         """
         if emin is not None:
@@ -300,13 +300,13 @@ class BaseSpectrum:
         ----------
         const_value : float
             The value of the constant in the units of the spectrum.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy of the spectrum in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy of the spectrum in keV.
         nbins : integer
             The number of bins in the spectrum.
-        binscale : string, optional
+        binscale : str, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
         """
@@ -335,13 +335,13 @@ class BaseSpectrum:
             The normalization of the source in units of
             the spectrum, photons/s/cm**2/keV, at 1 keV
             in the source frame.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy of the spectrum in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy of the spectrum in keV.
         nbins : integer
             The number of bins in the spectrum.
-        binscale : string, optional
+        binscale : str, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
         """
@@ -364,7 +364,7 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        filename : string
+        filename : str
             The path to the file containing the spectrum.
         """
         kwargs = {}
@@ -435,15 +435,15 @@ class BaseSpectrum:
 
     def new_spec_from_band(self, emin, emax):
         """
-        Create a new :class:`~soxs.spectra.base.Spectrum` object
+        Create a new Spectrum object
         from a subset of an existing one defined by a particular
         energy band.
 
         Parameters
         ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy of the band in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy of the band in keV.
         """
         ebins, flux = self._new_spec_from_band(emin, emax)
@@ -471,9 +471,9 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        specfile : string
+        specfile : str
             The filename to write the file to.
-        overwrite : boolean, optional
+        overwrite : bool, optional
             Whether to overwrite an existing
             file with the same name. Default: False
         """
@@ -482,7 +482,7 @@ class BaseSpectrum:
 
     def write_file(self, specfile, overwrite=False):
         """
-        Write a :class:`~soxs.Spectrum` object to disk, in
+        Write a Spectrum object to disk, in
         any of three formats, which will be determined by
         the chosen suffix:
         ASCII ECSV: .dat, .txt. or .ecsv
@@ -491,9 +491,9 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        specfile : string
+        specfile : str
             The name of the file to write to.
-        overwrite : boolean, optional
+        overwrite : bool, optional
             Whether to overwrite an existing
             file with the same name. Default: False
         """
@@ -516,9 +516,9 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        specfile : string
+        specfile : str
             The filename to write the file to.
-        overwrite : boolean, optional
+        overwrite : bool, optional
             Whether to overwrite an existing
             file with the same name. Default: False
         """
@@ -544,9 +544,9 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        specfile : string
+        specfile : str
             The filename to write the file to.
-        overwrite : boolean, optional
+        overwrite : bool, optional
             Whether to overwrite an existing
             file with the same name. Default: False
         """
@@ -559,16 +559,16 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        line_center : float, (value, unit) tuple, or Quantity
             The line center position in units of keV, in the observer frame.
-        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        line_width : one or more float, (value, unit) tuple, or Quantity
             The line width (FWHM) in units of keV, in the observer frame. Can also
             input the line width in units of velocity in the rest frame. For the Voigt
             profile, a list, tuple, or array of two values should be provided since there
             are two line widths, the Lorentzian and the Gaussian (in that order).
-        line_amp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        line_amp : float, (value, unit) tuple, or Quantity
             The integrated line amplitude in the units of the spectrum
-        line_type : string, optional
+        line_type : str, optional
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
@@ -589,16 +589,16 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        line_center : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        line_center : float, (value, unit) tuple, or Quantity
             The line center position in units of keV, in the observer frame.
-        line_width : one or more float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        line_width : one or more float, (value, unit) tuple, or Quantity
             The line width (FWHM) in units of keV, in the observer frame. Can also
             input the line width in units of velocity in the rest frame. For the Voigt
             profile, a list, tuple, or array of two values should be provided since there
             are two line widths, the Lorentzian and the Gaussian (in that order).
-        equiv_width : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        equiv_width : float, (value, unit) tuple, or Quantity
             The equivalent width of the line, in units of milli-Angstrom
-        line_type : string, optional
+        line_type : str, optional
             The line profile type. Default: "gaussian"
         """
         line_center = parse_value(line_center, "keV")
@@ -622,16 +622,16 @@ class BaseSpectrum:
 
         Parameters
         ----------
-        nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        nH : float, (value, unit) tuple, or Quantity
             The hydrogen column in units of 10**22 atoms/cm**2
-        model : string, optional
+        model : str, optional
             The model for absorption to use. Options are "wabs"
             (Wisconsin, Morrison and McCammon; ApJ 270, 119) or
             "tbabs" (Tuebingen-Boulder, Wilms, J., Allen, A., &
             McCray, R. 2000, ApJ, 542, 914). Default: "wabs".
         redshift : float, optional
             The redshift of the absorbing material. Default: 0.0
-        abund_table : string
+        abund_table : str
             The abundance table to be used for abundances in the
             absorption model. Default is set in the SOXS
             configuration file, the default for which is "angr".
@@ -694,11 +694,11 @@ class BaseSpectrum:
             The lower extent of the y-axis. By default, it is set automatically.
         ymax : float, optional
             The upper extent of the y-axis. By default, it is set automatically.
-        xscale : string, optional
+        xscale : str, optional
             The scaling of the x-axis of the plot. Default: "log"
-        yscale : string, optional
+        yscale : str, optional
             The scaling of the y-axis of the plot. Default: "log"
-        label : string, optional
+        label : str, optional
             The label of the spectrum. Default: None
         fontsize : int
             Font size for labels and axes. Default: 18
@@ -807,15 +807,15 @@ class Spectrum(BaseSpectrum):
         ----------
         new_flux : float
             The new flux in units of photons/s/cm**2.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emin : float, (value, unit) tuple, or Quantity, optional
             The minimum energy of the band to consider,
             in keV. Default: Use the minimum energy of
             the entire spectrum.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+        emax : float, (value, unit) tuple, or Quantity, optional
             The maximum energy of the band to consider,
             in keV. Default: Use the maximum energy of
             the entire spectrum.
-        flux_type : string, optional
+        flux_type : str, optional
             The units of the flux to use in the rescaling:
                 "photons": photons/s/cm**2
                 "energy": erg/s/cm**2
@@ -841,9 +841,9 @@ class Spectrum(BaseSpectrum):
 
         Parameters
         ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy in the band, in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy in the band, in keV.
 
         Returns
@@ -863,13 +863,13 @@ class Spectrum(BaseSpectrum):
 
         Parameters
         ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy in the band, in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy in the band, in keV.
         redshift : float
             The redshift to the source, assuming it is cosmological.
-        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        dist : float, (value, unit) tuple, or Quantity
             The distance to the source, if it is not cosmological. If a unit
             is not specified, it is assumed to be in kpc.
         cosmology : :class:`~astropy.cosmology.Cosmology` object
@@ -897,19 +897,19 @@ class Spectrum(BaseSpectrum):
 
         Parameters
         ----------
-        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        t_exp : float, (value, unit) tuple, or Quantity
             The exposure time in seconds.
-        area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        area : float, (value, unit) tuple, or Quantity
             The effective area in cm**2. If one is creating
             events for a SIMPUT file, a constant should be
             used, and it must be large enough so that a
             sufficiently large sample is drawn for the ARF.
-        prng : :class:`~numpy.random.RandomState` object, integer, or None
+        prng : RandomState object, integer, or None
             A pseudo-random number generator. This will typically only
             be specified if you have a reason to generate the same
             set of random numbers, such as for a test. Default is None,
             which sets the seed based on the system time.
-        quiet : boolean, optional
+        quiet : bool, optional
             If True, log messages will not be displayed when
             creating energies. Useful if you have to loop over
             a lot of spectra. Default: False
@@ -934,11 +934,11 @@ class Spectrum(BaseSpectrum):
 
         Parameters
         ----------
-        spec : :class:`~soxs.spectra.base.CountRateSpectrum`
+        spec : CountRateSpectrum
             The CountRateSpectrum object to create the Spectrum from.
         redshift : float
             The redshift to the source, assuming it is cosmological.
-        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        dist : float, (value, unit) tuple, or Quantity
             The distance to the source, if it is not cosmological. If a unit
             is not specified, it is assumed to be in kpc.
         cosmology : :class:`~astropy.cosmology.Cosmology` object
@@ -1027,15 +1027,15 @@ class Spectrum(BaseSpectrum):
 
         Parameters
         ----------
-        infile : string
+        infile : str
             Path to the script file to use.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy of the spectrum in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy of the spectrum in keV.
         nbins : integer
             The number of bins in the spectrum.
-        binscale : string, optional
+        binscale : str, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
         xspec_settings : dict, optional
@@ -1071,19 +1071,19 @@ class Spectrum(BaseSpectrum):
 
         Parameters
         ----------
-        model_string : string
+        model_string : str
             The model to create the spectrum from. Use standard XSPEC
             model syntax. Example: "wabs*mekal"
         params : list
             The list of parameters for the model. Must be in the order
             that XSPEC expects.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy of the spectrum in keV
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy of the spectrum in keV
         nbins : integer
             The number of bins in the spectrum.
-        binscale : string, optional
+        binscale : str, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
         xspec_settings : dict, optional
@@ -1185,14 +1185,14 @@ class CountRateSpectrum(BaseSpectrum):
 
         Parameters
         ----------
-        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        t_exp : float, (value, unit) tuple, or Quantity
             The exposure time in seconds.
-        prng : :class:`~numpy.random.RandomState` object, integer, or None
+        prng : RandomState object, integer, or None
             A pseudo-random number generator. Typically will only
             be specified if you have a reason to generate the same
             set of random numbers, such as for a test. Default is None,
             which sets the seed based on the system time.
-        quiet : boolean, optional
+        quiet : bool, optional
             If True, log messages will not be displayed when
             creating energies. Useful if you have to loop over
             a lot of spectra. Default: False
@@ -1216,11 +1216,11 @@ class CountRateSpectrum(BaseSpectrum):
 
         Parameters
         ----------
-        spec : :class:`~soxs.spectra.base.Spectrum`
+        spec : Spectrum
             The Spectrum object to create the CountRateSpectrum from.
         redshift : float
             The redshift to the source, assuming it is cosmological.
-        dist : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        dist : float, (value, unit) tuple, or Quantity
             The distance to the source, if it is not cosmological. If a unit
             is not specified, it is assumed to be in kpc.
         cosmology : :class:`~astropy.cosmology.Cosmology` object
@@ -1246,13 +1246,13 @@ class CountRateSpectrum(BaseSpectrum):
             The normalization of the source in units of
             the spectrum, photons/s/keV, at 1 keV
             in the source frame.
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy of the spectrum in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy of the spectrum in keV.
         nbins : integer
             The number of bins in the spectrum.
-        binscale : string, optional
+        binscale : str, optional
             The scale of the energy binning: "linear" or "log".
             Default: "linear"
         """
@@ -1269,10 +1269,10 @@ class CountRateSpectrum(BaseSpectrum):
 
         Parameters
         ----------
-        xstar_file : string
+        xstar_file : str
             The path to the XSTAR output FITS file, typically with
             "spect1" in the filename.
-        which_spectrum : string
+        which_spectrum : str
             Which spectrum to extract from the file. Options are:
             "emit_outward", "emit_inward", "transmitted", "incident"
         """
@@ -1306,9 +1306,9 @@ class CountRateSpectrum(BaseSpectrum):
 
         Parameters
         ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy in the band, in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy in the band, in keV.
 
         Returns
@@ -1479,7 +1479,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
         Parameters
         ----------
-        specfile : string
+        specfile : str
             The PHA/PI file to be opened.
         """
         from astropy.io import fits
@@ -1519,9 +1519,9 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
         Parameters
         ----------
-        specfile : string
+        specfile : str
             The PHA/PI file to be written.
-        overwrite : boolean, optional
+        overwrite : bool, optional
             Whether to overwrite an already existing file. Default: False
         """
         from soxs.events.spectra import _write_spectrum
@@ -1558,15 +1558,15 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
         Parameters
         ----------
-        spectrum : :class:`~soxs.spectra.base.Spectrum` object
+        spectrum : Spectrum object
             The input spectrum to convolve with.
-        arf : string or :class:`~soxs.response.AuxiliaryResponseFile`
+        arf : str or :class:`~soxs.response.AuxiliaryResponseFile`
             The ARF to use in the convolution.
-        use_arf_energies : boolean, optional
+        use_arf_energies : bool, optional
             If True, use the energy binning of the ARF for
             the convolved spectrum. Default: False, which uses
             the original spectral binning.
-        rmf : string or :class:`~soxs.response.RedistributionMatrixFile`, optional
+        rmf : str or :class:`~soxs.response.RedistributionMatrixFile`, optional
             The RMF to use in the convolution if desired. Default is no RMF.
         """
         from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
@@ -1604,9 +1604,9 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
         Parameters
         ----------
-        emin : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emin : float, (value, unit) tuple, or Quantity
             The minimum energy of the band in keV.
-        emax : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        emax : float, (value, unit) tuple, or Quantity
             The maximum energy of the band in keV.
         """
         ebins, flux = self._new_spec_from_band(emin, emax)
@@ -1622,7 +1622,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     def deconvolve(self):
         """
-        Return the deconvolved :class:`~soxs.spectra.base.Spectrum`
+        Return the deconvolved Spectrum
         object associated with this convolved spectrum.
         """
         if self.rmf is not None:
@@ -1639,14 +1639,14 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
         Parameters
         ----------
-        t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+        t_exp : float, (value, unit) tuple, or Quantity
             The exposure time in seconds.
-        prng : :class:`~numpy.random.RandomState` object, integer, or None
+        prng : RandomState object, integer, or None
             A pseudo-random number generator. Typically will only
             be specified if you have a reason to generate the same
             set of random numbers, such as for a test. Default is None,
             which sets the seed based on the system time.
-        quiet : boolean, optional
+        quiet : bool, optional
             If True, log messages will not be displayed when
             creating energies. Useful if you have to loop over
             a lot of spectra. Default: False

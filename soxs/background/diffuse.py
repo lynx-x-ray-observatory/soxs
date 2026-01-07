@@ -122,9 +122,9 @@ def generate_channel_spectrum(count_rate, t_exp, solid_angle, noisy=True, prng=N
 
     Parameters
     ----------
-    t_exp : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    t_exp : float, (value, unit) tuple, or Quantity
         The exposure time in seconds.
-    solid_angle : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    solid_angle : float, (value, unit) tuple, or Quantity
         The solid angle in arcmin**2.
     noisy : boolean, optional
         Should the spectrum be generated with Poisson noise? Default: True

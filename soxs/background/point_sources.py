@@ -95,7 +95,7 @@ def generate_sources(fov, sky_center, prng=None):
 
     Parameters
     ----------
-    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    fov : float, (value, unit) tuple, or Quantity
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
@@ -139,19 +139,19 @@ def make_ptsrc_background(
 
     Parameters
     ----------
-    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    exp_time : float, (value, unit) tuple, or Quantity
         The exposure time of the observation in seconds.
-    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    fov : float, (value, unit) tuple, or Quantity
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs".
         Defaults to the value in the SOXS configuration file.
-    nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+    nH : float, (value, unit) tuple, or Quantity, optional
         The hydrogen column in units of 10**22 atoms/cm**2.
         Defaults to the value in the SOXS configuration file.
-    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+    area : float, (value, unit) tuple, or Quantity, optional
         The effective area in cm**2. It must be large enough
         so that a sufficiently large sample is drawn for the
         ARF. Default: 40000.
@@ -350,19 +350,19 @@ def make_point_sources_file(
         The filename for the SIMPUT catalog.
     name : string
         The name of the SIMPUT photon list.
-    exp_time : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    exp_time : float, (value, unit) tuple, or Quantity
         The exposure time of the observation in seconds.
-    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    fov : float, (value, unit) tuple, or Quantity
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
     absorb_model : string, optional
         The absorption model to use, "wabs" or "tbabs".
         Defaults to the value in the SOXS configuration file.
-    nH : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+    nH : float, (value, unit) tuple, or Quantity, optional
         The hydrogen column in units of 10**22 atoms/cm**2.
         Defaults to the value in the SOXS configuration file.
-    area : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`, optional
+    area : float, (value, unit) tuple, or Quantity, optional
         The effective area in cm**2. It must be large enough
         so that a sufficiently large sample is drawn for the
         ARF. Default: 40000.
@@ -434,7 +434,7 @@ def make_point_source_list(
     ----------
     output_file : string
         The ASCII table file to write the source properties to.
-    fov : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
+    fov : float, (value, unit) tuple, or Quantity
         The field of view in arcminutes.
     sky_center : array-like
         The center RA, Dec of the field of view in degrees.
