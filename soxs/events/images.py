@@ -3,10 +3,15 @@ from astropy import wcs
 from astropy.io import fits
 from tqdm.auto import tqdm
 
+from soxs.events.utils import wcs_from_header
 from soxs.instrument_registry import instrument_registry
 from soxs.utils import create_region, get_rot_mat, mylog, parse_value
 
-coord_types = {"sky": ("X", "Y", 2, 3), "det": ("DETX", "DETY", 6, 7)}
+coord_types = {
+    "sky": ("X", "Y", 2, 3),
+    "det": ("DETX", "DETY", 6, 7),
+    "sky_orig": ("RA_ORIG", "DEC_ORIG", 2, 3),
+}
 
 
 def make_image(
@@ -93,11 +98,14 @@ def make_image(
     xcoord, ycoord, xcol, ycol = coord_types[coord_type]
     x = ehdu.data[xcoord][idxs]
     y = ehdu.data[ycoord][idxs]
+    if coord_type == "sky_orig":
+        w = wcs_from_header(ehdu.header)
+        x, y = w.wcs_world2pix(x, y, 1)
     xmin = ehdu.header[f"TLMIN{xcol}"]
     ymin = ehdu.header[f"TLMIN{ycol}"]
     xmax = ehdu.header[f"TLMAX{xcol}"]
     ymax = ehdu.header[f"TLMAX{ycol}"]
-    if coord_type == "sky":
+    if coord_type.startswith("sky"):
         xctr = ehdu.header[f"TCRVL{xcol}"]
         yctr = ehdu.header[f"TCRVL{ycol}"]
         if width is not None:
@@ -130,7 +138,7 @@ def make_image(
 
     hdu = fits.PrimaryHDU(H.T)
 
-    if coord_type == "sky":
+    if coord_type.startswith("sky"):
         hdu.header["MTYPE1"] = "EQPOS"
         hdu.header["MFORM1"] = "RA,DEC"
         hdu.header["CTYPE1"] = "RA---TAN"

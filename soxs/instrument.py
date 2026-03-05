@@ -269,8 +269,8 @@ def generate_events(
         xpix -= event_params["pix_center"][0]
         ypix -= event_params["pix_center"][1]
 
-        events.pop("ra")
-        events.pop("dec")
+        all_events["ra_orig"] = all_events.pop("ra")
+        all_events["dec_orig"] = all_events.pop("dec")
 
         n_evt = xpix.size
 
@@ -365,6 +365,8 @@ def generate_events(
             "chip_id",
             event_params["channel_type"],
             "soxs_energy",
+            "ra_orig",
+            "dec_orig",
         ]:
             all_events[key] = np.array([])
     else:
@@ -577,6 +579,15 @@ def make_background(
             prng=prng,
             instr_bkgnd_scale=instr_bkgnd_scale,
         )
+        w = wcs.WCS(naxis=2)
+        w.wcs.crval = event_params["sky_center"]
+        w.wcs.crpix = event_params["pix_center"]
+        w.wcs.cdelt = [-event_params["plate_scale"], event_params["plate_scale"]]
+        w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+        w.wcs.cunit = ["deg"] * 2
+        ra_o, dec_o = w.wcs_pix2world(bkg_events["xpix"], bkg_events["ypix"], 1)
+        bkg_events["ra_orig"] = ra_o
+        bkg_events["dec_orig"] = dec_o
         for key in bkg_events:
             events[key] = np.concatenate([events[key], bkg_events[key]])
 

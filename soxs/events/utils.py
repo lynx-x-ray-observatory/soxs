@@ -28,6 +28,8 @@ def make_event_file(events, parameters):
     col_dy = fits.Column(name="DETY", format="D", unit="pixel", array=events["dety"])
     col_id = fits.Column(name="CCD_ID", format="J", unit="pixel", array=events["ccd_id"])
     col_se = fits.Column(name="SOXS_ENERGY", format="E", unit="eV", array=events["soxs_energy"] * 1000.0)
+    col_ro = fits.Column(name="RA_ORIG", format="E", unit="deg", array=events["ra_orig"])
+    col_do = fits.Column(name="DEC_ORIG", format="E", unit="deg", array=events["dec_orig"])
 
     chantype = parameters["channel_type"].upper()
     if chantype == "PHA":
@@ -38,7 +40,7 @@ def make_event_file(events, parameters):
 
     col_t = fits.Column(name="TIME", format="1D", unit="s", array=events["time"])
 
-    cols = [col_e, col_x, col_y, col_ch, col_t, col_dx, col_dy, col_id, col_se]
+    cols = [col_e, col_x, col_y, col_ch, col_t, col_dx, col_dy, col_id, col_se, col_ro, col_do]
 
     coldefs = fits.ColDefs(cols)
     tbhdu = fits.BinTableHDU.from_columns(coldefs)
