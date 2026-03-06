@@ -25,13 +25,16 @@ class AuxiliaryResponseFile:
     ----------
     filename : string
         The filename of the ARF to be read.
+    arf_scale : float, optional
+        A constant factor by which to scale the effective area up or down.
+        Default: 1, which means no scaling.
 
     Examples
     --------
     >>> arf = AuxiliaryResponseFile("xrs_mucal_3x10_3.0eV.arf")
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, arf_scale=1.0):
         self.filename = get_data_file(filename)
         with fits.open(self.filename) as f:
             self.elo = f["SPECRESP"].data.field("ENERG_LO").copy()
@@ -39,12 +42,13 @@ class AuxiliaryResponseFile:
             self.ebins = np.append(self.elo, self.ehi[-1])
             self.de = np.diff(self.ebins)
             self.emid = 0.5 * (self.elo + self.ehi)
-            self.eff_area = np.nan_to_num(f["SPECRESP"].data.field("SPECRESP")).astype("float64")
+            self.eff_area = arf_scale * np.nan_to_num(f["SPECRESP"].data.field("SPECRESP")).astype("float64")
             self.max_area = self.eff_area.max()
             self.nbins = self.elo.size
+            self.arf_scale = arf_scale
 
     @classmethod
-    def from_instrument(cls, name):
+    def from_instrument(cls, name, arf_scale=1.0):
         """
         Return an :class:`~soxs.instrument.AuxiliaryResponseFile`
         object from the name of an existing instrument
@@ -55,6 +59,9 @@ class AuxiliaryResponseFile:
         name : string
             The name of the instrument specification to use
             to obtain the ARF object from.
+        arf_scale : float, optional
+            A constant factor by which to scale the effective area up or down.
+            Default: 1, which means no scaling.
 
         Examples
         --------
@@ -63,7 +70,7 @@ class AuxiliaryResponseFile:
         instr = instrument_registry.get(name, None)
         if instr is None:
             raise KeyError(f"Instrument '{name}' not in registry!")
-        return cls(instr["arf"])
+        return cls(instr["arf"], arf_scale=arf_scale)
 
     def __str__(self):
         return self.filename
@@ -71,7 +78,7 @@ class AuxiliaryResponseFile:
     def interpolate_area(self, energy):
         """
         Interpolate the effective area to the energies
-        provided  by the supplied *energy* array.
+        provided by the supplied *energy* array.
         """
         earea = np.interp(np.asarray(energy), self.emid, self.eff_area, left=0.0, right=0.0)
         return u.Quantity(earea, "cm**2")

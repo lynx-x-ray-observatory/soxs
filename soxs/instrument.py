@@ -67,6 +67,7 @@ def generate_events(
     roll_angle=0.0,
     subpixel_res=False,
     aimpt_shift=None,
+    arf_scale=1.0,
     prng=None,
 ):
     """
@@ -140,7 +141,7 @@ def generate_events(
 
     arf_file = get_data_file(instrument_spec["arf"])
     rmf_file = get_data_file(instrument_spec["rmf"])
-    arf = AuxiliaryResponseFile(arf_file)
+    arf = AuxiliaryResponseFile(arf_file, arf_scale=arf_scale)
     rmf = RedistributionMatrixFile(rmf_file)
 
     nx = instrument_spec["num_pixels"]
@@ -394,6 +395,7 @@ def make_background(
     drop_brightest=None,
     aimpt_shift=None,
     instr_bkgnd_scale=1.0,
+    arf_scale=1.0,
     prng=None,
     **kwargs,
 ):
@@ -447,6 +449,9 @@ def make_background(
     instr_bkgnd_scale : float, optional
         A constant factor by which to scale the instrumental background
         spectrum up or down. Default: 1, which means no scaling.
+    arf_scale : float, optional
+        A constant factor by which to scale the effective area up or down.
+        Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically this will only
         be specified if you have a reason to generate the same
@@ -481,7 +486,7 @@ def make_background(
     input_events = defaultdict(list)
 
     arf_file = get_data_file(instrument_spec["arf"])
-    arf = AuxiliaryResponseFile(arf_file)
+    arf = AuxiliaryResponseFile(arf_file, arf_scale=arf_scale)
     rmf_file = get_data_file(instrument_spec["rmf"])
     rmf = RedistributionMatrixFile(rmf_file)
 
@@ -513,6 +518,7 @@ def make_background(
             roll_angle=roll_angle,
             subpixel_res=subpixel_res,
             aimpt_shift=aimpt_shift,
+            arf_scale=arf_scale,
             prng=prng,
         )
         mylog.info(
@@ -610,6 +616,7 @@ def make_background_file(
     diffuse_unresolved=True,
     drop_brightest=None,
     instr_bkgnd_scale=1.0,
+    arf_scale=1.0,
     prng=None,
     **kwargs,
 ):
@@ -661,6 +668,9 @@ def make_background_file(
     instr_bkgnd_scale : float, optional
         A constant factor by which to scale the instrumental background
         spectrum up or down. Default: 1, which means no scaling.
+    arf_scale : float, optional
+        A constant factor by which to scale the effective area up or down.
+        Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -725,6 +735,7 @@ def _instrument_simulator(
     drop_brightest=None,
     prng=None,
     instr_bkgnd_scale=1.0,
+    arf_scale=1.0,
 ):
     from soxs.background import add_background_from_file
 
@@ -739,6 +750,7 @@ def _instrument_simulator(
         roll_angle=roll_angle,
         subpixel_res=subpixel_res,
         aimpt_shift=aimpt_shift,
+        arf_scale=arf_scale,
         prng=prng,
     )
     # If the user wants backgrounds, either make the background or add an already existing
@@ -802,6 +814,7 @@ def instrument_simulator(
     diffuse_unresolved=True,
     drop_brightest=None,
     instr_bkgnd_scale=1.0,
+    arf_scale=1.0,
     prng=None,
 ):
     """
@@ -884,6 +897,9 @@ def instrument_simulator(
     instr_bkgnd_scale : float, optional
         A constant factor by which to scale the instrumental background
         spectrum up or down. Default: 1, which means no scaling.
+    arf_scale : float, optional
+        A constant factor by which to scale the effective area up or down.
+        Default: 1, which means no scaling.
     prng : :class:`~numpy.random.RandomState` object, integer, or None
         A pseudo-random number generator. Typically will only
         be specified if you have a reason to generate the same
@@ -915,6 +931,7 @@ def instrument_simulator(
         diffuse_unresolved=diffuse_unresolved,
         drop_brightest=drop_brightest,
         instr_bkgnd_scale=instr_bkgnd_scale,
+        arf_scale=arf_scale,
         prng=prng,
     )
     if f:
@@ -934,6 +951,7 @@ def _simulate_spectrum(
     prng=None,
     instr_bkgnd_scale=1.0,
     resolved_cxb_frac=0.8,
+    arf_scale=1.0,
     **kwargs,
 ):
     from soxs.background.diffuse import (
@@ -972,7 +990,7 @@ def _simulate_spectrum(
         rmf = instrument[1]
         rmf = RedistributionMatrixFile(rmf)
         if isinstance(arf, str):
-            arf = AuxiliaryResponseFile(get_data_file(arf))
+            arf = AuxiliaryResponseFile(get_data_file(arf), arf_scale=arf_scale)
         else:
             if arf is None:
                 arf = 1.0
@@ -984,7 +1002,7 @@ def _simulate_spectrum(
             instrument_spec = instrument_registry[instrument]
         except KeyError as e:
             raise KeyError(f"Instrument {instrument} is not in the instrument registry!") from e
-        arf = AuxiliaryResponseFile.from_instrument(instrument)
+        arf = AuxiliaryResponseFile.from_instrument(instrument, arf_scale=arf_scale)
         rmf = RedistributionMatrixFile.from_instrument(instrument)
         bkgnd_spec = instrument_spec["bkgnd"]
     if any_bkgnd:
@@ -1061,6 +1079,7 @@ def simulate_spectrum(
     bkgnd_area=None,
     resolved_cxb_frac=0.8,
     instr_bkgnd_scale=1.0,
+    arf_scale=1.0,
     noisy=True,
     overwrite=False,
     prng=None,
@@ -1112,6 +1131,9 @@ def simulate_spectrum(
     instr_bkgnd_scale : float, optional
         A constant factor by which to scale the instrumental background
         spectrum up or down. Default: 1, which means no scaling.
+    arf_scale : float, optional
+        A constant factor by which to scale the effective area up or down.
+        Default: 1, which means no scaling.
     noisy : boolean, optional
         If False, simulate_spectrum will not use counting (Poisson) statistics
         when creating the spectrum. If any backgrounds are on, this must be
@@ -1142,6 +1164,7 @@ def simulate_spectrum(
         bkgnd_area=bkgnd_area,
         resolved_cxb_frac=resolved_cxb_frac,
         instr_bkgnd_scale=instr_bkgnd_scale,
+        arf_scale=arf_scale,
         noisy=noisy,
         prng=prng,
         **kwargs,
