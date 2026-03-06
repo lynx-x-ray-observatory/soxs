@@ -213,6 +213,7 @@ def plot_spectrum(
     per_keV=True,
     noerr=False,
     plot_used=False,
+    plot_steps=False,
     **kwargs,
 ):
     """
@@ -275,6 +276,8 @@ def plot_spectrum(
     plot_used : boolean, optional
         If set to True, only the bins which contain more than 0
         counts will be plotted. Default: False
+    plot_steps : boolean, optional
+        If set to True, the spectrum will be plotted with steps. Default: False
 
     Returns
     -------
@@ -377,7 +380,12 @@ def plot_spectrum(
     if noerr:
         ax.plot(xmid, y, lw=lw, label=label, **kwargs)
     else:
-        ax.errorbar(xmid, y, yerr=yerr, xerr=xerr, fmt=".", lw=lw, label=label, **kwargs)
+        if plot_steps:
+            fmt = None
+            ax.step(xmid, y, where="mid", **kwargs)
+        else:
+            fmt = "."
+        ax.errorbar(xmid, y, yerr=yerr, xerr=xerr, fmt=fmt, lw=lw, label=label, **kwargs)
     ax.set_xscale(xscale)
     ax.set_yscale(yscale)
     ax.set_xlim(xmin, xmax)
