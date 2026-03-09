@@ -235,7 +235,8 @@ class ACX2Generator:
         # set the abundances
         if elem_abund is None:
             elem_abund = {}
-        abunds = abund * np.ones(self.num_elements)
+        abunds = np.ones(self.num_elements)
+        abunds[2:] *= abund  # Skip H and He, assume they are 1 solar
         if len(elem_abund) > 0:
             if set(elem_abund.keys()) != set(self.var_elem_names):
                 msg = (
