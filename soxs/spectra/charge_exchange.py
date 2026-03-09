@@ -371,7 +371,7 @@ class OneACX2Generator(ACX2Generator):
             abund_table=abund_table,
         )
 
-    def get_spectrum(self, elem, ion, collnpar, He_frac, redshift, norm, velocity=0.0, tbroad=0.0):
+    def get_spectrum(self, elem, ion, collnpar, abund, He_frac, redshift, norm, velocity=0.0, tbroad=0.0):
         """
         Get a charge exchange spectrum for a single recombining ion.
 
@@ -384,6 +384,9 @@ class OneACX2Generator(ACX2Generator):
         collnpar : float, (value, unit) tuple, or :class:`~astropy.units.Quantity`
             The collision parameter. Units are determined by the value of
             the collntype parameter set in the class constructor.
+        abund : float
+            The metal abundance in solar units. Given that we are only plotting emission for
+            one ion, this is effectively just a normalization factor for the spectrum.
         He_frac : float
             Number fraction of donor which is He (remainder is H).
         redshift : float
@@ -407,14 +410,14 @@ class OneACX2Generator(ACX2Generator):
         velocity = parse_value(velocity, "km/s")
         tbroad = parse_value(tbroad, "keV")
 
+        self.model.set_abund(abund * self._atable, elements=self.elements)
+
         # Set the ionization fraction
         ionfrac = {}
         for i in self.model.elements:
             ionfrac[i] = np.zeros(i + 1)
         ionfrac[Z][ion] = 1.0
         self.model.set_ionfrac(ionfrac)
-
-        self.model.set_abund(np.ones(self.num_elements), elements=self.elements)
 
         spec = self._get_spectrum(redshift, He_frac, collnpar, tbroad, velocity)
 

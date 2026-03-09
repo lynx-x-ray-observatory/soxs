@@ -77,7 +77,7 @@ def test_oneacx2(answer_store):
 
     cxgen4 = OneACX2Generator(emin, emax, nbins, collntype=2)
 
-    spec4 = cxgen4.get_spectrum("Si", 13, collnpar2, He_frac, redshift, norm)
+    spec4 = cxgen4.get_spectrum("Si", 13, collnpar2, 1.0, He_frac, redshift, norm)
 
     spectrum_answer_testing(spec4, "cx_spec4.h5", answer_store, rtol=1.0e-5)
 

@@ -146,7 +146,8 @@ The second class that can be used to create charge exchange spectra is
 :class:`~soxs.spectra.charge_exchange.OneACX2Generator`, which instead of a large
 number of ions assumes a single recombining ion. The setup for the class is essentially
 the same as the :class:`~soxs.spectra.charge_exchange.ACX2Generator` class (though it
-is not possible to set the ``var_elem`` argument since there is only one ion):
+is not possible (or necessary) to set the ``var_elem`` argument since there is only
+one ion):
 
 .. code-block:: python
 
@@ -168,7 +169,8 @@ model:
     elem = "Si" # The atomic number or symbol of the element.
     ion = 13 # The ionization state of the element.
     collnpar = (100.0, "km/s") # collision parameter
-    He_frac = 0.09 # fraction of helium in the donor gas, rest is assumed
+    abund = 1.0 # metal abundance of the recombining plasma in solar units
+    He_frac = 0.09 # fraction of helium in the donor gas, the rest is assumed
                    # to be hydrogen
     redshift = 0.05 # redshift of the source
     norm = 1.0 # normalization of the spectrum
