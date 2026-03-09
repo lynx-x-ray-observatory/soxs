@@ -37,7 +37,7 @@ if [[ ${mode} == "wheels" ]]; then
   micromamba install --yes wheel setuptools
 fi
 
-# Install soxs
+# Install soxs and (optionally) pyatomdb
 if [[ ${mode} == "testing" ]]; then
   python -m pip install -e .
   if ! [[ ${whichos} == "windows-latest" || ${pyver} == "3.11" ]]; then
