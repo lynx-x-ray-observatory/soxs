@@ -381,7 +381,7 @@ def plot_spectrum(
         ax.plot(xmid, y, lw=lw, label=label, **kwargs)
     else:
         if plot_steps:
-            fmt = None
+            fmt = ""
             ax.step(xmid, y, where="mid", **kwargs)
         else:
             fmt = "."
