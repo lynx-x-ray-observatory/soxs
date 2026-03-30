@@ -9,8 +9,8 @@ from tqdm.auto import tqdm
 
 from soxs.events import make_event_file
 from soxs.instrument.instrument_registry import instrument_registry
+from soxs.instrument.psf import psf_model_registry
 from soxs.instrument.response import AuxiliaryResponseFile, RedistributionMatrixFile
-from soxs.psf import psf_model_registry
 from soxs.simput import SimputCatalog, SimputPhotonList, read_catalog
 from soxs.utils import (
     create_region,
