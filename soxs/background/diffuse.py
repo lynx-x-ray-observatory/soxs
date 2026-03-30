@@ -2,7 +2,7 @@ import numpy as np
 from astropy.io import fits
 from regions import PixCoord
 
-from soxs.instrument import perform_dither
+from soxs.instrument.instrument_simulation import perform_dither
 from soxs.spectra import ApecGenerator, ConvolvedSpectrum
 from soxs.utils import (
     create_region,
