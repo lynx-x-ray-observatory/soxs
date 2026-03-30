@@ -8,9 +8,9 @@ from regions import PixCoord
 from tqdm.auto import tqdm
 
 from soxs.events import make_event_file
-from soxs.instrument_registry import instrument_registry
+from soxs.instrument.instrument_registry import instrument_registry
+from soxs.instrument.response import AuxiliaryResponseFile, RedistributionMatrixFile
 from soxs.psf import psf_model_registry
-from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
 from soxs.simput import SimputCatalog, SimputPhotonList, read_catalog
 from soxs.utils import (
     create_region,
@@ -960,7 +960,7 @@ def _simulate_spectrum(
         read_instr_spectrum,
     )
     from soxs.background.spectra import BackgroundSpectrum
-    from soxs.response import (
+    from soxs.instrument.response import (
         AuxiliaryResponseFile,
         FlatResponse,
         RedistributionMatrixFile,

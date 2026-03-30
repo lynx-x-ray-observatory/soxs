@@ -15,7 +15,7 @@ from soxs.instrument import (
     make_background_file,
     simulate_spectrum,
 )
-from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+from soxs.instrument.response import AuxiliaryResponseFile, RedistributionMatrixFile
 from soxs.spectra import Spectrum
 from soxs.tests.utils import spectrum_answer_testing
 from soxs.utils import set_soxs_config, soxs_files_path

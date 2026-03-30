@@ -6,7 +6,7 @@ from astropy.io import fits
 from numpy.testing import assert_allclose
 
 from soxs.instrument import simulate_spectrum
-from soxs.instrument_registry import get_instrument_from_registry
+from soxs.instrument.instrument_registry import get_instrument_from_registry
 from soxs.spectra import Spectrum
 
 

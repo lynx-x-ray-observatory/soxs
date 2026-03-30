@@ -4,7 +4,7 @@ from astropy.io import fits
 from tqdm.auto import tqdm
 
 from soxs.events.utils import wcs_from_header
-from soxs.instrument_registry import instrument_registry
+from soxs.instrument.instrument_registry import instrument_registry
 from soxs.utils import create_region, get_rot_mat, mylog, parse_value
 
 coord_types = {
@@ -283,7 +283,7 @@ def make_exposure_map(
     from scipy.ndimage import rotate
 
     from soxs.instrument import perform_dither
-    from soxs.response import AuxiliaryResponseFile
+    from soxs.instrument.response import AuxiliaryResponseFile
 
     if isinstance(energy, np.ndarray) and weights is None:
         raise RuntimeError("Must supply a single value for the energy if you do not supply weights!")

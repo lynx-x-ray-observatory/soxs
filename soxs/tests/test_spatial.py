@@ -9,7 +9,7 @@ from astropy.units import Quantity
 from soxs.constants import sigma_to_fwhm
 from soxs.events import make_exposure_map, write_radial_profile
 from soxs.instrument import instrument_simulator
-from soxs.instrument_registry import (
+from soxs.instrument.instrument_registry import (
     add_instrument_to_registry,
     get_instrument_from_registry,
 )

@@ -4,7 +4,7 @@ import tempfile
 
 from numpy.testing import assert_allclose, assert_array_equal
 
-from soxs.response import AuxiliaryResponseFile
+from soxs.instrument.response import AuxiliaryResponseFile
 from soxs.spectra import ConvolvedSpectrum, CountRateSpectrum, Spectrum
 
 

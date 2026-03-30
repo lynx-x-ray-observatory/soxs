@@ -1,4 +1,4 @@
-from soxs.instrument_registry import show_instrument_registry
+from soxs.instrument.instrument_registry import show_instrument_registry
 
 
 def test_show():

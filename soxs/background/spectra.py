@@ -1,7 +1,7 @@
 import numpy as np
 
 from soxs.constants import erg_per_keV
-from soxs.response import AuxiliaryResponseFile
+from soxs.instrument.response import AuxiliaryResponseFile
 from soxs.spectra import ConvolvedSpectrum, Energies, Spectrum, _generate_energies
 from soxs.utils import parse_prng, parse_value
 

@@ -81,7 +81,7 @@ def _make_spectrum(
     tmin=None,
     tmax=None,
 ):
-    from soxs.response import RedistributionMatrixFile
+    from soxs.instrument.response import RedistributionMatrixFile
 
     parameters = {}
     if isinstance(evtfile, str):

@@ -32,7 +32,7 @@ from soxs.instrument import (
     simple_event_list,
     simulate_spectrum,
 )
-from soxs.instrument_registry import (
+from soxs.instrument.instrument_registry import (
     add_instrument_to_registry,
     get_instrument_from_registry,
     instrument_registry,
@@ -40,8 +40,8 @@ from soxs.instrument_registry import (
     show_instrument_registry,
     write_instrument_json,
 )
+from soxs.instrument.response import AuxiliaryResponseFile, FlatResponse, RedistributionMatrixFile
 from soxs.mosaic import make_mosaic_events, make_mosaic_image
-from soxs.response import AuxiliaryResponseFile, FlatResponse, RedistributionMatrixFile
 from soxs.simput import (
     SimputCatalog,
     SimputPhotonList,

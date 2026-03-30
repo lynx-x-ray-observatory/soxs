@@ -7,8 +7,8 @@ from numpy.testing import assert_allclose, assert_almost_equal
 
 from soxs.events import write_spectrum
 from soxs.instrument import instrument_simulator, simulate_spectrum
-from soxs.instrument_registry import get_instrument_from_registry
-from soxs.response import RedistributionMatrixFile
+from soxs.instrument.instrument_registry import get_instrument_from_registry
+from soxs.instrument.response import RedistributionMatrixFile
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spatial import PointSourceModel
 from soxs.spectra.thermal_spectra import (

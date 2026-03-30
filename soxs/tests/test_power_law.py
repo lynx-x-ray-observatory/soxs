@@ -6,7 +6,7 @@ from numpy.random import RandomState
 
 from soxs.events import write_spectrum
 from soxs.instrument import instrument_simulator
-from soxs.instrument_registry import make_simple_instrument
+from soxs.instrument.instrument_registry import make_simple_instrument
 from soxs.simput import SimputCatalog, SimputPhotonList
 from soxs.spatial import PointSourceModel
 from soxs.spectra import Spectrum

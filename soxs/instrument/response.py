@@ -5,7 +5,7 @@ from astropy.io import fits
 from tqdm.auto import tqdm
 
 from soxs.constants import erg_per_keV
-from soxs.instrument_registry import instrument_registry
+from soxs.instrument.instrument_registry import instrument_registry
 from soxs.utils import (
     ensure_numpy_array,
     get_data_file,

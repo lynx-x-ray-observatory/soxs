@@ -1331,7 +1331,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
     def __init__(self, ebins, flux, arf, rmf=None, binscale="linear", noisy=False, exp_time=None):
         from numbers import Number
 
-        from soxs.response import (
+        from soxs.instrument.response import (
             AuxiliaryResponseFile,
             FlatResponse,
             RedistributionMatrixFile,
@@ -1413,7 +1413,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
 
     def __deepcopy__(self, memo):
         # Create a new instance and deep copy attributes
-        from soxs.response import (
+        from soxs.instrument.response import (
             AuxiliaryResponseFile,
             FlatResponse,
             RedistributionMatrixFile,
@@ -1484,7 +1484,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         """
         from astropy.io import fits
 
-        from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+        from soxs.instrument.response import AuxiliaryResponseFile, RedistributionMatrixFile
 
         with fits.open(specfile) as f:
             hdu = f["SPECTRUM"]
@@ -1569,7 +1569,7 @@ class ConvolvedSpectrum(CountRateSpectrum):
         rmf : str or :class:`~soxs.response.RedistributionMatrixFile`, optional
             The RMF to use in the convolution if desired. Default is no RMF.
         """
-        from soxs.response import AuxiliaryResponseFile, RedistributionMatrixFile
+        from soxs.instrument.response import AuxiliaryResponseFile, RedistributionMatrixFile
 
         if not isinstance(arf, AuxiliaryResponseFile):
             arf = AuxiliaryResponseFile(arf)
