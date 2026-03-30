@@ -193,9 +193,9 @@ instrument_registry["athena_xifu"] = {
     "grating": False,
 }
 
-# Chandra ACIS-I, Cycle 0 and 20
+# Chandra ACIS-I, Cycle 0, 10, 22, and 28
 
-for cycle in [0, 22]:
+for cycle in [0, 22, 28]:
     name = f"chandra_acisi_cy{cycle}"
     instrument_registry[name] = {
         "name": name,
@@ -218,9 +218,9 @@ for cycle in [0, 22]:
         "grating": False,
     }
 
-# Chandra ACIS-S, Cycle 0 and 22
+# Chandra ACIS-S, Cycle 0, 10, 22, and 28
 
-for cycle in [0, 22]:
+for cycle in [0, 10, 22]:
     name = f"chandra_aciss_cy{cycle}"
     instrument_registry[name] = {
         "name": name,
