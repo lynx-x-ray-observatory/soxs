@@ -1,4 +1,12 @@
+import argparse
+
 import soxs
+
+parser = argparse.ArgumentParser()
+parser.add_argument("cycles", type=str)
+args = parser.parse_args()
+
+cycles = [int(c.strip()) for c in args.cycles.split(",")]
 
 spec = {
     "bi": soxs.Spectrum.from_xspec_script("aciss_stowed_model.xcm", 0.02, 15.0, 10000),
@@ -6,12 +14,12 @@ spec = {
 }
 exp_time = (1.0, "Ms")
 
-for cy in [0, 22]:
+for cy in cycles:
     rmf = f"aciss_aimpt_cy{cy}.rmf"
     instrument = (
         None,
         rmf,
     )
     for key in spec:
-        out_file = rmf.replace(".rmf", f"_{key}.pha")
+        out_file = f"chandra_aciss_cy{cy}_{key}_particle_bkgnd.pha"
         soxs.simulate_spectrum(spec[key], instrument, exp_time, out_file, overwrite=True, noisy=False)
