@@ -6,10 +6,20 @@ ChangeLog
 Version 5.3.0
 -------------
 
-This update to SOXS includes a number of new features and bugfixes.
+This update to SOXS includes a number of new features and one small backwards-incompatible change.
 
 * Instrument configurations for *Chandra* ACIS-I and ACIS-S, Cycles 10 and 28, have been
   added.
+* For event files simulated using :func:`~soxs.instrument.instrument_simulator`, the original
+  sky coordinates of the simulated photons, before any PSF scattering, dithering, or pixelization,
+  are stored in the ``"RA_ORIG"`` and ``"SOXS_DEC"`` columns. This may be useful for certain
+  applications, such as studying the effects of the PSF on the spatial distribution of photons.
+* The ``abund`` parameter was added to the :meth:`~soxs.spectra.charge_exchange.OneACX2Generator.get_spectrum`
+  method, to mirror what the corresponding XSPEC model does. This was missed in the original
+  creation of the implementation. Since it changes the method signature, this is a
+  backwards-incompatible change.
+* It is now possible to plot a spectrum with :func:`~soxs.events.spectra.plot_spectrum` with
+  steps instead of only points. See :ref:`plot-spectrum` for more details.
 
 Version 5.2.0
 -------------

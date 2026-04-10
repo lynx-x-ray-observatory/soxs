@@ -302,7 +302,9 @@ Coordinate Systems in SOXS
 
 SOXS event files produced by the instrument simulator have two coordinate
 systems: the (X, Y) "sky" coordinate system and the (DETX, DETY) "detector"
-coordinate system.
+coordinate system. The original RA and Dec of the simulated photons, before
+any scattering of the photon positions by the PSF or dithering, are stored
+in the event file as columns ``"RA_ORIG"`` and ``"DEC_ORIG"`` for reference.
 
 For a given instrument, the detector coordinate system is defined by a square
 field of view divided into a number of pixels on each side. The field of view is

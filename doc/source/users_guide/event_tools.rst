@@ -344,6 +344,17 @@ would set ``plot_energy=False``:
 where in that case the x-axis is now in channel space, so ``xmin`` and ``xmax`` had to
 be set accordingly.
 
+The spectrum will be plotted using points by default, but it is also possible to make
+a step plot instead by setting ``plot_steps=True``:
+
+.. code-block:: python
+
+    from soxs import plot_spectrum
+    fig, ax, ebins = plot_spectrum("evt.pha", plot_steps=True)
+
+Rebinning on Energy
++++++++++++++++++++
+
 By default, the energy bins of the plot correspond to the bin edges of the channels.
 It is also possible to customize the energy binning of the plot in three different
 ways, via the ``ebins`` keyword argument. The first way is to simply provide a
