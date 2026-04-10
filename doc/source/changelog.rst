@@ -3,6 +3,14 @@
 ChangeLog
 =========
 
+Version 5.3.0
+-------------
+
+This update to SOXS includes a number of new features and bugfixes.
+
+* Instrument configurations for *Chandra* ACIS-I and ACIS-S, Cycles 10 and 28, have been
+  added.
+
 Version 5.2.0
 -------------
 

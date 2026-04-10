@@ -220,7 +220,7 @@ for cycle in [0, 22, 28]:
 
 # Chandra ACIS-S, Cycle 0, 10, 22, and 28
 
-for cycle in [0, 10, 22]:
+for cycle in [0, 10, 22, 28]:
     name = f"chandra_aciss_cy{cycle}"
     instrument_registry[name] = {
         "name": name,

@@ -134,21 +134,23 @@ models do not have instrumental backgrounds included.
 ACIS-I
 ######
 
-The two ACIS-I specifications have a square field of view of roughly 20
-arcminutes, laid out in four chips 8 arcminutes on a side arranged 2x2. However,
-The two separate specifications, ``"chandra_acisi_cy0"`` and
-``"chandra_acisi_cy22"``, use the instrumental responses from shortly after
-launch ("Cycle 0") and from more recently ("Cycle 22"), respectively. The main
-effect is that the effective area at low energies for ``"chandra_acisi_cy22"``
-is much lower due to the buildup of contamination on the ACIS optical blocking
-filters compared to the ``"chandra_acisi_cy0"`` responses.
+The four ACIS-I specifications have a square field of view laid out in four
+chips 8 arcminutes on a side arranged 2x2. The four different separate
+specifications correspond to different observing cycles: 0, 10, 22, and 28.
+Each specification is named with a keyword of the form ``"chandra_acisi_cyN"``,
+where ``N`` is the cycle number. For example, ``"chandra_acisi_cy22"`` corresponds
+to the instrument configuration from Cycle 22. The main effect of the different
+cycles is that the effective area at low energies for ``"chandra_acisi_cy22"``
+is much lower at later times due to the buildup of contamination on the ACIS
+optical blocking filters.
 
 ACIS-S
 ######
 
 The two ACIS-S specifications have 6 chips 8 arcminutes on a side in a single
-row. As in the ACIS-I case, the two specifications are for Cycle 0
-``"chandra_aciss_cy0"``, and Cycle 22, ``"chandra_aciss_cy22"``.
+row. As in the ACIS-I case, the specifications are for Cycles 0, 10, 22, and 28,
+and are named with the same convention, e.g. ``"chandra_aciss_cy22"`` for the
+Cycle 22 configuration.
 
 HETG
 ####
