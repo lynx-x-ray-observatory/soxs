@@ -2,7 +2,6 @@ import numpy as np
 
 cimport cython
 cimport numpy as np
-from libc.math cimport fabs
 
 
 @cython.cdivision(True)
@@ -19,14 +18,17 @@ def score_psf(np.ndarray[np.float64_t, ndim=1] e_bins,
     cdef int n_bins = r_bins.size
     cdef int n_evt = r.size
     cdef np.ndarray[np.int64_t, ndim=1] idx_score
-    cdef double bestscore = 1e20
-    cdef double score
+    cdef double bestscore
+    cdef double score, de, dr
 
     idx_score = np.zeros(n_evt, dtype='int64')
 
     for i in range(n_evt):
+        bestscore = 1.0e20
         for j in range(n_bins):
-            score = 100*fabs(e[i]-e_bins[j])+fabs(r[i]-r_bins[j])
+            dr = r[i]-r_bins[j]
+            de = e[i]-e_bins[j]
+            score = dr*dr+de*de
             if score < bestscore:
                 bestscore = score
                 idx_score[i] = j

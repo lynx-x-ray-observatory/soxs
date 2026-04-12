@@ -104,7 +104,7 @@ class MultiEEFPSF(PSF):
                     "arcmin"
                 )
                 eef_i = np.arange(eef_e.size)
-        eef_r = (eef_r / plate_scale_arcmin) ** 2
+        eef_r /= plate_scale_arcmin
         if np.all(eef_e > 100.0):
             # this is probably in eV
             eef_e *= 1.0e-3
@@ -114,8 +114,12 @@ class MultiEEFPSF(PSF):
         self.eef_s = Quantity(1.0, unit).to_value("arcsec") / plate_scale_arcsec
 
     def scatter(self, x, y, e):
-        r2 = (x - self.det_ctr[0]) ** 2 + (y - self.det_ctr[1]) ** 2
-        idx_score = score_psf(self.eef_bins[0], self.eef_bins[1], e, r2)
+        r = np.sqrt((x - self.det_ctr[0]) ** 2 + (y - self.det_ctr[1]) ** 2)
+        scale_e = e.max() - e.min()
+        scale_r = r.max() - r.min()
+        idx_score = score_psf(
+            self.eef_bins[0] / scale_e, self.eef_bins[1] / scale_r, e / scale_e, r / scale_r
+        )
         if self.eef_type == 1:
             x, y = self._scatter1(x, y, idx_score)
         elif self.eef_type == 2:
@@ -129,13 +133,14 @@ class MultiEEFPSF(PSF):
             for j in range(self.num_eef):
                 # This returns image coordinates from the EEF
                 # curve
-                idxs = np.where(idx_score == j)[0]
-                n_out += idxs.size
+                idxs = idx_score == j
+                n_this = idxs.sum()
+                n_out += n_this
                 rad = f[self.eef_i[j]].data["psfrad"] * self.eef_s
                 cdf = f[self.eef_i[j]].data["eef"]
-                randvec = self.prng.uniform(low=cdf[0], high=cdf[-1], size=idxs.size)
+                randvec = self.prng.uniform(low=cdf[0], high=cdf[-1], size=n_this)
                 r = np.interp(randvec, cdf, rad)
-                phi = self.prng.uniform(low=0.0, high=2.0 * np.pi, size=idxs.size)
+                phi = self.prng.uniform(low=0.0, high=2.0 * np.pi, size=n_this)
                 x[idxs] += r * np.cos(phi)
                 y[idxs] += r * np.sin(phi)
         if n_in != n_out:
@@ -217,7 +222,7 @@ class MultiImagePSF(PSF):
                 img_i.append(i)
                 img_u.append(hdu.header.get("CUNIT1", "mm"))
         img_e = np.array(img_e)
-        img_r = (np.array(img_r) / plate_scale_arcmin) ** 2
+        img_r = np.array(img_r) / plate_scale_arcmin
         if np.all(img_e > 100.0):
             # this is probably in eV
             img_e *= 1.0e-3
@@ -231,17 +236,22 @@ class MultiImagePSF(PSF):
         self.img_s = Quantity(img_s, unit[0]).to_value("mm") / plate_scale_mm
 
     def scatter(self, x, y, e):
-        r2 = (x - self.det_ctr[0]) ** 2 + (y - self.det_ctr[1]) ** 2
-        idx_score = score_psf(self.img_bins[0], self.img_bins[1], e, r2)
+        r = np.sqrt((x - self.det_ctr[0]) ** 2 + (y - self.det_ctr[1]) ** 2)
+        scale_e = e.max() - e.min()
+        scale_r = r.max() - r.min()
+        idx_score = score_psf(
+            self.img_bins[0] / scale_e, self.img_bins[1] / scale_r, e / scale_e, r / scale_r
+        )
         n_in = x.size
         n_out = 0
         with fits.open(self.img_file) as f:
             for j in range(self.num_images):
                 # This returns image coordinates from the PSF
                 # image
-                idxs = np.where(idx_score == j)[0]
-                n_out += idxs.size
-                dx, dy = image_pos(f[self.img_i[j]].data.T, idxs.size, self.prng)
+                idxs = idx_score == j
+                n_this = idxs.sum()
+                n_out += n_this
+                dx, dy = image_pos(f[self.img_i[j]].data.T, n_this, self.prng)
                 dx -= self.img_c[j][0]
                 dy -= self.img_c[j][1]
                 dx *= self.img_s[j][0]
