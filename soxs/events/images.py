@@ -453,7 +453,7 @@ def plot_image(
     width=None,
     figsize=(10, 10),
     cmap=None,
-    smooth=None,
+    smoothing_kernel=None,
 ):
     """
     Plot a FITS image created by SOXS using Matplotlib.
@@ -488,12 +488,13 @@ def plot_image(
     cmap : str, optional
         The colormap to be used. If not set, the default Matplotlib
         colormap will be used.
-    smooth : tuple, optional
+    smoothing_kernel : tuple, optional
         A tuple of a string/kernel class and arguments to that class to be
         used to smooth the image. The string/kernel class must be one of "boxcar",
-        "tophat", or "gaussian". For example, to smooth with a Gaussian kernel
-        with a standard deviation of 1 pixel, you would set this to
-        ("gaussian", 1). Default: None
+        "tophat", or "gaussian". The arguments are the same as would be given to
+        the corresponding ``astropy.convolution`` classes. For example, to smooth
+        with a Gaussian kernel with a standard deviation of 1 pixel, you would set
+        this to ("gaussian", 1). Default: None
 
     Returns
     -------
@@ -501,12 +502,10 @@ def plot_image(
     :class:`~matplotlib.axes.Axes` objects.
     """
     import matplotlib.pyplot as plt
-    from astropy.convolution import Box2DKernel, Gaussian2DKernel, Kernel2D, Tophat2DKernel, convolve
+    from astropy.convolution import Kernel2D, convolve
     from astropy.visualization.wcsaxes import WCSAxes
     from astropy.wcs.utils import proj_plane_pixel_scales
     from matplotlib.colors import LogNorm, Normalize, PowerNorm
-
-    kernel_classes = {"boxcar": Box2DKernel, "tophat": Tophat2DKernel, "gaussian": Gaussian2DKernel}
 
     if stretch == "linear":
         norm = Normalize(vmin=vmin, vmax=vmax)
@@ -534,20 +533,13 @@ def plot_image(
         ax = WCSAxes(fig, [0.15, 0.1, 0.8, 0.8], wcs=w)
         fig.add_axes(ax)
         img_data = hdu.data
-        if smooth is not None:
-            if not isinstance(smooth, tuple):
+        if smoothing_kernel is not None:
+            if not isinstance(smoothing_kernel, Kernel2D):
                 raise RuntimeError(
-                    "The 'smooth' parameter must be a tuple of a string/kernel class"
-                    "and arguments to that class!"
+                    "The 'smoothing_kernel' keyword argument must be an "
+                    "astropy.convolution.Kernel2D subclass!"
                 )
-            if isinstance(smooth[0], str) and smooth[0].lower() in kernel_classes:
-                kernel_class = kernel_classes[smooth[0].lower()]
-            elif issubclass(smooth[0], Kernel2D):
-                kernel_class = smooth[0]
-            else:
-                raise RuntimeError(f"'{smooth[0]}' is not a valid kernel type!")
-            kernel = kernel_class(*smooth[1:])
-            img_data = convolve(img_data, kernel)
+            img_data = convolve(img_data, smoothing_kernel)
         im = ax.imshow(img_data, norm=norm, cmap=cmap)
         ax.set_xlim(center[0] - 0.5 * dx_pix, center[0] + 0.5 * dx_pix)
         ax.set_ylim(center[1] - 0.5 * dy_pix, center[1] + 0.5 * dy_pix)
