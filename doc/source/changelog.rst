@@ -6,10 +6,16 @@ ChangeLog
 Version 5.3.0
 -------------
 
-This update to SOXS includes a number of new features and one small backwards-incompatible change.
+This update to SOXS includes a number of new features, one small backwards-incompatible change,
+and a critical bugfix for simulations of mock observations where the PSF varies with energy and/or
+off-axis angle.
 
 * Instrument configurations for *Chandra* ACIS-I and ACIS-S, Cycles 10 and 28, have been
   added.
+* A bug was identified and fixed that prevented instrument simulations that included PSF scattering
+  from working properly when the PSF varied with energy and/or off-axis angle. The result was that
+  almost all photons were being scattered by the PSF associated with low photon energies and small
+  off-axis angles.
 * For event files simulated using :func:`~soxs.instrument.instrument_simulator`, the original
   sky coordinates of the simulated photons, before any PSF scattering, dithering, or pixelization,
   are stored in the ``"RA_ORIG"`` and ``"SOXS_DEC"`` columns. This may be useful for certain
@@ -20,6 +26,8 @@ This update to SOXS includes a number of new features and one small backwards-in
   backwards-incompatible change.
 * It is now possible to plot a spectrum with :func:`~soxs.events.spectra.plot_spectrum` with
   steps instead of only points. See :ref:`plot-spectrum` for more details.
+* It is now possible to apply a smoothing kernel to an image plotted with
+  :func:`~soxs.events.plot_image`. See :ref:`plot-image` for more details.
 
 Version 5.2.0
 -------------
