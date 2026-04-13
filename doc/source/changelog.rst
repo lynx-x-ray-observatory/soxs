@@ -27,7 +27,7 @@ off-axis angle.
 * It is now possible to plot a spectrum with :func:`~soxs.events.spectra.plot_spectrum` with
   steps instead of only points. See :ref:`plot-spectrum` for more details.
 * It is now possible to apply a smoothing kernel to an image plotted with
-  :func:`~soxs.events.plot_image`. See :ref:`plot-image` for more details.
+  :func:`~soxs.events.images.plot_image`. See :ref:`plot-image` for more details.
 
 Version 5.2.0
 -------------
@@ -181,8 +181,8 @@ Version 4.8.4
 
 This version of SOXS fixes two bugs and one documentation error.
 
-* Spatial region handling in the context of :func:`~soxs.events.filter_events` and
-  :func:`~soxs.events.write_spectrum` has been fixed for composite regions which
+* Spatial region handling in the context of :func:`~soxs.events.tools.filter_events` and
+  :func:`~soxs.events.spectra.write_spectrum` has been fixed for composite regions which
   mixed regions which include and exclude data.
 * When creating spectra using :func:`~soxs.instrument.simulate_spectrum` and
   including backgrounds, the square root of the ``bkgnd_area`` parameter was
@@ -231,7 +231,7 @@ response files for the XRISM instrument models.
 * A bug that occurred when SOXS was not able to find the location of the
   ``"CHANTYPE"`` header keyword in RMFs when making backgrounds has now been
   fixed. Thanks to Charles Romero for pointing this out.
-* When plotting an instrument spectrum using :func:`~soxs.events.plot_spectrum`,
+* When plotting an instrument spectrum using :func:`~soxs.events.spectra.plot_spectrum`,
   if ``plot_counts`` is set to True, the y-axis will now be in units of counts/bin
   instead of counts/keV regardless of whether ``plot_energy`` is ``True`` or
   ``False``.
@@ -313,7 +313,7 @@ This version of SOXS contains new features and bugfixes.
 * The particle background files for the *Chandra*/ACIS imaging instruments and the
   *Lynx* imaging instruments have been updated with minor changes.
 * A new function to fill regions in an image where point sources have been removed,
-  :func:`~soxs.events.fill_regions`, has been added. See :ref:`fill-regions` for
+  :func:`~soxs.events.tools.fill_regions`, has been added. See :ref:`fill-regions` for
   more details.
 
 Version 4.5.3
@@ -352,7 +352,7 @@ This version of SOXS contains two bugfixes:
   fields, spectra, and mocks that used the IGM thermal spectrum model were overestimated.
   Users who need this functionality are also encouraged to upgrade to pyXSIM v4.2.0.
 * Inputting a file name as the ``imhdu`` argument to
-  :meth:`~soxs.simuput.SimputSource.from_spectrum` was not working, and has now been
+  :meth:`~soxs.simput.SimputSource.from_spectrum` was not working, and has now been
   fixed.
 
 Version 4.5.0
@@ -365,13 +365,13 @@ This version of SOXS contains a minor bugfix and a number of small new features.
 * It is now possible to supply a :class:`soxs.simput.SimputCatalog` instance
   as the ``input_events`` argument to :func:`~soxs.instrument.instrument_simulator`.
 * It is now possible to specify values of the ``reblock`` parameter that are less
-  than 1 to :func:`soxs.events.write_image`.
-* It is now possible to filter events on time in :func:`soxs.events.filter_events`,
-  :func:`soxs.events.write_image`, and :func:`soxs.events.write_spectrum`.
-* It is now possible to exclude events with region filters in :func:`soxs.events.filter_events`
-  and :func:`soxs.events.write_spectrum`.
+  than 1 to :func:`soxs.events.images.write_image`.
+* It is now possible to filter events on time in :func:`soxs.events.tools.filter_events`,
+  :func:`soxs.events.images.write_image`, and :func:`soxs.events.spectra.write_spectrum`.
+* It is now possible to exclude events with region filters in :func:`soxs.events.tools.filter_events`
+  and :func:`soxs.events.spectra.write_spectrum`.
 * A new function to merge source and background event files,
-  :func:`soxs.events.merge_event_files`, has been added.
+  :func:`soxs.events.tools.merge_event_files`, has been added.
 
 Version 4.4.0
 -------------
@@ -389,7 +389,7 @@ This version of SOXS contains critical bugfixes and one new feature.
   the energies incident on the detector derived from the source, which previously were
   in the ``"ENERGY"`` column.
 * Region files or expressions with multiple regions inside them are now correctly
-  parsed when using :func:`~soxs.events.filter_events` or :func:`~soxs.events.write_spectrum`.
+  parsed when using :func:`~soxs.events.tools.filter_events` or :func:`~soxs.events.spectra.write_spectrum`.
 * It is now possible to create a spectrum without Poisson noise using
   :func:`~soxs.instrument.simulate_spectrum` or the ``simulate_spectrum`` command-line
   script. See :ref:`simulate-spectrum` or :ref:`cmd-simulate-spectrum` for more details.
@@ -455,10 +455,10 @@ This update to SOXS contains bug fixes and two new features.
 * Bugs that prevented :class:`~soxs.simput.SimputSpectrum` sources from being
   used in SIXTE, SIMX, and MARX have been fixed.
 * It is now possible to specify a region file with creating a spectrum with
-  :func:`~soxs.events.write_spectrum`, to select a subset of events based on
+  :func:`~soxs.events.spectra.write_spectrum`, to select a subset of events based on
   spatial region. See :ref:`write-spectrum` for more details.
-* The method :meth:`~soxs.spectrum.Spectrum.get_lum_in_band` to compute the
-  rest-frame luminosity of a :class:`~soxs.spectrum.Spectrum` within an energy
+* The method :meth:`~soxs.spectra.base.Spectrum.get_lum_in_band` to compute the
+  rest-frame luminosity of a :class:`~soxs.spectra.base.Spectrum` within an energy
   band has been added.
 
 Version 4.0.0
@@ -536,7 +536,7 @@ Version 3.3.0
 * New instrument specifications for the
   `LEM probe concept <https://lem.physics.wisc.edu>`_ have been added, for
   spectral resolutions of 0.9 eV and 2 eV.
-* A new function for filtering event files, :func:`~soxs.events.filter_events`,
+* A new function for filtering event files, :func:`~soxs.events.tools.filter_events`,
   has been added. See :ref:`filtering-events` for more details.
 * A number of small bugs have been fixed.
 
@@ -646,7 +646,7 @@ This major version update of SOXS contains new features and optimizations.
 * Generating the galactic foreground and the instrumental background is now
   faster and uses less memory.
 * Exposure map calculation now uses far less memory and is slightly faster.
-* New options have been added to the :func:`~soxs.events.plot_spectrum` function.
+* New options have been added to the :func:`~soxs.events.spectra.plot_spectrum` function.
   See :ref:`plot-spectrum` for details.
 * *Chandra* grating responses for ACIS-S have been updated to Cycle 22.
 * SOXS now uses the
@@ -732,11 +732,11 @@ improvements.
 * A bug that prevented the multiplication of a
   :class:`~soxs.background.spectra.BackgroundSpectrum` object by a constant has
   been fixed.
-* New convenience methods for generating :class:`~soxs.instrument.AuxiliaryResponseFile`
-  and :class:`~soxs.instrument.RedistributionMatrixFile` objects directly from
+* New convenience methods for generating :class:`~soxs.response.AuxiliaryResponseFile`
+  and :class:`~soxs.response.RedistributionMatrixFile` objects directly from
   existing instrument specification names has been added.
 * A new keyword argument, ``plot_counts``, has been added to the
-  :func:`~soxs.events.plot_spectrum` function which allows the counts instead of
+  :func:`~soxs.events.spectra.plot_spectrum` function which allows the counts instead of
   the count rate to be plotted.
 * The response files and instrumental background for the
   `AXIS <http://axis.astro.umd.edu>`_ mission have been updated to their latest
@@ -763,7 +763,7 @@ Most Important New Features and Changes
   more information and :ref:`custom-non-imaging` for instructions on how to make a custom
   gratings instrument specification. Special thanks to `Lia Corrales <http://www.liacorrales.com/>`_
   for useful discussions and advice with respect to gratings spectra.
-* The :class:`~soxs.simput.SimputCatalog` and :class:`~soxs.simput.PhotonList` classes
+* The :class:`~soxs.simput.SimputCatalog` and :class:`~soxs.simput.SimputPhotonList` classes
   have been added for improved SIMPUT catalog handling, which greatly simplifies the
   simulation of sources. See :ref:`simput` for more information.
 * A bug that prevented backgrounds from being added from a file properly to simulations
@@ -798,20 +798,20 @@ Changes to Simulation of Spectra
 Changes to Instrument Simulation
 ++++++++++++++++++++++++++++++++
 
-* :func:`~soxs.events.plot_spectrum` has been given more options. see :ref:`plot-spectrum`
+* :func:`~soxs.events.spectra.plot_spectrum` has been given more options. see :ref:`plot-spectrum`
   for details.
-* A ``reblock`` optional argument has been added to :func:`~soxs.events.write_image` and
-  :func:`~soxs.events.make_exposure_map` to allow the binning of images and exposure maps to
+* A ``reblock`` optional argument has been added to :func:`~soxs.events.images.write_image` and
+  :func:`~soxs.events.images.make_exposure_map` to allow the binning of images and exposure maps to
   be changed. See :ref:`event-tools` for details.
 * Small improvements were made to reading parameters from RMFs, improving consistency
   and allowing more corner cases to be supported.
 * If a ``COUNT_RATE`` column is not in a FITS table file containing a spectrum, the count
-  rate will be generated automatically in :func:`~soxs.events.plot_spectrum`.
+  rate will be generated automatically in :func:`~soxs.events.spectra.plot_spectrum`.
 * The ability to simulate background components has been added to
   :func:`~soxs.instrument.simulate_spectrum`. See :ref:`simulate-spectrum` and
   :ref:`cmd-simulate-spectrum` for more details.
-* The :meth:`~soxs.instrument.AuxiliaryResponseFile.plot` method of
-  :class:`~soxs.instrument.AuxiliaryResponseFile` now returns both a
+* The :meth:`~soxs.response.AuxiliaryResponseFile.plot` method of
+  :class:`~soxs.response.AuxiliaryResponseFile` now returns both a
   :class:`~matplotlib.figure.Figure` and :class:`~matplotlib.axes.Axes` objects.
 
 Changes to Instrument Specifications
@@ -999,11 +999,11 @@ This version contains new features and bugfixes.
 * Three new tools have been included to produce derivative products from event
   files:
 
-  * :func:`~soxs.events.write_image`: Bins events into an image and writes it to
+  * :func:`~soxs.events.images.write_image`: Bins events into an image and writes it to
     a FITS file.
-  * :func:`~soxs.events.write_spectrum`: Bins events into a spectrum and writes it
+  * :func:`~soxs.events.spectra.write_spectrum`: Bins events into a spectrum and writes it
     to a FITS file.
-  * :func:`~soxs.events.write_radial_profiles`: Bins events into a radial
+  * :func:`~soxs.events.tools.write_radial_profiles`: Bins events into a radial
     profile and writes it to a FITS file.
 
 Version 0.4.0

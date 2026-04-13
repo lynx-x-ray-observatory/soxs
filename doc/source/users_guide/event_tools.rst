@@ -11,7 +11,7 @@ simulator and make derivative products from them.
 ``filter_events``
 -----------------
 
-The :func:`~soxs.events.filter_events` function is used to filter event files on event
+The :func:`~soxs.events.tools.filter_events` function is used to filter event files on event
 position or energy, and make a new event file. This may be useful if you want to analyze
 a subset of the data only. To filter out events based on energy:
 
@@ -65,7 +65,7 @@ chip (though the latter effect is currently not simulated in SOXS). For a more t
 explanation of exposure maps, see
 `Introduction to Exposure Maps <http://cxc.harvard.edu/ciao/download/doc/expmap_intro.ps>`_.
 
-:func:`~soxs.events.make_exposure_map` creates an exposure map for SOXS event files. This may
+:func:`~soxs.events.images.make_exposure_map` creates an exposure map for SOXS event files. This may
 be needed particularly if you have a simulation with dither and are concerned about effects
 near the edges of chips, but it will work for any event file produced by SOXS. This function
 determines the effective area for a given input energy or range of energies weighted by a
@@ -147,7 +147,7 @@ and *Athena*/XIFU are shown in Figure 1.
 
 .. warning::
 
-    The :func:`~soxs.events.make_exposure_map` tool only produces exposure maps for event
+    The :func:`~soxs.events.images.make_exposure_map` tool only produces exposure maps for event
     files produced by SOXS, and this is the only tool that should be used for this purpose
     for event files produced by SOXS.
 
@@ -156,7 +156,7 @@ and *Athena*/XIFU are shown in Figure 1.
 ``write_image``
 ---------------
 
-:func:`~soxs.events.write_image` bins up events into an image according to the coordinate
+:func:`~soxs.events.images.write_image` bins up events into an image according to the coordinate
 system inherent in the event file and writes the image to a FITS file. Images of sky, detector,
 or chip coordinates can be written. You can also restrict events within a particular energy range
 or time range to be written to the file.
@@ -215,18 +215,18 @@ This image can then be viewed in `ds9 <http://ds9.si.edu>`_ or `APLpy <https://a
 ``make_image``
 ---------------
 
-:func:`~soxs.events.make_image` is almost identical to :func:`~soxs.events.write_image`,
+:func:`~soxs.events.images.make_image` is almost identical to :func:`~soxs.events.images.write_image`,
 but it does not request an output filename. Instead, it bins up events into an image
 according to the coordinate system inherent in the event file and returns an
 :class:`~astropy.io.fits.ImageHDU` object. Otherwise, the rest of the arguments to
-:func:`~soxs.events.make_image` are the same as to :func:`~soxs.events.write_image`.
+:func:`~soxs.events.images.make_image` are the same as to :func:`~soxs.events.images.write_image`.
 
 .. _write-radial-profile:
 
 ``write_radial_profile``
 ------------------------
 
-:func:`~soxs.events.write_radial_profile` bins up events into an radial profile defined by source
+:func:`~soxs.events.tools.write_radial_profile` bins up events into an radial profile defined by source
 center, a minimum radius, a maximum radius, and a number of bins. One can restrict the events that
 are binned by a specific energy band. An example execution:
 
@@ -259,7 +259,7 @@ set the ``ctr_type`` keyword to "physical" and use physical pixel coordinates as
                          overwrite=True)
 
 If one wants to compute flux-based quantities for the radial profile (such as surface flux),
-supply an exposure map produced by :func:`~soxs.events.make_exposure_map`:
+supply an exposure map produced by :func:`~soxs.events.images.make_exposure_map`:
 
 .. code-block:: python
 
@@ -275,7 +275,7 @@ A cookbook example showing how to extract a radial profile is shown in
 ``write_spectrum``
 ------------------
 
-:func:`~soxs.events.write_spectrum` bins up events into a spectrum and writes the spectrum
+:func:`~soxs.events.spectra.write_spectrum` bins up events into a spectrum and writes the spectrum
 to a FITS file:
 
 .. code-block:: python
@@ -314,9 +314,9 @@ Filtering on a time or energy range is also possible:
 ``plot_spectrum``
 -----------------
 
-:func:`~soxs.events.plot_spectrum` reads a spectrum stored in a FITS table file and makes
+:func:`~soxs.events.spectra.plot_spectrum` reads a spectrum stored in a FITS table file and makes
 a `Matplotlib <http://www.matplotlib.org>`_ plot. There are a number of options for
-customizing the plot in the call to :func:`~soxs.events.plot_spectrum`, but the method
+customizing the plot in the call to :func:`~soxs.events.spectra.plot_spectrum`, but the method
 also returns the :class:`~matplotlib.figure.Figure` and the :class:`~matplotlib.axes.Axes`
 objects to allow for further customization. This example opens up a spectrum file and plots
 it between 0.5 and 7.0 keV:
@@ -388,12 +388,14 @@ and the second element is the maximum number of channels to be combined in the b
     ebins = (3.0, 4) # bins have 3-sigma significance and contain no more than 4 channels
     fig, ax, ebins_out = plot_spectrum("evt.pha", ebins=ebins, xmin=0.5, xmax=7.0)
 
-For other customizations, consult the :func:`~soxs.events.plot_spectrum` API.
+For other customizations, consult the :func:`~soxs.events.spectra.plot_spectrum` API.
+
+.. _plot-image:
 
 ``plot_image``
 --------------
 
-The :func:`~soxs.events.plot_image` function allows one to plot an image from a FITS
+The :func:`~soxs.events.images.plot_image` function allows one to plot an image from a FITS
 file. Several examples of this are shown in the following cookbook recipes:
 
 * `Two Clusters <../cookbook/Two_Clusters.ipynb>`_
@@ -402,12 +404,12 @@ file. Several examples of this are shown in the following cookbook recipes:
 * `Point Source Catalog  <../cookbook/Point_Source_Catalog.ipynb>`_
 * `Cosmological Source Catalog <../cookbook/Cosmo_Source_Catalog.ipynb>`_
 
-For the full range of customizations, consult the :func:`~soxs.events.plot_image` API.
+For the full range of customizations, consult the :func:`~soxs.events.images.plot_image` API.
 
 ``merge_event_files``
 ---------------------
 
-:func:`soxs.events.merge_event_files` can be used to merge several event files
+:func:`soxs.events.tools.merge_event_files` can be used to merge several event files
 together. This may be useful if you want to merge a source file with a background
 file created later, for example.
 
@@ -421,7 +423,7 @@ file created later, for example.
 ``fill_regions``
 ----------------
 
-:func:`~soxs.events.fill_regions` can be used to fill in regions with background
+:func:`~soxs.events.tools.fill_regions` can be used to fill in regions with background
 counts in an image which has had bright sources removed by a tool such as
 `wavdetect <https://cxc.cfa.harvard.edu/ciao/ahelp/wavdetect.html>`_. In addition to
 the file containing the image to be filled and the name of the new file to be written,

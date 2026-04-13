@@ -538,7 +538,7 @@ The current version for the ``"tbabs"`` model is 2.3.2.
 Adding Emission Lines to a ``Spectrum``
 ---------------------------------------
 
-The :meth:`~soxs.Spectrum.add_emission_line` method adds a single Gaussian
+The :meth:`~soxs.spectra.base.Spectrum.add_emission_line` method adds a single Gaussian
 emission line to an existing :class:`~soxs.spectra.base.Spectrum` object. The
 line energy, line width, and amplitude of the line (the line strength or
 integral under the curve) must be specified. The formula for the emission
@@ -581,7 +581,7 @@ Currently, this functionality only supports emission lines with a Gaussian shape
 Adding Absorption Lines to a ``Spectrum``
 -----------------------------------------
 
-The :meth:`~soxs.Spectrum.add_absorption_line` method adds a single Gaussian
+The :meth:`~soxs.spectra.base.Spectrum.add_absorption_line` method adds a single Gaussian
 absorption line to an existing :class:`~soxs.spectra.base.Spectrum` object. The
 line energy, line width, and equivalent width of the line must be specified.
 The formula for the absorption line is given in terms of the optical depth
@@ -671,7 +671,7 @@ flux of energies:
 
 Normally, :meth:`~soxs.spectra.base.Spectrum.generate_energies` will not need to be
 called by the end-user but will be used "under the hood" in the generation of
-a :class:`~soxs.simput.PhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
+a :class:`~soxs.simput.SimputPhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
 See :ref:`simput` for more information.
 
 .. _count-rate-spectra:
@@ -868,7 +868,7 @@ Assuming one created an XSTAR model in the typical fashion, e.g.:
     spectrum='pow' trad=-0.9 rlrad38=1e8 column=1e23 rlogxi=0.2 \
     abundtbl='xdef' modelname='quasar' ncn2=999999
 
-This produces a file with spectra called ``xout_spect1.fits''. Inside the file, the
+This produces a file with spectra called "xout_spect1.fits". Inside the file, the
 available spectra are "emit_outward", "emit_inward", "transmitted", or "incident" (see
 the `XSTAR documentation <https://heasarc.gsfc.nasa.gov/docs/software/xstar/docs/sphinx/xstardoc/docs/build/html/xstaroutput.html#the-spectral-data-file-xout-spect1-fits>`_
 for more details on these). You can then read one of the spectra contained in the file
@@ -923,7 +923,7 @@ Or to generate an array of energies:
     t_exp = (500.0, "ks")
     e = cspec.generate_energies(t_exp)
 
-If one has already loaded a :class:`~soxs.instrument.AuxiliaryResponseFile`,
+If one has already loaded a :class:`~soxs.response.AuxiliaryResponseFile`,
 then one can also generate a :class:`~soxs.spectra.base.ConvolvedSpectrum` by simply
 multiplying the ARF by a :class:`~soxs.spectra.base.Spectrum` object:
 
@@ -1041,7 +1041,7 @@ To write a spectrum to a FITS file, use :meth:`~soxs.spectra.base.Spectrum.write
 
 In each case, the minimum and maximum energies for each bin in the table, the
 flux in each bin (as well as its units), and the bin scaling (linear or log)
-is written to the file. If writing a :class:`~soxs.spectrum.ConvolvedSpectrum`
+is written to the file. If writing a :class:`~soxs.spectra.base.ConvolvedSpectrum`
 object, the name of the ARF which was used to do the convolution is also stored.
 
 .. _read-spectra:

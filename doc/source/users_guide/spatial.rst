@@ -255,5 +255,5 @@ RA and Dec coordinates in degrees:
 
 Normally, :meth:`~soxs.spatial.SpatialModel.generate_coords` will not need to be
 called by the end-user but will be used "under the hood" in the generation of
-a :class:`~soxs.simput.PhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
+a :class:`~soxs.simput.SimputPhotonList` as part of a :class:`~soxs.simput.SimputCatalog`.
 See :ref:`simput` for more information.

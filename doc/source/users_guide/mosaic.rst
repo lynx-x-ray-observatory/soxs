@@ -74,9 +74,9 @@ the separate files will be combined into a single event file:
                            overwrite=True)
 
 :func:`~soxs.mosaic.make_mosaic_image` takes many parameters which can be
-supplied to :func:`~soxs.events.write_image`, and also allows one to create an
+supplied to :func:`~soxs.events.images.write_image`, and also allows one to create an
 exposure map, so it also takes several parameters which are supplied to
-:func:`~soxs.events.make_exposure_map`. Here is an example of making a mosaicked
+:func:`~soxs.events.images.make_exposure_map`. Here is an example of making a mosaicked
 image which has been reblocked by a factor of 2 and created with an exposure map:
 
 .. code-block:: python
