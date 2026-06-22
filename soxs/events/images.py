@@ -109,10 +109,12 @@ def make_image(
         xctr = ehdu.header[f"TCRVL{xcol}"]
         yctr = ehdu.header[f"TCRVL{ycol}"]
         if width is not None:
-            xmin = 0.5 * (xmin + xmax) - 0.5 * width * (xmax - xmin)
-            xmax = 0.5 * (xmin + xmax) + 0.5 * width * (xmax - xmin)
-            ymin = 0.5 * (ymin + ymax) - 0.5 * width * (ymax - ymin)
-            ymax = 0.5 * (ymin + ymax) + 0.5 * width * (ymax - ymin)
+            xc = 0.5 * (xmin + xmax)
+            yc = 0.5 * (ymin + ymax)
+            xhw = 0.5 * width * (xmax - xmin)
+            yhw = 0.5 * width * (ymax - ymin)
+            xmin, xmax = xc - xhw, xc + xhw
+            ymin, ymax = yc - yhw, yc + yhw
         xdel = ehdu.header[f"TCDLT{xcol}"] * reblock
         ydel = ehdu.header[f"TCDLT{ycol}"] * reblock
 
