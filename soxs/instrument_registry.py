@@ -195,7 +195,7 @@ instrument_registry["athena_xifu"] = {
 
 # Chandra ACIS-I, Cycle 0, 10, 22, and 28
 
-for cycle in [0, 22, 28]:
+for cycle in [0, 10, 22, 28]:
     name = f"chandra_acisi_cy{cycle}"
     instrument_registry[name] = {
         "name": name,
