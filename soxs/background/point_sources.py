@@ -158,7 +158,8 @@ def make_ptsrc_background(
     input_sources : string, optional
         If set to a filename, input the source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
-        them. Default: None
+        them. If an integer, use this as the random seed for generating
+        point source properties. Default: None
     output_sources : string, optional
         If set to a filename, output the properties of the sources
         within the field of view to a file. Default: None
@@ -176,14 +177,17 @@ def make_ptsrc_background(
         set of random numbers, such as for a test. Default is None,
         which sets the seed based on the system time.
     """
-    prng = parse_prng(prng)
+    if isinstance(input_sources, int):
+        prng = parse_prng(input_sources)
+    else:
+        prng = parse_prng(prng)
 
     exp_time = parse_value(exp_time, "s")
     fov = parse_value(fov, "arcmin")
     if nH is not None:
         nH = parse_value(nH, "1.0e22*cm**-2")
     area = parse_value(area, "cm**2")
-    if input_sources is None:
+    if input_sources is None or isinstance(input_sources, int):
         ra0, dec0, fluxes, ind = generate_sources(fov, sky_center, prng=prng)
     else:
         mylog.info("Reading in point-source properties from %s.", input_sources)

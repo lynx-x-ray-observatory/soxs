@@ -433,7 +433,8 @@ def make_background(
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
-        them. Default: None
+        them. If an integer, use this as the random seed for generating
+        point source properties. Default: None
     diffuse_unresolved : boolean, optional
         Add a diffuse component across the entire field of view to represent
         the unresolved flux from sources at very small fluxes. Default: True
@@ -656,7 +657,8 @@ def make_background_file(
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
-        them. Default: None
+        them. If an integer, use this as the random seed for generating
+        point source properties. Default: None
     diffuse_unresolved : boolean, optional
         Add a diffuse component across the entire field of view to represent
         the unresolved flux from sources at very small fluxes. Default: True
@@ -885,7 +887,8 @@ def instrument_simulator(
     input_pt_sources : string, optional
         If set to a filename, input the point source positions, fluxes,
         and spectral indices from an ASCII table instead of generating
-        them. Default: None
+        them. If an integer, use this as the random seed for generating
+        point source properties. Default: None
     diffuse_unresolved : boolean, optional
         Add a diffuse component across the entire field of view to represent
         the unresolved flux from sources at very small fluxes. Default: True
