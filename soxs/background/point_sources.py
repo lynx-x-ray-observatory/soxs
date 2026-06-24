@@ -194,7 +194,7 @@ def make_ptsrc_background(
         ind = t["index"].data
 
     if drop_brightest is not None and drop_brightest > 0:
-        mylog.info("Dropping %d brightest sources.", drop_brightest)
+        mylog.info("Excising %d brightest sources.", drop_brightest)
         idx = np.argsort(fluxes)[drop_brightest:]
         ra0 = ra0[idx]
         dec0 = dec0[idx]
@@ -454,7 +454,7 @@ def make_point_source_list(
     ra0, dec0, fluxes, ind = generate_sources(fov, sky_center, prng=prng)
 
     if drop_brightest is not None and drop_brightest > 0:
-        mylog.info("Dropping %d brightest sources.", drop_brightest)
+        mylog.info("Excising %d brightest sources.", drop_brightest)
         idx = np.argsort(fluxes)[drop_brightest:]
         ra0 = ra0[idx]
         dec0 = dec0[idx]
