@@ -87,6 +87,8 @@ class LazyReadPyxsimEvents(Sequence):
 
 
 def read_catalog(source):
+    if isinstance(source, Path):
+        source = str(source)
     if isinstance(source, SimputCatalog):
         source_list = LazyReadSimputCatalog(source)
     elif source.endswith("fits") or "simput" in source:

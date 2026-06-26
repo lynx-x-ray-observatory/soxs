@@ -4,6 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 from astropy import wcs
+from pathlib import Path
 from regions import PixCoord
 from tqdm.auto import tqdm
 
@@ -51,7 +52,7 @@ def make_source_list(source):
                 source["src_names"][i],
             )
             source_list.append(phlist)
-    elif isinstance(source, (str, SimputCatalog)):
+    elif isinstance(source, (str, Path, SimputCatalog)):
         # Assume this is a SIMPUT or pyXSIM catalog
         source_list = read_catalog(source)
     return source_list
